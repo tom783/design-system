@@ -1,0 +1,921 @@
+<title>차트 라이브러리 비교실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+
+<style>
+/* ============================================================
+   섄시는 무채색. 색은 차트만 갖는다 — 차트 색을 중립적으로
+   판단하려면 페이지 UI 에 색이 없어야 한다. 1차 비교실과 같은 규율.
+   ============================================================ */
+:root{
+  --paper:#FCFBFA; --surface:#FFFFFF; --sunken:#F4F2F1;
+  --ink:#262222; --graphite:#534C4B; --muted:#6A6260; --faint:#9D9391;
+  --rule:#E1DCDB; --rule-soft:#EFECEB; --rule-hard:#CEC7C6;
+
+  /* 확정된 프로젝트 토큰 (R01) — 차트가 실제 시스템 색을 쓴다 */
+  --brand-600:#D33E58; --brand-500:#F15A73; --brand-400:#FF8394;
+  --brand-200:#FFCFD4; --brand-100:#FFE6E8; --brand-50:#FFF3F4;
+  --danger-700:#B42800; --danger-500:#FC542F; --danger-200:#FFD0CA;
+  --warning-700:#7F5E00; --warning-500:#BC8E00; --warning-200:#FCD9A0;
+  --success-700:#23763D; --success-500:#53AC6A; --success-200:#C2E9C9;
+  --info-700:#0A66AF; --info-500:#429AEE; --info-200:#C4E0FF;
+  --n200:#E1DCDB; --n300:#CEC7C6; --n400:#B6ADAB; --n500:#9D9391;
+  --n600:#847A78; --n700:#6A6260; --n800:#534C4B; --n950:#262222;
+
+  --grid:var(--n200); --axis:var(--n500); --label:var(--muted);
+
+  --f-display:'Archivo','IBM Plex Sans KR',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans KR','IBM Plex Sans',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141110; --surface:#1D1A18; --sunken:#100E0D;
+    --ink:#F5F1EF; --graphite:#C9C1BE; --muted:#A39B98; --faint:#6E6663;
+    --rule:#332E2C; --rule-soft:#262221; --rule-hard:#443D3B;
+    --brand-600:#D33E58; --brand-500:#F15A73; --brand-400:#FF8394;
+    --brand-200:#632831; --brand-100:#4A1E25; --brand-50:#3B2023;
+    --danger-700:#FF896E; --danger-500:#FC542F; --danger-200:#5A1C08;
+    --warning-700:#D9A723; --warning-500:#BC8E00; --warning-200:#4A3A08;
+    --success-700:#79C389; --success-500:#53AC6A; --success-200:#143A1F;
+    --info-700:#9FCEFF; --info-500:#429AEE; --info-200:#123553;
+    --n200:#332E2C; --n300:#443D3B; --n400:#5A5250; --n500:#6E6663;
+    --n600:#8C8380; --n700:#A39B98; --n800:#C9C1BE; --n950:#F5F1EF;
+    --grid:#332E2C; --axis:#8C8380;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141110; --surface:#1D1A18; --sunken:#100E0D;
+  --ink:#F5F1EF; --graphite:#C9C1BE; --muted:#A39B98; --faint:#6E6663;
+  --rule:#332E2C; --rule-soft:#262221; --rule-hard:#443D3B;
+  --brand-600:#D33E58; --brand-500:#F15A73; --brand-400:#FF8394;
+  --brand-200:#632831; --brand-100:#4A1E25; --brand-50:#3B2023;
+  --danger-700:#FF896E; --danger-500:#FC542F; --danger-200:#5A1C08;
+  --warning-700:#D9A723; --warning-500:#BC8E00; --warning-200:#4A3A08;
+  --success-700:#79C389; --success-500:#53AC6A; --success-200:#143A1F;
+  --info-700:#9FCEFF; --info-500:#429AEE; --info-200:#123553;
+  --n200:#332E2C; --n300:#443D3B; --n400:#5A5250; --n500:#6E6663;
+  --n600:#8C8380; --n700:#A39B98; --n800:#C9C1BE; --n950:#F5F1EF;
+  --grid:#332E2C; --axis:#8C8380;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:24px;-webkit-font-smoothing:antialiased}
+::selection{background:var(--ink);color:var(--paper)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.prose{max-width:68ch}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-size:41px;line-height:48px;letter-spacing:-.025em;font-weight:700}
+h2{font-size:29px;line-height:36px;letter-spacing:-.015em;font-weight:600}
+h3{font-size:20px;line-height:28px;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;line-height:16px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:17px;line-height:28px;color:var(--graphite)}
+.small{font-size:13px;line-height:20px;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+section{padding:72px 0;border-top:1px solid var(--rule)}
+.sec-head{display:flex;flex-direction:column;gap:12px;margin-bottom:36px}
+.num{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
+header.hero{padding:88px 0 56px}
+
+.controls{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule)}
+.controls-in{max-width:1240px;margin:0 auto;padding:12px 32px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}
+.ctl{display:flex;align-items:center;gap:8px}
+.ctl>span{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+.seg{display:flex;border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
+.seg button{appearance:none;border:0;border-right:1px solid var(--rule-hard);background:var(--surface);color:var(--muted);font-family:var(--f-body);font-size:13px;font-weight:500;padding:6px 12px;cursor:pointer;transition:background .12s,color .12s}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--sunken);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* ─── 플레이트 ─── */
+.plate{border:1px solid var(--rule-hard);border-radius:6px;background:var(--surface);overflow:hidden}
+.plate+.plate{margin-top:16px}
+.plate-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--rule)}
+.plate-bar strong{font-family:var(--f-display);font-size:15px;font-weight:600}
+.plate-bar .tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.plate-body{padding:18px 16px}
+.plate-foot{border-top:1px solid var(--rule-soft);padding:12px 16px;background:var(--paper)}
+.plate-foot p{font-size:13.5px;line-height:21px;color:var(--graphite)}
+.plate-foot b{color:var(--ink)}
+
+/* ─── 토큰 상속 데모 ─── */
+.demo2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.demo-card{border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.demo-head{padding:11px 14px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.demo-head b{font-family:var(--f-display);font-size:14px;font-weight:600}
+.demo-head .how{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.demo-chart{padding:14px;min-height:190px}
+.demo-chart svg,.demo-chart canvas{display:block;width:100%;height:auto}
+.demo-note{padding:11px 14px;border-top:1px solid var(--rule-soft);font-size:12.5px;line-height:19px;color:var(--muted)}
+.verdict{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid currentColor;border-radius:2px;padding:2px 7px}
+.v-ok{color:var(--success-700)} .v-no{color:var(--danger-700)} .v-mid{color:var(--warning-700)}
+.btn{appearance:none;border:1px solid var(--rule-hard);background:var(--surface);color:var(--ink);border-radius:4px;padding:6px 12px;font-family:var(--f-body);font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--sunken)}
+
+/* ─── 표 ─── */
+.dt-wrap{overflow-x:auto;border:1px solid var(--rule-hard);border-radius:6px;background:var(--surface)}
+table.dt{width:100%;border-collapse:collapse;font-size:13.5px}
+table.dt th{text-align:left;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:11px 14px;border-bottom:1px solid var(--rule-hard);background:var(--paper);white-space:nowrap}
+table.dt td{padding:10px 14px;border-bottom:1px solid var(--rule-soft);color:var(--graphite);vertical-align:top}
+table.dt tbody tr:last-child td{border-bottom:0}
+table.dt td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+table.dt td.pick{color:var(--success-700);font-weight:600}
+table.dt td.drop{color:var(--danger-700);font-weight:600}
+table.dt td.hold{color:var(--warning-700);font-weight:600}
+table.dt tr.rec td{background:var(--sunken)}
+
+/* ─── 복합 인코딩 ─── */
+.enc{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px}
+.enc-card{border:1px solid var(--rule-hard);border-radius:6px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column}
+.enc-head{padding:13px 16px 10px;display:flex;flex-direction:column;gap:3px}
+.enc-head b{font-family:var(--f-display);font-size:15.5px;font-weight:600}
+.enc-head span{font-size:12.5px;line-height:19px;color:var(--muted)}
+.enc-chart{padding:4px 16px 14px}
+.enc-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.enc-why{margin-top:auto;border-top:1px solid var(--rule-soft);padding:11px 16px;background:var(--paper);display:flex;flex-direction:column;gap:4px}
+.enc-why p{font-size:12.5px;line-height:19px;color:var(--graphite)}
+.enc-why .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 16px 10px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:2px;flex:none}
+
+/* ─── 코드 비교 ─── */
+.code2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.code-card{border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.code-head{padding:11px 14px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.code-head b{font-family:var(--f-display);font-size:14px;font-weight:600}
+.code-head .lines{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+pre.code{margin:0;padding:14px;font-family:var(--f-mono);font-size:11.5px;line-height:19px;color:var(--graphite);white-space:pre;overflow-x:auto;background:var(--paper);flex:1}
+pre.code .c{color:var(--faint)}
+pre.code .t{color:var(--ink);font-weight:600}
+
+.note{border:1px solid var(--rule-hard);border-left:3px solid var(--ink);border-radius:0 5px 5px 0;padding:16px 18px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.note b{font-family:var(--f-display);font-size:15px;font-weight:600}
+.note p{font-size:14px;line-height:22px;color:var(--graphite)}
+.note .tag{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ─── 결정 요청 ─── */
+.ask{border:1px solid var(--ink);border-radius:6px;overflow:hidden}
+.ask-h{background:var(--ink);color:var(--paper);padding:16px 20px;display:flex;flex-direction:column;gap:4px}
+.ask-h b{font-family:var(--f-display);font-size:19px;font-weight:600}
+.ask-h span{font-size:13px;opacity:.72}
+.ask-item{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.ask-item:last-child{border-bottom:0}
+.ask-item .q{font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--paper);background:var(--graphite);border-radius:3px;padding:3px 7px;height:fit-content;flex:none;letter-spacing:.04em}
+.ask-item .c{display:flex;flex-direction:column;gap:7px;min-width:0}
+.ask-item h4{font-size:15.5px}
+.ask-opts{display:flex;flex-wrap:wrap;gap:7px;margin-top:2px}
+.ask-opts code{font-family:var(--f-mono);font-size:12px;border:1px solid var(--rule-hard);border-radius:3px;padding:4px 9px;color:var(--graphite);background:var(--paper)}
+.ask-opts code.rec{border-color:var(--ink);color:var(--ink);font-weight:600}
+.copy-box{margin-top:20px;border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface)}
+.copy-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--rule)}
+.copy-h span{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.copy-btn{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:3px;padding:5px 12px;font-family:var(--f-body);font-size:12.5px;font-weight:600;cursor:pointer}
+pre.tmpl{margin:0;padding:14px;font-family:var(--f-mono);font-size:12.5px;line-height:21px;color:var(--graphite);white-space:pre-wrap;background:var(--paper)}
+
+footer{padding:56px 0 72px;border-top:1px solid var(--rule)}
+@media (max-width:880px){
+  .wrap{padding:0 20px}.controls-in{padding:10px 20px;gap:12px}
+  h1{font-size:34px;line-height:40px}h2{font-size:24px;line-height:32px}
+  section{padding:52px 0}
+  .enc{grid-template-columns:1fr}
+}
+</style>
+
+<header class="hero wrap">
+  <p class="eyebrow">Round 03 · 차트 라이브러리 결정</p>
+  <h1 style="margin-top:14px">차트는 위젯이 아니라<br>디자인 시스템의 구성요소다</h1>
+  <p class="lead prose" style="margin-top:20px">
+    후보 7종의 라이선스·버전·유지 상태를 npm 원본에서 확인했고, 그중 둘은 걸러졌습니다.
+    남은 선택의 핵심은 기능표가 아니라 <b>우리 토큰을 차트가 상속할 수 있는지</b>입니다.
+    그건 글로 읽어서는 판단이 안 되니, 아래 01에서 <b>테마를 직접 바꿔 보시면</b> 됩니다.
+  </p>
+</header>
+
+<div class="controls">
+  <div class="controls-in">
+    <div class="ctl">
+      <span>테마</span>
+      <div class="seg" id="segTheme" role="group" aria-label="테마 선택">
+        <button data-v="light" aria-pressed="true">라이트</button>
+        <button data-v="dark" aria-pressed="false">다크</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span>브랜드</span>
+      <div class="seg" id="segBrand" role="group" aria-label="브랜드 색 교체 실험">
+        <button data-v="crimson" aria-pressed="true">크림슨(확정)</button>
+        <button data-v="teal" aria-pressed="false">청록으로 교체</button>
+      </div>
+    </div>
+    <p class="small" style="margin-left:auto">테마·브랜드를 바꿀 때 어느 차트가 따라오는지 보세요</p>
+  </div>
+</div>
+
+<!-- ══════ 01. 토큰 상속 ══════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">01</p>
+    <h2>결정의 핵심 — 차트가 토큰을 상속하는가</h2>
+    <p class="lead prose">
+      우리 디자인 시스템은 색을 CSS 변수로 관리합니다. 라이트/다크 전환도,
+      브랜드 컬러 교체도 변수 값만 바뀝니다.
+      <b>SVG 는 <span class="mono">fill="var(--brand-600)"</span> 로 그 변수를 직접 받습니다.</b>
+      Canvas 는 받지 못합니다 — 픽셀을 찍는 시점의 색을 JS 가 알아야 합니다.
+    </p>
+  </div>
+
+  <div class="demo2">
+    <div class="demo-card">
+      <div class="demo-head">
+        <b>SVG · visx / Recharts 계열</b>
+        <span class="how">var(--token) 직접 참조</span>
+      </div>
+      <div class="demo-chart" id="svgDemo"></div>
+      <div class="demo-note">
+        <span class="verdict v-ok">따라옴</span>
+        테마·브랜드를 바꾸면 <b>JS 한 줄 없이</b> 즉시 반영됩니다.
+        차트가 버튼·테이블과 같은 색 체계 안에 있습니다.
+      </div>
+    </div>
+    <div class="demo-card">
+      <div class="demo-head">
+        <b>Canvas · ECharts / Chart.js 계열</b>
+        <span class="how">JS 가 색을 넘겨줘야 함</span>
+      </div>
+      <div class="demo-chart"><canvas id="canvasDemo" width="760" height="360" role="img"
+        aria-label="캔버스로 그린 같은 차트. 테마를 바꿔도 색이 따라오지 않는다"></canvas></div>
+      <div class="demo-note" style="display:flex;flex-direction:column;gap:9px">
+        <div><span class="verdict v-no">안 따라옴</span>
+        픽셀이 이미 찍혔습니다. 테마를 바꿔도 그대로입니다.</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="redrawBtn">JS 로 다시 그리기</button>
+          <span class="small" id="redrawCount">재렌더 0회</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:20px">
+    <span class="tag">공정하게 말하면</span>
+    <b>Canvas 도 따라올 수 있습니다. 다만 그 배선을 우리가 영구히 소유해야 합니다</b>
+    <p>
+      위 "다시 그리기" 버튼이 하는 일이 그것입니다 —
+      <span class="mono">getComputedStyle</span> 로 변수 값을 읽어 차트 설정 객체에 주입하고 재렌더합니다.
+      문제는 이게 한 번이 아니라 <b>모든 테마 변경 지점에 훅으로 걸려 있어야</b> 한다는 것입니다.
+      OS 테마 변경(<span class="mono">prefers-color-scheme</span> 미디어쿼리 리스너), 사용자 토글,
+      브랜드 교체, 그리고 차트가 여러 개면 전부. 빠뜨린 한 곳이 "다크모드에서 차트만 밝은" 버그가 됩니다.
+      SVG 쪽에서는 이 코드가 아예 존재하지 않습니다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════ 02. 후보 사실 ══════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">02</p>
+    <h2>후보 7종 — npm 원본 확인</h2>
+    <p class="lead prose">
+      블로그 비교글의 수치를 믿지 않고 npm 레지스트리에서 직접 조회했습니다
+      (2026-11-14 기준). 유지 상태에서 <b>두 후보가 걸러집니다.</b>
+    </p>
+  </div>
+  <div class="dt-wrap">
+    <table class="dt">
+      <thead><tr><th>라이브러리</th><th>버전</th><th>라이선스</th><th>최근 배포</th><th>렌더</th><th>토큰 상속</th><th>판정</th></tr></thead>
+      <tbody>
+        <tr class="rec">
+          <td><b style="color:var(--ink)">visx</b><br><span class="small">Airbnb · d3 프리미티브 래퍼</span></td>
+          <td class="m">4.0.0</td><td class="m">MIT</td><td class="m">2026-06-11</td><td>SVG</td>
+          <td class="pick">직접</td><td class="pick">채택 권고</td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--ink)">Recharts</b><br><span class="small">선언형 React 차트</span></td>
+          <td class="m">3.10.1</td><td class="m">MIT</td><td class="m">2026-07-25</td><td>SVG</td>
+          <td class="pick">직접</td><td class="hold">차선</td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--ink)">Apache ECharts</b><br><span class="small">+ echarts-for-react</span></td>
+          <td class="m">6.1.0</td><td class="m">Apache-2.0</td><td class="m">2026-05-19</td><td>Canvas</td>
+          <td class="drop">JS 주입</td><td class="hold">탈출구로만</td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--ink)">Chart.js</b><br><span class="small">+ react-chartjs-2</span></td>
+          <td class="m">4.6.1</td><td class="m">MIT</td><td class="m">2026-10-22</td><td>Canvas</td>
+          <td class="drop">JS 주입</td><td class="drop">탈락</td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--ink)">Nivo</b><br><span class="small">D3 + React 차트 세트</span></td>
+          <td class="m">0.99.0</td><td class="m">MIT</td><td class="m">2025-05-23</td><td>SVG/Canvas</td>
+          <td class="hold">가능</td>
+          <td class="drop">탈락 · 18개월 정체 · pre-1.0</td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--ink)">Observable Plot</b><br><span class="small">그래머 오브 그래픽스</span></td>
+          <td class="m">0.6.19</td><td class="m">ISC</td><td class="m">2026-11-05</td><td>SVG</td>
+          <td class="hold">가능</td>
+          <td class="drop">탈락 · 41릴리스 후에도 0.x · React 비친화</td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--ink)">d3-scale / d3-shape</b><br><span class="small">visx 가 감싸는 수학 계층</span></td>
+          <td class="m">4.0.3 / 3.2.1</td><td class="m">ISC</td><td class="m">2026-11-03</td><td>—</td>
+          <td>—</td><td class="pick">visx 와 함께 들어옴</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note" style="margin-top:20px">
+    <span class="tag">visx 에 대해 정직하게</span>
+    <b>visx 의 최근 배포는 5개월 전입니다. Recharts(4개월 전, 239릴리스)보다 느립니다</b>
+    <p>
+      다만 이건 방치가 아니라 <b>표면이 작기 때문</b>입니다. visx 는 스케일·축·도형 프리미티브의
+      얇은 래퍼라 바뀔 것이 적습니다. 실제 계산은 <span class="mono">d3-scale</span>·<span class="mono">d3-shape</span>가
+      하고, 그쪽은 <b>11일 전에도 배포</b>됐습니다. 즉 의존하는 수학 계층은 활발합니다.
+      반대로 말하면 <b>visx 가 멈춰도 우리가 잃는 게 적습니다</b> — 차트 코드는 우리 저장소에 있고,
+      visx 는 스케일 함수와 path 생성기만 제공합니다. 이게 프리미티브 접근의 위험 분산입니다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════ 03. 복합 인코딩 ══════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">03</p>
+    <h2>visx 로 무엇을 얻는가 — 복합 인코딩 5종</h2>
+    <p class="lead prose">
+      "단순 바·라인 말고 정보 전달에 효과적인 복합적인 방법"이라는 요구가
+      실제로 무엇인지 우리 커머스 데이터로 그렸습니다. 아래 다섯은 모두
+      <b>기성 차트 컴포넌트로는 만들기 어렵거나 불가능한 것</b>들입니다.
+      전부 손으로 쓴 SVG 이고, visx 를 쓰면 스케일·축 계산만 라이브러리가 대신합니다.
+    </p>
+  </div>
+  <div class="enc" id="encGrid"></div>
+</section>
+
+<!-- ══════ 04. 코드 비용 ══════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">04</p>
+    <h2>비용 — 같은 차트, 두 접근</h2>
+    <p class="lead prose">
+      visx 는 공짜가 아닙니다. 같은 영역 차트를 만드는 데 드는 코드량 차이가 이 결정의 대가입니다.
+      <b>기본 차트에서는 Recharts 가 3배 짧고, 복합 차트에서는 역전됩니다.</b>
+    </p>
+  </div>
+  <div class="code2">
+    <div class="code-card">
+      <div class="code-head"><b>Recharts — 기본 영역 차트</b><span class="lines">12줄</span></div>
+      <pre class="code"><span class="c">// 선언형. 축·격자·툴팁이 기본 제공된다.</span>
+&lt;<span class="t">AreaChart</span> data={daily} width={560} height={200}&gt;
+  &lt;<span class="t">CartesianGrid</span> stroke="var(--grid)" /&gt;
+  &lt;<span class="t">XAxis</span> dataKey="date" /&gt;
+  &lt;<span class="t">YAxis</span> /&gt;
+  &lt;<span class="t">Tooltip</span> /&gt;
+  &lt;<span class="t">Area</span>
+    type="monotone" dataKey="orders"
+    stroke="var(--brand-600)"
+    fill="var(--brand-200)"
+  /&gt;
+&lt;/<span class="t">AreaChart</span>&gt;</pre>
+      <div class="demo-note"><span class="verdict v-ok">빠름</span>
+        여기까지는 Recharts 가 분명히 유리합니다.</div>
+    </div>
+    <div class="code-card">
+      <div class="code-head"><b>visx — 같은 영역 차트</b><span class="lines">약 35줄</span></div>
+      <pre class="code"><span class="c">// 프리미티브. 스케일을 직접 만들고 축을 배치한다.</span>
+<span class="c">// 그 대가로 모든 좌표가 우리 통제 아래 있다.</span>
+const x = <span class="t">scaleTime</span>({
+  domain: [min(dates), max(dates)],
+  range: [48, width - 12],
+});
+const y = <span class="t">scaleLinear</span>({
+  domain: [0, max(orders) * 1.1],
+  range: [height - 28, 12], nice: true,
+});
+
+&lt;<span class="t">svg</span> width={width} height={height}&gt;
+  &lt;<span class="t">GridRows</span> scale={y} width={width}
+    stroke="var(--grid)" /&gt;
+  &lt;<span class="t">AreaClosed</span> data={daily} yScale={y}
+    x={d =&gt; x(d.date)} y={d =&gt; y(d.orders)}
+    fill="var(--brand-200)"
+    curve={curveMonotoneX} /&gt;
+  &lt;<span class="t">LinePath</span> data={daily}
+    x={d =&gt; x(d.date)} y={d =&gt; y(d.orders)}
+    stroke="var(--brand-600)" strokeWidth={1.8} /&gt;
+  &lt;<span class="t">AxisBottom</span> scale={x} top={height - 28} /&gt;
+  &lt;<span class="t">AxisLeft</span> scale={y} left={48} /&gt;
+&lt;/<span class="t">svg</span>&gt;</pre>
+      <div class="demo-note"><span class="verdict v-mid">느림, 그러나</span>
+        03의 다섯 가지는 이 방식에서만 나옵니다.</div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:20px">
+    <span class="tag">비용을 한 번만 치르는 구조</span>
+    <b>우리가 만드는 것은 차트가 아니라 차트 컴포넌트 세트입니다</b>
+    <p>
+      35줄은 <b>차트 종류당 한 번</b> 드는 비용입니다.
+      <span class="mono">&lt;TrendArea&gt;</span>, <span class="mono">&lt;BulletRow&gt;</span>,
+      <span class="mono">&lt;CompositionBand&gt;</span> 처럼 토큰이 박힌 컴포넌트로 포장해 두면,
+      실제 화면에서 쓰는 코드는 <span class="mono">&lt;TrendArea data={daily} /&gt;</span> 한 줄입니다.
+      Recharts 로 가면 매 화면에서 12줄을 반복하거나, 똑같이 래핑해야 합니다 —
+      <b>래핑은 어차피 해야 하므로, 래핑 안쪽이 프리미티브인지 기성 차트인지가 진짜 선택</b>입니다.
+      안쪽이 기성 차트면 그 차트가 허용하는 것까지만 할 수 있습니다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════ 05. 권고와 결정 ══════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">05</p>
+    <h2>권고와 결정 요청</h2>
+  </div>
+
+  <div class="note" style="margin-bottom:24px">
+    <span class="tag">권고</span>
+    <b>visx 채택 + ECharts 를 좁은 탈출구로 남긴다</b>
+    <p>
+      visx 로 우리 차트 컴포넌트 세트를 만들어 디자인 시스템에 넣습니다. 토큰을 그대로 상속하고,
+      복합 인코딩이 가능하고, visx 가 멈춰도 잃는 게 적습니다.
+      <br><br>
+      단 하나 visx 가 약한 영역이 있습니다 — <b>10만 포인트 이상을 실시간으로 그리는 화면</b>입니다.
+      SVG 는 포인트마다 DOM 노드를 만들기 때문에 수만 개에서 느려집니다. 그런 화면이 생기면
+      ECharts 를 그 화면에만 쓰고, 토큰을 JS 로 주입하는 배선을 <b>한 곳에만</b> 만듭니다.
+      지금 당장 그런 화면은 없으니 도입하지 않고, 필요해질 때까지 미룹니다.
+    </p>
+  </div>
+
+  <div class="ask">
+    <div class="ask-h">
+      <b>피드백 요청</b>
+      <span>권고안에는 테두리가 진하게 표시되어 있습니다</span>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q1</span>
+      <div class="c">
+        <h4>차트 라이브러리를 visx 로 확정할까요?</h4>
+        <p class="small">
+          01의 테마 토글에서 직접 보신 차이가 판단 근거입니다.
+          Recharts 를 고르면 기본 차트는 빨라지지만 03의 복합 인코딩에서 막힙니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">visx 확정</code><code>Recharts 로 변경</code><code>더 비교 필요</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q2</span>
+      <div class="c">
+        <h4>1차로 만들 차트 컴포넌트 범위는?</h4>
+        <p class="small">
+          03에 그린 다섯 종이 후보입니다. 전부 만들면 R04 가 길어지고,
+          둘만 만들면 다음 라운드에서 또 차트 작업을 해야 합니다.
+          권고는 <b>추이 밴드 + 불릿 + 구성 변화 3종</b> — 대시보드 요약에서 가장 자주 쓰입니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">3종 (밴드·불릿·구성)</code><code>5종 전부</code><code>2종 (밴드·불릿)</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q3</span>
+      <div class="c">
+        <h4>ECharts 탈출구를 문서에 남겨둘까요?</h4>
+        <p class="small">
+          지금 도입하지는 않되, "어떤 조건에서 ECharts 를 쓸 수 있다"를 DESIGN.md 에 적어두는 안입니다.
+          적어두지 않으면 나중에 누군가 조건 없이 끌어들이고, 토큰 배선이 여러 곳으로 흩어집니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">조건을 적어둔다</code><code>아예 금지</code><code>지금 결정 보류</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q4</span>
+      <div class="c">
+        <h4>다음 작업 순서는?</h4>
+        <p class="small">
+          차트 컴포넌트(R04)와 테이블 가상화·무한스크롤(R03-B) 중 어느 쪽을 먼저 할까요.
+          권고는 <b>R03-B 먼저</b> — 테이블이 이미 반쯤 만들어져 있어 맥락이 남아 있고,
+          무한스크롤은 데이터 조회 화면의 기본 요구사항입니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">R03-B 테이블 먼저</code><code>R04 차트 먼저</code><code>병렬 위임</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-box">
+    <div class="copy-h">
+      <span>답변 양식 — 복사해서 채팅에 붙여넣기</span>
+      <button class="copy-btn" id="copyBtn">복사</button>
+    </div>
+    <pre class="tmpl" id="tmpl">[차트 비교실 R03 피드백]
+Q1 라이브러리 : visx 확정
+Q2 1차 범위   : 3종 (밴드·불릿·구성)
+Q3 ECharts    : 조건을 적어둔다
+Q4 작업 순서  : R03-B 테이블 먼저
+
+추가 의견:
+-</pre>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p class="eyebrow">확인 방법</p>
+  <p class="small prose" style="margin-top:12px">
+    01의 두 차트는 같은 데이터·같은 모양입니다. 상단 바에서 <b>테마</b>를 바꾸면 왼쪽(SVG)만 따라오고,
+    <b>브랜드</b>를 청록으로 교체해도 왼쪽만 바뀝니다. 오른쪽(Canvas)은 "다시 그리기"를 눌러야 따라옵니다 —
+    그 버튼이 곧 우리가 영구히 유지해야 할 코드입니다.
+  </p>
+  <p class="small" style="margin-top:24px;color:var(--faint)">
+    라이선스·버전·배포일은 2026-11-14 npm 레지스트리 직접 조회값입니다.
+    03의 차트는 전부 손으로 쓴 인라인 SVG 이며, 색은 R01 에서 확정한 프로젝트 토큰을 씁니다.
+    페이지 UI 자체는 차트 판단을 오염시키지 않도록 무채색으로 고정했습니다.
+  </p>
+</footer>
+
+<script>
+/* ============================================================
+   데이터 — 커머스 운영 지표
+   ============================================================ */
+const DAYS = ['11/08','11/09','11/10','11/11','11/12','11/13','11/14'];
+const ORDERS = [980, 1124, 1043, 1298, 1187, 1402, 1284];
+// 일별 주문의 분포(사분위) — 시간대별 편차. 평균선만 보면 사라지는 정보.
+const BANDS = [[760,1180],[910,1340],[840,1250],[1020,1540],[930,1420],[1120,1660],[1010,1510]];
+
+const BULLET = [
+  { label:'매출',      unit:'억원', actual:4.82, target:5.20, max:6.0, good:[4.68,5.72] },
+  { label:'신규 고객',  unit:'명',   actual:287,  target:320,  max:380, good:[288,352] },
+  { label:'출고 SLA',  unit:'%',    actual:94.2, target:98.0, max:100, good:[96,100] },
+  { label:'반품률',    unit:'%',    actual:2.7,  target:2.0,  max:4.0, good:[0,2.2], invert:true },
+];
+
+const COMP = [ // 결제완료 / 상품준비중 / 배송중 / 반품요청
+  [38,27,33,2],[35,29,34,2],[33,28,37,2],[30,31,37,2],[28,30,39,3],[26,28,43,3],[31,26,40,3],
+];
+const COMP_KEYS = ['결제완료','상품준비중','배송중','반품요청'];
+const COMP_COLORS = ['var(--info-500)','var(--warning-500)','var(--success-500)','var(--danger-500)'];
+
+const SKU = [
+  { name:'무선 이어버드 프로', series:[96,93,90,86,81,77,72,68,63,57,52,46,40,34] },
+  { name:'스탠딩 데스크 1200', series:[88,86,85,83,82,80,79,77,76,74,72,70,69,67] },
+  { name:'프리미엄 원두 1kg',  series:[72,66,61,55,48,42,36,31,26,22,18,14,10,6] },
+  { name:'모니터 암 듀얼',     series:[64,63,63,62,61,61,60,59,59,58,57,57,56,55] },
+  { name:'기계식 키보드 87키', series:[55,54,52,51,49,48,46,45,43,42,40,39,37,36] },
+  { name:'유기농 단백질 바',   series:[91,88,84,79,73,66,58,49,41,33,26,20,15,11] },
+];
+
+const SCATTER = [
+  [48,1.2],[62,1.4],[120,1.6],[89,1.3],[164,2.1],[210,2.4],[248,2.2],[96,1.5],
+  [142,1.9],[188,2.0],[76,1.3],[310,2.8],[268,2.5],[112,1.7],[204,2.3],[156,1.8],
+  [1248,6.4],[892,5.1],[1130,7.2],[58,1.1],[134,1.6],[176,2.0],[92,1.4],[222,2.4],
+];
+
+/* ============================================================
+   01. 토큰 상속 데모 — 같은 차트를 SVG 와 Canvas 로
+   ============================================================ */
+const W = 760, H = 360, PL = 56, PR = 16, PT = 20, PB = 42;
+const xAt = (i, n = ORDERS.length) => PL + (W - PL - PR) * i / (n - 1);
+const yAt = (v, lo = 800, hi = 1500) => PT + (H - PT - PB) * (1 - (v - lo) / (hi - lo));
+
+function demoSvg() {
+  const pts = ORDERS.map((v, i) => [xAt(i), yAt(v)]);
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const area = line + ` L${xAt(ORDERS.length - 1).toFixed(1)} ${H - PB} L${PL} ${H - PB} Z`;
+  const grid = [900, 1100, 1300, 1500].map((v) =>
+    `<line x1="${PL}" y1="${yAt(v).toFixed(1)}" x2="${W - PR}" y2="${yAt(v).toFixed(1)}" stroke="var(--grid)" stroke-width="1"/>
+     <text x="${PL - 10}" y="${(yAt(v) + 4).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--axis)">${(v / 1000).toFixed(1)}k</text>`).join('');
+  const labels = DAYS.map((d, i) =>
+    `<text x="${xAt(i).toFixed(1)}" y="${H - 14}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11.5" fill="var(--axis)">${d}</text>`).join('');
+  const last = pts[pts.length - 1];
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 7일 주문 추이. SVG 로 그려 토큰을 상속한다">
+    <defs><linearGradient id="svgFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--brand-500)" stop-opacity=".26"/>
+      <stop offset="100%" stop-color="var(--brand-500)" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${grid}
+    <path d="${area}" fill="url(#svgFill)"/>
+    <path d="${line}" fill="none" stroke="var(--brand-600)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.slice(0, -1).map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="var(--surface)" stroke="var(--brand-600)" stroke-width="1.6"/>`).join('')}
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="5" fill="var(--brand-600)"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="9" fill="var(--brand-600)" opacity=".18"/>
+    ${labels}
+  </svg>`;
+}
+
+// Canvas 는 변수를 모른다. 그릴 때 받은 색을 픽셀로 굽는다.
+let redraws = 0;
+function demoCanvas(colors) {
+  const cv = document.getElementById('canvasDemo');
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cv.width !== W * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = colors.surface; ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = colors.grid; ctx.lineWidth = 1;
+  ctx.fillStyle = colors.axis;
+  ctx.font = '12px "IBM Plex Mono", monospace'; ctx.textAlign = 'right';
+  for (const v of [900, 1100, 1300, 1500]) {
+    const y = yAt(v);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(W - PR, y); ctx.stroke();
+    ctx.fillText((v / 1000).toFixed(1) + 'k', PL - 10, y + 4);
+  }
+  const pts = ORDERS.map((v, i) => [xAt(i), yAt(v)]);
+  const g = ctx.createLinearGradient(0, PT, 0, H - PB);
+  g.addColorStop(0, colors.fill); g.addColorStop(1, colors.fillEnd);
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (const p of pts.slice(1)) ctx.lineTo(p[0], p[1]);
+  ctx.lineTo(pts[pts.length - 1][0], H - PB); ctx.lineTo(PL, H - PB); ctx.closePath();
+  ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (const p of pts.slice(1)) ctx.lineTo(p[0], p[1]);
+  ctx.strokeStyle = colors.line; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+  for (const p of pts.slice(0, -1)) {
+    ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, Math.PI * 2);
+    ctx.fillStyle = colors.surface; ctx.fill();
+    ctx.strokeStyle = colors.line; ctx.lineWidth = 1.6; ctx.stroke();
+  }
+  const last = pts[pts.length - 1];
+  ctx.beginPath(); ctx.arc(last[0], last[1], 5, 0, Math.PI * 2);
+  ctx.fillStyle = colors.line; ctx.fill();
+  ctx.textAlign = 'center'; ctx.fillStyle = colors.axis;
+  ctx.font = '11.5px "IBM Plex Mono", monospace';
+  DAYS.forEach((d, i) => ctx.fillText(d, xAt(i), H - 14));
+}
+
+/** 이 함수가 Canvas 를 쓸 때 우리가 영구히 소유해야 하는 배선이다. */
+function readTokens() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = (n) => cs.getPropertyValue(n).trim();
+  return {
+    surface: v('--surface'), grid: v('--grid'), axis: v('--axis'),
+    line: v('--brand-600'), fill: v('--brand-200'), fillEnd: v('--surface'),
+  };
+}
+
+/* ============================================================
+   03. 복합 인코딩 5종
+   ============================================================ */
+const ENC = [];
+
+/* ① 추이 + 분포 밴드 */
+ENC.push({
+  title: '추이 + 분포 밴드',
+  sub: '일별 주문 추이에 시간대별 편차(사분위 범위)를 겹쳐 그린다',
+  why: ['기성 차트로 어려운 이유',
+    '평균선만 그리면 "11/11 과 11/13 이 둘 다 좋았다"로 보이지만, 밴드를 보면 11/13 은 편차가 크고 11/11 은 고르게 높았습니다. 같은 평균이 전혀 다른 운영 상황입니다. 기성 라인 차트는 보조 밴드를 같은 스케일에 얹는 것을 허용하지 않거나, 별도 시리즈로만 취급해 색·범례가 어긋납니다.'],
+  legend: [['var(--brand-600)','일 주문 수'],['var(--brand-200)','시간대 편차 범위']],
+  svg() {
+    const w = 520, h = 210, pl = 44, pr = 12, pt = 12, pb = 30;
+    const lo = 700, hi = 1750;
+    const X = (i) => pl + (w - pl - pr) * i / 6;
+    const Y = (v) => pt + (h - pt - pb) * (1 - (v - lo) / (hi - lo));
+    const up = BANDS.map((b, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(b[1]).toFixed(1)}`).join(' ');
+    const dn = [...BANDS].map((b, i) => [X(6 - i), Y(BANDS[6 - i][0])])
+      .map((p) => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+    const line = ORDERS.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+    const grid = [800, 1100, 1400, 1700].map((v) =>
+      `<line x1="${pl}" y1="${Y(v).toFixed(1)}" x2="${w - pr}" y2="${Y(v).toFixed(1)}" stroke="var(--grid)"/>
+       <text x="${pl - 8}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--axis)">${(v / 1000).toFixed(1)}k</text>`).join('');
+    // 편차가 가장 큰 날을 표시 — 데이터에서 계산한다
+    const widest = BANDS.reduce((best, b, i) => (b[1] - b[0] > BANDS[best][1] - BANDS[best][0] ? i : best), 0);
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="일별 주문 추이와 시간대별 편차 밴드. 11월 13일의 편차가 가장 크다">
+      ${grid}
+      <path d="${up} ${dn} Z" fill="var(--brand-200)" opacity=".55"/>
+      <path d="${line}" fill="none" stroke="var(--brand-600)" stroke-width="2" stroke-linejoin="round"/>
+      ${ORDERS.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="var(--brand-600)"/>`).join('')}
+      <line x1="${X(widest).toFixed(1)}" y1="${Y(BANDS[widest][0]).toFixed(1)}" x2="${X(widest).toFixed(1)}" y2="${Y(BANDS[widest][1]).toFixed(1)}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 2"/>
+      <text x="${X(widest).toFixed(1)}" y="${(Y(BANDS[widest][1]) - 6).toFixed(1)}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--ink)">편차 최대</text>
+      ${DAYS.map((d, i) => `<text x="${X(i).toFixed(1)}" y="${h - 10}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--axis)">${d.slice(3)}</text>`).join('')}
+    </svg>`;
+  },
+});
+
+/* ② 불릿 차트 */
+ENC.push({
+  title: '불릿 — 목표 대비 실적',
+  sub: '실적·목표·정상범위를 한 줄에 겹쳐 4개 지표를 비교한다',
+  why: ['기성 차트로 어려운 이유',
+    '막대 차트로 목표 대비 실적을 보여주면 막대 2개가 필요하고, 지표 4개면 막대 8개가 됩니다. 불릿은 한 줄에 실적(굵은 막대) · 목표(세로 눈금) · 정상범위(연한 띠)를 겹쳐 넣어 "목표를 넘겼나"를 즉시 읽게 합니다. 반품률처럼 낮아야 좋은 지표도 같은 형태로 처리됩니다.'],
+  legend: [['var(--brand-600)','실적'],['var(--ink)','목표'],['var(--n300)','정상 범위']],
+  svg() {
+    const w = 520, rowH = 44, pl = 92, pr = 54, h = BULLET.length * rowH + 8;
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="4개 지표의 목표 대비 실적 불릿 차트. 출고 SLA 와 반품률이 목표 미달이다">
+      ${BULLET.map((b, i) => {
+        const y = i * rowH + 14, bw = w - pl - pr;
+        const X = (v) => pl + bw * (v / b.max);
+        const hit = b.invert ? b.actual <= b.target : b.actual >= b.target;
+        const barColor = hit ? 'var(--success-700)' : 'var(--brand-600)';
+        return `
+        <text x="${pl - 10}" y="${y + 13}" text-anchor="end" font-family="IBM Plex Sans KR,sans-serif" font-size="11.5" font-weight="500" fill="var(--ink)">${b.label}</text>
+        <rect x="${pl}" y="${y + 2}" width="${bw}" height="18" fill="var(--sunken)"/>
+        <rect x="${X(b.good[0]).toFixed(1)}" y="${y + 2}" width="${(X(b.good[1]) - X(b.good[0])).toFixed(1)}" height="18" fill="var(--n300)" opacity=".55"/>
+        <rect x="${pl}" y="${y + 7}" width="${(X(b.actual) - pl).toFixed(1)}" height="8" fill="${barColor}"/>
+        <line x1="${X(b.target).toFixed(1)}" y1="${y - 1}" x2="${X(b.target).toFixed(1)}" y2="${y + 23}" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="${w - pr + 8}" y="${y + 13}" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="${hit ? 'var(--success-700)' : 'var(--danger-700)'}">${b.actual}${b.unit === '%' ? '%' : ''}</text>
+        `;
+      }).join('')}
+    </svg>`;
+  },
+});
+
+/* ③ 구성 변화 */
+ENC.push({
+  title: '구성 변화 — 100% 누적 영역',
+  sub: '7일간 주문 상태 구성이 어떻게 이동했는지 본다',
+  why: ['기성 차트로 어려운 이유',
+    '누적 막대로 7일을 그리면 "배송중이 늘었다"는 추세가 막대 사이에서 끊깁니다. 100% 누적 영역은 비율 이동을 연속으로 보여줍니다. 여기서는 결제완료가 38%→31% 로 줄고 배송중이 33%→40% 로 늘어 출고가 밀리고 있다는 신호가 읽힙니다. 기성 차트는 누적 영역을 주지만, 경계선 대비·범례·마지막 값 라벨을 토큰에 맞추기가 어렵습니다.'],
+  legend: COMP_KEYS.map((k, i) => [COMP_COLORS[i], k]),
+  svg() {
+    const w = 520, h = 210, pl = 36, pr = 62, pt = 10, pb = 28;
+    const X = (i) => pl + (w - pl - pr) * i / 6;
+    const Y = (p) => pt + (h - pt - pb) * (1 - p / 100);
+    // 누적 상단 경계를 계산
+    const tops = COMP.map((row) => { let a = 0; return row.map((v) => (a += v)); });
+    let out = '';
+    for (let s = COMP_KEYS.length - 1; s >= 0; s--) {
+      const up = tops.map((t, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(t[s]).toFixed(1)}`).join(' ');
+      out += `<path d="${up} L${X(6).toFixed(1)} ${Y(0)} L${X(0)} ${Y(0)} Z" fill="${COMP_COLORS[s]}" opacity=".9"/>`;
+    }
+    // 마지막 값 라벨 — 영역 중앙 높이에 배치
+    const lastTops = tops[6];
+    const labels = COMP_KEYS.map((k, s) => {
+      const top = lastTops[s], bottom = s === 0 ? 0 : lastTops[s - 1];
+      const mid = (top + bottom) / 2;
+      return `<text x="${w - pr + 7}" y="${(Y(mid) + 4).toFixed(1)}" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink)">${COMP[6][s]}%</text>`;
+    }).join('');
+    const gl = [25, 50, 75].map((p) => `<line x1="${pl}" y1="${Y(p).toFixed(1)}" x2="${w - pr}" y2="${Y(p).toFixed(1)}" stroke="var(--surface)" stroke-width="1" opacity=".4"/>`).join('');
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="7일간 주문 상태 구성 변화. 결제완료 38%에서 31%로 감소, 배송중 33%에서 40%로 증가">
+      ${out}${gl}
+      <text x="${pl - 6}" y="${(Y(100) + 4).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--axis)">100</text>
+      <text x="${pl - 6}" y="${(Y(0) + 4).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--axis)">0</text>
+      ${labels}
+      ${DAYS.map((d, i) => `<text x="${X(i).toFixed(1)}" y="${h - 9}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--axis)">${d.slice(3)}</text>`).join('')}
+    </svg>`;
+  },
+});
+
+/* ④ 스몰 멀티플 + 임계선 */
+ENC.push({
+  title: '스몰 멀티플 + 임계선',
+  sub: '6개 품목의 14일 재고 소진율을 같은 축으로 나란히 둔다',
+  why: ['기성 차트로 어려운 이유',
+    '6개 품목을 한 차트에 라인으로 겹치면 선이 엉켜 읽을 수 없습니다. 같은 축을 공유하는 작은 차트를 격자로 배열하면 "어느 품목이 임계선(20%) 아래로 먼저 내려가는가"가 한눈에 비교됩니다. 기성 차트 라이브러리에는 이 배열 자체가 없어서 차트를 여러 개 렌더하고 축을 손으로 맞춰야 합니다.'],
+  legend: [['var(--brand-600)','소진율'],['var(--danger-500)','임계 20%']],
+  svg() {
+    const cols = 3, cw = 168, ch = 82, gx = 8, gy = 26;
+    const w = cols * cw + (cols - 1) * gx, h = 2 * ch + gy + 20;
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="6개 품목의 14일 재고 소진율 스몰 멀티플. 프리미엄 원두와 유기농 단백질 바가 임계선 아래로 내려간다">
+      ${SKU.map((s, k) => {
+        const ox = (k % cols) * (cw + gx), oy = Math.floor(k / cols) * (ch + gy) + 18;
+        const X = (i) => ox + 4 + (cw - 8) * i / 13;
+        const Y = (v) => oy + (ch - 14) * (1 - v / 100);
+        const line = s.series.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+        const area = line + ` L${X(13).toFixed(1)} ${Y(0)} L${X(0).toFixed(1)} ${Y(0)} Z`;
+        const danger = s.series[13] < 20;
+        const col = danger ? 'var(--danger-500)' : 'var(--brand-600)';
+        const fill = danger ? 'var(--danger-200)' : 'var(--brand-200)';
+        return `
+        <text x="${ox + 2}" y="${oy - 6}" font-family="IBM Plex Sans KR,sans-serif" font-size="10.5" font-weight="500" fill="var(--ink)">${s.name}</text>
+        <rect x="${ox}" y="${oy}" width="${cw}" height="${ch - 14}" fill="var(--sunken)" opacity=".5"/>
+        <path d="${area}" fill="${fill}" opacity=".6"/>
+        <line x1="${ox}" y1="${Y(20).toFixed(1)}" x2="${ox + cw}" y2="${Y(20).toFixed(1)}" stroke="var(--danger-500)" stroke-width="1" stroke-dasharray="3 2" opacity=".8"/>
+        <path d="${line}" fill="none" stroke="${col}" stroke-width="1.6"/>
+        <circle cx="${X(13).toFixed(1)}" cy="${Y(s.series[13]).toFixed(1)}" r="2.8" fill="${col}"/>
+        <text x="${ox + cw - 2}" y="${oy + ch - 18}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="${col}">${s.series[13]}%</text>`;
+      }).join('')}
+    </svg>`;
+  },
+});
+
+/* ⑤ 이상치 강조 산점도
+   회귀선과 이상치를 한 번만 계산해 차트와 본문이 같은 값을 쓴다.
+   본문에 숫자를 손으로 적으면 데이터가 바뀔 때 설명이 먼저 거짓이 된다. */
+const FIT = (() => {
+  const n = SCATTER.length;
+  const sx = SCATTER.reduce((a, p) => a + p[0], 0), sy = SCATTER.reduce((a, p) => a + p[1], 0);
+  const sxy = SCATTER.reduce((a, p) => a + p[0] * p[1], 0), sxx = SCATTER.reduce((a, p) => a + p[0] * p[0], 0);
+  const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx), intercept = (sy - slope * sx) / n;
+  const pred = (x) => slope * x + intercept;
+  const resid = SCATTER.map((p) => Math.abs(p[1] - pred(p[0])));
+  const sd = Math.sqrt(resid.reduce((a, r) => a + r * r, 0) / n);
+  const K = 1.8;
+  const outliers = SCATTER.filter((_, i) => resid[i] > sd * K);
+  return { pred, resid, sd, K, outliers, isOut: (i) => resid[i] > sd * K };
+})();
+
+ENC.push({
+  title: '산점도 + 이상치 강조',
+  sub: '주문 금액과 배송 소요일의 관계에서 벗어난 건을 짚는다',
+  why: ['기성 차트로 어려운 이유',
+    `대부분의 주문은 금액이 커도 배송일이 비례해 늘지 않습니다. 잔차가 ${FIT.K}σ를 넘는 ` +
+    `<b>${FIT.outliers.length}건</b>(배송 ${FIT.outliers.map((p) => p[1]).sort((a, b) => b - a).join('·')}일)만 ` +
+    '색과 라벨로 집어내면 "확인해야 할 주문"이 바로 보입니다. 이 건수와 라벨은 ' +
+    '본문에 적은 숫자가 아니라 <b>차트와 같은 계산에서 나옵니다</b> — 데이터가 바뀌면 설명도 따라 바뀝니다. ' +
+    '기성 차트에서 특정 포인트만 다르게 칠하고 라벨을 붙이는 것은 보통 지원되지 않거나 전체 시리즈를 쪼개야 합니다.'],
+  legend: [['var(--n500)','정상 범위'],['var(--danger-500)','확인 필요'],['var(--brand-400)','추세']],
+  svg() {
+    const w = 520, h = 210, pl = 44, pr = 16, pt = 14, pb = 32;
+    const maxX = 1300, maxY = 8;
+    const X = (v) => pl + (w - pl - pr) * (v / maxX);
+    const Y = (v) => pt + (h - pt - pb) * (1 - v / maxY);
+    const { pred, isOut, K } = FIT;   // 본문과 같은 계산을 공유한다
+    const grid = [2, 4, 6, 8].map((v) =>
+      `<line x1="${pl}" y1="${Y(v).toFixed(1)}" x2="${w - pr}" y2="${Y(v).toFixed(1)}" stroke="var(--grid)"/>
+       <text x="${pl - 8}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--axis)">${v}일</text>`).join('');
+    const xl = [0, 400, 800, 1200].map((v) =>
+      `<text x="${X(v).toFixed(1)}" y="${h - 10}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--axis)">${v ? v + '만' : 0}</text>`).join('');
+    const dots = SCATTER.map((p, i) => {
+      const out = isOut(i);
+      return `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="${out ? 5 : 3.4}"
+        fill="${out ? 'var(--danger-500)' : 'var(--n500)'}" opacity="${out ? 1 : .6}"
+        ${out ? 'stroke="var(--surface)" stroke-width="1.4"' : ''}/>` +
+        (out ? `<text x="${X(p[0]).toFixed(1)}" y="${(Y(p[1]) - 9).toFixed(1)}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--danger-700)">${p[1]}일</text>` : '');
+    }).join('');
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="주문 금액과 배송 소요일 산점도. 추세에서 벗어난 고액 주문 3건이 강조되어 있다">
+      ${grid}
+      <line x1="${X(0).toFixed(1)}" y1="${Y(pred(0)).toFixed(1)}" x2="${X(maxX).toFixed(1)}" y2="${Y(pred(maxX)).toFixed(1)}"
+        stroke="var(--brand-400)" stroke-width="1.6" stroke-dasharray="5 3"/>
+      ${dots}${xl}
+      <text x="${w - pr}" y="${pt + 8}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--muted)">이상치 기준 = 잔차 &gt; ${K}σ · ${FIT.outliers.length}건</text>
+    </svg>`;
+  },
+});
+
+/* ============================================================
+   렌더
+   ============================================================ */
+function renderEnc() {
+  document.getElementById('encGrid').innerHTML = ENC.map((e) => `
+    <div class="enc-card">
+      <div class="enc-head"><b>${e.title}</b><span>${e.sub}</span></div>
+      <div class="legend">${e.legend.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>
+      <div class="enc-chart">${e.svg()}</div>
+      <div class="enc-why"><span class="k">${e.why[0]}</span><p>${e.why[1]}</p></div>
+    </div>`).join('');
+}
+
+function paintSvg() { document.getElementById('svgDemo').innerHTML = demoSvg(); }
+
+function wireSeg(id, fn) {
+  const el = document.getElementById(id);
+  el.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    el.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    fn(b.dataset.v);
+  });
+}
+
+// 브랜드 교체 실험: 토큰 값만 바꾼다. SVG 는 따라오고 Canvas 는 안 따라온다.
+const TEAL = {
+  '--brand-600': '#0E7C86', '--brand-500': '#13A0AC', '--brand-400': '#45C2CC',
+  '--brand-200': '#A9E6EB', '--brand-100': '#D6F4F6', '--brand-50': '#ECFBFC',
+};
+function setBrand(v) {
+  const root = document.documentElement;
+  if (v === 'teal') for (const [k, val] of Object.entries(TEAL)) root.style.setProperty(k, val);
+  else for (const k of Object.keys(TEAL)) root.style.removeProperty(k);
+  paintSvg(); renderEnc();   // SVG 는 토큰을 참조하므로 다시 그리지 않아도 되지만,
+                             // 그라디언트 stop 의 캐시를 확실히 갱신하려고 재생성한다.
+}
+
+renderEnc(); paintSvg();
+demoCanvas(readTokens());   // 최초 1회만. 이후 테마가 바뀌어도 자동 갱신되지 않는다.
+
+wireSeg('segTheme', (v) => { document.documentElement.dataset.theme = v; paintSvg(); renderEnc(); });
+wireSeg('segBrand', setBrand);
+
+document.getElementById('redrawBtn').addEventListener('click', () => {
+  demoCanvas(readTokens());
+  redraws += 1;
+  document.getElementById('redrawCount').textContent = `재렌더 ${redraws}회 — 이 호출을 모든 테마 변경 지점에 걸어야 합니다`;
+});
+
+document.getElementById('copyBtn').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  try {
+    await navigator.clipboard.writeText(document.getElementById('tmpl').textContent);
+    btn.textContent = '복사됨';
+  } catch {
+    const r = document.createRange(); r.selectNodeContents(document.getElementById('tmpl'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = '직접 복사하세요';
+  }
+  setTimeout(() => { btn.textContent = '복사'; }, 1800);
+});
+</script>
