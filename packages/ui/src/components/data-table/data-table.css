@@ -1,0 +1,83 @@
+/* DESIGN.md 4절과 R03-A의 밀도를 함께 적용한다. 고정 너비는 선택 조작 칸에만 허용한다. */
+[data-slot="data-table"] {
+  --data-table-row-height: var(--row-h-default);
+  --data-table-cell-padding: var(--cell-px);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm-lh);
+}
+[data-slot="data-table"][data-density="compact"] {
+  --data-table-row-height: var(--row-h-compact);
+  --data-table-cell-padding: 12px;
+  font-size: var(--text-caption);
+}
+[data-slot="data-table"][data-density="comfortable"] {
+  --data-table-row-height: var(--row-h-comfortable);
+  --data-table-cell-padding: 16px;
+}
+[data-slot="data-table"] .data-table-cell {
+  position: relative;
+  height: var(--data-table-row-height);
+  min-width: var(--cell-min-w-text);
+  padding: 0 var(--data-table-cell-padding);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+[data-slot="data-table"] .data-table-numeric {
+  min-width: var(--cell-min-w-money);
+  text-align: right;
+}
+[data-slot="data-table"] .data-table-selection {
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  padding: 0;
+  text-align: center;
+}
+[data-slot="data-table"] .data-table-value {
+  /* 내용에 맞춰 너비를 잡되 긴 문자열은 말줄임한다. 전체 값은 title에 남긴다. */
+  max-width: 36rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-slot="data-table"] .data-table-selection .data-table-value {
+  /* 입력의 포커스 링을 자르지 않는다. */
+  overflow: visible;
+}
+[data-slot="data-table"] .data-table-value:focus-within { overflow: visible; }
+[data-slot="data-table-row"] { --data-table-row-bg: var(--bg-surface); }
+[data-slot="data-table-row"]:hover { --data-table-row-bg: var(--bg-hover); }
+[data-slot="data-table-row"][data-selected] { --data-table-row-bg: var(--bg-selected); }
+[data-slot="data-table-cell"] { background: var(--data-table-row-bg); }
+[data-slot="data-table"] .data-table-pinned { z-index: 1; }
+[data-slot="data-table"] th.data-table-pinned { background: var(--bg-surface); z-index: 2; }
+/* 고정 셀 배경 앞쪽, 스크롤 경계 안쪽에 링을 그린다. */
+[data-slot="data-table-row"]:focus-visible {
+  outline-offset: calc(-1 * var(--focus-width));
+}
+[data-slot="data-table-row"]:focus-visible > td::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-block: var(--focus-width) solid var(--border-focus);
+}
+[data-slot="data-table-row"]:focus-visible > td:first-child::after { border-left: var(--focus-width) solid var(--border-focus); }
+[data-slot="data-table-row"]:focus-visible > td:last-child::after { border-right: var(--focus-width) solid var(--border-focus); }
+[data-slot="data-table"] :is(button, input, a):focus-visible {
+  position: relative;
+  z-index: 3;
+  outline-offset: var(--focus-offset);
+}
+[data-slot="data-table-skeleton-row"] .data-table-cell { display: flex; align-items: center; }
+[data-slot="data-table-skeleton"] {
+  height: 12px;
+  animation: data-table-loading 1.4s ease-in-out infinite;
+}
+@keyframes data-table-loading {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="data-table-skeleton"] { animation: none; opacity: 1; }
+}
