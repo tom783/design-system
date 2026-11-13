@@ -1,0 +1,810 @@
+{
+ "ladder": {
+  "50": 0.973,
+  "100": 0.945,
+  "200": 0.897,
+  "300": 0.836,
+  "400": 0.754,
+  "500": 0.672,
+  "600": 0.588,
+  "700": 0.503,
+  "800": 0.423,
+  "900": 0.345,
+  "950": 0.258
+ },
+ "curve": {
+  "50": 0.14,
+  "100": 0.26,
+  "200": 0.46,
+  "300": 0.66,
+  "400": 0.86,
+  "500": 1,
+  "600": 1,
+  "700": 0.92,
+  "800": 0.8,
+  "900": 0.66,
+  "950": 0.5
+ },
+ "scales": {
+  "vermilion": {
+   "name": "vermilion",
+   "hue": 34,
+   "maxC": 0.175,
+   "steps": {
+    "50": {
+     "hex": "#FFF3F1",
+     "oklch": "oklch(97.3% 0.013 31.0)",
+     "onWhite": 1.09,
+     "onInk": 17.38,
+     "whiteOn": 1.09
+    },
+    "100": {
+     "hex": "#FFE7E2",
+     "oklch": "oklch(94.5% 0.028 31.3)",
+     "onWhite": 1.18,
+     "onInk": 15.98,
+     "whiteOn": 1.18
+    },
+    "200": {
+     "hex": "#FFD1C7",
+     "oklch": "oklch(89.7% 0.054 31.8)",
+     "onWhite": 1.38,
+     "onInk": 13.66,
+     "whiteOn": 1.38
+    },
+    "300": {
+     "hex": "#FFB4A4",
+     "oklch": "oklch(83.6% 0.091 32.4)",
+     "onWhite": 1.71,
+     "onInk": 11.07,
+     "whiteOn": 1.71
+    },
+    "400": {
+     "hex": "#FF896F",
+     "oklch": "oklch(75.4% 0.149 33.2)",
+     "onWhite": 2.32,
+     "onInk": 8.14,
+     "whiteOn": 2.32
+    },
+    "500": {
+     "hex": "#ED6547",
+     "oklch": "oklch(67.2% 0.175 34.0)",
+     "onWhite": 3.2,
+     "onInk": 5.89,
+     "whiteOn": 3.2
+    },
+    "600": {
+     "hex": "#CF4A29",
+     "oklch": "oklch(58.8% 0.175 34.8)",
+     "onWhite": 4.5,
+     "onInk": 4.19,
+     "whiteOn": 4.5
+    },
+    "700": {
+     "hex": "#AC3513",
+     "oklch": "oklch(50.3% 0.161 35.7)",
+     "onWhite": 6.42,
+     "onInk": 2.94,
+     "whiteOn": 6.42
+    },
+    "800": {
+     "hex": "#8A2604",
+     "oklch": "oklch(42.3% 0.140 36.5)",
+     "onWhite": 8.9,
+     "onInk": 2.12,
+     "whiteOn": 8.9
+    },
+    "900": {
+     "hex": "#681A00",
+     "oklch": "oklch(34.5% 0.115 37.3)",
+     "onWhite": 12.09,
+     "onInk": 1.56,
+     "whiteOn": 12.09
+    },
+    "950": {
+     "hex": "#430F00",
+     "oklch": "oklch(25.8% 0.085 38.1)",
+     "onWhite": 16.07,
+     "onInk": 1.17,
+     "whiteOn": 16.07
+    }
+   },
+   "meta": {
+    "id": "vermilion",
+    "ko": "버밀리온 (주색조 레드)",
+    "hue": 34,
+    "maxC": 0.175,
+    "tone": "따뜻하고 활동적. 이커머스·마케팅의 전환 유도에 강함",
+    "risk": "경고(amber)색과 거리가 가까움"
+   }
+  },
+  "signal": {
+   "name": "signal",
+   "hue": 25.5,
+   "maxC": 0.195,
+   "steps": {
+    "50": {
+     "hex": "#FFF3F2",
+     "oklch": "oklch(97.3% 0.013 22.5)",
+     "onWhite": 1.09,
+     "onInk": 17.39,
+     "whiteOn": 1.09
+    },
+    "100": {
+     "hex": "#FFE6E4",
+     "oklch": "oklch(94.5% 0.027 22.8)",
+     "onWhite": 1.19,
+     "onInk": 15.9,
+     "whiteOn": 1.19
+    },
+    "200": {
+     "hex": "#FFD0CC",
+     "oklch": "oklch(89.7% 0.054 23.3)",
+     "onWhite": 1.39,
+     "onInk": 13.61,
+     "whiteOn": 1.39
+    },
+    "300": {
+     "hex": "#FFB2AD",
+     "oklch": "oklch(83.6% 0.090 23.9)",
+     "onWhite": 1.72,
+     "onInk": 10.98,
+     "whiteOn": 1.72
+    },
+    "400": {
+     "hex": "#FF877F",
+     "oklch": "oklch(75.4% 0.148 24.7)",
+     "onWhite": 2.33,
+     "onInk": 8.11,
+     "whiteOn": 2.33
+    },
+    "500": {
+     "hex": "#F75853",
+     "oklch": "oklch(67.2% 0.195 25.5)",
+     "onWhite": 3.24,
+     "onInk": 5.82,
+     "whiteOn": 3.24
+    },
+    "600": {
+     "hex": "#D83B38",
+     "oklch": "oklch(58.8% 0.195 26.3)",
+     "onWhite": 4.56,
+     "onInk": 4.14,
+     "whiteOn": 4.56
+    },
+    "700": {
+     "hex": "#B42523",
+     "oklch": "oklch(50.3% 0.179 27.2)",
+     "onWhite": 6.5,
+     "onInk": 2.9,
+     "whiteOn": 6.5
+    },
+    "800": {
+     "hex": "#901714",
+     "oklch": "oklch(42.3% 0.156 28.0)",
+     "onWhite": 9.06,
+     "onInk": 2.08,
+     "whiteOn": 9.06
+    },
+    "900": {
+     "hex": "#6D0E0A",
+     "oklch": "oklch(34.5% 0.129 28.8)",
+     "onWhite": 12.23,
+     "onInk": 1.54,
+     "whiteOn": 12.23
+    },
+    "950": {
+     "hex": "#480503",
+     "oklch": "oklch(25.8% 0.098 29.6)",
+     "onWhite": 16.17,
+     "onInk": 1.17,
+     "whiteOn": 16.17
+    }
+   },
+   "meta": {
+    "id": "signal",
+    "ko": "시그널 레드 (정통 레드)",
+    "hue": 25.5,
+    "maxC": 0.195,
+    "tone": "가장 전형적인 \"빨강\". 브랜드 각인은 최상",
+    "risk": "에러 레드와 정면 충돌 — 의미 혼선 최대"
+   }
+  },
+  "crimson": {
+   "name": "crimson",
+   "hue": 14,
+   "maxC": 0.185,
+   "steps": {
+    "50": {
+     "hex": "#FFF3F4",
+     "oklch": "oklch(97.3% 0.013 11.0)",
+     "onWhite": 1.08,
+     "onInk": 17.41,
+     "whiteOn": 1.08
+    },
+    "100": {
+     "hex": "#FFE6E8",
+     "oklch": "oklch(94.5% 0.028 11.3)",
+     "onWhite": 1.18,
+     "onInk": 15.94,
+     "whiteOn": 1.18
+    },
+    "200": {
+     "hex": "#FFCFD4",
+     "oklch": "oklch(89.7% 0.055 11.8)",
+     "onWhite": 1.39,
+     "onInk": 13.59,
+     "whiteOn": 1.39
+    },
+    "300": {
+     "hex": "#FFB1B9",
+     "oklch": "oklch(83.6% 0.092 12.4)",
+     "onWhite": 1.72,
+     "onInk": 11,
+     "whiteOn": 1.72
+    },
+    "400": {
+     "hex": "#FF8394",
+     "oklch": "oklch(75.4% 0.150 13.2)",
+     "onWhite": 2.35,
+     "onInk": 8.02,
+     "whiteOn": 2.35
+    },
+    "500": {
+     "hex": "#F15A73",
+     "oklch": "oklch(67.2% 0.185 14.0)",
+     "onWhite": 3.26,
+     "onInk": 5.8,
+     "whiteOn": 3.26
+    },
+    "600": {
+     "hex": "#D33E58",
+     "oklch": "oklch(58.8% 0.185 14.8)",
+     "onWhite": 4.57,
+     "onInk": 4.13,
+     "whiteOn": 4.57
+    },
+    "700": {
+     "hex": "#B02942",
+     "oklch": "oklch(50.3% 0.170 15.7)",
+     "onWhite": 6.48,
+     "onInk": 2.91,
+     "whiteOn": 6.48
+    },
+    "800": {
+     "hex": "#8D1B30",
+     "oklch": "oklch(42.3% 0.148 16.5)",
+     "onWhite": 9.01,
+     "onInk": 2.1,
+     "whiteOn": 9.01
+    },
+    "900": {
+     "hex": "#6A1021",
+     "oklch": "oklch(34.5% 0.122 17.3)",
+     "onWhite": 12.29,
+     "onInk": 1.54,
+     "whiteOn": 12.29
+    },
+    "950": {
+     "hex": "#460711",
+     "oklch": "oklch(25.8% 0.092 18.1)",
+     "onWhite": 16.17,
+     "onInk": 1.17,
+     "whiteOn": 16.17
+    }
+   },
+   "meta": {
+    "id": "crimson",
+    "ko": "크림슨 (청색조 레드)",
+    "hue": 14,
+    "maxC": 0.185,
+    "tone": "깊고 단단함. 금융·관리 도구의 신뢰감",
+    "risk": "활력·속도감은 상대적으로 낮음"
+   }
+  },
+  "danger": {
+   "name": "danger",
+   "hue": 27,
+   "maxC": 0.21,
+   "steps": {
+    "50": {
+     "hex": "#FFF3F1",
+     "oklch": "oklch(97.3% 0.013 27.0)",
+     "onWhite": 1.09,
+     "onInk": 17.38,
+     "whiteOn": 1.09
+    },
+    "100": {
+     "hex": "#FFE6E3",
+     "oklch": "oklch(94.5% 0.028 27.0)",
+     "onWhite": 1.19,
+     "onInk": 15.89,
+     "whiteOn": 1.19
+    },
+    "200": {
+     "hex": "#FFD0CA",
+     "oklch": "oklch(89.7% 0.054 27.0)",
+     "onWhite": 1.39,
+     "onInk": 13.59,
+     "whiteOn": 1.39
+    },
+    "300": {
+     "hex": "#FFB3A9",
+     "oklch": "oklch(83.6% 0.091 27.0)",
+     "onWhite": 1.71,
+     "onInk": 11.03,
+     "whiteOn": 1.71
+    },
+    "400": {
+     "hex": "#FF877B",
+     "oklch": "oklch(75.4% 0.148 27.0)",
+     "onWhite": 2.33,
+     "onInk": 8.09,
+     "whiteOn": 2.33
+    },
+    "500": {
+     "hex": "#FD5048",
+     "oklch": "oklch(67.2% 0.210 27.0)",
+     "onWhite": 3.27,
+     "onInk": 5.77,
+     "whiteOn": 3.27
+    },
+    "600": {
+     "hex": "#DE302E",
+     "oklch": "oklch(58.8% 0.210 27.0)",
+     "onWhite": 4.6,
+     "onInk": 4.1,
+     "whiteOn": 4.6
+    },
+    "700": {
+     "hex": "#B9171B",
+     "oklch": "oklch(50.3% 0.193 27.0)",
+     "onWhite": 6.56,
+     "onInk": 2.88,
+     "whiteOn": 6.56
+    },
+    "800": {
+     "hex": "#940810",
+     "oklch": "oklch(42.3% 0.168 27.0)",
+     "onWhite": 9.12,
+     "onInk": 2.07,
+     "whiteOn": 9.12
+    },
+    "900": {
+     "hex": "#700208",
+     "oklch": "oklch(34.5% 0.139 27.0)",
+     "onWhite": 12.34,
+     "onInk": 1.53,
+     "whiteOn": 12.34
+    },
+    "950": {
+     "hex": "#4A0003",
+     "oklch": "oklch(25.8% 0.105 27.0)",
+     "onWhite": 16.25,
+     "onInk": 1.16,
+     "whiteOn": 16.25
+    }
+   }
+  },
+  "warning": {
+   "name": "warning",
+   "hue": 75,
+   "maxC": 0.17,
+   "steps": {
+    "50": {
+     "hex": "#FFF4E7",
+     "oklch": "oklch(97.3% 0.022 75.0)",
+     "onWhite": 1.09,
+     "onInk": 17.38,
+     "whiteOn": 1.09
+    },
+    "100": {
+     "hex": "#FFE9CD",
+     "oklch": "oklch(94.5% 0.044 75.0)",
+     "onWhite": 1.18,
+     "onInk": 15.98,
+     "whiteOn": 1.18
+    },
+    "200": {
+     "hex": "#FCD6A3",
+     "oklch": "oklch(89.7% 0.078 75.0)",
+     "onWhite": 1.37,
+     "onInk": 13.74,
+     "whiteOn": 1.37
+    },
+    "300": {
+     "hex": "#F4BF73",
+     "oklch": "oklch(83.6% 0.112 75.0)",
+     "onWhite": 1.67,
+     "onInk": 11.27,
+     "whiteOn": 1.67
+    },
+    "400": {
+     "hex": "#E5A02C",
+     "oklch": "oklch(75.4% 0.146 75.0)",
+     "onWhite": 2.23,
+     "onInk": 8.44,
+     "whiteOn": 2.23
+    },
+    "500": {
+     "hex": "#C88700",
+     "oklch": "oklch(67.2% 0.142 75.0)",
+     "onWhite": 3.03,
+     "onInk": 6.22,
+     "whiteOn": 3.03
+    },
+    "600": {
+     "hex": "#A77000",
+     "oklch": "oklch(58.8% 0.124 75.0)",
+     "onWhite": 4.23,
+     "onInk": 4.46,
+     "whiteOn": 4.23
+    },
+    "700": {
+     "hex": "#875A00",
+     "oklch": "oklch(50.3% 0.106 75.0)",
+     "onWhite": 6.01,
+     "onInk": 3.14,
+     "whiteOn": 6.01
+    },
+    "800": {
+     "hex": "#6A4500",
+     "oklch": "oklch(42.3% 0.089 75.0)",
+     "onWhite": 8.52,
+     "onInk": 2.21,
+     "whiteOn": 8.52
+    },
+    "900": {
+     "hex": "#4F3300",
+     "oklch": "oklch(34.5% 0.073 75.0)",
+     "onWhite": 11.63,
+     "onInk": 1.62,
+     "whiteOn": 11.63
+    },
+    "950": {
+     "hex": "#331F00",
+     "oklch": "oklch(25.8% 0.055 75.0)",
+     "onWhite": 15.71,
+     "onInk": 1.2,
+     "whiteOn": 15.71
+    }
+   }
+  },
+  "success": {
+   "name": "success",
+   "hue": 150,
+   "maxC": 0.13,
+   "steps": {
+    "50": {
+     "hex": "#EEFAF0",
+     "oklch": "oklch(97.3% 0.018 150.0)",
+     "onWhite": 1.07,
+     "onInk": 17.58,
+     "whiteOn": 1.07
+    },
+    "100": {
+     "hex": "#DEF4E1",
+     "oklch": "oklch(94.5% 0.034 150.0)",
+     "onWhite": 1.16,
+     "onInk": 16.29,
+     "whiteOn": 1.16
+    },
+    "200": {
+     "hex": "#C2E9C9",
+     "oklch": "oklch(89.7% 0.060 150.0)",
+     "onWhite": 1.33,
+     "onInk": 14.19,
+     "whiteOn": 1.33
+    },
+    "300": {
+     "hex": "#A1DAAC",
+     "oklch": "oklch(83.6% 0.086 150.0)",
+     "onWhite": 1.6,
+     "onInk": 11.81,
+     "whiteOn": 1.6
+    },
+    "400": {
+     "hex": "#79C389",
+     "oklch": "oklch(75.4% 0.112 150.0)",
+     "onWhite": 2.1,
+     "onInk": 8.97,
+     "whiteOn": 2.1
+    },
+    "500": {
+     "hex": "#53AC6A",
+     "oklch": "oklch(67.2% 0.130 150.0)",
+     "onWhite": 2.81,
+     "onInk": 6.72,
+     "whiteOn": 2.81
+    },
+    "600": {
+     "hex": "#379251",
+     "oklch": "oklch(58.8% 0.130 150.0)",
+     "onWhite": 3.89,
+     "onInk": 4.85,
+     "whiteOn": 3.89
+    },
+    "700": {
+     "hex": "#23763D",
+     "oklch": "oklch(50.3% 0.120 150.0)",
+     "onWhite": 5.63,
+     "onInk": 3.35,
+     "whiteOn": 5.63
+    },
+    "800": {
+     "hex": "#155D2D",
+     "oklch": "oklch(42.3% 0.104 150.0)",
+     "onWhite": 7.97,
+     "onInk": 2.37,
+     "whiteOn": 7.97
+    },
+    "900": {
+     "hex": "#0C451F",
+     "oklch": "oklch(34.5% 0.086 150.0)",
+     "onWhite": 11.13,
+     "onInk": 1.7,
+     "whiteOn": 11.13
+    },
+    "950": {
+     "hex": "#052C11",
+     "oklch": "oklch(25.8% 0.065 150.0)",
+     "onWhite": 15.27,
+     "onInk": 1.24,
+     "whiteOn": 15.27
+    }
+   }
+  },
+  "info": {
+   "name": "info",
+   "hue": 250,
+   "maxC": 0.15,
+   "steps": {
+    "50": {
+     "hex": "#F0F7FF",
+     "oklch": "oklch(97.3% 0.013 250.0)",
+     "onWhite": 1.08,
+     "onInk": 17.48,
+     "whiteOn": 1.08
+    },
+    "100": {
+     "hex": "#E0EFFF",
+     "oklch": "oklch(94.5% 0.027 250.0)",
+     "onWhite": 1.17,
+     "onInk": 16.14,
+     "whiteOn": 1.17
+    },
+    "200": {
+     "hex": "#C4E0FF",
+     "oklch": "oklch(89.7% 0.052 250.0)",
+     "onWhite": 1.36,
+     "onInk": 13.89,
+     "whiteOn": 1.36
+    },
+    "300": {
+     "hex": "#9FCEFF",
+     "oklch": "oklch(83.6% 0.085 250.0)",
+     "onWhite": 1.65,
+     "onInk": 11.45,
+     "whiteOn": 1.65
+    },
+    "400": {
+     "hex": "#6CB4FE",
+     "oklch": "oklch(75.4% 0.129 250.0)",
+     "onWhite": 2.19,
+     "onInk": 8.62,
+     "whiteOn": 2.19
+    },
+    "500": {
+     "hex": "#429AEE",
+     "oklch": "oklch(67.2% 0.150 250.0)",
+     "onWhite": 2.96,
+     "onInk": 6.37,
+     "whiteOn": 2.96
+    },
+    "600": {
+     "hex": "#2380D1",
+     "oklch": "oklch(58.8% 0.150 250.0)",
+     "onWhite": 4.13,
+     "onInk": 4.56,
+     "whiteOn": 4.13
+    },
+    "700": {
+     "hex": "#0A66AF",
+     "oklch": "oklch(50.3% 0.138 250.0)",
+     "onWhite": 5.94,
+     "onInk": 3.17,
+     "whiteOn": 5.94
+    },
+    "800": {
+     "hex": "#00508C",
+     "oklch": "oklch(42.3% 0.120 250.0)",
+     "onWhite": 8.31,
+     "onInk": 2.27,
+     "whiteOn": 8.31
+    },
+    "900": {
+     "hex": "#003A69",
+     "oklch": "oklch(34.5% 0.098 250.0)",
+     "onWhite": 11.61,
+     "onInk": 1.63,
+     "whiteOn": 11.61
+    },
+    "950": {
+     "hex": "#002445",
+     "oklch": "oklch(25.8% 0.074 250.0)",
+     "onWhite": 15.69,
+     "onInk": 1.2,
+     "whiteOn": 15.69
+    }
+   }
+  },
+  "neutralWarm": {
+   "name": "neutral-warm",
+   "hue": 30,
+   "maxC": 0.012,
+   "steps": {
+    "50": {
+     "hex": "#F7F6F5",
+     "oklch": "oklch(97.3% 0.002 30.0)",
+     "onWhite": 1.08,
+     "onInk": 17.48,
+     "whiteOn": 1.08
+    },
+    "100": {
+     "hex": "#EFECEB",
+     "oklch": "oklch(94.5% 0.003 30.0)",
+     "onWhite": 1.18,
+     "onInk": 16.06,
+     "whiteOn": 1.18
+    },
+    "200": {
+     "hex": "#E1DCDB",
+     "oklch": "oklch(89.7% 0.006 30.0)",
+     "onWhite": 1.36,
+     "onInk": 13.89,
+     "whiteOn": 1.36
+    },
+    "300": {
+     "hex": "#CEC7C6",
+     "oklch": "oklch(83.6% 0.008 30.0)",
+     "onWhite": 1.67,
+     "onInk": 11.33,
+     "whiteOn": 1.67
+    },
+    "400": {
+     "hex": "#B6ADAB",
+     "oklch": "oklch(75.4% 0.010 30.0)",
+     "onWhite": 2.2,
+     "onInk": 8.59,
+     "whiteOn": 2.2
+    },
+    "500": {
+     "hex": "#9D9391",
+     "oklch": "oklch(67.2% 0.012 30.0)",
+     "onWhite": 2.99,
+     "onInk": 6.3,
+     "whiteOn": 2.99
+    },
+    "600": {
+     "hex": "#847A78",
+     "oklch": "oklch(58.8% 0.012 30.0)",
+     "onWhite": 4.17,
+     "onInk": 4.53,
+     "whiteOn": 4.17
+    },
+    "700": {
+     "hex": "#6A6260",
+     "oklch": "oklch(50.3% 0.011 30.0)",
+     "onWhite": 5.95,
+     "onInk": 3.17,
+     "whiteOn": 5.95
+    },
+    "800": {
+     "hex": "#534C4B",
+     "oklch": "oklch(42.3% 0.010 30.0)",
+     "onWhite": 8.39,
+     "onInk": 2.25,
+     "whiteOn": 8.39
+    },
+    "900": {
+     "hex": "#3D3837",
+     "oklch": "oklch(34.5% 0.008 30.0)",
+     "onWhite": 11.54,
+     "onInk": 1.63,
+     "whiteOn": 11.54
+    },
+    "950": {
+     "hex": "#262222",
+     "oklch": "oklch(25.8% 0.006 30.0)",
+     "onWhite": 15.74,
+     "onInk": 1.2,
+     "whiteOn": 15.74
+    }
+   }
+  },
+  "neutralPure": {
+   "name": "neutral-pure",
+   "hue": 30,
+   "maxC": 0,
+   "steps": {
+    "50": {
+     "hex": "#F6F6F6",
+     "oklch": "oklch(97.3% 0.000 30.0)",
+     "onWhite": 1.08,
+     "onInk": 17.46,
+     "whiteOn": 1.08
+    },
+    "100": {
+     "hex": "#EDEDED",
+     "oklch": "oklch(94.5% 0.000 30.0)",
+     "onWhite": 1.17,
+     "onInk": 16.12,
+     "whiteOn": 1.17
+    },
+    "200": {
+     "hex": "#DDDDDD",
+     "oklch": "oklch(89.7% 0.000 30.0)",
+     "onWhite": 1.36,
+     "onInk": 13.89,
+     "whiteOn": 1.36
+    },
+    "300": {
+     "hex": "#C9C9C9",
+     "oklch": "oklch(83.6% 0.000 30.0)",
+     "onWhite": 1.66,
+     "onInk": 11.4,
+     "whiteOn": 1.66
+    },
+    "400": {
+     "hex": "#AFAFAF",
+     "oklch": "oklch(75.4% 0.000 30.0)",
+     "onWhite": 2.19,
+     "onInk": 8.6,
+     "whiteOn": 2.19
+    },
+    "500": {
+     "hex": "#969696",
+     "oklch": "oklch(67.2% 0.000 30.0)",
+     "onWhite": 2.96,
+     "onInk": 6.38,
+     "whiteOn": 2.96
+    },
+    "600": {
+     "hex": "#7C7C7C",
+     "oklch": "oklch(58.8% 0.000 30.0)",
+     "onWhite": 4.17,
+     "onInk": 4.52,
+     "whiteOn": 4.17
+    },
+    "700": {
+     "hex": "#646464",
+     "oklch": "oklch(50.3% 0.000 30.0)",
+     "onWhite": 5.92,
+     "onInk": 3.19,
+     "whiteOn": 5.92
+    },
+    "800": {
+     "hex": "#4E4E4E",
+     "oklch": "oklch(42.3% 0.000 30.0)",
+     "onWhite": 8.32,
+     "onInk": 2.27,
+     "whiteOn": 8.32
+    },
+    "900": {
+     "hex": "#393939",
+     "oklch": "oklch(34.5% 0.000 30.0)",
+     "onWhite": 11.55,
+     "onInk": 1.63,
+     "whiteOn": 11.55
+    },
+    "950": {
+     "hex": "#232323",
+     "oklch": "oklch(25.8% 0.000 30.0)",
+     "onWhite": 15.72,
+     "onInk": 1.2,
+     "whiteOn": 15.72
+    }
+   }
+  }
+ }
+}

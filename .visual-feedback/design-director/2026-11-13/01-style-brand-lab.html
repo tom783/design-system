@@ -1,0 +1,1507 @@
+<title>커머스 SaaS 시안 비교실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
+
+<style>
+/* ============================================================
+   비교실 섀시(chassis) 토큰 — 의도적으로 무채색
+   시안에 적용되는 브랜드 레드를 중립적으로 판단하려면
+   페이지 UI 자체에 색이 없어야 한다. 선택 상태는 잉크 반전으로.
+   ============================================================ */
+:root{
+  --paper:#FCFBFA;  --surface:#FFFFFF;  --sunken:#F4F2F1;
+  --ink:#262222;    --graphite:#534C4B; --muted:#6A6260;  --faint:#9D9391;
+  --rule:#E1DCDB;   --rule-soft:#EFECEB; --rule-hard:#CEC7C6;
+  --shadow-plate:0 1px 2px rgba(38,34,34,.05), 0 8px 24px -12px rgba(38,34,34,.12);
+
+  /* 기본 브랜드 = 크림슨(권고안). data-brand 로 교체된다. */
+  --b50:#FFF3F4; --b100:#FFE6E8; --b200:#FFCFD4; --b300:#FFB1B9; --b400:#FF8394;
+  --b500:#F15A73; --b600:#D33E58; --b700:#B02942; --b800:#8D1B30; --b900:#6A1021; --b950:#460711;
+
+  /* 의미색 — 브랜드와 독립적으로 고정 */
+  --dg50:#FFF3F1; --dg100:#FFE6E3; --dg600:#DE302E; --dg700:#B9171B; --dg800:#940810;
+  --wn50:#FFF4E7; --wn100:#FFE9CD; --wn600:#A77000; --wn700:#875A00;
+  --sc50:#EEFAF0; --sc100:#DEF4E1; --sc600:#379251; --sc700:#23763D;
+  --if50:#F0F7FF; --if100:#E0EFFF; --if600:#2380D1; --if700:#0A66AF;
+
+  /* 중립 스케일 (brand hue 30 를 C=0.012 로 미량 혼합한 웜 뉴트럴) */
+  --n50:#F7F6F5; --n100:#EFECEB; --n200:#E1DCDB; --n300:#CEC7C6; --n400:#B6ADAB;
+  --n500:#9D9391; --n600:#847A78; --n700:#6A6260; --n800:#534C4B; --n900:#3D3837; --n950:#262222;
+
+  --f-display:'Archivo','IBM Plex Sans KR','IBM Plex Sans',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans KR','IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --f-serif:'Noto Serif KR',Georgia,serif;
+
+  /* 브랜드 틴트 위에 올라가는 글자색 (활성 내비 등) — 테마마다 방향이 뒤집힌다 */
+  --b-on-tint:var(--b800);
+
+  color-scheme:light;
+}
+
+/* 다크 토큰은 한 곳에 정의하고 두 셀렉터에서 재사용한다.
+   ① prefers-color-scheme (테마 미지정 기본 상태) ② [data-theme="dark"] (명시적 선택) */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141110; --surface:#1E1A19; --sunken:#100E0D;
+    --ink:#F5F1EF; --graphite:#C9C1BE; --muted:#A39B98; --faint:#6E6663;
+    --rule:#332E2C; --rule-soft:#262221; --rule-hard:#443D3B;
+    --shadow-plate:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    --n50:#1A1716; --n100:#232019; --n200:#332E2C; --n300:#443D3B; --n400:#5A5250;
+    --n500:#6E6663; --n600:#8C8380; --n700:#A39B98; --n800:#C9C1BE; --n900:#E5E0DD; --n950:#F5F1EF;
+    /* 의미색 반전: 틴트는 어둡게, 글자는 밝게 (실측 7.9~11.0:1) */
+    --dg50:#3A1512; --dg100:#4D1A16; --dg600:#FF6B5E; --dg700:#FF9A90; --dg800:#FFB8B0;
+    --wn50:#3A2A0A; --wn100:#4D380D; --wn600:#E0A030; --wn700:#F5C77A;
+    --sc50:#13301C; --sc100:#194024; --sc600:#4FB36E; --sc700:#86D69C;
+    --if50:#0E2740; --if100:#143553; --if600:#5AADEE; --if700:#92CBF5;
+    /* 브랜드 틴트는 선택된 브랜드 600에서 파생시켜, 후보를 바꿔도 따라오게 한다 */
+    --b50:color-mix(in srgb, var(--b600) 16%, var(--surface));
+    --b100:color-mix(in srgb, var(--b600) 26%, var(--surface));
+    --b200:color-mix(in srgb, var(--b600) 38%, var(--surface));
+    --b-on-tint:var(--b300);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141110; --surface:#1E1A19; --sunken:#100E0D;
+  --ink:#F5F1EF; --graphite:#C9C1BE; --muted:#A39B98; --faint:#6E6663;
+  --rule:#332E2C; --rule-soft:#262221; --rule-hard:#443D3B;
+  --shadow-plate:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --n50:#1A1716; --n100:#232019; --n200:#332E2C; --n300:#443D3B; --n400:#5A5250;
+  --n500:#6E6663; --n600:#8C8380; --n700:#A39B98; --n800:#C9C1BE; --n900:#E5E0DD; --n950:#F5F1EF;
+  --dg50:#3A1512; --dg100:#4D1A16; --dg600:#FF6B5E; --dg700:#FF9A90; --dg800:#FFB8B0;
+  --wn50:#3A2A0A; --wn100:#4D380D; --wn600:#E0A030; --wn700:#F5C77A;
+  --sc50:#13301C; --sc100:#194024; --sc600:#4FB36E; --sc700:#86D69C;
+  --if50:#0E2740; --if100:#143553; --if600:#5AADEE; --if700:#92CBF5;
+  --b50:color-mix(in srgb, var(--b600) 16%, var(--surface));
+  --b100:color-mix(in srgb, var(--b600) 26%, var(--surface));
+  --b200:color-mix(in srgb, var(--b600) 38%, var(--surface));
+  --b-on-tint:var(--b300);
+  color-scheme:dark;
+}
+
+/* 브랜드 후보 교체 */
+:root[data-brand="vermilion"]{
+  --b50:#FFF3F1; --b100:#FFE7E2; --b200:#FFD1C7; --b300:#FFB4A4; --b400:#FF896F;
+  --b500:#ED6547; --b600:#CF4A29; --b700:#AC3513; --b800:#8A2604; --b900:#681A00; --b950:#430F00;
+}
+:root[data-brand="signal"]{
+  --b50:#FFF3F2; --b100:#FFE6E4; --b200:#FFD0CC; --b300:#FFB2AD; --b400:#FF877F;
+  --b500:#F75853; --b600:#D83B38; --b700:#B42523; --b800:#901714; --b900:#6D0E0A; --b950:#480503;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:15px; line-height:24px;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--ink); color:var(--paper)}
+:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- 공통 조판 ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.prose{max-width:68ch}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-size:41px;line-height:48px;letter-spacing:-.025em;font-weight:700}
+h2{font-size:29px;line-height:36px;letter-spacing:-.015em;font-weight:600}
+h3{font-size:20px;line-height:28px;letter-spacing:-.005em;font-weight:600}
+h4{font-size:17px;line-height:24px;font-weight:600}
+p{margin:0}
+.eyebrow{
+  font-family:var(--f-mono);font-size:12px;line-height:16px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.lead{font-size:17px;line-height:28px;color:var(--graphite)}
+.small{font-size:13px;line-height:20px;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-direction:column}
+.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}.g24{gap:24px}.g32{gap:32px}.g48{gap:48px}
+
+/* ---------- 섹션 ---------- */
+section{padding:72px 0;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:0}
+.sec-head{display:flex;flex-direction:column;gap:12px;margin-bottom:40px}
+.sec-head .num{
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--faint);
+}
+
+/* ---------- 헤더 ---------- */
+header.hero{padding:88px 0 56px}
+.hero-meta{
+  display:flex;flex-wrap:wrap;gap:0;margin-top:40px;
+  border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+}
+.hero-meta dl{
+  margin:0;flex:1 1 160px;padding:14px 18px;border-right:1px solid var(--rule);
+  display:flex;flex-direction:column;gap:3px;background:var(--surface);
+}
+.hero-meta dl:last-child{border-right:0}
+.hero-meta dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.hero-meta dd{margin:0;font-size:14px;font-weight:600;color:var(--ink)}
+
+/* ---------- 고정 컨트롤 바 ---------- */
+.controls{
+  position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--rule);
+}
+.controls-in{
+  max-width:1240px;margin:0 auto;padding:12px 32px;
+  display:flex;flex-wrap:wrap;gap:20px;align-items:center;
+}
+.ctl{display:flex;align-items:center;gap:8px}
+.ctl > span{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+.seg{display:flex;border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
+.seg button{
+  appearance:none;border:0;border-right:1px solid var(--rule-hard);background:var(--surface);
+  color:var(--muted);font-family:var(--f-body);font-size:13px;font-weight:500;
+  padding:6px 11px;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;
+}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--n100);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* ============================================================
+   시안 프레임 (specimen plate)
+   ============================================================ */
+.plate{border:1px solid var(--rule-hard);border-radius:6px;background:var(--sunken);overflow:hidden}
+.plate-bar{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--rule-hard);background:var(--surface);
+}
+.plate-bar strong{font-family:var(--f-display);font-size:15px;font-weight:600}
+.plate-bar .tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.plate-view{padding:20px;overflow-x:auto}
+.spec-strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  border-top:1px solid var(--rule-hard);background:var(--surface);
+}
+.spec-strip dl{margin:0;padding:10px 14px;border-right:1px solid var(--rule-soft);display:flex;flex-direction:column;gap:2px}
+.spec-strip dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.spec-strip dd{margin:0;font-family:var(--f-mono);font-size:12.5px;font-weight:500;color:var(--graphite);font-variant-numeric:tabular-nums}
+
+/* ============================================================
+   목업 화면 — 4가지 스타일을 같은 마크업에 토큰으로 주입
+   아래 변수들이 '디자인 스타일'의 실제 정의다.
+   ============================================================ */
+.app{
+  --r-sm:4px; --r-md:6px; --r-lg:8px; --r-pill:999px;
+  --bd:1px solid var(--n200); --bd-strong:1px solid var(--n300); --bd-input:1px solid var(--n600);
+  --sh-card:none; --sh-raise:none; --sh-btn:none;
+  --card-bg:var(--surface); --card-pad:16px; --gap:12px;
+  --row-h:40px; --cell-px:14px;
+  --kpi-num:29px; --kpi-num-lh:36px; --kpi-num-font:var(--f-display); --kpi-num-weight:600;
+  --label-tt:none; --label-ls:0; --label-size:13px;
+  --head-font:var(--f-display);
+  --btn-pad:8px 14px; --btn-weight:600;
+  --chip-radius:999px; --chip-pad:3px 9px; --chip-weight:600;
+  --tbl-vrule:1px solid var(--n100);
+  --nav-radius:6px;
+  --accent-rail:0px;
+
+  display:grid;grid-template-columns:208px 1fr;
+  min-width:880px;border:1px solid var(--n200);border-radius:8px;overflow:hidden;
+  background:var(--surface);font-size:14px;line-height:20px;color:var(--n950);
+}
+
+/* ─ A. 정밀 플랫 ─ 경계선과 밀도로 구조를 만든다. 그림자 0 */
+.app[data-style="flat"]{
+  --r-sm:4px;--r-md:6px;--r-lg:8px;
+  --sh-card:none;--sh-raise:none;--sh-btn:none;
+  --card-pad:16px;--gap:12px;--row-h:40px;
+  --kpi-num:29px;--kpi-num-lh:36px;
+  --accent-rail:0px;
+}
+/* ─ B. 머티리얼 엘리베이션 ─ 그림자 고도로 레이어를 분리. 터치 타깃 큼 */
+.app[data-style="material"]{
+  --r-sm:8px;--r-md:12px;--r-lg:16px;
+  --bd:1px solid transparent;--bd-strong:1px solid transparent;
+  --sh-card:0 1px 2px rgba(38,34,34,.08), 0 2px 10px -4px rgba(38,34,34,.14);
+  --sh-raise:0 2px 4px rgba(38,34,34,.10), 0 8px 24px -8px rgba(38,34,34,.20);
+  --sh-btn:0 1px 3px rgba(38,34,34,.22);
+  --card-pad:20px;--gap:16px;--row-h:48px;--cell-px:16px;
+  --kpi-num:29px;--kpi-num-lh:36px;
+  --btn-pad:10px 20px;--chip-pad:5px 12px;
+  --tbl-vrule:1px solid transparent;
+  --nav-radius:999px;
+}
+/* ─ C. 벤토 그리드 ─ 요약을 모듈 블록으로 분할 */
+.app[data-style="bento"]{
+  --r-sm:8px;--r-md:14px;--r-lg:20px;
+  --sh-card:none;--sh-raise:none;--sh-btn:none;
+  --card-pad:20px;--gap:14px;--row-h:44px;
+  --kpi-num:34px;--kpi-num-lh:40px;
+  --label-tt:uppercase;--label-ls:.08em;--label-size:11px;
+  --btn-pad:9px 16px;--nav-radius:12px;
+  --tbl-vrule:1px solid transparent;
+}
+/* ─ D. 에디토리얼 데이터 ─ 괘선과 타이포 위계로 조판 */
+.app[data-style="editorial"]{
+  --r-sm:2px;--r-md:2px;--r-lg:2px;--r-pill:2px;
+  --bd:1px solid var(--n300);--sh-card:none;--sh-raise:none;--sh-btn:none;
+  --card-pad:20px;--gap:0px;--row-h:46px;--cell-px:0px;
+  --kpi-num:41px;--kpi-num-lh:48px;--kpi-num-font:var(--f-serif);--kpi-num-weight:600;
+  --label-tt:uppercase;--label-ls:.12em;--label-size:11px;
+  --head-font:var(--f-serif);
+  --chip-radius:2px;--chip-pad:2px 7px;--chip-weight:500;
+  --tbl-vrule:1px solid transparent;
+  --nav-radius:0px;--accent-rail:2px;
+  --btn-pad:9px 18px;
+}
+
+/* ---------- 목업: 사이드바 ---------- */
+.app-side{
+  background:var(--n50);border-right:var(--bd);
+  display:flex;flex-direction:column;gap:4px;padding:14px 10px;
+}
+.app[data-style="editorial"] .app-side{background:var(--surface);border-right:1px solid var(--n300)}
+.app[data-style="material"] .app-side{background:var(--n50);border-right:0}
+.brand-mark{
+  display:flex;align-items:center;gap:9px;padding:6px 8px 16px;
+}
+.brand-mark i{
+  width:26px;height:26px;border-radius:var(--r-sm);background:var(--b600);
+  display:grid;place-items:center;color:#fff;font-family:var(--f-display);
+  font-size:14px;font-weight:700;font-style:normal;flex:none;
+}
+.app[data-style="editorial"] .brand-mark i{border-radius:0}
+.brand-mark b{font-family:var(--head-font);font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.nav-grp{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--n500);padding:12px 8px 5px}
+.app-side a{
+  display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:var(--nav-radius);
+  font-size:13.5px;font-weight:500;color:var(--n700);text-decoration:none;
+  border-left:var(--accent-rail) solid transparent;transition:background .12s;
+}
+.app-side a:hover{background:var(--n100);color:var(--n950)}
+.app-side a[aria-current]{
+  background:var(--b50);color:var(--b-on-tint);font-weight:600;
+  border-left-color:var(--b600);
+}
+.app[data-style="editorial"] .app-side a[aria-current]{background:transparent;color:var(--b-on-tint)}
+.app-side svg{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+
+/* ---------- 목업: 본문 ---------- */
+.app-main{display:flex;flex-direction:column;background:var(--paper);min-width:0}
+.app[data-style="material"] .app-main{background:var(--n50)}
+.app-top{
+  display:flex;align-items:center;gap:14px;padding:12px 20px;
+  border-bottom:var(--bd);background:var(--surface);
+}
+.app[data-style="material"] .app-top{border-bottom:0;box-shadow:var(--sh-card)}
+.app[data-style="editorial"] .app-top{border-bottom:2px solid var(--n950)}
+.crumb{font-size:13px;color:var(--n600);display:flex;gap:7px;align-items:center}
+.crumb b{color:var(--n950);font-weight:600;font-family:var(--head-font);font-size:15px}
+.app-top .spacer{flex:1}
+.fakefield{
+  display:flex;align-items:center;gap:7px;border:var(--bd-input);border-radius:var(--r-md);
+  padding:7px 11px;font-size:13px;color:var(--n600);background:var(--surface);min-width:190px;
+}
+.app[data-style="material"] .fakefield{background:var(--n100);border:1px solid transparent;border-bottom:1px solid var(--n600)}
+.avatar{
+  width:30px;height:30px;border-radius:var(--r-pill);background:var(--n200);
+  display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--n800);flex:none;
+}
+.app-body{padding:20px;display:flex;flex-direction:column;gap:16px}
+.app[data-style="editorial"] .app-body{padding:28px 24px;gap:28px}
+.app[data-style="bento"] .app-body{gap:14px}
+
+/* ---------- 목업: KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
+.app[data-style="editorial"] .kpis{gap:0;border-top:1px solid var(--n300);border-bottom:1px solid var(--n300)}
+.kpi{
+  background:var(--card-bg);border:var(--bd);border-radius:var(--r-lg);
+  padding:var(--card-pad);box-shadow:var(--sh-card);
+  display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+.app[data-style="editorial"] .kpi{
+  border:0;border-right:1px solid var(--n200);border-radius:0;padding:18px 20px 18px 0;
+}
+.app[data-style="editorial"] .kpi:last-child{border-right:0}
+.app[data-style="bento"] .kpi:first-child{background:var(--b50);border-color:var(--b200)}
+.kpi-l{
+  font-size:var(--label-size);text-transform:var(--label-tt);letter-spacing:var(--label-ls);
+  color:var(--n600);font-weight:500;
+}
+.kpi-v{
+  font-family:var(--kpi-num-font);font-size:var(--kpi-num);line-height:var(--kpi-num-lh);
+  font-weight:var(--kpi-num-weight);letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  color:var(--n950);display:flex;align-items:baseline;gap:4px;
+}
+.kpi-v small{font-size:15px;font-weight:500;color:var(--n600);letter-spacing:0}
+.delta{display:flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:12px;font-weight:500}
+.delta.up{color:var(--sc700)} .delta.dn{color:var(--dg700)}
+.delta svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.4}
+
+/* ---------- 목업: 차트 ---------- */
+.row2{display:grid;grid-template-columns:1.85fr 1fr;gap:var(--gap)}
+.app[data-style="editorial"] .row2{gap:24px}
+.card{
+  background:var(--card-bg);border:var(--bd);border-radius:var(--r-lg);
+  box-shadow:var(--sh-card);overflow:hidden;min-width:0;
+}
+.app[data-style="editorial"] .card{border:0;border-top:1px solid var(--n950)}
+.card-h{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:var(--card-pad);padding-bottom:10px;
+}
+.app[data-style="editorial"] .card-h{padding:12px 0 10px}
+.card-h h5{
+  margin:0;font-family:var(--head-font);font-size:15px;font-weight:600;color:var(--n950);
+  text-transform:var(--label-tt);letter-spacing:var(--label-ls);
+}
+.app[data-style="editorial"] .card-h h5{font-size:17px;text-transform:none;letter-spacing:-.01em}
+.chart-box{padding:0 var(--card-pad) var(--card-pad)}
+.app[data-style="editorial"] .chart-box{padding:0 0 12px}
+.chart-box svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;padding:0 var(--card-pad) var(--card-pad);font-size:12px;color:var(--n600)}
+.app[data-style="editorial"] .legend{padding:0 0 12px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:2px;flex:none}
+
+/* 재고 상태 바 */
+.bars{display:flex;flex-direction:column;gap:11px;padding:4px var(--card-pad) var(--card-pad)}
+.app[data-style="editorial"] .bars{padding:4px 0 12px}
+.bar-row{display:flex;flex-direction:column;gap:5px}
+.bar-top{display:flex;justify-content:space-between;font-size:13px}
+.bar-top b{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums;color:var(--n800)}
+.bar-trk{height:7px;border-radius:var(--r-pill);background:var(--n200);overflow:hidden}
+.app[data-style="editorial"] .bar-trk{height:5px;border-radius:0}
+.bar-fil{height:100%;border-radius:var(--r-pill)}
+.app[data-style="editorial"] .bar-fil{border-radius:0}
+
+/* ---------- 목업: 테이블 ---------- */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{
+  text-align:left;font-size:var(--label-size);font-weight:600;color:var(--n700);
+  text-transform:var(--label-tt);letter-spacing:var(--label-ls);
+  padding:9px var(--cell-px);background:var(--n50);border-bottom:1px solid var(--n200);
+  white-space:nowrap;
+}
+.app[data-style="editorial"] thead th{
+  background:transparent;border-bottom:1px solid var(--n950);border-top:1px solid var(--n950);
+  padding:8px 16px 8px 0;
+}
+.app[data-style="editorial"] thead th:last-child{padding-right:0}
+.app[data-style="material"] thead th{background:var(--surface);color:var(--n600)}
+tbody td{
+  padding:0 var(--cell-px);height:var(--row-h);border-bottom:1px solid var(--n100);
+  border-right:var(--tbl-vrule);color:var(--n800);white-space:nowrap;vertical-align:middle;
+}
+.app[data-style="editorial"] tbody td{padding:0 16px 0 0;border-right:0}
+.app[data-style="editorial"] tbody td:last-child{padding-right:0}
+tbody td:last-child{border-right:0}
+tbody tr:hover td{background:var(--n50)}
+.app[data-style="material"] tbody tr:hover td{background:var(--b50)}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;font-weight:500}
+td.id{font-family:var(--f-mono);font-size:13px;color:var(--n700)}
+.cust{display:flex;align-items:center;gap:8px}
+.cust i{
+  width:24px;height:24px;border-radius:var(--r-pill);background:var(--n200);flex:none;
+  display:grid;place-items:center;font-size:10.5px;font-weight:600;color:var(--n800);font-style:normal;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;border-radius:var(--chip-radius);
+  padding:var(--chip-pad);font-size:12.5px;font-weight:var(--chip-weight);line-height:16px;white-space:nowrap;
+}
+.chip i{width:6px;height:6px;border-radius:50%;flex:none}
+.chip.paid{background:var(--if50);color:var(--if700)}   .chip.paid i{background:var(--if600)}
+.chip.prep{background:var(--wn50);color:var(--wn700)}   .chip.prep i{background:var(--wn600)}
+.chip.ship{background:var(--sc50);color:var(--sc700)}   .chip.ship i{background:var(--sc600)}
+.chip.back{background:var(--dg50);color:var(--dg700)}   .chip.back i{background:var(--dg600)}
+.app[data-style="editorial"] .chip{background:transparent!important;padding-left:0;padding-right:10px}
+.tbl-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px var(--card-pad);border-top:1px solid var(--n200);font-size:13px;color:var(--n600);
+}
+.app[data-style="editorial"] .tbl-foot{padding:11px 0;border-top:1px solid var(--n300)}
+
+/* ---------- 목업: 버튼 ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;
+  border-radius:var(--r-md);padding:var(--btn-pad);font-family:var(--f-body);
+  font-size:13.5px;font-weight:var(--btn-weight);cursor:pointer;box-shadow:var(--sh-btn);
+  transition:transform .1s, filter .12s; line-height:18px;
+}
+.btn:active{transform:translateY(1px)}
+.btn-pri{background:var(--b600);color:#fff}
+.btn-pri:hover{filter:brightness(.93)}
+.btn-ghost{background:var(--surface);border-color:var(--n300);color:var(--n800)}
+.btn-ghost:hover{background:var(--n50)}
+.app[data-style="editorial"] .btn-pri{background:var(--n950)}
+.app[data-style="editorial"] .btn-ghost{border-color:var(--n950)}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:var(--card-pad);padding-bottom:0}
+.app[data-style="editorial"] .toolbar{padding:14px 0 0}
+.toolbar .spacer{flex:1}
+
+/* ============================================================
+   컴포넌트 4분할 비교 그리드
+   ============================================================ */
+.cmp{border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface)}
+.cmp-head{display:grid;grid-template-columns:118px repeat(4,1fr)}
+.cmp-head > div{
+  padding:10px 14px;border-bottom:1px solid var(--rule-hard);border-right:1px solid var(--rule-soft);
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+}
+.cmp-head > div:last-child{border-right:0}
+.cmp-row{display:grid;grid-template-columns:118px repeat(4,1fr);border-bottom:1px solid var(--rule-soft)}
+.cmp-row:last-child{border-bottom:0}
+.cmp-row > .cmp-lab{
+  padding:16px 14px;border-right:1px solid var(--rule-soft);background:var(--paper);
+  font-size:13px;font-weight:600;color:var(--graphite);display:flex;flex-direction:column;gap:3px;
+}
+.cmp-row > .cmp-lab span{font-family:var(--f-mono);font-size:10.5px;font-weight:400;color:var(--faint);letter-spacing:.04em}
+.cmp-cell{
+  padding:18px 14px;border-right:1px solid var(--rule-soft);
+  display:flex;align-items:center;justify-content:center;min-width:0;overflow:hidden;
+}
+.cmp-cell:last-child{border-right:0}
+.cmp-cell .app{min-width:0;border:0;border-radius:0;background:transparent;display:block;width:100%}
+
+/* ---------- 탈락 스타일 데모 ---------- */
+.reject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:16px}
+.reject{
+  border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--surface);
+  display:flex;flex-direction:column;
+}
+.reject-demo{padding:22px 18px;display:grid;place-items:center;min-height:132px;border-bottom:1px solid var(--rule)}
+.reject-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:7px}
+.reject-body h4{font-size:15px}
+.verdict{
+  display:inline-flex;align-items:center;gap:5px;align-self:flex-start;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid currentColor;border-radius:2px;padding:2px 7px;
+}
+.v-out{color:var(--dg700)} .v-part{color:var(--wn700)}
+/* 뉴모피즘 실패 데모 */
+.neu{background:#E8E6E6;padding:22px;border-radius:14px;display:flex;flex-direction:column;gap:12px;width:100%}
+.neu-in{
+  background:#E8E6E6;border-radius:9px;padding:9px 13px;font-size:13px;color:#8A8584;
+  box-shadow:inset 3px 3px 6px #CFCDCD, inset -3px -3px 6px #FFFFFF;
+}
+.neu-btn{
+  background:#E8E6E6;border-radius:9px;padding:9px 15px;font-size:13px;font-weight:600;color:#6A6260;
+  box-shadow:3px 3px 6px #CFCDCD, -3px -3px 6px #FFFFFF;text-align:center;
+}
+/* 글래스 실패 데모 */
+.glass-stage{
+  width:100%;border-radius:12px;padding:20px;background:
+    radial-gradient(120px 90px at 22% 28%, #D33E58 0%, transparent 70%),
+    radial-gradient(130px 100px at 78% 72%, #2380D1 0%, transparent 70%), #F0EDEC;
+}
+.glass-card{
+  background:rgba(255,255,255,.44);backdrop-filter:blur(9px);
+  border:1px solid rgba(255,255,255,.6);border-radius:10px;padding:13px 15px;
+  font-size:13px;color:#3D3837;line-height:19px;
+}
+.glass-card b{display:block;font-size:14px;margin-bottom:3px}
+
+/* ============================================================
+   브랜드 컬러 섹션
+   ============================================================ */
+.cand{border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface)}
+.cand + .cand{margin-top:16px}
+.cand-h{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--rule)}
+.cand-sw{width:52px;height:52px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.08)}
+.cand-h .t{flex:1 1 220px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cand-h .t b{font-family:var(--f-display);font-size:17px;font-weight:600}
+.cand-h .t span{font-size:13px;color:var(--muted);line-height:19px}
+/* 램프: 색 블록 위 / 수치 레이블 아래.
+   레이블을 색 위에 올리면 중간 단계에서 대비가 3:1 아래로 떨어지므로 분리한다. */
+.ramp{display:flex}
+.ramp > div{flex:1;min-width:0;display:flex;flex-direction:column}
+.ramp .sw{height:50px}
+.ramp .mt{
+  padding:6px 4px 7px;border-top:1px solid var(--rule-soft);border-right:1px solid var(--rule-soft);
+  font-family:var(--f-mono);font-size:9px;line-height:12px;color:var(--muted);
+  display:flex;flex-direction:column;gap:1px;text-align:center;overflow:hidden;
+}
+.ramp > div:last-child .mt{border-right:0}
+.ramp .mt b{font-size:10px;font-weight:600;color:var(--ink)}
+.ramp .mt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ramp .mt em{font-style:normal;color:var(--faint)}
+.cand-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-top:1px solid var(--rule)}
+.cand-metrics dl{margin:0;padding:11px 16px;border-right:1px solid var(--rule-soft);display:flex;flex-direction:column;gap:2px}
+.cand-metrics dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.cand-metrics dd{margin:0;font-family:var(--f-mono);font-size:13px;font-weight:500;color:var(--graphite)}
+
+/* ΔE 충돌 시각화 */
+.clash{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:14px}
+.clash-item{border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface)}
+.clash-pair{display:flex;height:76px}
+.clash-pair div{flex:1;display:flex;align-items:flex-end;padding:8px 10px;font-family:var(--f-mono);font-size:10.5px;color:#fff;font-weight:500}
+.clash-meta{padding:12px 14px;display:flex;flex-direction:column;gap:5px}
+.clash-meta .de{font-family:var(--f-mono);font-size:23px;font-weight:600;line-height:28px;letter-spacing:-.02em}
+.clash-meta .de small{font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0}
+.clash-meta p{font-size:12.5px;line-height:18px;color:var(--muted)}
+
+/* ---------- 데이터 테이블 (문서용) ---------- */
+.dt-wrap{overflow-x:auto;border:1px solid var(--rule-hard);border-radius:6px;background:var(--surface)}
+table.dt{width:100%;border-collapse:collapse;font-size:13.5px}
+table.dt th{
+  text-align:left;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;padding:11px 14px;border-bottom:1px solid var(--rule-hard);
+  background:var(--paper);white-space:nowrap;
+}
+table.dt td{padding:10px 14px;border-bottom:1px solid var(--rule-soft);color:var(--graphite);vertical-align:top}
+table.dt tbody tr:last-child td{border-bottom:0}
+table.dt td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+table.dt td.sw{white-space:nowrap}
+table.dt .dot{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:7px;vertical-align:-1px;border:1px solid rgba(128,122,120,.4)}
+.pass{color:var(--sc700);font-weight:600} .fail{color:var(--dg700);font-weight:600} .warn{color:var(--wn700);font-weight:600}
+/* td 는 .dt td 가 색을 지정하므로 동일 특이성 이상으로 다시 선언해야 한다 */
+table.dt td.pass{color:var(--sc700);font-weight:600}
+table.dt td.warn{color:var(--wn700);font-weight:600}
+table.dt td.fail{color:var(--dg700);font-weight:600}
+
+/* 평가 매트릭스 */
+.score{display:inline-flex;gap:2px;vertical-align:-1px}
+.score i{width:7px;height:13px;border-radius:1px;background:var(--rule-hard)}
+.score i.on{background:var(--graphite)}
+
+/* ---------- 결정 요청 ---------- */
+.ask{border:1px solid var(--ink);border-radius:6px;overflow:hidden}
+.ask-h{background:var(--ink);color:var(--paper);padding:16px 20px;display:flex;flex-direction:column;gap:4px}
+.ask-h b{font-family:var(--f-display);font-size:19px;font-weight:600}
+.ask-h span{font-size:13px;opacity:.72}
+.ask-item{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.ask-item:last-child{border-bottom:0}
+.ask-item .q{
+  font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--paper);background:var(--graphite);
+  border-radius:3px;padding:3px 7px;height:fit-content;flex:none;letter-spacing:.04em;
+}
+.ask-item .c{display:flex;flex-direction:column;gap:7px;min-width:0}
+.ask-item h4{font-size:15.5px}
+.ask-opts{display:flex;flex-wrap:wrap;gap:7px;margin-top:2px}
+.ask-opts code{
+  font-family:var(--f-mono);font-size:12px;border:1px solid var(--rule-hard);border-radius:3px;
+  padding:4px 9px;color:var(--graphite);background:var(--paper);
+}
+.ask-opts code.rec{border-color:var(--ink);color:var(--ink);font-weight:600}
+.copy-box{
+  margin-top:20px;border:1px solid var(--rule-hard);border-radius:6px;overflow:hidden;background:var(--surface);
+}
+.copy-h{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;
+  border-bottom:1px solid var(--rule);
+}
+.copy-h span{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.copy-btn{
+  appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  border-radius:3px;padding:5px 12px;font-family:var(--f-body);font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.copy-btn:hover{filter:brightness(1.25)}
+pre.tmpl{
+  margin:0;padding:14px;font-family:var(--f-mono);font-size:12.5px;line-height:21px;
+  color:var(--graphite);white-space:pre-wrap;background:var(--paper);
+}
+
+/* ---------- 주의 박스 ---------- */
+.note{
+  border:1px solid var(--rule-hard);border-left:3px solid var(--ink);border-radius:0 5px 5px 0;
+  padding:16px 18px;background:var(--surface);display:flex;flex-direction:column;gap:8px;
+}
+.note b{font-family:var(--f-display);font-size:15px;font-weight:600}
+.note p{font-size:14px;line-height:22px;color:var(--graphite)}
+.note .tag{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);
+}
+
+footer{padding:56px 0 72px;border-top:1px solid var(--rule)}
+
+/* ---------- 반응 ---------- */
+@media (max-width:1080px){
+  .cmp-head,.cmp-row{grid-template-columns:100px repeat(4,1fr)}
+}
+@media (max-width:880px){
+  .wrap{padding:0 20px}
+  .controls-in{padding:10px 20px;gap:12px}
+  h1{font-size:34px;line-height:40px}
+  h2{font-size:24px;line-height:32px}
+  section{padding:52px 0}
+  .cmp-head,.cmp-row{grid-template-columns:1fr}
+  .cmp-head > div{border-right:0}
+  .cmp-row > .cmp-lab{border-right:0;border-bottom:1px solid var(--rule-soft);flex-direction:row;align-items:baseline;gap:8px}
+  .cmp-cell{border-right:0;border-bottom:1px solid var(--rule-soft);justify-content:flex-start}
+  .row2{grid-template-columns:1fr}
+}
+</style>
+
+<header class="hero wrap">
+  <p class="eyebrow">Round 01 · 방향 결정</p>
+  <h1 style="margin-top:14px">네 가지 시안과<br>세 가지 레드</h1>
+  <p class="lead prose" style="margin-top:20px">
+    B2B 커머스 SaaS(판매·물류·마케팅·CMS)를 위한 디자인 시스템의 첫 분기점입니다.
+    스타일 8종을 평가해 <b>4종을 시안으로</b> 올리고 4종을 탈락시켰습니다.
+    브랜드 레드는 OKLCH 색공간에서 <b>3종 후보</b>를 생성해 명도대비를 전부 실측했습니다.
+    상단 바에서 스타일과 브랜드 컬러를 바꿔 보시고, 마지막 섹션의 5가지 질문에 답해 주세요.
+  </p>
+  <div class="hero-meta">
+    <dl><dt>평가 스타일</dt><dd>8종 → 채택 4 / 탈락 4</dd></dl>
+    <dl><dt>브랜드 후보</dt><dd>레드 3종 · 11단계</dd></dl>
+    <dl><dt>대비 검증</dt><dd>실측 완료 · 최소 4.5:1</dd></dl>
+    <dl><dt>결정 필요</dt><dd>질문 5개</dd></dl>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-in">
+    <div class="ctl">
+      <span>시안</span>
+      <div class="seg" id="segStyle" role="group" aria-label="디자인 시안 선택">
+        <button data-v="flat" aria-pressed="true">A 정밀 플랫</button>
+        <button data-v="material" aria-pressed="false">B 머티리얼</button>
+        <button data-v="bento" aria-pressed="false">C 벤토</button>
+        <button data-v="editorial" aria-pressed="false">D 에디토리얼</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span>브랜드</span>
+      <div class="seg" id="segBrand" role="group" aria-label="브랜드 컬러 후보 선택">
+        <button data-v="crimson" aria-pressed="true">크림슨</button>
+        <button data-v="vermilion" aria-pressed="false">버밀리온</button>
+        <button data-v="signal" aria-pressed="false">시그널</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span>테마</span>
+      <div class="seg" id="segTheme" role="group" aria-label="테마 선택">
+        <button data-v="light" aria-pressed="true">라이트</button>
+        <button data-v="dark" aria-pressed="false">다크</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 1. 스타일 평가 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">01</p>
+    <h2>스타일 8종을 어떤 기준으로 걸러냈는지</h2>
+    <p class="lead prose">
+      우리 서비스의 화면은 대부분 <b>조회와 입력</b>입니다. 한 화면에 수십~수백 행의 데이터가 올라가고,
+      사용자는 하루 종일 그 화면을 봅니다. 그래서 평가 기준을 "예쁜가"가 아니라
+      아래 다섯 축의 수치로 잡았습니다. 각 축은 10점 만점입니다.
+    </p>
+  </div>
+
+  <div class="dt-wrap">
+    <table class="dt">
+      <thead>
+        <tr>
+          <th>스타일</th><th>정보 밀도</th><th>장시간 가독성</th><th>접근성 적합</th>
+          <th>구현·유지비</th><th>친숙함</th><th>합계</th><th>판정</th>
+        </tr>
+      </thead>
+      <tbody id="matrix"></tbody>
+    </table>
+  </div>
+
+  <div class="stack g16" style="margin-top:24px">
+    <div class="note">
+      <span class="tag">축 정의</span>
+      <b>정보 밀도 — 1,000행 테이블을 렌더했을 때 요소당 시각 비용</b>
+      <p>
+        그림자·테두리·질감처럼 요소마다 붙는 장식은 행 수에 비례해 누적됩니다.
+        장식이 많은 스타일은 밀도를 올리는 순간 서로 간섭해 구조가 무너집니다.
+        반대로 괘선과 여백만으로 구조를 만드는 스타일은 밀도를 올려도 유지됩니다.
+      </p>
+    </div>
+    <div class="note">
+      <span class="tag">축 정의</span>
+      <b>접근성 적합 — WCAG 1.4.3(텍스트 4.5:1) / 1.4.11(비텍스트 3:1) 달성 가능성</b>
+      <p>
+        스타일이 구조를 <b>무엇으로</b> 표현하는지가 핵심입니다. 색과 그림자의 미세한 차이로
+        경계를 만드는 스타일은 원리상 3:1을 넘길 수 없습니다. 아래 02에서 실측값으로 보여드립니다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 2. 탈락 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">02</p>
+    <h2>탈락한 4종 — 왜 안 되는지 눈으로</h2>
+    <p class="lead prose">
+      말로 "접근성이 나쁘다"고 하면 설득되지 않습니다. 실제로 렌더해서 대비를 측정했습니다.
+      아래 숫자는 모두 이 페이지에서 실제로 쓰인 색값으로 계산한 값입니다.
+    </p>
+  </div>
+
+  <div class="reject-grid">
+    <div class="reject">
+      <div class="reject-demo" style="background:#E8E6E6">
+        <div class="neu">
+          <div class="neu-in">주문번호를 입력하세요</div>
+          <div class="neu-btn">조회</div>
+        </div>
+      </div>
+      <div class="reject-body">
+        <span class="verdict v-out">탈락</span>
+        <h4>뉴모피즘 / 소프트 UI</h4>
+        <p class="small">
+          위 입력창과 버튼의 경계는 그림자뿐입니다. 경계 대비 <b class="fail">1.18:1</b>
+          (요구 3:1). 입력 가능한 칸인지, 누를 수 있는 버튼인지 형태로 구분되지 않습니다.
+          저시력·고령 사용자에게는 평면으로 보입니다. 다크모드에서는 그림자 원리 자체가 성립하지 않습니다.
+          <b>데이터 입력이 주 업무인 서비스에서 입력 필드를 식별할 수 없는 것은 치명적입니다.</b>
+        </p>
+      </div>
+    </div>
+
+    <div class="reject">
+      <div class="reject-demo" style="padding:0">
+        <div class="glass-stage">
+          <div class="glass-card">
+            <b>미결제 주문 312건</b>
+            배경이 바뀌면 이 글자의 대비도 함께 바뀝니다
+          </div>
+        </div>
+      </div>
+      <div class="reject-body">
+        <span class="verdict v-out">탈락</span>
+        <h4>글래스모피즘</h4>
+        <p class="small">
+          텍스트 대비가 <b class="fail">배경에 따라 3.1:1 ~ 9.4:1로 변동</b>합니다.
+          데이터가 바뀌면 배경도 바뀌는 서비스에서 4.5:1을 보장할 방법이 없습니다.
+          또한 <code class="mono" style="font-size:12px">backdrop-filter</code>는 스크롤되는
+          긴 테이블과 함께 쓰면 매 프레임 재합성이 일어나 성능이 떨어집니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="reject">
+      <div class="reject-demo" style="background:#EFECEB">
+        <div style="display:flex;gap:9px;align-items:center;width:100%">
+          <div style="flex:1;background:linear-gradient(#FDFDFD,#E4E1E0);border:1px solid #B6ADAB;border-radius:6px;box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(0,0,0,.2);padding:9px 12px;font-size:13px;color:#6A6260">텍스트 입력</div>
+          <div style="background:linear-gradient(#6A6260,#3D3837);border:1px solid #262222;border-radius:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 3px rgba(0,0,0,.3);padding:9px 15px;font-size:13px;font-weight:600;color:#fff">저장</div>
+        </div>
+      </div>
+      <div class="reject-body">
+        <span class="verdict v-out">탈락</span>
+        <h4>스큐어모피즘</h4>
+        <p class="small">
+          대비는 확보됩니다. 문제는 비용입니다. 요소마다 그라디언트 2~3개 + 내부 하이라이트 +
+          외부 그림자가 붙고, 이것이 <b>상태 조합(기본·호버·포커스·비활성·에러·선택)마다 다시 필요</b>합니다.
+          컴포넌트 1개당 유지 대상이 6~8배로 늘어납니다. 토큰으로 제어할 수도 없습니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="reject">
+      <div class="reject-demo" style="background:#F5F1E8">
+        <div style="width:100%;border:2.5px solid #16110F;background:#FFE44D;box-shadow:5px 5px 0 #16110F;padding:14px;font-family:var(--f-display);font-weight:700;font-size:16px;color:#16110F">
+          반품 요청 27건<span style="display:block;font-size:12px;font-weight:500;margin-top:3px">즉시 확인 필요</span>
+        </div>
+      </div>
+      <div class="reject-body">
+        <span class="verdict v-part">부분 채용</span>
+        <h4>네오브루탈리즘</h4>
+        <p class="small">
+          강한 대비와 명확한 경계는 장점입니다. 다만 모든 요소가 같은 강도로 소리치면
+          <b>위계가 사라지고</b> 8시간 업무 화면에서는 피로가 누적됩니다.
+          전면 적용은 탈락, <b>"지금 당장 조치해야 하는 알림" 한 종류에만</b> 차용하는 것으로 제한합니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 3. 전체 화면 시안 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">03</p>
+    <h2>채택 4종 — 같은 화면, 다른 시스템</h2>
+    <p class="lead prose">
+      아래는 <b>주문 관리 화면 하나를 네 가지 스타일로 렌더</b>한 것입니다.
+      내용·데이터·레이아웃 구조는 완전히 같고, 토큰 값만 다릅니다.
+      상단 바의 시안 버튼으로 전환해서 비교하세요. 프레임 아래 스펙 스트립이
+      그 스타일을 만드는 실제 수치입니다.
+    </p>
+  </div>
+
+  <div class="plate">
+    <div class="plate-bar">
+      <strong id="plateName">A · 정밀 플랫</strong>
+      <span class="tag" id="plateTag">경계선과 밀도로 구조를 만든다 · 그림자 0</span>
+    </div>
+    <div class="plate-view">
+      <div class="app" id="mainApp" data-style="flat"></div>
+    </div>
+    <div class="spec-strip" id="specStrip"></div>
+  </div>
+
+  <div class="stack g16" style="margin-top:28px">
+    <div id="styleNotes" class="note"></div>
+  </div>
+</section>
+
+<!-- ========== 4. 컴포넌트 4분할 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">04</p>
+    <h2>핵심 컴포넌트 4종 동시 비교</h2>
+    <p class="lead prose">
+      전체 화면은 한 번에 하나씩만 볼 수 있으니, 판단이 갈리는 다섯 컴포넌트는
+      네 스타일을 나란히 놓았습니다. 브랜드 컬러를 바꾸면 여기도 함께 반응합니다.
+    </p>
+  </div>
+  <div class="cmp">
+    <div class="cmp-head">
+      <div>컴포넌트</div><div>A 정밀 플랫</div><div>B 머티리얼</div><div>C 벤토</div><div>D 에디토리얼</div>
+    </div>
+    <div id="cmpRows"></div>
+  </div>
+</section>
+
+<!-- ========== 5. 브랜드 레드 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">05</p>
+    <h2>붉은색 계열 세 후보</h2>
+    <p class="lead prose">
+      "빨강"은 하나가 아닙니다. OKLCH 색공간에서 <b>색상각(hue)</b>을 바꾸면 성격이 완전히 달라집니다.
+      세 후보 모두 <b>동일한 명도 래더</b>(L 97.3% → 25.8%, 11단계)를 공유합니다.
+      명도를 고정했기 때문에 어떤 후보를 고르든 <b>600단계는 흰 배경에서 4.5:1 이상</b>이 보장됩니다.
+      — 이것이 지각 균일 색공간을 쓰는 이유입니다.
+    </p>
+  </div>
+  <div id="candidates"></div>
+
+  <div class="sec-head" style="margin-top:56px;margin-bottom:24px">
+    <h3>그런데 문제가 하나 있습니다</h3>
+    <p class="lead prose">
+      우리 서비스에서 빨강은 이미 다른 뜻을 가집니다. <b>에러·삭제·반품·매출 하락.</b>
+      브랜드 레드와 에러 레드가 구별되지 않으면 사용자는 "이게 브랜드 강조인지 경고인지" 매번 판단해야 합니다.
+      두 색이 사람 눈에 얼마나 다른지를 OKLab 지각 거리(ΔE)로 측정했습니다.
+      <b>ΔE 5 미만은 사실상 같은 색</b>, 10 이상이면 명확히 다른 색으로 인지됩니다.
+    </p>
+  </div>
+  <div class="clash" id="clash"></div>
+
+  <div class="note" style="margin-top:24px">
+    <span class="tag">핵심 발견</span>
+    <b>색상각만으로는 분리에 실패합니다 — 명도까지 함께 벌려야 합니다</b>
+    <p>
+      후보 중 가장 멀리 떨어진 크림슨조차 에러 레드와 ΔE 4.9에 그칩니다.
+      색상각을 벌리는 동시에 <b>에러 레드를 더 어둡고 진하게</b>(L 58.8%→50%, H 27→34) 밀어내면
+      ΔE가 <b class="pass">10.9</b>까지 올라가 비로소 구별됩니다.
+      다만 이것만으로는 부족하고, 구조적 규칙이 함께 필요합니다 — 아래 세 전략 중 선택이 필요합니다.
+    </p>
+  </div>
+
+  <div class="dt-wrap" style="margin-top:20px">
+    <table class="dt">
+      <thead><tr><th>전략</th><th>브랜드 레드를 쓰는 곳</th><th>주요 액션 버튼</th><th>장점</th><th>대가</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>S1 색상각 분리</b><br><span class="small">권고</span></td>
+          <td>로고 · 활성 내비 · 주요 CTA · 선택 상태</td>
+          <td class="sw"><span class="dot" style="background:#D33E58"></span>크림슨 600</td>
+          <td>브랜드 체감 유지. 에러색을 <span class="mono">H34 / L50</span>으로 밀어 ΔE 10.9 확보</td>
+          <td>에러 레드가 다소 어두운 벽돌색이 됨</td>
+        </tr>
+        <tr>
+          <td><b>S2 아이덴티티 격리</b></td>
+          <td>로고 · 활성 내비만</td>
+          <td class="sw"><span class="dot" style="background:var(--ink)"></span>중립 잉크</td>
+          <td>상태색 시스템을 완전히 보호. 데이터 화면에서 빨강 과다 노출 없음</td>
+          <td>CTA 전환 유도력·브랜드 체감 약화</td>
+        </tr>
+        <tr>
+          <td><b>S3 혼합</b></td>
+          <td>로고 · 내비 · <b>전환 유도 CTA만</b></td>
+          <td class="sw"><span class="dot" style="background:#D33E58"></span>맥락별 분기</td>
+          <td>마케팅·주문 화면은 레드 CTA, 관리·정산 화면은 잉크 CTA</td>
+          <td>규칙이 복잡해져 가이드 문서화 부담 증가</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note" style="margin-top:20px">
+    <span class="tag">어떤 전략을 고르든 적용되는 불변 규칙</span>
+    <b>색은 절대 단독 신호가 되지 않습니다</b>
+    <p>
+      모든 에러·경고는 <b>아이콘 + 문장 + 색</b> 세 가지를 함께 씁니다. 색맹 사용자(남성 약 8%)와
+      모노크롬 출력에서도 정보가 보존되어야 하며, 이는 WCAG 1.4.1의 요구사항입니다.
+      상태 칩에 점(•)을 넣은 것도 같은 이유입니다 — 위 시안의 테이블에서 확인하실 수 있습니다.
+    </p>
+  </div>
+</section>
+
+<!-- ========== 6. 타이포 & 대비 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">06</p>
+    <h2>활자 · 행간 · 대비 수치</h2>
+    <p class="lead prose">
+      주신 지침(가독성 우선, 작지 않은 크기, 명확한 위계, 행간 130% 기준, 대비 4.1 이상)을
+      수치 체계로 옮겼습니다. 네 자리에서 <b>지침을 그대로 쓰면 오히려 목적을 해치는 부분</b>이 있어
+      근거와 함께 보정안을 제시합니다.
+    </p>
+  </div>
+
+  <h3 style="margin-bottom:16px">타입 스케일 — 1.2 비율, 기준 15px, 4px 베이스라인 정렬</h3>
+  <div class="dt-wrap">
+    <table class="dt">
+      <thead><tr><th>토큰</th><th>크기</th><th>행간</th><th>행간 %</th><th>자간</th><th>굵기</th><th>쓰는 곳</th></tr></thead>
+      <tbody id="typeScale"></tbody>
+    </table>
+  </div>
+
+  <div class="stack g16" style="margin-top:28px">
+    <div class="note">
+      <span class="tag">보정 제안 01 · 승인 필요</span>
+      <b>행간 130%는 "고정값"이 아니라 "크기에 반비례하는 함수"로 정의했습니다</b>
+      <p>
+        행간을 전 구간 130%로 고정하면 <b>본문은 너무 빽빽하고 큰 제목은 너무 헐렁해집니다.</b>
+        글줄이 길어질수록(본문) 다음 줄을 찾는 눈의 이동이 커져 행간이 더 필요하고,
+        글자가 커질수록(제목) 같은 비율이 물리적으로 더 큰 공백이 되기 때문입니다.
+        그래서 <b>본문 계열(≤17px)은 140~160%로 올리고, 제목 계열(≥20px)은 117~140%로 내렸습니다.</b>
+        130%는 그 사이의 전환점(24px 구간)에 그대로 남아 있습니다.
+        지침의 의도("빽빽해서 읽기 힘들지 않게")는 본문에서 더 강하게 지켜집니다.
+      </p>
+    </div>
+    <div class="note">
+      <span class="tag">보정 제안 02 · 승인 필요</span>
+      <b>본문 명도대비 하한을 4.1:1 → 4.5:1로 올렸습니다</b>
+      <p>
+        4.5:1은 WCAG 2.2 AA의 본문 텍스트 기준입니다. 4.1:1로 두면 국내외 공공·대기업 조달 심사와
+        접근성 감사에서 지적 대상이 되며, B2B SaaS는 고객사 보안·접근성 검토를 통과해야 하는 경우가 많습니다.
+        4.5:1로 올리는 비용은 거의 없습니다 — 아래 표에서 보시듯 <b>토큰 한 단계를 내리기만 하면 됩니다.</b>
+        대신 큰 텍스트(24px 이상 또는 19px 굵게)는 WCAG 규정대로 3:1을 적용하고,
+        비텍스트 요소(경계선·아이콘)는 1.4.11에 따라 3:1을 적용합니다.
+      </p>
+    </div>
+  </div>
+
+  <h3 style="margin:40px 0 16px">텍스트 색 토큰 — 실측 대비</h3>
+  <div class="dt-wrap">
+    <table class="dt">
+      <thead><tr><th>토큰</th><th>라이트</th><th>종이 배경</th><th>흰 배경</th><th>다크</th><th>다크 배경</th><th>판정</th><th>용도</th></tr></thead>
+      <tbody id="textTokens"></tbody>
+    </table>
+  </div>
+
+  <div class="note" style="margin-top:24px">
+    <span class="tag">놓치기 쉬운 지점</span>
+    <b>입력 필드 경계선은 흔히 쓰는 연한 회색으로는 규격 위반입니다</b>
+    <p>
+      많은 디자인 시스템이 입력창 테두리에 <span class="mono">neutral-200</span>급 연회색을 씁니다.
+      우리 팔레트로 측정하면 <span class="mono">#E1DCDB</span> on <span class="mono">#FCFBFA</span> =
+      <b class="fail">1.31:1</b>로, 비텍스트 대비 3:1을 크게 밑돕니다.
+      <b>입력 가능한 칸임을 알려주는 경계선은 "장식"이 아니라 "정보"</b>이므로
+      <span class="mono">neutral-600 #847A78 (4.03:1)</span>을 쓰도록 토큰을 분리했습니다 —
+      <span class="mono">border-subtle</span>(분리선) / <span class="mono">border-default</span>(카드) /
+      <span class="mono">border-input</span>(입력, 3:1 필수)의 3단 구조입니다.
+      위 시안의 검색창 테두리가 이 값으로 적용되어 있습니다.
+    </p>
+  </div>
+
+  <h3 style="margin:40px 0 16px">여백 — 값이 길어져도 UI가 깨지지 않게</h3>
+  <p class="lead prose" style="margin-bottom:20px">
+    "<b>₩1,248,500,000</b>"처럼 값이 길어지거나 "<b>상품준비중(부분출고)</b>"처럼 라벨이 늘어나도
+    겹치지 않아야 합니다. 고정 너비 대신 <b>최소 너비 + 내부 여백 + 넘침 규칙</b>을 토큰으로 정의했습니다.
+  </p>
+  <div class="dt-wrap">
+    <table class="dt">
+      <thead><tr><th>요소</th><th>내부 여백</th><th>최소 높이</th><th>최소 너비</th><th>넘칠 때</th></tr></thead>
+      <tbody>
+        <tr><td>버튼 (기본)</td><td class="m">8px 14px</td><td class="m">36px</td><td class="m">64px</td><td>줄바꿈 금지 · 말줄임</td></tr>
+        <tr><td>버튼 (터치)</td><td class="m">10px 20px</td><td class="m">44px</td><td class="m">80px</td><td>동일</td></tr>
+        <tr><td>입력 필드</td><td class="m">9px 12px</td><td class="m">38px</td><td class="m">120px</td><td>가로 스크롤</td></tr>
+        <tr><td>상태 칩</td><td class="m">3px 9px</td><td class="m">22px</td><td class="m">auto</td><td>말줄임 + 툴팁 전체값</td></tr>
+        <tr><td>테이블 셀 (기본)</td><td class="m">0 14px</td><td class="m">40px</td><td class="m">80px</td><td>말줄임 + 툴팁</td></tr>
+        <tr><td>테이블 셀 (금액)</td><td class="m">0 14px</td><td class="m">40px</td><td class="m">128px</td><td>우측 정렬 · 고정폭 숫자</td></tr>
+        <tr><td>카드</td><td class="m">16~20px</td><td class="m">—</td><td class="m">240px</td><td>내부 스크롤</td></tr>
+        <tr><td>모달</td><td class="m">24px</td><td class="m">—</td><td class="m">min(480px, 92vw)</td><td>본문만 스크롤</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small" style="margin-top:14px;max-width:68ch">
+    금액 칸의 최소 너비 128px은 <span class="mono">₩1,248,500,000</span>(13자)을
+    <span class="mono">IBM Plex Mono 14px</span> 고정폭 숫자로 조판했을 때의 폭 + 좌우 여백 28px에서 역산한 값입니다.
+    자연어 "넉넉하게"를 이렇게 역산 가능한 수치로 바꿔두면, 통화가 바뀌거나 폰트가 바뀔 때 다시 계산할 수 있습니다.
+  </p>
+</section>
+
+<!-- ========== 7. 결정 요청 ========== -->
+<section class="wrap">
+  <div class="sec-head">
+    <p class="num">07</p>
+    <h2>결정이 필요한 다섯 가지</h2>
+    <p class="lead prose">
+      이 다섯 개가 정해지면 다음 라운드에서 토큰 파일과 shadcn/ui 커스텀 기반 컴포넌트를 실제로 구축합니다.
+      <b>전부 답하지 않아도 됩니다</b> — 확실한 것만 답하고 나머지는 "보류"로 남겨 두시면
+      그 부분은 권고안으로 진행한 뒤 다음 시안에서 다시 확인받겠습니다.
+    </p>
+  </div>
+
+  <div class="ask">
+    <div class="ask-h">
+      <b>피드백 요청</b>
+      <span>권고안에는 테두리가 진하게 표시되어 있습니다</span>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q1</span>
+      <div class="c">
+        <h4>기본 스타일을 무엇으로 할까요?</h4>
+        <p class="small">
+          권고는 <b>A 정밀 플랫을 기본 골격</b>으로 두고, <b>대시보드 요약 영역에만 C 벤토</b>를,
+          <b>분석 리포트·정산 명세 화면에만 D 에디토리얼</b>을 부분 적용하는 조합입니다.
+          밀도가 필요한 목록·입력 화면과 훑어보는 요약 화면은 요구가 다르기 때문입니다.
+          B 머티리얼은 친숙하지만 행 높이 48px로 밀도가 낮아 기본 골격으로는 권하지 않습니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">A 기본 + C·D 부분</code><code>A 단독</code><code>B 머티리얼</code>
+          <code>C 벤토</code><code>D 에디토리얼</code><code>다른 조합</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q2</span>
+      <div class="c">
+        <h4>브랜드 레드는 어느 것으로 할까요?</h4>
+        <p class="small">
+          권고는 <b>크림슨(H14)</b>입니다. 에러 레드와 가장 멀고(ΔE 4.9), 판매·물류·정산처럼
+          돈을 다루는 화면에서 신뢰감이 필요한 우리 도메인에 맞습니다.
+          버밀리온은 활력이 좋지만 경고(앰버)색과 가까워지고,
+          <b>시그널 레드는 에러 레드와 ΔE 1.5로 사실상 같은 색이라 권하지 않습니다.</b>
+        </p>
+        <div class="ask-opts">
+          <code class="rec">크림슨 #D33E58</code><code>버밀리온 #CF4A29</code><code>시그널 #D83B38</code>
+          <code>세 개 다 아님</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q3</span>
+      <div class="c">
+        <h4>브랜드 레드와 에러 레드의 분리 전략은?</h4>
+        <p class="small">
+          05 섹션의 S1 / S2 / S3 중 선택입니다. 권고는 <b>S1 색상각 분리</b> —
+          브랜드 레드를 CTA까지 쓰면서 에러 레드를 <span class="mono">H34 / L50 (#B32700)</span>으로
+          밀어내 ΔE 10.9를 확보하는 안입니다. 이커머스 전환 유도를 포기하지 않으면서 의미 혼선을 막습니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">S1 색상각 분리</code><code>S2 아이덴티티 격리</code><code>S3 혼합</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q4</span>
+      <div class="c">
+        <h4>라이트와 다크 중 무엇을 기준으로 설계할까요?</h4>
+        <p class="small">
+          권고는 <b>라이트 우선, 다크 동시 지원</b>입니다. 판매·물류·정산 담당자는 밝은 사무 환경에서
+          종일 쓰고 화면을 인쇄·캡처해 보고서에 넣는 일이 많습니다.
+          다만 토큰 구조는 처음부터 양쪽을 전제로 짜서, 나중에 다크를 "추가"하는 비용이 들지 않게 합니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">라이트 우선</code><code>다크 우선</code><code>완전 동등</code><code>라이트만</code>
+        </div>
+      </div>
+    </div>
+    <div class="ask-item">
+      <span class="q">Q5</span>
+      <div class="c">
+        <h4>06의 보정 제안 두 건을 승인하시겠습니까?</h4>
+        <p class="small">
+          ① 행간을 130% 고정이 아니라 크기 반비례 함수로 (본문 140~160% / 제목 117~140%)<br>
+          ② 본문 대비 하한을 4.1:1 → 4.5:1 (WCAG AA 정합)<br>
+          둘 다 주신 지침의 <b>의도를 더 강하게 달성</b>하는 방향이지만, 수치 자체는 바뀌므로 승인을 받아야 합니다.
+        </p>
+        <div class="ask-opts">
+          <code class="rec">둘 다 승인</code><code>①만 승인</code><code>②만 승인</code><code>원래 수치 유지</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-box">
+    <div class="copy-h">
+      <span>답변 양식 — 복사해서 채팅에 붙여넣기</span>
+      <button class="copy-btn" id="copyBtn">복사</button>
+    </div>
+    <pre class="tmpl" id="tmpl">[시안 비교실 R01 피드백]
+Q1 스타일    : A 기본 + C·D 부분
+Q2 브랜드레드 : 크림슨 #D33E58
+Q3 분리전략  : S1 색상각 분리
+Q4 테마기준  : 라이트 우선
+Q5 보정승인  : 둘 다 승인
+
+추가 의견:
+-</pre>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p class="eyebrow">다음 라운드 예정 작업</p>
+  <div class="prose" style="margin-top:14px;display:flex;flex-direction:column;gap:9px">
+    <p class="small">
+      <b style="color:var(--ink)">R02</b> — 확정된 스타일·컬러로 <span class="mono">tokens.css</span> +
+      <span class="mono">tailwind.config</span> 작성, shadcn/ui 커스텀 레이어 설계, Storybook 초기 구축
+    </p>
+    <p class="small">
+      <b style="color:var(--ink)">R03</b> — 데이터 테이블(TanStack) · 차트 라이브러리 선정과 커스텀 ·
+      스켈레톤/로딩 모션 · 온보딩 투어 컴포넌트
+    </p>
+    <p class="small">
+      <b style="color:var(--ink)">R04</b> — MCP 제공을 위한 토큰·컴포넌트 메타데이터 스키마와 AI 사용 설명 레이어
+    </p>
+  </div>
+  <p class="small" style="margin-top:28px;color:var(--faint)">
+    이 페이지의 모든 색상값·대비값·ΔE는 OKLCH→sRGB 변환과 WCAG 2.x 상대휘도 공식으로 직접 계산한 실측값입니다.
+    페이지 UI 자체는 시안 판단을 오염시키지 않도록 무채색으로 고정했습니다.
+  </p>
+</footer>
+
+<script>
+/* ============================================================
+   데이터
+   ============================================================ */
+const BRANDS = {
+  crimson:{ko:'크림슨',hue:14,desc:'청색조 레드. 깊고 단단한 인상. 금융·정산처럼 신뢰가 필요한 화면에 어울림',
+    risk:'활력·속도감은 상대적으로 낮음', dE:4.9,
+    ramp:{50:'#FFF3F4',100:'#FFE6E8',200:'#FFCFD4',300:'#FFB1B9',400:'#FF8394',500:'#F15A73',600:'#D33E58',700:'#B02942',800:'#8D1B30',900:'#6A1021',950:'#460711'}},
+  vermilion:{ko:'버밀리온',hue:34,desc:'주색조 레드. 따뜻하고 활동적. 이커머스·마케팅의 전환 유도에 강함',
+    risk:'경고(앰버)색과 색상각이 가까워 구별 부담', dE:4.4,
+    ramp:{50:'#FFF3F1',100:'#FFE7E2',200:'#FFD1C7',300:'#FFB4A4',400:'#FF896F',500:'#ED6547',600:'#CF4A29',700:'#AC3513',800:'#8A2604',900:'#681A00',950:'#430F00'}},
+  signal:{ko:'시그널 레드',hue:25.5,desc:'가장 전형적인 "빨강". 브랜드 각인력은 최상',
+    risk:'에러 레드와 ΔE 1.5 — 사실상 같은 색. 의미 혼선 최대', dE:1.5,
+    ramp:{50:'#FFF3F2',100:'#FFE6E4',200:'#FFD0CC',300:'#FFB2AD',400:'#FF877F',500:'#F75853',600:'#D83B38',700:'#B42523',800:'#901714',900:'#6D0E0A',950:'#480503'}}
+};
+const CONTRAST_600 = {crimson:4.57, vermilion:4.50, signal:4.56};
+const ONWHITE = {
+  crimson:{50:1.08,100:1.18,200:1.39,300:1.72,400:2.35,500:3.26,600:4.57,700:6.48,800:9.01,900:12.29,950:16.17},
+  vermilion:{50:1.09,100:1.18,200:1.38,300:1.71,400:2.32,500:3.20,600:4.50,700:6.42,800:8.90,900:12.09,950:16.07},
+  signal:{50:1.09,100:1.19,200:1.39,300:1.72,400:2.33,500:3.24,600:4.56,700:6.50,800:9.06,900:12.23,950:16.17}
+};
+
+const STYLES = {
+  flat:{name:'A · 정밀 플랫', tag:'경계선과 밀도로 구조를 만든다 · 그림자 0',
+    spec:{'모서리 반경':'4 / 6 / 8 px','테두리':'1px solid n200','그림자':'없음','카드 여백':'16 px','요소 간격':'12 px','테이블 행':'40 px','KPI 숫자':'29 / 36 px'},
+    note:['정밀 플랫이 기본 골격으로 적합한 이유',
+      '그림자가 없으므로 행이 1,000개로 늘어나도 시각 비용이 선형으로만 증가합니다. 구조를 경계선과 여백이 담당하기 때문에 다크모드 전환도 색 토큰 교체만으로 끝납니다. 행 높이 40px은 한 화면에 들어가는 행 수와 클릭 정확도의 균형점이고, 밀도 토글로 36px(압축)·48px(여유)로 전환할 수 있게 설계합니다. 위험은 "평평해서 뭘 누를 수 있는지 모르겠다"는 반응인데, 이는 호버·포커스 상태와 마이크로 인터랙션으로 메꿔야 합니다.']},
+  material:{name:'B · 머티리얼 엘리베이션', tag:'그림자 고도로 레이어를 분리 · 터치 타깃 큼',
+    spec:{'모서리 반경':'8 / 12 / 16 px','테두리':'없음 (그림자로 대체)','그림자':'2단 고도','카드 여백':'20 px','요소 간격':'16 px','테이블 행':'48 px','KPI 숫자':'29 / 36 px'},
+    note:['머티리얼의 장점과, 기본 골격으로 권하지 않는 이유',
+      '가장 큰 장점은 학습 비용 0입니다 — 안드로이드와 구글 제품으로 이미 익숙한 문법이고, 터치 타깃 48px은 태블릿 창고 업무에 유리합니다. 다만 행 높이 48px은 1,920×1,080 화면에서 보이는 행 수를 40px 대비 약 17% 줄입니다. 또한 테두리 없이 그림자로만 카드를 구분하므로 다크모드에서 고도 표현이 어려워져 표면 밝기를 별도 토큰으로 관리해야 합니다. 물류 현장 태블릿 전용 화면에는 이 스타일을 부분 적용하는 것을 권합니다.']},
+  bento:{name:'C · 벤토 그리드', tag:'요약을 모듈 블록으로 분할 · 큰 숫자',
+    spec:{'모서리 반경':'8 / 14 / 20 px','테두리':'1px solid n200','그림자':'없음','카드 여백':'20 px','요소 간격':'14 px','테이블 행':'44 px','KPI 숫자':'34 / 40 px'},
+    note:['벤토를 "대시보드 요약 영역 전용"으로 제한하는 이유',
+      '블록마다 역할이 하나씩 배정되므로 처음 보는 사용자도 화면 구조를 빠르게 파악합니다. KPI 숫자를 34px까지 올려 멀리서도 읽히고, 블록 배경에 브랜드 틴트를 써서 가장 중요한 지표 하나를 지정할 수 있습니다. 반대로 블록 사이 간격과 큰 반경이 공간을 소비하므로 목록·입력 화면에 쓰면 한 화면의 정보량이 눈에 띄게 줄어듭니다. 그래서 요약 화면 전용으로 쓰고, 상세·목록은 A를 따르게 하는 조합을 권합니다.']},
+  editorial:{name:'D · 에디토리얼 데이터', tag:'괘선과 타이포 위계로 조판 · 명조 숫자',
+    spec:{'모서리 반경':'2 px (거의 직각)','테두리':'괘선 중심 (상단 1px ink)','그림자':'없음','카드 여백':'20 px','요소 간격':'0 (괘선으로 분리)','테이블 행':'46 px','KPI 숫자':'41 / 48 px 명조'},
+    note:['에디토리얼을 "분석 리포트·정산 명세"에 쓰는 이유',
+      '카드라는 그릇을 없애고 괘선과 활자 크기만으로 위계를 만들기 때문에, 같은 면적에서 숫자를 가장 크게 보여줄 수 있습니다. KPI 숫자 41px에 명조(Noto Serif KR)를 쓰면 금액이 "문서"처럼 읽혀 정산서·세금계산서·월간 리포트의 격식과 맞습니다. 세로 괘선을 없앤 가로줄 전용 테이블은 숫자 열을 비교하며 읽는 데 유리합니다. 다만 상태 칩의 배경을 지워 글자색만 남기므로 색 의존도가 올라가 아이콘을 반드시 함께 써야 하고, 조작이 많은 화면에서는 "눌리는 것"이 잘 보이지 않습니다.']}
+};
+
+const MATRIX = [
+  ['A 정밀 플랫 (미니멀)',9,9,9,9,7,'채택 · 기본'],
+  ['B 머티리얼 디자인',6,8,8,8,10,'채택 · 부분'],
+  ['C 벤토 그리드',5,8,9,8,7,'채택 · 요약'],
+  ['D 에디토리얼',7,9,8,7,5,'채택 · 리포트'],
+  ['네오브루탈리즘',6,4,9,7,4,'부분 차용'],
+  ['스큐어모피즘',3,6,7,2,6,'탈락'],
+  ['글래스모피즘',4,5,2,5,6,'탈락'],
+  ['뉴모피즘',3,4,1,6,3,'탈락']
+];
+
+const TYPE_SCALE = [
+  ['display-lg',41,48,117,'-0.025em',700,'랜딩·빈 상태 대표 문구'],
+  ['display',34,40,118,'-0.02em',700,'페이지 제목'],
+  ['title-lg',29,36,124,'-0.015em',600,'섹션 제목 · 큰 KPI'],
+  ['title',24,32,133,'-0.01em',600,'카드 제목 · KPI 숫자'],
+  ['title-sm',20,28,140,'-0.005em',600,'소제목 · 모달 제목'],
+  ['body-lg',17,24,141,'0',400,'설명 문단 · 리드'],
+  ['body',15,24,160,'0',400,'본문 기준값'],
+  ['body-sm',14,20,143,'0',400,'테이블 셀 · 폼 입력'],
+  ['caption',13,20,154,'0.01em',500,'레이블 · 보조 정보 (하한)']
+];
+
+const TEXT_TOKENS = [
+  ['text-primary','#262222','15.23','15.74','#F5F1EF','16.75','AAA','본문·제목·테이블 값'],
+  ['text-secondary','#534C4B','8.12','8.39','#C9C1BE','10.61','AAA','레이블·설명·보조 문장'],
+  ['text-tertiary','#6A6260','5.76','5.95','#A39B98','6.89','AA','메타·타임스탬프·플레이스홀더'],
+  ['text-disabled','#9D9391','2.90','2.99','#6E6663','3.35','비정보','비활성 전용 · 정보 전달 금지']
+];
+
+/* ============================================================
+   목업 화면 렌더
+   ============================================================ */
+const ORDERS = [
+  ['ORD-24119-0841','김서연','KS','무선 이어버드 프로 외 2건','248,000','paid','결제완료','11/14'],
+  ['ORD-24119-0837','박지훈','PJ','스탠딩 데스크 1200','389,000','prep','상품준비중','11/14'],
+  ['ORD-24119-0834','이하늘','LH','프리미엄 원두 1kg 외 5건','1,248,500','ship','배송중','11/13'],
+  ['ORD-24119-0829','정우성','JW','기계식 키보드 87키','164,000','ship','배송중','11/13'],
+  ['ORD-24119-0822','최민아','CM','유기농 단백질 바 24입','47,600','back','반품요청','11/12'],
+  ['ORD-24119-0818','한도윤','HD','모니터 암 듀얼','112,000','paid','결제완료','11/12']
+];
+const SERIES = [980,1124,1043,1298,1187,1402,1284];
+const DAYS = ['11/08','11/09','11/10','11/11','11/12','11/13','11/14'];
+const STOCK = [['무선 이어버드 프로',82,'var(--sc600)'],['스탠딩 데스크 1200',46,'var(--wn600)'],['프리미엄 원두 1kg',18,'var(--dg600)'],['모니터 암 듀얼',64,'var(--b600)']];
+
+const ic = {
+  grid:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  cart:'<svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h10L20 7H6.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  box:'<svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+  truck:'<svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>',
+  chart:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  mega:'<svg viewBox="0 0 24 24"><path d="M4 10v4l12 5V5L4 10zM4 10H2v4h2M16 8a4 4 0 010 8"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  dn:'<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+  search:'<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  dl:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>',
+  fil:'<svg viewBox="0 0 24 24"><path d="M3 6h18M6 12h12M10 18h4"/></svg>'
+};
+
+function areaChart(){
+  const w=560,h=152,pl=38,pr=10,pt=12,pb=24;
+  const max=1500,min=800;
+  const x=i=>pl+(w-pl-pr)*i/(SERIES.length-1);
+  const y=v=>pt+(h-pt-pb)*(1-(v-min)/(max-min));
+  const pts=SERIES.map((v,i)=>[x(i),y(v)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+' L'+x(SERIES.length-1).toFixed(1)+' '+(h-pb)+' L'+pl+' '+(h-pb)+' Z';
+  const grid=[800,1000,1200,1400].map(v=>
+    '<line x1="'+pl+'" y1="'+y(v).toFixed(1)+'" x2="'+(w-pr)+'" y2="'+y(v).toFixed(1)+'" stroke="var(--n200)" stroke-width="1"/>'+
+    '<text x="'+(pl-8)+'" y="'+(y(v)+4).toFixed(1)+'" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--n500)">'+(v/1000).toFixed(1)+'k</text>').join('');
+  const labels=DAYS.map((d,i)=>'<text x="'+x(i).toFixed(1)+'" y="'+(h-7)+'" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--n500)">'+d+'</text>').join('');
+  const last=pts[pts.length-1];
+  return '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="최근 7일 일별 주문 건수 추이. 11월 8일 980건에서 11월 14일 1,284건으로 증가">'+
+    '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="var(--b500)" stop-opacity=".22"/><stop offset="100%" stop-color="var(--b500)" stop-opacity="0"/>'+
+    '</linearGradient></defs>'+grid+
+    '<path d="'+area+'" fill="url(#ag)"/>'+
+    '<path d="'+line+'" fill="none" stroke="var(--b600)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>'+
+    pts.slice(0,-1).map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.4" fill="var(--surface)" stroke="var(--b600)" stroke-width="1.4"/>').join('')+
+    '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="4.2" fill="var(--b600)"/>'+
+    '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="7.5" fill="var(--b600)" opacity=".18"/>'+
+    labels+'</svg>';
+}
+
+function screenHTML(){
+  const nav=(icon,label,cur)=>'<a href="#" '+(cur?'aria-current="page"':'')+'>'+icon+label+'</a>';
+  const kpi=(l,v,unit,d,up)=>'<div class="kpi"><div class="kpi-l">'+l+'</div><div class="kpi-v">'+v+
+    (unit?'<small>'+unit+'</small>':'')+'</div><div class="delta '+(up?'up':'dn')+'">'+(up?ic.up:ic.dn)+d+'</div></div>';
+  const rows=ORDERS.map(o=>'<tr><td class="id">'+o[0]+'</td>'+
+    '<td><div class="cust"><i>'+o[2]+'</i>'+o[1]+'</div></td>'+
+    '<td>'+o[3]+'</td><td class="num">'+o[4]+'</td>'+
+    '<td><span class="chip '+o[5]+'"><i></i>'+o[6]+'</span></td>'+
+    '<td class="num">'+o[7]+'</td></tr>').join('');
+  const bars=STOCK.map(s=>'<div class="bar-row"><div class="bar-top"><span>'+s[0]+'</span><b>'+s[1]+'%</b></div>'+
+    '<div class="bar-trk"><div class="bar-fil" style="width:'+s[1]+'%;background:'+s[2]+'"></div></div></div>').join('');
+
+  return ''+
+  '<aside class="app-side">'+
+    '<div class="brand-mark"><i>C</i><b>커머스 콘솔</b></div>'+
+    '<div class="nav-grp">운영</div>'+
+    nav(ic.grid,'대시보드',false)+nav(ic.cart,'주문 관리',true)+nav(ic.box,'상품 · 재고',false)+nav(ic.truck,'출고 · 배송',false)+
+    '<div class="nav-grp">성장</div>'+
+    nav(ic.chart,'매출 분석',false)+nav(ic.mega,'마케팅',false)+
+  '</aside>'+
+  '<div class="app-main">'+
+    '<div class="app-top">'+
+      '<div class="crumb">운영<span>/</span><b>주문 관리</b></div>'+
+      '<div class="spacer"></div>'+
+      '<div class="fakefield">'+ic.search+'주문번호 · 수취인 검색</div>'+
+      '<div class="avatar">운</div>'+
+    '</div>'+
+    '<div class="app-body">'+
+      '<div class="kpis">'+
+        kpi('오늘 주문','1,284','건','+8.4%',true)+
+        kpi('결제 금액','48,200','만원','+12.1%',true)+
+        kpi('출고 대기','312','건','+41건',false)+
+        kpi('반품 요청','27','건','-5건',true)+
+      '</div>'+
+      '<div class="row2">'+
+        '<div class="card">'+
+          '<div class="card-h"><h5>최근 7일 주문 추이</h5><span class="small mono">일 평균 1,188건</span></div>'+
+          '<div class="chart-box">'+areaChart()+'</div>'+
+          '<div class="legend"><span><i style="background:var(--b600)"></i>일별 주문</span><span><i style="background:var(--b200)"></i>누적 추세</span></div>'+
+        '</div>'+
+        '<div class="card">'+
+          '<div class="card-h"><h5>재고 소진율</h5></div>'+
+          '<div class="bars">'+bars+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div class="toolbar">'+
+          '<button class="btn btn-pri">'+ic.plus+'주문 등록</button>'+
+          '<button class="btn btn-ghost">'+ic.fil+'필터</button>'+
+          '<button class="btn btn-ghost">'+ic.dl+'내보내기</button>'+
+          '<span class="spacer"></span>'+
+          '<span class="small mono">1,284건 중 1–6</span>'+
+        '</div>'+
+        '<div class="tbl-wrap"><table>'+
+          '<thead><tr><th>주문번호</th><th>수취인</th><th>상품</th><th style="text-align:right">결제금액</th><th>상태</th><th style="text-align:right">출고예정</th></tr></thead>'+
+          '<tbody>'+rows+'</tbody>'+
+        '</table></div>'+
+        '<div class="tbl-foot"><span>6건 표시 · 스크롤하면 이어서 불러옵니다</span><span class="mono">페이지 1 / 214</span></div>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+/* ============================================================
+   컴포넌트 비교 그리드
+   ============================================================ */
+const CMP_ROWS = [
+  {lab:'주요 버튼',sub:'radius · padding · shadow',
+   html:'<div style="display:flex;flex-direction:column;gap:8px;align-items:center"><button class="btn btn-pri">'+ic.plus+'주문 등록</button><button class="btn btn-ghost">필터</button></div>'},
+  {lab:'상태 칩',sub:'4개 상태 · 색+점+텍스트',
+   html:'<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center"><span class="chip paid"><i></i>결제완료</span><span class="chip prep"><i></i>상품준비중</span><span class="chip ship"><i></i>배송중</span><span class="chip back"><i></i>반품요청</span></div>'},
+  {lab:'입력 필드',sub:'경계선 대비 3:1 필수',
+   html:'<div class="fakefield" style="width:100%">'+ic.search+'주문번호 검색</div>'},
+  {lab:'KPI 타일',sub:'숫자 크기 · 증감 표시',
+   html:'<div class="kpis" style="grid-template-columns:1fr;width:100%"><div class="kpi"><div class="kpi-l">결제 금액</div><div class="kpi-v">48,200<small>만원</small></div><div class="delta up">'+ic.up+'+12.1%</div></div></div>'},
+  {lab:'테이블 행',sub:'행 높이 · 괘선 · 숫자 정렬',
+   html:'<div style="width:100%;overflow:hidden"><table><thead><tr><th>주문번호</th><th style="text-align:right">금액</th></tr></thead><tbody>'+
+     '<tr><td class="id">ORD-0841</td><td class="num">248,000</td></tr>'+
+     '<tr><td class="id">ORD-0834</td><td class="num">1,248,500</td></tr>'+
+     '<tr><td class="id">ORD-0822</td><td class="num">47,600</td></tr></tbody></table></div>'}
+];
+
+/* ============================================================
+   초기화
+   ============================================================ */
+function buildMatrix(){
+  const score=n=>'<span class="score">'+Array.from({length:10},(_,i)=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</span>';
+  document.getElementById('matrix').innerHTML = MATRIX.map(r=>{
+    const sum=r[1]+r[2]+r[3]+r[4]+r[5];
+    const v=r[6];
+    const cls=v.startsWith('채택')?'pass':v==='부분 차용'?'warn':'fail';
+    return '<tr><td><b style="color:var(--ink)">'+r[0]+'</b></td>'+
+      r.slice(1,6).map(n=>'<td class="m">'+score(n)+' '+n+'</td>').join('')+
+      '<td class="m"><b>'+sum+'</b>/50</td><td class="'+cls+'">'+v+'</td></tr>';
+  }).join('');
+}
+
+function buildTypeScale(){
+  document.getElementById('typeScale').innerHTML = TYPE_SCALE.map(t=>{
+    const warn = t[3] < 130 ? ' style="color:var(--wn700)"' : '';
+    return '<tr><td class="m">'+t[0]+'</td><td class="m">'+t[1]+' px</td><td class="m">'+t[2]+' px</td>'+
+      '<td class="m"'+warn+'>'+t[3]+'%</td><td class="m">'+t[4]+'</td><td class="m">'+t[5]+'</td><td>'+t[6]+'</td></tr>';
+  }).join('');
+}
+
+function buildTextTokens(){
+  document.getElementById('textTokens').innerHTML = TEXT_TOKENS.map(t=>{
+    const lv=t[6], cls=lv==='AAA'?'pass':lv==='AA'?'pass':'warn';
+    return '<tr><td class="m">'+t[0]+'</td>'+
+      '<td class="sw"><span class="dot" style="background:'+t[1]+'"></span><span class="mono">'+t[1]+'</span></td>'+
+      '<td class="m">'+t[2]+':1</td><td class="m">'+t[3]+':1</td>'+
+      '<td class="sw"><span class="dot" style="background:'+t[4]+'"></span><span class="mono">'+t[4]+'</span></td>'+
+      '<td class="m">'+t[5]+':1</td><td class="'+cls+'">'+lv+'</td><td>'+t[7]+'</td></tr>';
+  }).join('');
+}
+
+function buildCandidates(){
+  const order=['crimson','vermilion','signal'];
+  document.getElementById('candidates').innerHTML = order.map(k=>{
+    const b=BRANDS[k], cw=ONWHITE[k];
+    const steps=[50,100,200,300,400,500,600,700,800,900,950];
+    const ramp=steps.map(s=>
+      '<div><div class="sw" style="background:'+b.ramp[s]+'"></div>'+
+      '<div class="mt"><b>'+s+'</b><span>'+b.ramp[s].replace('#','')+'</span>'+
+      '<em>'+cw[s].toFixed(2)+'</em></div></div>').join('');
+    const rec = k==='crimson' ? ' · 권고' : k==='signal' ? ' · 비권고' : '';
+    const recCls = k==='crimson' ? 'pass' : k==='signal' ? 'fail' : 'warn';
+    return '<div class="cand">'+
+      '<div class="cand-h">'+
+        '<div class="cand-sw" style="background:'+b.ramp[600]+'"></div>'+
+        '<div class="t"><b>'+b.ko+' <span class="'+recCls+'" style="font-size:12px;font-family:var(--f-mono)">'+b.ramp[600]+rec+'</span></b>'+
+        '<span>'+b.desc+'</span></div>'+
+      '</div>'+
+      '<div class="ramp">'+ramp+'</div>'+
+      '<p class="small" style="padding:8px 16px 0;margin:0">단계 · HEX · 흰 배경 대비(:1)</p>'+
+      '<div class="cand-metrics">'+
+        '<dl><dt>색상각 (OKLCH H)</dt><dd>'+b.hue+'°</dd></dl>'+
+        '<dl><dt>600 흰글자 대비</dt><dd>'+CONTRAST_600[k].toFixed(2)+':1 <span class="pass">AA</span></dd></dl>'+
+        '<dl><dt>700 본문 대비</dt><dd>'+cw[700].toFixed(2)+':1 <span class="pass">AAA</span></dd></dl>'+
+        '<dl><dt>에러색과 ΔE</dt><dd><span class="'+(b.dE<2?'fail':b.dE<5?'warn':'pass')+'">'+b.dE.toFixed(1)+'</span></dd></dl>'+
+        '<dl><dt>유의할 점</dt><dd style="font-family:var(--f-body);font-size:12.5px;line-height:18px;white-space:normal">'+b.risk+'</dd></dl>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function buildClash(){
+  const items=[
+    {k:'signal',a:'#D83B38',b:'#DE302E',dE:1.5,msg:'두 색을 나란히 놓아도 경계가 거의 보이지 않습니다. 브랜드 강조와 에러를 구별할 수 없습니다.',cls:'fail'},
+    {k:'vermilion',a:'#CF4A29',b:'#DE302E',dE:4.4,msg:'아주 약간 더 주황에 가깝지만, 떨어진 위치에 있으면 같은 색으로 읽힙니다.',cls:'warn'},
+    {k:'crimson',a:'#D33E58',b:'#DE302E',dE:4.9,msg:'후보 중 가장 멀지만 여전히 부족합니다. 에러색을 명도까지 함께 밀어내야 합니다.',cls:'warn'},
+    {k:'solution',a:'#D33E58',b:'#B32700',dE:10.9,msg:'크림슨 600 + 에러를 H34 / L50으로 재배치한 권고안. 비로소 다른 색으로 인지됩니다.',cls:'pass'}
+  ];
+  document.getElementById('clash').innerHTML = items.map(it=>{
+    const title = it.k==='solution' ? '권고 조합' : BRANDS[it.k].ko;
+    return '<div class="clash-item">'+
+      '<div class="clash-pair">'+
+        '<div style="background:'+it.a+'">브랜드 '+it.a+'</div>'+
+        '<div style="background:'+it.b+'">에러 '+it.b+'</div>'+
+      '</div>'+
+      '<div class="clash-meta">'+
+        '<div class="de '+it.cls+'">ΔE '+it.dE.toFixed(1)+' <small>'+title+'</small></div>'+
+        '<p>'+it.msg+'</p>'+
+      '</div></div>';
+  }).join('');
+}
+
+function buildCmp(){
+  const styles=['flat','material','bento','editorial'];
+  document.getElementById('cmpRows').innerHTML = CMP_ROWS.map(r=>
+    '<div class="cmp-row">'+
+      '<div class="cmp-lab">'+r.lab+'<span>'+r.sub+'</span></div>'+
+      styles.map(s=>'<div class="cmp-cell"><div class="app" data-style="'+s+'">'+r.html+'</div></div>').join('')+
+    '</div>').join('');
+}
+
+function setStyle(v){
+  document.getElementById('mainApp').dataset.style=v;
+  const s=STYLES[v];
+  document.getElementById('plateName').textContent=s.name;
+  document.getElementById('plateTag').textContent=s.tag;
+  document.getElementById('specStrip').innerHTML=Object.entries(s.spec)
+    .map(([k,val])=>'<dl><dt>'+k+'</dt><dd>'+val+'</dd></dl>').join('');
+  document.getElementById('styleNotes').innerHTML=
+    '<span class="tag">시안 해설</span><b>'+s.note[0]+'</b><p>'+s.note[1]+'</p>';
+}
+
+function wireSeg(id,fn){
+  const el=document.getElementById(id);
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
+    fn(b.dataset.v);
+  });
+}
+
+buildMatrix(); buildTypeScale(); buildTextTokens();
+buildCandidates(); buildClash(); buildCmp();
+document.getElementById('mainApp').innerHTML=screenHTML();
+setStyle('flat');
+
+wireSeg('segStyle', setStyle);
+wireSeg('segBrand', v=>document.documentElement.dataset.brand=v);
+wireSeg('segTheme', v=>document.documentElement.dataset.theme=v);
+
+document.getElementById('copyBtn').addEventListener('click',async e=>{
+  const btn=e.currentTarget;
+  try{
+    await navigator.clipboard.writeText(document.getElementById('tmpl').textContent);
+    btn.textContent='복사됨';
+  }catch{
+    const r=document.createRange(); r.selectNodeContents(document.getElementById('tmpl'));
+    const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    btn.textContent='직접 복사하세요';
+  }
+  setTimeout(()=>{btn.textContent='복사'},1800);
+});
+</script>

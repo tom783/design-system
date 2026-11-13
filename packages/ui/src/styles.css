@@ -1,0 +1,37 @@
+/* Storybook · 앱 공통 진입 스타일시트.
+   순서가 중요하다 — Tailwind 를 먼저 올려 레이어 순서를 확정한 뒤,
+   토큰(원시·의미)을 올리고, 마지막에 Tailwind 이름 매핑을 연결한다. */
+@import "tailwindcss";
+@import "../../tokens/tokens.css";
+@import "../../tokens/theme.css";
+
+/* Tailwind v4 는 클래스 사용처를 자동 탐지한다. @source 는 그 범위를 "제한"하지
+   않고 "추가"한다 — 자동 탐지를 끄려면 @import "tailwindcss" source(none) 이 필요하다.
+   여기서는 자동 탐지로 충분하므로 추가 경로를 선언하지 않는다. */
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* 숫자가 열로 정렬되는 모든 곳에서 고정폭 숫자를 쓴다.
+     금액 자릿수가 흔들리면 비교가 불가능해진다. */
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* 키보드 포커스는 어떤 컴포넌트에서도 같은 모양이어야 한다. */
+  :focus-visible {
+    outline: var(--focus-width) solid var(--border-focus);
+    outline-offset: var(--focus-offset);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      transition-duration: .01ms !important;
+    }
+  }
+}
