@@ -1,0 +1,69 @@
+/* 로딩 전용 규칙. 토큰의 지속시간과 의미색을 그대로 사용해 테마를 상속한다. */
+.loading-skeleton {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  background: var(--skeleton-bg);
+  border-radius: var(--radius-sm);
+}
+.loading-skeleton[data-variant="circle"] { border-radius: var(--radius-full); aspect-ratio: 1; }
+.loading-skeleton[data-animation="pulse"] { animation: loading-pulse var(--loading-pulse-dur) ease-in-out infinite; }
+.loading-skeleton[data-animation="shimmer"] {
+  background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-highlight) 50%, var(--skeleton-bg) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer var(--loading-pulse-dur) linear infinite;
+}
+@keyframes loading-pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+@keyframes loading-shimmer { from { background-position: 200% 0; } to { background-position: 0 0; } }
+.loading-text-line { display: flex; align-items: center; height: var(--loading-line-height); }
+.loading-card-title, .loading-card-footer { display: flex; align-items: center; width: 100%; }
+.loading-card-title { height: var(--text-body-lg-lh); }
+/* CardFooter는 caption 크기와 본문 상속 행간을 함께 사용한다. */
+.loading-card-footer { height: var(--text-body-lh); }
+.loading-list { overflow: hidden; border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-surface); }
+.loading-list-row { height: var(--row-h-default); display: flex; align-items: center; padding-inline: var(--cell-px); }
+.loading-list-row + .loading-list-row { border-top: var(--border-width) solid var(--border-subtle); }
+.loading-form { display: grid; gap: var(--space-16); }
+.loading-form-field { display: grid; gap: var(--space-4); min-width: var(--field-min-w); }
+.loading-form-input { border-radius: var(--radius-md); }
+.loading-chart { min-width: 0; padding: var(--space-16); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-surface); }
+.loading-chart-legend { height: var(--text-body-lh); margin-bottom: var(--space-12); display: flex; align-items: center; }
+/* TrendBand의 기본값 및 축 여백과 일치. 공용 차트 높이 토큰이 생기면 함께 옮긴다. */
+.loading-chart-plot { height: 220px; padding: 24px 8px 28px 44px; }
+.loading-chart-axis { height: 100%; border-left: var(--border-width) solid var(--chart-axis); border-bottom: var(--border-width) solid var(--chart-axis); padding: var(--space-12); }
+.loading-progress { display: grid; min-width: 0; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+.loading-progress-labels { display: flex; align-items: baseline; gap: var(--space-12); min-width: 0; }
+.loading-progress-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loading-progress-percent { flex-shrink: 0; min-width: 4ch; text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+/* 9.1의 진행 트랙 규격은 6px. 숫자 폭은 100%까지 미리 확보한다. */
+.loading-progress-bar { height: 6px; overflow: hidden; border-radius: var(--radius-full); background: var(--progress-track); }
+.loading-progress-fill { display: block; height: 100%; background: var(--progress-fill); border-radius: inherit; }
+.loading-progress-fill[data-indeterminate] { width: 35%; animation: loading-flow var(--loading-pulse-dur) linear infinite; }
+/* 왼쪽 바깥에서 오른쪽 바깥으로 흐른 뒤 화면 밖에서만 재시작한다. 역행하지 않는다. */
+@keyframes loading-flow { from { transform: translateX(-100%); } to { transform: translateX(286%); } }
+.loading-progress-eta { color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); }
+.loading-task { display: flex; flex-direction: column; gap: var(--space-16); min-width: 0; border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); padding: var(--space-20); background: var(--bg-surface); }
+.loading-task-title { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); font-weight: 600; overflow-wrap: anywhere; }
+.loading-task-steps { display: grid; gap: var(--space-8); margin: 0; padding: 0; list-style: none; }
+.loading-task-step { display: flex; align-items: center; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-secondary); }
+.loading-task-step svg { width: var(--space-16); height: var(--space-16); flex-shrink: 0; }
+.loading-task-step[aria-current="step"] { font-weight: 600; color: var(--text-primary); }
+.loading-task-step-state { margin-left: auto; flex-shrink: 0; font-size: var(--text-caption); }
+.loading-task-motion { align-self: center; max-width: 100%; }
+/* 1.4s 맥박 토큰의 두 주기 = 2.8s. 새 시간값 없이 9.3의 2~3초 예산을 지킨다. */
+.loading-task-document { animation: loading-document calc(var(--loading-pulse-dur) * 2) var(--ease-standard) infinite; }
+@keyframes loading-document {
+  0%, 10% { transform: translateX(0); opacity: 0; }
+  20% { transform: translateX(0); opacity: 1; }
+  75%, 85% { transform: translateX(92px); opacity: 1; }
+  100% { transform: translateX(92px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton[data-animation], .loading-progress-fill[data-indeterminate], .loading-task-document {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  /* 불확정 막대도 정지한 채 존재하며 label로 처리 중임을 계속 전달한다. */
+  .loading-skeleton[data-animation="shimmer"] { background: var(--skeleton-bg); }
+}
