@@ -28,3 +28,5 @@ export { nextPhase, type LoadingPhase, type LoadingInput } from './lib/loading-s
 export { Tooltip, Hint, Tour, useTour, placeFallback, resolveStep, useAnchored, supportsAnchor,
   type TooltipProps, type HintProps, type TourStep, type TourProps, type UseTourOptions,
   type Rect, type Placement } from './components/guide';
+export { Field, FormFlow, useFormFlow, useComposition, nextFocusable, shouldValidate,
+  type FieldProps, type FormFlowOptions, type FormFlowProps, type FocusCandidate, type ValidationTiming } from './components/form';

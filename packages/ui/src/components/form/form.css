@@ -1,0 +1,14 @@
+.ds-field { display: flex; flex-direction: column; min-width: 0; gap: var(--space-4); }
+[data-slot="field-label"], [data-slot="field-description"], [data-slot="field-error"] {
+  font-size: var(--text-caption);
+  line-height: var(--text-caption-lh);
+  overflow-wrap: anywhere;
+}
+[data-slot="field-label"] { font-weight: 500; letter-spacing: .01em; }
+[data-slot="field-description"] { color: var(--text-secondary); }
+[data-slot="field-required"], [data-slot="field-error"] { color: var(--status-danger-fg); }
+/* 한 줄 오류의 유무로 다음 입력 위치가 바뀌지 않도록 DESIGN 3절의 행간을 예약한다.
+   긴 오류는 잘라 숨기지 않고 필요한 만큼 늘린다. */
+[data-slot="field-error"] { min-height: var(--text-caption-lh); display: flex; align-items: start; gap: var(--space-4); }
+[data-slot="field-error"] > svg { width: var(--space-16); height: var(--space-16); flex-shrink: 0; margin-top: var(--space-2); }
+[data-slot="field"] [aria-invalid="true"] { border-color: var(--status-danger-fg); }
