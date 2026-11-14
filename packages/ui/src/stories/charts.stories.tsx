@@ -1,6 +1,10 @@
+import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { BulletRow, CompositionArea, TrendBand, type BulletMetric } from '../components/chart';
+
+import { Button } from '../components/button';
+import { useDelayedLoading } from '../lib/use-delayed-loading';
 
 const daily = [980, 1020, 940, 1110, 1180, 1220, 1284].map((orders, index) => ({
   date: new Date(2026, 10, 8 + index), orders, low: orders - 180 - index * 10, high: orders + 220 + index * 10,
@@ -165,5 +169,125 @@ export const 구성변화_엣지: Story = {
     await expect(canvasElement.querySelectorAll('[data-slot="composition-single"]')).toHaveLength(4);
     const paths = canvasElement.querySelectorAll('[data-slot="composition-series"]');
     for (const path of [...paths].slice(4)) await expect((path.getAttribute('d')?.match(/M/g) ?? []).length).toBe(2);
+  },
+};
+
+export const 로딩_추이밴드: Story = {
+  render: () => <TrendBand {...trendProps} {...bandProps} data={[]} state="loading" title="7일 주문과 시간대 편차" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('7일 주문과 시간대 편차')).toBeVisible();
+    await expect(canvas.getByRole('list', { name: '범례' })).toHaveTextContent('추이분포 범위');
+    await expect(canvasElement.querySelector('[data-slot="chart-frame"]')).toHaveAttribute('aria-busy', 'true');
+    await expect(canvas.getByRole('status')).toHaveTextContent('불러오는 중');
+    await expect(canvasElement.querySelector('[data-slot="chart-skeleton-plot"]')).toBeVisible();
+    await expect(canvas.queryByRole('img')).toBeNull();
+    await expect(canvasElement.innerHTML).not.toContain(trendSummary);
+    await expect(canvasElement.querySelector('[data-slot="chart-empty"]')).toBeNull();
+  },
+};
+
+export const 로딩_불릿: Story = {
+  name: '로딩-불릿',
+  render: () => <BulletRow metrics={[]} state="loading" skeletonRows={metrics.length} title="주간 목표 달성" summary={bulletSummary} />,
+  play: async ({ canvasElement }) => {
+    const rows = canvasElement.querySelectorAll('[data-slot="chart-skeleton-bullet-row"]');
+    await expect(rows).toHaveLength(metrics.length);
+    for (const row of rows) await expect(row.getBoundingClientRect().height).toBe(44);
+    await expect(canvasElement.querySelector('.loading-chart-axis')).toBeNull();
+    await expect(canvasElement.querySelector('.loading-chart-legend')).toBeNull();
+    await expect(within(canvasElement).getByRole('list', { name: '범례' })).toBeVisible();
+  },
+};
+
+export const 로딩_치수일치: Story = {
+  render: () => <div className="grid grid-cols-2 items-start gap-4">
+    {[undefined, 300, 60, NaN, 0, -1].map((height, index) => <React.Fragment key={index}>
+      <div data-compare={`trend-${index}-loading`}><TrendBand {...trendProps} {...bandProps} height={height} state="loading" title="주문 추이" /></div>
+      <div data-compare={`trend-${index}-ready`}><TrendBand {...trendProps} {...bandProps} height={height} title="주문 추이" /></div>
+      <div data-compare={`composition-${index}-loading`}><CompositionArea {...compositionProps} height={height} state="loading" title="주문 구성" /></div>
+      <div data-compare={`composition-${index}-ready`}><CompositionArea {...compositionProps} height={height} title="주문 구성" /></div>
+    </React.Fragment>)}
+    <div data-compare="bullet-loading"><BulletRow metrics={[]} skeletonRows={metrics.length} state="loading" title="주간 목표" summary={bulletSummary} /></div>
+    <div data-compare="bullet-ready"><BulletRow metrics={metrics} title="주간 목표" summary={bulletSummary} /></div>
+  </div>,
+  play: async ({ canvasElement }) => {
+    await checkCharts(canvasElement, 13);
+    const groups = [...canvasElement.querySelectorAll<HTMLElement>('[data-compare]')];
+    for (let i = 0; i < groups.length; i += 2) {
+      const loading = groups[i]!.querySelector('[data-slot="chart-plot"]')!;
+      const ready = groups[i + 1]!.querySelector('[data-slot="chart-plot"]')!;
+      const diff = Math.abs(loading.getBoundingClientRect().height - ready.getBoundingClientRect().height);
+      groups[i]!.dataset.plotHeightDiff = String(diff);
+      await expect(diff).toBeLessThanOrEqual(2);
+      // 플롯뿐 아니라 제목·범례·외곽 여백도 같은 레이아웃 약속을 지킨다.
+      await expect(Math.abs(groups[i]!.getBoundingClientRect().height - groups[i + 1]!.getBoundingClientRect().height)).toBeLessThanOrEqual(2);
+    }
+  },
+};
+
+export const 오류: Story = {
+  render: () => <div className="grid gap-4">
+    <TrendBand {...trendProps} data={[]} state="error" title="주문 추이" />
+    <CompositionArea {...compositionProps} state="error" errorMessage="주문 구성 조회에 실패했습니다. 새로고침해 주세요." />
+    <BulletRow metrics={metrics} summary={bulletSummary} state="error" />
+  </div>,
+  play: async ({ canvasElement }) => {
+    const alerts = within(canvasElement).getAllByRole('alert');
+    await expect(alerts).toHaveLength(3);
+    await expect(alerts[0]).toHaveTextContent('데이터를 불러오지 못했습니다');
+    await expect(alerts[1]).toHaveTextContent('주문 구성 조회에 실패했습니다. 새로고침해 주세요.');
+    await expect(within(canvasElement).queryByText('표시할 데이터가 없습니다')).toBeNull();
+    await expect(within(canvasElement).queryByRole('img')).toBeNull();
+  },
+};
+
+export const 비어있음: Story = {
+  render: () => <div className="grid gap-4">
+    <TrendBand {...trendProps} data={[]} state="idle" title="오늘 주문" />
+    <CompositionArea {...compositionProps} data={[]} state="idle" emptyMessage="오늘 집계된 주문 구성이 없습니다" />
+    <BulletRow metrics={[]} summary={bulletSummary} state="idle" />
+    <TrendBand {...trendProps} state="empty" emptyMessage="선택한 기간에 주문이 없습니다" />
+  </div>,
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelectorAll('[data-slot="chart-empty"]')).toHaveLength(4);
+    await expect(within(canvasElement).getAllByText('표시할 데이터가 없습니다')).toHaveLength(2);
+    await expect(within(canvasElement).queryByRole('alert')).toBeNull();
+    await expect(within(canvasElement).queryByRole('img')).toBeNull();
+  },
+};
+
+function DelayedChartDemo() {
+  const [request, setRequest] = React.useState<{ duration: number } | null>(null);
+  const [busy, setBusy] = React.useState(false);
+  // 지연은 앱이 책임진다. 빠른 갱신은 기존 데이터를 유지하고 400ms부터 스켈레톤을 표시한다.
+  const loading = useDelayedLoading(busy, { delay: 400 });
+  React.useEffect(() => {
+    if (request === null) return;
+    const timer = setTimeout(() => setBusy(false), request.duration);
+    return () => clearTimeout(timer);
+  }, [request]);
+  return <section data-testid="delayed-chart" data-active={busy || loading}>
+    <div className="mb-3 flex gap-2">{[150, 1500].map((ms) => <Button key={ms} disabled={busy || loading} onClick={() => { setBusy(true); setRequest({ duration: ms }); }}>{ms}ms 응답</Button>)}</div>
+    <TrendBand {...trendProps} {...bandProps} state={loading ? 'loading' : 'idle'} title="주문 추이 새로고침" />
+  </section>;
+}
+
+export const 지연로딩: Story = {
+  render: () => <DelayedChartDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const ms of [150, 1500]) {
+      let sawSkeleton = false;
+      const record = () => { if (canvasElement.querySelector('[data-slot="chart-skeleton"]')) sawSkeleton = true; };
+      const observer = new MutationObserver(record);
+      observer.observe(canvasElement, { childList: true, subtree: true });
+      try {
+        await userEvent.click(canvas.getByRole('button', { name: `${ms}ms 응답` }));
+        await waitFor(() => expect(canvas.getByTestId('delayed-chart')).toHaveAttribute('data-active', 'false'), { timeout: ms + 2000 });
+        await expect(sawSkeleton).toBe(ms > 400);
+        await checkCharts(canvasElement, 1);
+      } finally { observer.disconnect(); }
+    }
   },
 };

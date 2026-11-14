@@ -1,7 +1,8 @@
 import { scaleLinear } from '@visx/scale';
 import { Bar, Line } from '@visx/shape';
 import { Group } from '@visx/group';
-import { ChartFrame, numericStyle } from './chart-frame';
+import { ChartSkeleton } from '../loading/skeleton-patterns';
+import { ChartFrame, type ChartFrameProps, numericStyle } from './chart-frame';
 import { isBulletAchieved, nonNegative } from './normalize';
 
 export interface BulletMetric {
@@ -13,10 +14,18 @@ export interface BulletMetric {
   unit?: string;
   lowerIsBetter?: boolean;
 }
-export interface BulletRowProps { metrics: BulletMetric[]; summary: string; title?: string; className?: string }
+export interface BulletRowProps extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage'> {
+  metrics: BulletMetric[];
+  summary: string;
+  title?: string;
+  className?: string;
+  /** 앱이 지표 개수를 알면 넘겨라. 실제 개수와 안 맞으면 로딩이 끝날 때 화면이 밀린다. 기본 3. */
+  skeletonRows?: number;
+}
 
-export function BulletRow({ metrics, summary, title, className }: BulletRowProps) {
-  return <ChartFrame title={title} summary={summary} className={className} empty={!metrics.length}
+export function BulletRow({ metrics, summary, title, className, state, emptyMessage, errorMessage, skeletonRows = 3 }: BulletRowProps) {
+  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage}
+    skeleton={<ChartSkeleton variant="bullet" legend={false} rows={skeletonRows} />} title={title} summary={summary} className={className} empty={!metrics.length}
     legend={[{ label: '실적', color: 'var(--chart-line)' }, { label: '정상 범위', color: 'var(--chart-range)' }, { label: '목표 눈금', color: 'var(--chart-target)' }]}>
     {(width) => <svg data-slot="bullet-row" role="img" aria-label={summary} width={width} height={metrics.length * 44} style={{ display: 'block' }}>
       {metrics.map((metric, index) => {

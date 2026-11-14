@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { CircleAlert } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { useElementWidth } from '../../lib/use-element-width';
 
@@ -8,13 +9,19 @@ export interface ChartFrameProps {
   summary: string;
   legend?: ChartLegendItem[];
   empty?: boolean;
+  state?: 'idle' | 'loading' | 'empty' | 'error';
+  emptyMessage?: string;
+  errorMessage?: string;
+  loadingLabel?: string;
+  skeleton?: ReactNode;
   className?: string;
   children: (width: number) => ReactNode;
 }
 
-export function ChartFrame({ title, summary, legend = [], empty, className, children }: ChartFrameProps) {
+export function ChartFrame({ title, summary, legend = [], empty, state = 'idle', emptyMessage = '표시할 데이터가 없습니다', errorMessage = '데이터를 불러오지 못했습니다', loadingLabel = '불러오는 중', skeleton, className, children }: ChartFrameProps) {
   const [ref, width] = useElementWidth<HTMLDivElement>();
-  return <figure data-slot="chart-frame" className={cn('m-0 min-w-0 rounded-[var(--radius-lg)] border border-line-strong bg-surface p-4', className)}>
+  const effectiveState = state === 'idle' && empty ? 'empty' : state;
+  return <figure aria-busy={effectiveState === 'loading'} data-slot="chart-frame" className={cn('m-0 min-w-0 rounded-[var(--radius-lg)] border border-line-strong bg-surface p-4', className)}>
     {title && <figcaption data-slot="chart-title" className="mb-3 text-[length:var(--text-body-lg)] font-semibold text-fg">{title}</figcaption>}
     {legend.length > 0 && <ul data-slot="chart-legend" aria-label="범례" className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--text-caption)] text-fg-muted">
       {legend.map((item, index) => <li key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-2">
@@ -23,7 +30,12 @@ export function ChartFrame({ title, summary, legend = [], empty, className, chil
       </li>)}
     </ul>}
     <div ref={ref} data-slot="chart-plot" className="min-w-0">
-      {empty ? <p data-slot="chart-empty" aria-label={summary} className="py-8 text-center text-[length:var(--text-body-sm)] text-fg-muted">표시할 데이터가 없습니다</p> : width > 0 ? children(width) : null}
+      {effectiveState === 'loading' ? <div data-slot="chart-loading" role="status">
+        <span className="sr-only">{loadingLabel}</span>
+        <div aria-hidden="true">{skeleton}</div>
+      </div> : effectiveState === 'error' ? <p data-slot="chart-error" role="alert" className="flex items-center justify-center gap-2 bg-danger-tint py-8 text-[length:var(--text-body-sm)] text-danger-ink">
+        <CircleAlert aria-hidden="true" className="size-5 shrink-0" />{errorMessage}
+      </p> : effectiveState === 'empty' ? <p data-slot="chart-empty" role="status" className="py-8 text-center text-[length:var(--text-body-sm)] text-fg-muted">{emptyMessage}</p> : width > 0 ? children(width) : null}
     </div>
   </figure>;
 }

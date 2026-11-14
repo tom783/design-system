@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Card, CardHeader, CardBody, CardFooter } from '../card';
 import { cn } from '../../lib/cn';
 import { Skeleton, SkeletonText } from './skeleton';
@@ -36,13 +37,27 @@ export function FormSkeleton({ fields = 3, label = '불러오는 중', className
   </div>;
 }
 
-export function ChartSkeleton({ label = '불러오는 중', className }: SkeletonPatternProps) {
-  return <div data-slot="chart-skeleton" role="status" aria-busy="true" className={cn('loading-chart', className)}>
+export interface ChartSkeletonProps extends SkeletonPatternProps {
+  height?: number;
+  legend?: boolean;
+  variant?: 'plot' | 'bullet';
+  rows?: number;
+}
+
+export function ChartSkeleton({ height, legend = true, variant = 'plot', rows = 3, label = '불러오는 중', className }: ChartSkeletonProps) {
+  const style = height !== undefined && Number.isFinite(height) && height > 0
+    ? { '--chart-skeleton-h': `${height}px` } as CSSProperties : undefined;
+  return <div data-slot="chart-skeleton" data-variant={variant} style={style} role="status" aria-busy="true" className={cn('loading-chart', className)}>
     <span className="sr-only">{label}</span>
-    <div className="loading-chart-legend"><Skeleton variant="text" textStyle="caption" width="30%" /></div>
+    {legend && <div className="loading-chart-legend"><Skeleton variant="text" textStyle="caption" width="30%" /></div>}
     {/* 실제 차트와 --chart-h-default를 공유하고 TrendBand의 축 여백(좌 44·상 24·하 28)을 보존한다. */}
-    <div data-slot="chart-skeleton-plot" className="loading-chart-plot" aria-hidden="true">
+    {variant === 'bullet' ? <div data-slot="chart-skeleton-bullets" aria-hidden="true">
+      {Array.from({ length: countOf(rows, 3) }, (_, index) => <div data-slot="chart-skeleton-bullet-row" className="loading-chart-bullet-row" key={index}>
+        <Skeleton variant="text" textStyle="caption" width="30%" />
+        <Skeleton height={18} />
+      </div>)}
+    </div> : <div data-slot="chart-skeleton-plot" className="loading-chart-plot" aria-hidden="true">
       <div className="loading-chart-axis"><Skeleton height="100%" /></div>
-    </div>
+    </div>}
   </div>;
 }

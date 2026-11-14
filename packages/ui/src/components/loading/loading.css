@@ -29,7 +29,11 @@
 .loading-chart { min-width: 0; padding: var(--space-16); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-surface); }
 .loading-chart-legend { height: var(--text-body-lh); margin-bottom: var(--space-12); display: flex; align-items: center; }
 /* 실제 차트와 높이 토큰을 공유하고 TrendBand의 축 여백을 보존한다. */
-.loading-chart-plot { height: var(--chart-h-default); padding: 24px 8px 28px 44px; }
+.loading-chart-plot { height: var(--chart-skeleton-h, var(--chart-h-default)); padding: 24px 8px 28px 44px; }
+/* ChartFrame가 외곽과 범례를 소유하므로 플롯 내부에는 중복 여백을 만들지 않는다. */
+[data-slot="chart-plot"] .loading-chart { padding: 0; border: 0; border-radius: 0; background: transparent; }
+/* BulletRow의 라벨(상단)과 트랙(y=22, 18px)을 같은 44px 행 안에 놓는다. */
+.loading-chart-bullet-row { height: 44px; display: grid; grid-template-rows: 18px 18px; align-items: start; padding-top: 4px; }
 .loading-chart-axis { height: 100%; border-left: var(--border-width) solid var(--chart-axis); border-bottom: var(--border-width) solid var(--chart-axis); padding: var(--space-12); }
 .loading-progress { display: grid; min-width: 0; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .loading-progress-labels { display: flex; align-items: baseline; gap: var(--space-12); min-width: 0; }

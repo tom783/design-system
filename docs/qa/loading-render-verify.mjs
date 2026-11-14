@@ -105,6 +105,30 @@ for (const name of STORIES) {
 check(`로딩 스토리 ${STORIES.length}개 렌더·play`, fails.length === 0,
   fails.length ? fails.map((f) => f.name).join(', ') : '예외 없음');
 
+// R08: 기존 차트 엣지와 로딩 연결을 같은 브라우저·play 환경에서 회귀 검증한다.
+console.log('── A-2. 차트 렌더 + play ──');
+const chartStories = ['추이밴드', '추이밴드-선만', '추이밴드-축기준', '추이밴드-음수', '추이밴드-엣지',
+  '불릿', '구성변화', '구성변화-절대값', '반응형', '구성변화-엣지',
+  '로딩-추이밴드', '로딩-불릿', '로딩-치수일치', '오류', '비어있음', '지연로딩'];
+for (const theme of ['light', 'dark']) {
+  for (const name of chartStories) {
+    const r = await open(`components-charts--${name}`, `&globals=theme:${theme}`);
+    check(`차트 ${theme} · ${name} · play`, !r.sbError && r.errors.length === 0, r.sbError ?? r.errors[0]);
+    if (name === '로딩-치수일치') {
+      const dims = await evalIn(`(() => {
+        const groups = [...document.querySelectorAll('[data-compare]')];
+        return groups.filter((_, i) => i % 2 === 0).map((group, i) => {
+          const a = group.querySelector('[data-slot="chart-plot"]').getBoundingClientRect().height;
+          const b = groups[i * 2 + 1].querySelector('[data-slot="chart-plot"]').getBoundingClientRect().height;
+          return { pair: group.dataset.compare, loading: a, ready: b, diff: Math.abs(a - b) };
+        });
+      })()`);
+      check(`차트 ${theme} · 플롯 치수 차이 2px 이내`, dims.length === 13 && dims.every(d => d.diff <= 2), JSON.stringify(dims));
+      await shot(`chart-dim-${theme}`);
+    }
+  }
+}
+
 // ══ B. 타이밍은 스토리 play 가 검증한다 ══
 // 폴링으로 로더 등장을 쫓는 방식은 틀렸다 — 짧게 떴다 사라지는 상태를 놓치고,
 // 페이지에 이미 있는 스켈레톤과 구분하지 못한다. 스토리의 play 가

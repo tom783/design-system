@@ -16,6 +16,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import * as stories from '../../packages/ui/src/stories/charts.stories.tsx';
+import * as loadingStories from '../../packages/ui/src/stories/loading.stories.tsx';
 import { BulletRow } from '../../packages/ui/src/components/chart/index.ts';
 import '../../packages/ui/src/styles.css';
 
@@ -61,14 +62,25 @@ function numericAndBounds() {
 async function run() {
   for (const theme of ['light', 'dark']) {
     document.documentElement.dataset.theme = theme;
-    for (const name of ['추이밴드', '추이밴드_선만', '추이밴드_엣지', '불릿', '구성변화', '구성변화_절대값', '반응형', '구성변화_엣지']) {
+    for (const name of ['추이밴드', '추이밴드_선만', '추이밴드_축기준', '추이밴드_음수', '추이밴드_엣지', '불릿', '구성변화', '구성변화_절대값', '반응형', '구성변화_엣지', '로딩_추이밴드', '로딩_불릿', '로딩_치수일치', '오류', '비어있음', '지연로딩']) {
       await check(theme + ' · ' + name + ' · play 및 SVG 경계', async () => {
         const story = stories[name];
         await render(React.createElement(story.render));
         await story.play({ canvasElement: canvas });
         numericAndBounds();
+        if (name === '로딩_치수일치') {
+          const measurements = [...canvas.querySelectorAll('[data-compare]')].filter((_, i) => i % 2 === 0)
+            .map(node => ({ pair: node.dataset.compare, diff: Number(node.dataset.plotHeightDiff) }));
+          record(theme + ' · 플롯 치수 실측 ' + JSON.stringify(measurements));
+        }
       });
     }
+  }
+  for (const name of ['대기시간_계층', '깜빡임_방지', '스켈레톤_기본', '스켈레톤_패턴', '스켈레톤_치수일치', '진행률', '긴작업', '모션_감소']) {
+    await check('기존 로딩 · ' + name + ' · play', async () => {
+      await render(React.createElement(loadingStories[name].render));
+      if (loadingStories[name].play) await loadingStories[name].play({ canvasElement: canvas });
+    });
   }
   await check('ResizeObserver 미지원 · 최초 측정 및 resize 폴백', async () => {
     const observer = window.ResizeObserver;
