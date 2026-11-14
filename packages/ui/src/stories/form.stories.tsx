@@ -26,6 +26,11 @@ export const 기본: Story = {
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(input).toBeRequired();
     await expect(root.querySelector('label')).toHaveAttribute('for', 'receiver');
+    const descriptionBottom = description.getBoundingClientRect().bottom;
+    const { top: inputTop, bottom: inputBottom } = input.getBoundingClientRect();
+    const errorTop = error.getBoundingClientRect().top;
+    await expect(descriptionBottom).toBeLessThanOrEqual(inputTop);
+    await expect(inputBottom).toBeLessThanOrEqual(errorTop);
     done(root);
   },
 };

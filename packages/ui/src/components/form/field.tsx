@@ -18,6 +18,7 @@ export function Field({ label, description, error, required, children, className
   const errorId = `${generatedId}-error`;
   const descriptionId = `${generatedId}-description`;
   const hasError = Boolean(error);
+  // DESIGN.md 11.4: 시각 순서와 달리 급한 오류를 먼저 읽도록 aria-describedby는 오류 → 설명 순서를 유지한다.
   const describedBy = [...new Set([
     hasError ? errorId : '', description ? descriptionId : '',
     ...(child.props['aria-describedby']?.split(/\s+/) ?? []),
@@ -25,12 +26,12 @@ export function Field({ label, description, error, required, children, className
   const isRequired = Boolean(required || child.props.required);
   return <div {...props} data-slot="field" className={cn('ds-field', className)}>
     <label data-slot="field-label" htmlFor={id}>{label}{isRequired && <span data-slot="field-required" role="img" aria-label="필수 입력"> *</span>}</label>
+    {description && <div data-slot="field-description" id={descriptionId}>{description}</div>}
     {React.cloneElement(child, {
       id, required: isRequired || undefined,
       'aria-describedby': describedBy,
       'aria-invalid': hasError ? true : child.props['aria-invalid'],
     })}
-    {description && <div data-slot="field-description" id={descriptionId}>{description}</div>}
     <div data-slot="field-error" id={errorId} aria-live="polite" aria-atomic="true">
       {hasError && <><CircleAlert aria-hidden="true" /><span>{error}</span></>}
     </div>
