@@ -274,6 +274,9 @@ const SIZING = {
   // ₩1,248,500,000 (13자) 를 IBM Plex Mono 14px 고정폭으로 조판한 폭 + 좌우 여백 28px
   'cell-min-w-money': '128px', 'cell-min-w-text': '80px',
   'tap-min': '44px', 'field-min-w': '120px', 'card-min-w': '240px',
+  // 차트 기본 높이. 스켈레톤이 실제 차트와 같은 높이를 쓰려면 양쪽이 같은 값을
+  // 봐야 한다 — 한쪽에 숫자를 복사해두면 다음에 바꿀 때 어긋난다(DESIGN.md 9.2).
+  'chart-h-default': '220px',
 };
 
 // 마이크로 인터랙션. 상호작용이 많은 서비스이므로 지속시간을 짧게 유지한다.

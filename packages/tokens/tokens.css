@@ -220,6 +220,7 @@
     --tap-min               : 44px;
     --field-min-w           : 120px;
     --card-min-w            : 240px;
+    --chart-h-default       : 220px;
 
     /* ── 모션 · 상호작용이 잦으므로 지속시간을 짧게 유지한다 ─────────────────── */
     --dur-instant           : 80ms;
