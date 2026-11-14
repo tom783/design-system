@@ -1341,16 +1341,18 @@
         "ref": "neutral-1000"
       },
       "tailwind": [
-        "bg-canvas"
+        "bg-canvas",
+        "bg-background",
+        "bg-ring-offset-background"
       ],
       "tailwindAliases": {
-        "color": "canvas",
+        "color": "ring-offset-background",
         "examples": [
-          "bg-canvas",
-          "text-canvas",
-          "border-canvas",
-          "fill-canvas",
-          "stroke-canvas"
+          "bg-ring-offset-background",
+          "text-ring-offset-background",
+          "border-ring-offset-background",
+          "fill-ring-offset-background",
+          "stroke-ring-offset-background"
         ]
       }
     },
@@ -1368,16 +1370,18 @@
         "ref": "neutral-975"
       },
       "tailwind": [
-        "bg-surface"
+        "bg-surface",
+        "bg-card",
+        "bg-popover"
       ],
       "tailwindAliases": {
-        "color": "surface",
+        "color": "popover",
         "examples": [
-          "bg-surface",
-          "text-surface",
-          "border-surface",
-          "fill-surface",
-          "stroke-surface"
+          "bg-popover",
+          "text-popover",
+          "border-popover",
+          "fill-popover",
+          "stroke-popover"
         ]
       }
     },
@@ -1395,16 +1399,18 @@
         "ref": "#060505"
       },
       "tailwind": [
-        "bg-sunken"
+        "bg-sunken",
+        "bg-secondary",
+        "bg-muted"
       ],
       "tailwindAliases": {
-        "color": "sunken",
+        "color": "muted",
         "examples": [
-          "bg-sunken",
-          "text-sunken",
-          "border-sunken",
-          "fill-sunken",
-          "stroke-sunken"
+          "bg-muted",
+          "text-muted",
+          "border-muted",
+          "fill-muted",
+          "stroke-muted"
         ]
       }
     },
@@ -1422,16 +1428,17 @@
         "ref": "neutral-950"
       },
       "tailwind": [
-        "bg-hovered"
+        "bg-hovered",
+        "bg-accent"
       ],
       "tailwindAliases": {
-        "color": "hovered",
+        "color": "accent",
         "examples": [
-          "bg-hovered",
-          "text-hovered",
-          "border-hovered",
-          "fill-hovered",
-          "stroke-hovered"
+          "bg-accent",
+          "text-accent",
+          "border-accent",
+          "fill-accent",
+          "stroke-accent"
         ]
       }
     },
@@ -1476,16 +1483,21 @@
         "ref": "neutral-50"
       },
       "tailwind": [
-        "text-fg"
+        "text-fg",
+        "text-foreground",
+        "text-card-foreground",
+        "text-popover-foreground",
+        "text-secondary-foreground",
+        "text-accent-foreground"
       ],
       "tailwindAliases": {
-        "color": "fg",
+        "color": "accent-foreground",
         "examples": [
-          "bg-fg",
-          "text-fg",
-          "border-fg",
-          "fill-fg",
-          "stroke-fg"
+          "bg-accent-foreground",
+          "text-accent-foreground",
+          "border-accent-foreground",
+          "fill-accent-foreground",
+          "stroke-accent-foreground"
         ]
       }
     },
@@ -1503,16 +1515,17 @@
         "ref": "neutral-200"
       },
       "tailwind": [
-        "text-fg-muted"
+        "text-fg-muted",
+        "text-muted-foreground"
       ],
       "tailwindAliases": {
-        "color": "fg-muted",
+        "color": "muted-foreground",
         "examples": [
-          "bg-fg-muted",
-          "text-fg-muted",
-          "border-fg-muted",
-          "fill-fg-muted",
-          "stroke-fg-muted"
+          "bg-muted-foreground",
+          "text-muted-foreground",
+          "border-muted-foreground",
+          "fill-muted-foreground",
+          "stroke-muted-foreground"
         ]
       }
     },
@@ -1584,16 +1597,18 @@
         "ref": "#FFFFFF"
       },
       "tailwind": [
-        "text-fg-on-brand"
+        "text-fg-on-brand",
+        "text-primary-foreground",
+        "text-destructive-foreground"
       ],
       "tailwindAliases": {
-        "color": "fg-on-brand",
+        "color": "destructive-foreground",
         "examples": [
-          "bg-fg-on-brand",
-          "text-fg-on-brand",
-          "border-fg-on-brand",
-          "fill-fg-on-brand",
-          "stroke-fg-on-brand"
+          "bg-destructive-foreground",
+          "text-destructive-foreground",
+          "border-destructive-foreground",
+          "fill-destructive-foreground",
+          "stroke-destructive-foreground"
         ]
       }
     },
@@ -1665,16 +1680,17 @@
         "ref": "neutral-800"
       },
       "tailwind": [
-        "border-line-strong"
+        "border-line-strong",
+        "border-border"
       ],
       "tailwindAliases": {
-        "color": "line-strong",
+        "color": "border",
         "examples": [
-          "bg-line-strong",
-          "text-line-strong",
-          "border-line-strong",
-          "fill-line-strong",
-          "stroke-line-strong"
+          "bg-border",
+          "text-border",
+          "border-border",
+          "fill-border",
+          "stroke-border"
         ]
       }
     },
@@ -1692,16 +1708,17 @@
         "ref": "neutral-600"
       },
       "tailwind": [
-        "border-field"
+        "border-field",
+        "border-input"
       ],
       "tailwindAliases": {
-        "color": "field",
+        "color": "input",
         "examples": [
-          "bg-field",
-          "text-field",
-          "border-field",
-          "fill-field",
-          "stroke-field"
+          "bg-input",
+          "text-input",
+          "border-input",
+          "fill-input",
+          "stroke-input"
         ]
       }
     },
@@ -1719,16 +1736,17 @@
         "ref": "brand-400"
       },
       "tailwind": [
-        "outline-focus"
+        "outline-focus",
+        "outline-ring"
       ],
       "tailwindAliases": {
-        "color": "focus",
+        "color": "ring",
         "examples": [
-          "bg-focus",
-          "text-focus",
-          "border-focus",
-          "fill-focus",
-          "stroke-focus"
+          "bg-ring",
+          "text-ring",
+          "border-ring",
+          "fill-ring",
+          "stroke-ring"
         ]
       }
     },
@@ -1746,16 +1764,17 @@
         "ref": "brand-600"
       },
       "tailwind": [
-        "bg-action"
+        "bg-action",
+        "bg-primary"
       ],
       "tailwindAliases": {
-        "color": "action",
+        "color": "primary",
         "examples": [
-          "bg-action",
-          "text-action",
-          "border-action",
-          "fill-action",
-          "stroke-action"
+          "bg-primary",
+          "text-primary",
+          "border-primary",
+          "fill-primary",
+          "stroke-primary"
         ]
       }
     },
@@ -1800,16 +1819,17 @@
         "ref": "danger-700"
       },
       "tailwind": [
-        "bg-action-danger"
+        "bg-action-danger",
+        "bg-destructive"
       ],
       "tailwindAliases": {
-        "color": "action-danger",
+        "color": "destructive",
         "examples": [
-          "bg-action-danger",
-          "text-action-danger",
-          "border-action-danger",
-          "fill-action-danger",
-          "stroke-action-danger"
+          "bg-destructive",
+          "text-destructive",
+          "border-destructive",
+          "fill-destructive",
+          "stroke-destructive"
         ]
       }
     },

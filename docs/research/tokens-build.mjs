@@ -428,6 +428,34 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
     contrast(resolveTok(SEMANTIC[theme]['avatar-bg']), bg), 1.2, 'nontext');
 }
 
+// shadcn 브리지 대비 — 브리지는 이름만 바꾸는 게 아니라 **실제로 함께 렌더되는 쌍**을
+// 만든다. 예: 드롭다운의 하이라이트 항목은 bg-accent + text-accent-foreground 다.
+// 여기서 검사하지 않으면 받아온 컴포넌트가 우리 기준을 조용히 비껴간다.
+const SHADCN_PAIRS = [
+  ['foreground on background',             'text-primary',  'bg-canvas',         4.5, 'text'],
+  ['card-foreground on card',              'text-primary',  'bg-surface',        4.5, 'text'],
+  ['popover-foreground on popover',        'text-primary',  'bg-surface',        4.5, 'text'],
+  ['primary-foreground on primary',        'text-on-brand', 'action-primary-bg', 4.5, 'text'],
+  ['secondary-foreground on secondary',    'text-primary',  'bg-sunken',         4.5, 'text'],
+  ['muted-foreground on muted',            'text-secondary','bg-sunken',         4.5, 'text'],
+  ['accent-foreground on accent',          'text-primary',  'bg-hover',          4.5, 'text'],
+  ['destructive-foreground on destructive','text-on-brand', 'action-danger-bg',  4.5, 'text'],
+  // 컨트롤을 식별하는 경계선만 1.4.11 의 3:1 대상이다. shadcn 은 Button(outline)·
+  // Input·SelectTrigger 에 `border-input` 을 쓰므로 그쪽에 3:1 을 건다.
+  ['input on background',                  'border-input',  'bg-canvas',         3.0, 'nontext'],
+  ['ring on background',                   'border-focus',  'bg-canvas',         3.0, 'nontext'],
+  // 일반 `border` 는 DropdownMenuContent·PopoverContent·SelectContent 같은
+  // **떠 있는 패널의 가장자리**와 구분선에 쓰인다. 그림자(--shadow-overlay)와 함께
+  // 쓰이므로 경계선이 단독 식별 수단이 아니다 — 3:1 이 아니라 '보이는가'를 본다.
+  ['border on surface (패널 가장자리)',     'border-default','bg-surface',        1.3, 'nontext'],
+];
+for (const theme of ['light', 'dark']) {
+  for (const [label, fg, bg2, min, kind] of SHADCN_PAIRS) {
+    check(`${theme} shadcn ${label}`,
+      contrast(resolveTok(SEMANTIC[theme][fg]), resolveTok(SEMANTIC[theme][bg2])), min, kind);
+  }
+}
+
 // 스켈레톤 대비. 양쪽 끝이 다 문제다 —
 //  · 너무 옅으면(바탕과 구별 안 되면) 아무것도 오지 않는 것처럼 보인다
 //  · 너무 진하면 실제 글자로 읽혀 사용자가 내용을 읽으려 한다
@@ -632,8 +660,46 @@ const TW_NAME = {
 };
 const missing = Object.keys(S.light).filter((k) => !TW_NAME[k]);
 if (missing.length) throw new Error('TW_NAME 매핑 누락: ' + missing.join(', '));
+
+// ── shadcn/ui 브리지 ──────────────────────────────────────────────────────
+// shadcn 컴포넌트는 `bg-popover` `text-muted-foreground` 처럼 자기 이름 규약을
+// 쓴다. 그 이름을 우리 의미 토큰으로 연결해두면 받아온 컴포넌트가 **자동으로
+// 우리 색을 입는다** — 소스를 손대지 않아도 된다.
+//
+// 이 맵이 없으면 shadcn 기본 팔레트가 따라 들어와 색 규율이 두 개가 된다.
+// 이름은 shadcn 레지스트리 소스에서 실제로 쓰이는 것만 적었다(17개 + ring-offset).
+const SHADCN = {
+  background:             'bg-canvas',
+  foreground:             'text-primary',
+  card:                   'bg-surface',
+  'card-foreground':      'text-primary',
+  popover:                'bg-surface',
+  'popover-foreground':   'text-primary',
+  primary:                'action-primary-bg',
+  'primary-foreground':   'text-on-brand',
+  secondary:              'bg-sunken',
+  'secondary-foreground': 'text-primary',
+  muted:                  'bg-sunken',
+  'muted-foreground':     'text-secondary',
+  // Radix 메뉴·셀렉트의 '하이라이트된 항목' 이 accent 다. 호버와 같은 면이어야 한다.
+  accent:                 'bg-hover',
+  'accent-foreground':    'text-primary',
+  destructive:            'action-danger-bg',
+  'destructive-foreground':'text-on-brand',
+  border:                 'border-default',
+  input:                  'border-input',
+  ring:                   'border-focus',
+  'ring-offset-background':'bg-canvas',
+};
+for (const [name, token] of Object.entries(SHADCN)) {
+  if (!S.light[token]) throw new Error(`SHADCN 브리지가 없는 토큰을 가리킨다: ${name} → ${token}`);
+}
 for (const [k, name] of Object.entries(TW_NAME)) {
   tw += `  ${pad(`--color-${name}`, 34)}: var(--${k});\n`;
+}
+tw += `\n  /* shadcn/ui 이름 → 우리 토큰. 받아온 컴포넌트가 그대로 우리 색을 입는다. */\n`;
+for (const [name, token] of Object.entries(SHADCN)) {
+  tw += `  ${pad(`--color-${name}`, 34)}: var(--${token});\n`;
 }
 tw += `\n`;
 for (const name of Object.keys(HUES)) for (const s of STEPS) tw += `  ${pad(`--color-${name}-${s}`, 34)}: var(--color-${name}-${s});\n`;

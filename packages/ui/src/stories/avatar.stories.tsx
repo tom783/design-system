@@ -16,7 +16,7 @@ export const 아바타_이니셜: Story = {
   },
 };
 export const 아바타_이미지실패: Story = {
-  args: { name: '김철수', src: 'data:image/png;base64,broken' },
+  args: { name: '김철수', src: "data:image/png;base64,broken" },
   play: async ({ canvasElement }) => {
     await waitFor(() => expect(canvasElement.querySelector('[data-slot="avatar-fallback"]')).toHaveTextContent('철수'));
     await expect(within(canvasElement).getByRole('img', { name: '김철수' })).toBeVisible();
