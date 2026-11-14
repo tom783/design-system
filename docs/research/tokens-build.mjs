@@ -180,6 +180,12 @@ const SEMANTIC = {
     'skeleton-highlight': ['neutral', 100, 'shimmer 하이라이트(옵트인)'],
     'progress-track':     ['neutral', 200, '진행 막대 트랙'],
     'progress-fill':      ['brand',   600, '진행 막대 채움'],
+    // 안내 — 툴팁은 표면과 반전시킨다. 본문 카드와 같은 색이면 '화면의 일부'로
+    // 읽혀서 임시로 떠 있는 설명이라는 것이 전달되지 않는다.
+    'tooltip-bg':         ['neutral', 950, '툴팁 바탕. 표면과 반전'],
+    'tooltip-fg':         ['neutral', 50,  '툴팁 글자'],
+    'hint-ring':          ['brand',   600, '안내가 가리키는 대상 둘레'],
+    'hint-bg':            ['bg-surface-ref', null, '힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다'],
   },
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
@@ -231,9 +237,16 @@ const SEMANTIC = {
     'skeleton-highlight': ['neutral', 800, 'shimmer 하이라이트(옵트인)'],
     'progress-track':     ['neutral', 900, '진행 막대 트랙'],
     'progress-fill':      ['brand',   500, '진행 막대 채움'],
+    'tooltip-bg':         ['neutral', 200, '툴팁 바탕. 다크에서는 밝은 쪽으로 반전'],
+    'tooltip-fg':         ['neutral', 1000,'툴팁 글자'],
+    'hint-ring':          ['brand',   400, '안내가 가리키는 대상 둘레'],
+    'hint-bg':            ['bg-surface-ref', null, '힌트 말풍선 바탕'],
   },
 };
-const resolveTok = ([ref, step]) => (ref.startsWith('#') ? ref : P[ref][step].hex);
+const resolveTok = ([ref, step]) => {
+  if (ref === 'bg-surface-ref') return null;   // 아래에서 bg-surface 를 그대로 가리킨다
+  return ref.startsWith('#') ? ref : P[ref][step].hex;
+};
 
 // ═════════════════════════ 4. 타이포그래피 ═════════════════════════
 //  행간은 고정 비율이 아니라 "글자가 커질수록 줄어드는" 함수다.
@@ -276,6 +289,10 @@ const SIZING = {
   'tap-min': '44px', 'field-min-w': '120px', 'card-min-w': '240px',
   // 차트 기본 높이. 스켈레톤이 실제 차트와 같은 높이를 쓰려면 양쪽이 같은 값을
   // 봐야 한다 — 한쪽에 숫자를 복사해두면 다음에 바꿀 때 어긋난다(DESIGN.md 9.2).
+  'tooltip-max-w':       '280px',  // 한 줄 설명이 목표. 넘치면 Hint 로 올려야 한다는 신호
+  'hint-max-w':          '320px',  // 2~3줄 + 액션
+  'anchor-gap':          '8px',    // 대상과 말풍선 사이 간격
+  'anchor-edge-pad':     '8px',    // 뷰포트 가장자리와의 최소 여백
   'chart-h-default': '220px',
 };
 
@@ -286,6 +303,9 @@ const LOADING = {
   'loading-delay':       '200ms',  // 이 시간 안에 끝나면 로더를 아예 띄우지 않는다
   'loading-min-visible': '400ms',  // 한번 뜬 로더는 최소 이만큼 유지한다(깜빡임 방지)
   'loading-pulse-dur':   '1400ms', // 스켈레톤 맥박 주기
+  // 안내 타이밍 — 즉시 띄우면 커서가 스쳐갈 때마다 깜빡인다.
+  'tooltip-delay-in':    '400ms',  // 호버 후 표시까지. 포커스는 즉시 띄운다
+  'tooltip-delay-out':   '120ms',  // 떠난 뒤 숨기기까지. 인접 트리거 이동 시 깜빡임 방지
   'loading-long-task':   '10000ms',// 이 이상이면 떠날 수 있는 경로를 준다
 };
 
@@ -369,6 +389,14 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
   check(`${theme} 격자가 데이터선보다 약하다`, lineC / gridC, 2.0, 'ratio');
 }
 
+// 툴팁은 반전색이라 일반 검사 범위 밖이다. 자체 조합으로 검사한다.
+for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
+  const tb = resolveTok(SEMANTIC[theme]['tooltip-bg']);
+  check(`${theme} 툴팁 글자 on 툴팁 바탕`, contrast(resolveTok(SEMANTIC[theme]['tooltip-fg']), tb), 4.5, 'text');
+  check(`${theme} 툴팁 바탕이 표면과 구별된다`, contrast(tb, bg), 3.0, 'nontext');
+  check(`${theme} hint-ring on surface`, contrast(resolveTok(SEMANTIC[theme]['hint-ring']), bg), 3.0, 'nontext');
+}
+
 // 스켈레톤 대비. 양쪽 끝이 다 문제다 —
 //  · 너무 옅으면(바탕과 구별 안 되면) 아무것도 오지 않는 것처럼 보인다
 //  · 너무 진하면 실제 글자로 읽혀 사용자가 내용을 읽으려 한다
@@ -442,7 +470,7 @@ css += `
 `;
 for (const [k, v] of Object.entries(S.light)) {
   const [ref, step, desc] = v;
-  const val = ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
+  const val = ref === 'bg-surface-ref' ? 'var(--bg-surface)' : ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
   css += `    --${pad(k, 24)}: ${pad(val, 34)};  /* ${desc} */\n`;
 }
 css += `
@@ -496,7 +524,7 @@ css += `
 `;
 const darkDecls = Object.entries(S.dark).map(([k, v]) => {
   const [ref, step, desc] = v;
-  const val = ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
+  const val = ref === 'bg-surface-ref' ? 'var(--bg-surface)' : ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
   return `    --${pad(k, 24)}: ${pad(val, 34)};  /* ${desc} */`;
 }).join('\n');
 const darkShadow = `    --${pad('shadow-overlay', 22)}: var(--shadow-overlay-dark);`;
@@ -564,6 +592,8 @@ const TW_NAME = {
   'chart-track': 'chart-track',   'chart-range': 'chart-range',
   'chart-target': 'chart-target', 'chart-point': 'chart-point',
   'skeleton-bg': 'skeleton',      'skeleton-highlight': 'skeleton-highlight',
+  'tooltip-bg': 'tooltip',        'tooltip-fg': 'tooltip-fg',
+  'hint-ring': 'hint-ring',       'hint-bg': 'hint-bg',
   'progress-track': 'progress-track', 'progress-fill': 'progress-fill',
 };
 const missing = Object.keys(S.light).filter((k) => !TW_NAME[k]);

@@ -151,6 +151,10 @@
     --skeleton-highlight      : var(--color-neutral-100)          ;  /* shimmer 하이라이트(옵트인) */
     --progress-track          : var(--color-neutral-200)          ;  /* 진행 막대 트랙 */
     --progress-fill           : var(--color-brand-600)            ;  /* 진행 막대 채움 */
+    --tooltip-bg              : var(--color-neutral-950)          ;  /* 툴팁 바탕. 표면과 반전 */
+    --tooltip-fg              : var(--color-neutral-50)           ;  /* 툴팁 글자 */
+    --hint-ring               : var(--color-brand-600)            ;  /* 안내가 가리키는 대상 둘레 */
+    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 */
 
     /* ── 타이포그래피 ──────────────────────────────────────────────────────
        행간은 고정 비율이 아니라 글자 크기에 반비례하는 함수다.
@@ -220,6 +224,10 @@
     --tap-min               : 44px;
     --field-min-w           : 120px;
     --card-min-w            : 240px;
+    --tooltip-max-w         : 280px;
+    --hint-max-w            : 320px;
+    --anchor-gap            : 8px;
+    --anchor-edge-pad       : 8px;
     --chart-h-default       : 220px;
 
     /* ── 모션 · 상호작용이 잦으므로 지속시간을 짧게 유지한다 ─────────────────── */
@@ -235,6 +243,8 @@
     --loading-delay         : 200ms;
     --loading-min-visible   : 400ms;
     --loading-pulse-dur     : 1400ms;
+    --tooltip-delay-in      : 400ms;
+    --tooltip-delay-out     : 120ms;
     --loading-long-task     : 10000ms;
 
     color-scheme: light;
@@ -292,6 +302,10 @@
     --skeleton-highlight      : var(--color-neutral-800)          ;  /* shimmer 하이라이트(옵트인) */
     --progress-track          : var(--color-neutral-900)          ;  /* 진행 막대 트랙 */
     --progress-fill           : var(--color-brand-500)            ;  /* 진행 막대 채움 */
+    --tooltip-bg              : var(--color-neutral-200)          ;  /* 툴팁 바탕. 다크에서는 밝은 쪽으로 반전 */
+    --tooltip-fg              : var(--color-neutral-1000)         ;  /* 툴팁 글자 */
+    --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
+    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 */
     --shadow-overlay        : var(--shadow-overlay-dark);
       color-scheme: dark;
     }
@@ -339,6 +353,10 @@
     --skeleton-highlight      : var(--color-neutral-800)          ;  /* shimmer 하이라이트(옵트인) */
     --progress-track          : var(--color-neutral-900)          ;  /* 진행 막대 트랙 */
     --progress-fill           : var(--color-brand-500)            ;  /* 진행 막대 채움 */
+    --tooltip-bg              : var(--color-neutral-200)          ;  /* 툴팁 바탕. 다크에서는 밝은 쪽으로 반전 */
+    --tooltip-fg              : var(--color-neutral-1000)         ;  /* 툴팁 글자 */
+    --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
+    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 */
     --shadow-overlay        : var(--shadow-overlay-dark);
     color-scheme: dark;
   }

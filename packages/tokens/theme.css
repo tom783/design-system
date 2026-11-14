@@ -45,6 +45,10 @@
   --color-chart-point               : var(--chart-point);
   --color-skeleton                  : var(--skeleton-bg);
   --color-skeleton-highlight        : var(--skeleton-highlight);
+  --color-tooltip                   : var(--tooltip-bg);
+  --color-tooltip-fg                : var(--tooltip-fg);
+  --color-hint-ring                 : var(--hint-ring);
+  --color-hint-bg                   : var(--hint-bg);
   --color-progress-track            : var(--progress-track);
   --color-progress-fill             : var(--progress-fill);
 
