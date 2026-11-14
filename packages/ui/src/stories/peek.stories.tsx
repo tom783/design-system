@@ -60,7 +60,7 @@ export const 줄수초과: Story = {
       if (import.meta.env.DEV) await waitFor(() => expect(warnings.some(w => w.includes('[Peek]') && w.includes('6줄'))).toBe(true));
       await userEvent.click(c.getByRole('button', { name: '주문 요약 보기' }));
       await expect(bubble(root).querySelectorAll('dd')).toHaveLength(7);
-      await expect(c.getByRole('dialog')).toBeVisible();
+      await expect(bubble(root).matches(':popover-open')).toBe(true);
     } finally { console.warn = original; }
     complete(root);
   },
