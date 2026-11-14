@@ -163,6 +163,17 @@ const SEMANTIC = {
     'status-success-fg':  ['success',700, '성공·정상 글자·아이콘'],
     'status-info-bg':     ['info',   50,  '안내 배경'],
     'status-info-fg':     ['info',   700, '안내 글자·아이콘'],
+    // 차트 — 역할 토큰. 새 색상을 만들지 않고 기존 원시색을 참조한다.
+    // 격자·축은 데이터보다 반드시 약해야 한다. 격자가 데이터선보다 진하면
+    // 눈이 격자를 먼저 읽는다.
+    'chart-grid':         ['neutral', 200, '격자선. 데이터보다 약하게'],
+    'chart-axis':         ['neutral', 600, '축선·눈금 레이블. 비텍스트 3:1'],
+    'chart-line':         ['brand',   600, '주 데이터 선·막대'],
+    'chart-band':         ['brand',   200, '분포 밴드·영역 채움'],
+    'chart-track':        ['neutral', 200, '불릿 차트의 배경 트랙'],
+    'chart-range':        ['neutral', 300, '불릿 차트의 정상 범위 띠'],
+    'chart-target':       ['neutral', 950, '목표 기준선. 데이터보다 진해야 읽힌다'],
+    'chart-point':        ['brand',   600, '강조 포인트(마지막 값 등)'],
   },
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
@@ -201,6 +212,15 @@ const SEMANTIC = {
     'status-success-fg':  ['success',400, '성공 글자·아이콘'],
     'status-info-bg':     ['info',   950, '안내 배경'],
     'status-info-fg':     ['info',   400, '안내 글자·아이콘'],
+    // 차트 (다크) — 격자·축은 밝게 올리고, 목표선은 바탕과 반대로 밝은 쪽으로 간다.
+    'chart-grid':         ['neutral', 900, '격자선'],
+    'chart-axis':         ['neutral', 600, '축선·눈금 레이블'],
+    'chart-line':         ['brand',   500, '주 데이터 선·막대. 어두운 바탕에서 한 단계 밝게'],
+    'chart-band':         ['brand',   900, '분포 밴드·영역 채움'],
+    'chart-track':        ['neutral', 900, '불릿 배경 트랙'],
+    'chart-range':        ['neutral', 800, '불릿 정상 범위 띠'],
+    'chart-target':       ['neutral', 50,  '목표 기준선'],
+    'chart-point':        ['brand',   400, '강조 포인트'],
   },
 };
 const resolveTok = ([ref, step]) => (ref.startsWith('#') ? ref : P[ref][step].hex);
@@ -310,6 +330,21 @@ for (const theme of ['light', 'dark']) {
       );
     }
   }
+}
+
+// 차트 요소 대비. 데이터를 전달하는 그래픽은 비텍스트 3:1 대상이다(WCAG 1.4.11).
+// 격자는 '장식'이므로 제외하고, 데이터·축·목표선만 검사한다.
+for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
+  for (const t of ['chart-line', 'chart-target', 'chart-point']) {
+    check(`${theme} ${t} on surface`, contrast(resolveTok(SEMANTIC[theme][t]), bg), 3.0, 'nontext');
+  }
+  // 축 레이블은 글자이므로 더 엄격하다. 작은 보조 텍스트이지만 읽혀야 한다.
+  check(`${theme} chart-axis(레이블) on surface`,
+    contrast(resolveTok(SEMANTIC[theme]['chart-axis']), bg), 3.0, 'nontext');
+  // 격자가 데이터선보다 약한지 — 수치로 강제한다
+  const gridC = contrast(resolveTok(SEMANTIC[theme]['chart-grid']), bg);
+  const lineC = contrast(resolveTok(SEMANTIC[theme]['chart-line']), bg);
+  check(`${theme} 격자가 데이터선보다 약하다`, lineC / gridC, 2.0, 'ratio');
 }
 
 // 테마 3상태 안전성: 다크에만 정의된 토큰이 있으면, 테마 미지정 상태에서
@@ -486,6 +521,11 @@ const TW_NAME = {
   'status-warning-bg': 'warning-tint', 'status-warning-fg': 'warning-ink',
   'status-success-bg': 'success-tint', 'status-success-fg': 'success-ink',
   'status-info-bg': 'info-tint',       'status-info-fg': 'info-ink',
+  // 차트는 SVG 속성(fill/stroke)에 var() 로 직접 쓰는 일이 많아 Tailwind 이름도 둔다
+  'chart-grid': 'chart-grid',     'chart-axis': 'chart-axis',
+  'chart-line': 'chart-line',     'chart-band': 'chart-band',
+  'chart-track': 'chart-track',   'chart-range': 'chart-range',
+  'chart-target': 'chart-target', 'chart-point': 'chart-point',
 };
 const missing = Object.keys(S.light).filter((k) => !TW_NAME[k]);
 if (missing.length) throw new Error('TW_NAME 매핑 누락: ' + missing.join(', '));

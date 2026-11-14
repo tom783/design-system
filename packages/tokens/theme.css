@@ -35,6 +35,14 @@
   --color-success-ink               : var(--status-success-fg);
   --color-info-tint                 : var(--status-info-bg);
   --color-info-ink                  : var(--status-info-fg);
+  --color-chart-grid                : var(--chart-grid);
+  --color-chart-axis                : var(--chart-axis);
+  --color-chart-line                : var(--chart-line);
+  --color-chart-band                : var(--chart-band);
+  --color-chart-track               : var(--chart-track);
+  --color-chart-range               : var(--chart-range);
+  --color-chart-target              : var(--chart-target);
+  --color-chart-point               : var(--chart-point);
 
   --color-brand-50                  : var(--color-brand-50);
   --color-brand-100                 : var(--color-brand-100);
