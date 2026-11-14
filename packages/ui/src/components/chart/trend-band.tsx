@@ -4,6 +4,7 @@ import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { curveMonotoneX } from '@visx/curve';
 import { ChartFrame, axisLabel, dateFormat, numericStyle, timeDomain, timeTicks } from './chart-frame';
+import { resolveYDomain } from './resolve-y-domain';
 
 export interface TrendBandProps<T> {
   data: T[];
@@ -12,6 +13,8 @@ export interface TrendBandProps<T> {
   /** 두 경계가 모두 있을 때만 분포 밴드를 그린다. */
   yLow?: (d: T) => number;
   yHigh?: (d: T) => number;
+  /** y축 기준. 'auto'(기본) = 데이터 범위로 프레이밍, 'zero' = 0 포함, 또는 직접 지정 */
+  yDomain?: 'auto' | 'zero' | [number, number];
   height?: number;
   valueFormat?: (value: number) => string;
   /** 차트가 말하는 결론 한 문장. */
@@ -20,7 +23,7 @@ export interface TrendBandProps<T> {
   className?: string;
 }
 
-export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, height = 220, valueFormat = (v) => v.toLocaleString('ko-KR'), summary, title, className }: TrendBandProps<T>) {
+export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'auto', height = 220, valueFormat = (v) => v.toLocaleString('ko-KR'), summary, title, className }: TrendBandProps<T>) {
   const hasBand = Boolean(yLow && yHigh);
   const points = data.map((datum) => {
     const value = getY(datum);
@@ -29,8 +32,7 @@ export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, height = 220
     return { date: getX(datum), value, low: Math.min(low, high), high: Math.max(low, high) };
   }).filter((d) => Number.isFinite(+d.date) && [d.value, d.low, d.high].every(Number.isFinite)).sort((a, b) => +a.date - +b.date);
   const dates = points.map((d) => d.date);
-  const low = Math.min(0, ...points.map((d) => Math.min(d.low, d.value)));
-  const high = Math.max(0, ...points.map((d) => Math.max(d.high, d.value)));
+  const [low, high] = resolveYDomain(points, yDomain);
   return <ChartFrame title={title} summary={summary} className={className} empty={!points.length}
     legend={[{ label: '추이', color: 'var(--chart-line)' }, ...(hasBand ? [{ label: '분포 범위', color: 'var(--chart-band)' }] : [])]}>
     {(width) => {
@@ -40,7 +42,7 @@ export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, height = 220
       const right = Math.max(left + 1, width - 8);
       const bottom = h - 28;
       const x = scaleTime({ domain: timeDomain(dates), range: [left, right] });
-      const y = scaleLinear({ domain: [low, high === low ? low + 1 : high], range: [bottom, 24], nice: true });
+      const y = scaleLinear({ domain: [low, high], range: [bottom, 24] });
       const last = points[points.length - 1]!;
       return <svg data-slot="trend-band" width={width} height={h} role="img" aria-label={summary} style={{ display: 'block' }}>
         <GridRows scale={y} left={left} width={right - left} numTicks={4} stroke="var(--chart-grid)" />

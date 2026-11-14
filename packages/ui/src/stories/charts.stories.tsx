@@ -67,6 +67,22 @@ export const 추이밴드_선만: Story = {
     await expect(canvasElement.querySelector('[data-slot="trend-band-line"]')).toBeInTheDocument();
   },
 };
+export const 추이밴드_축기준: Story = {
+  parameters: { docs: { description: { story: '규율 8: 선·상하한 밴드는 변화를 읽도록 데이터 프레이밍(auto)을 사용합니다. 막대·0까지 채우는 영역은 길이와 면적이 크기를 나타내므로 0 기준이 필수이며, 이 선 차트에서도 0을 포함해 비교해야 할 때는 zero를 지정합니다.' } } },
+  render: () => <div className="flex flex-col gap-4">
+    <TrendBand {...trendProps} {...bandProps} yDomain="zero" title="0 포함 — zero" />
+    <TrendBand {...trendProps} {...bandProps} title="데이터 프레이밍 — auto (기본)" />
+  </div>,
+  play: async ({ canvasElement }) => { await checkCharts(canvasElement, 2); },
+};
+export const 추이밴드_음수: Story = {
+  parameters: { docs: { description: { story: '음수와 양수가 섞인 증감 데이터도 상하한 밴드를 기준으로 프레이밍합니다.' } } },
+  render: () => <TrendBand
+    data={[-120, -80, -100, -20, 40, -10, 60].map((value, index) => ({ date: new Date(2026, 10, 8 + index), value }))}
+    x={(d) => d.date} y={(d) => d.value} yLow={(d) => d.value - 30} yHigh={(d) => d.value + 30}
+    title="반품 건수 증감" summary="반품 건수 증감은 11월 8일 -120건에서 11월 14일 60건으로 변했습니다." />,
+  play: async ({ canvasElement }) => { await checkCharts(canvasElement, 1); },
+};
 export const 추이밴드_엣지: Story = {
   parameters: { docs: { description: { story: '빈 데이터는 안내만, 단일 시점은 선 없이 점과 값만 표시합니다. 폭이 좁아도 두 상태가 깨지지 않는지 확인합니다.' } } },
   render: () => <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
