@@ -50,6 +50,8 @@
   --color-hint-ring                 : var(--hint-ring);
   --color-hint-bg                   : var(--hint-bg);
   --color-row-marker                : var(--row-marker);
+  --color-avatar-bg                 : var(--avatar-bg);
+  --color-avatar-fg                 : var(--avatar-fg);
   --color-progress-track            : var(--progress-track);
   --color-progress-fill             : var(--progress-fill);
 

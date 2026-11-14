@@ -191,6 +191,11 @@ const SEMANTIC = {
     // 색은 info 다. 2.3 에서 링크를 브랜드 레드로 두지 않은 이유와 같다 —
     // 표 안의 빨간색은 음수·오류로 읽힌다.
     'row-marker':         ['info',    600, '방금 다녀온 행의 가장자리 마커'],
+    // 아바타는 색으로 사람을 구분하지 않는다. 이 시스템에서 채도 높은 색은 상태를
+    // 뜻하고, 상태색과 45° 이상 떨어진 색상환 자리는 네 칸뿐이다(측정값).
+    // 식별자는 이니셜이 맡고 색은 의미에 남겨둔다.
+    'avatar-bg':          ['neutral', 200, '아바타 바탕. 사람마다 바뀌지 않는다'],
+    'avatar-fg':          ['neutral', 900, '아바타 이니셜'],
   },
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
@@ -247,6 +252,8 @@ const SEMANTIC = {
     'hint-ring':          ['brand',   400, '안내가 가리키는 대상 둘레'],
     'hint-bg':            ['#000000', null, '힌트 말풍선 바탕 (bg-surface 별칭)'],
     'row-marker':         ['info',    400, '방금 다녀온 행의 가장자리 마커'],
+    'avatar-bg':          ['neutral', 900, '아바타 바탕'],
+    'avatar-fg':          ['neutral', 200, '아바타 이니셜'],
   },
 };
 // 별칭 토큰 — 값은 대상에서 복사해 두고(검증·tokens.json 이 정직해진다),
@@ -303,6 +310,7 @@ const SIZING = {
   'tap-min': '44px', 'field-min-w': '120px', 'card-min-w': '240px',
   // 차트 기본 높이. 스켈레톤이 실제 차트와 같은 높이를 쓰려면 양쪽이 같은 값을
   // 봐야 한다 — 한쪽에 숫자를 복사해두면 다음에 바꿀 때 어긋난다(DESIGN.md 9.2).
+  'state-min-h':         '192px', // 비어있음·오류 상태의 인라인 최소 높이
   'tooltip-max-w':       '280px',  // 한 줄 설명이 목표. 넘치면 Hint 로 올려야 한다는 신호
   'hint-max-w':          '320px',  // 2~3줄 + 액션
   'anchor-gap':          '8px',    // 대상과 말풍선 사이 간격
@@ -413,6 +421,11 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
   const marker = resolveTok(SEMANTIC[theme]['row-marker']);
   check(`${theme} row-marker on surface`, contrast(marker, bg), 3.0, 'nontext');
   check(`${theme} row-marker on 선택된 행`, contrast(marker, resolveTok(SEMANTIC[theme]['bg-selected'])), 3.0, 'nontext');
+  // 아바타 이니셜은 글자다. 작게 쓰이므로 본문 기준을 그대로 적용한다.
+  check(`${theme} 아바타 이니셜 on 아바타 바탕`,
+    contrast(resolveTok(SEMANTIC[theme]['avatar-fg']), resolveTok(SEMANTIC[theme]['avatar-bg'])), 4.5, 'text');
+  check(`${theme} 아바타 바탕이 표면과 구별된다`,
+    contrast(resolveTok(SEMANTIC[theme]['avatar-bg']), bg), 1.2, 'nontext');
 }
 
 // 스켈레톤 대비. 양쪽 끝이 다 문제다 —
@@ -614,7 +627,7 @@ const TW_NAME = {
   'chart-target': 'chart-target', 'chart-point': 'chart-point',
   'skeleton-bg': 'skeleton',      'skeleton-highlight': 'skeleton-highlight',
   'tooltip-bg': 'tooltip',        'tooltip-fg': 'tooltip-fg',
-  'hint-ring': 'hint-ring',       'hint-bg': 'hint-bg',         'row-marker': 'row-marker',
+  'hint-ring': 'hint-ring',       'hint-bg': 'hint-bg',         'row-marker': 'row-marker',   'avatar-bg': 'avatar-bg',     'avatar-fg': 'avatar-fg',
   'progress-track': 'progress-track', 'progress-fill': 'progress-fill',
 };
 const missing = Object.keys(S.light).filter((k) => !TW_NAME[k]);

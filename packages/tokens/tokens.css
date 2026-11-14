@@ -156,6 +156,8 @@
     --hint-ring               : var(--color-brand-600)            ;  /* 안내가 가리키는 대상 둘레 */
     --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 (bg-surface 별칭) */
     --row-marker              : var(--color-info-600)             ;  /* 방금 다녀온 행의 가장자리 마커 */
+    --avatar-bg               : var(--color-neutral-200)          ;  /* 아바타 바탕. 사람마다 바뀌지 않는다 */
+    --avatar-fg               : var(--color-neutral-900)          ;  /* 아바타 이니셜 */
 
     /* ── 타이포그래피 ──────────────────────────────────────────────────────
        행간은 고정 비율이 아니라 글자 크기에 반비례하는 함수다.
@@ -225,6 +227,7 @@
     --tap-min               : 44px;
     --field-min-w           : 120px;
     --card-min-w            : 240px;
+    --state-min-h           : 192px;
     --tooltip-max-w         : 280px;
     --hint-max-w            : 320px;
     --anchor-gap            : 8px;
@@ -308,6 +311,8 @@
     --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
     --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 (bg-surface 별칭) */
     --row-marker              : var(--color-info-400)             ;  /* 방금 다녀온 행의 가장자리 마커 */
+    --avatar-bg               : var(--color-neutral-900)          ;  /* 아바타 바탕 */
+    --avatar-fg               : var(--color-neutral-200)          ;  /* 아바타 이니셜 */
     --shadow-overlay        : var(--shadow-overlay-dark);
       color-scheme: dark;
     }
@@ -360,6 +365,8 @@
     --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
     --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 (bg-surface 별칭) */
     --row-marker              : var(--color-info-400)             ;  /* 방금 다녀온 행의 가장자리 마커 */
+    --avatar-bg               : var(--color-neutral-900)          ;  /* 아바타 바탕 */
+    --avatar-fg               : var(--color-neutral-200)          ;  /* 아바타 이니셜 */
     --shadow-overlay        : var(--shadow-overlay-dark);
     color-scheme: dark;
   }
