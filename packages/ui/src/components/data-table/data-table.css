@@ -72,3 +72,7 @@
 [data-slot="data-table-skeleton-row"] .data-table-cell { display: flex; align-items: center; }
 /* 스페이서는 테이블 레이아웃에 남기되 기본 셀 여백이 가상 높이를 늘리지 않게 한다. */
 [data-slot="data-table-spacer"] > td { padding: 0; border: 0; }
+
+/* inset 마커는 셀 너비·고정 오프셋을 밀지 않는다. 불투명한 셀 위에도 같은 마커를 그린다. */
+[data-slot="data-table-row"][data-revisited],
+[data-slot="data-table-row"][data-revisited] > td:first-child { box-shadow: inset 3px 0 0 var(--row-marker); }

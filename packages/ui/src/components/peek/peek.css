@@ -1,0 +1,17 @@
+/* 배치·모션은 guide-bubble의 공통 규칙을 재사용한다. */
+[data-slot="guide-bubble"][data-peek] { padding: 0; max-inline-size: calc(100vw - 2 * var(--anchor-edge-pad)); }
+[data-slot="peek"] {
+  inline-size: min(24rem, calc(100vw - 2 * var(--anchor-edge-pad)));
+  max-block-size: calc(100dvh - 2 * var(--anchor-edge-pad));
+  overflow: auto;
+  padding: var(--space-16);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-radius: inherit;
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm-lh);
+}
+[data-slot="peek-items"] { margin-block-start: var(--space-12); }
+[data-slot="peek-item"] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-16); padding-block: var(--space-4); }
+[data-slot="peek-item"] dt { color: var(--text-secondary); }
+[data-slot="peek-item"] :is(dt, dd) { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

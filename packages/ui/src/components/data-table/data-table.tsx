@@ -12,6 +12,7 @@ import { shouldLoadMore } from './should-load-more';
 import './data-table.css';
 
 export interface DataTableProps<T extends RowData> extends UseDataTableOptions<T> {
+  revisitedRowId?: string;
   onRowClick?: (row: T) => void;
   density?: 'compact' | 'default' | 'comfortable';
   state?: 'idle' | 'loading' | 'empty' | 'error';
@@ -39,7 +40,7 @@ export interface DataTableProps<T extends RowData> extends UseDataTableOptions<T
 const INTERACTIVE = 'button, a, input, select, textarea, [role="button"], [role="checkbox"], [contenteditable="true"]';
 
 export function DataTable<T extends RowData>({
-  onRowClick, density = 'default', state = 'idle',
+  revisitedRowId, onRowClick, density = 'default', state = 'idle',
   emptyMessage = '표시할 데이터가 없습니다', errorMessage = '데이터를 불러오지 못했습니다',
   onRetry, exportFileName, exportValue, align, caption = '데이터 목록', className,
   virtualize = 100, hasMore, onLoadMore, loadingMore = false, ...options
@@ -298,7 +299,7 @@ export function DataTable<T extends RowData>({
             ) : <>
               {padTop > 0 && <tr data-slot="data-table-spacer" aria-hidden="true" style={{ height: padTop }}><td colSpan={colSpan} /></tr>}
               {renderedRows.map(({ row, index }) => (
-              <tr key={row.id} data-slot="data-table-row" data-row-id={row.id} data-selected={row.getIsSelected() || undefined}
+              <tr key={row.id} data-slot="data-table-row" data-row-id={row.id} data-revisited={row.id === revisitedRowId || undefined} data-selected={row.getIsSelected() || undefined}
                 aria-rowindex={index + 2}
                 aria-selected={options.selectionMode && options.selectionMode !== 'none' ? row.getIsSelected() : undefined}
                 tabIndex={onRowClick ? 0 : undefined} className={cn(onRowClick && 'cursor-pointer')}
