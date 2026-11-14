@@ -49,6 +49,7 @@
   --color-tooltip-fg                : var(--tooltip-fg);
   --color-hint-ring                 : var(--hint-ring);
   --color-hint-bg                   : var(--hint-bg);
+  --color-row-marker                : var(--row-marker);
   --color-progress-track            : var(--progress-track);
   --color-progress-fill             : var(--progress-fill);
 

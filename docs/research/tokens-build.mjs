@@ -186,6 +186,11 @@ const SEMANTIC = {
     'tooltip-fg':         ['neutral', 50,  '툴팁 글자'],
     'hint-ring':          ['brand',   600, '안내가 가리키는 대상 둘레'],
     'hint-bg':            ['#000000', null, '힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 (bg-surface 별칭)'],
+    // 방금 상세를 보고 돌아온 행. 배경이 아니라 가장자리 마커다 — 기본·호버·선택이
+    // 이미 흰색 계열 셋을 쓰고 있어 네 번째 배경은 구별되지 않는다.
+    // 색은 info 다. 2.3 에서 링크를 브랜드 레드로 두지 않은 이유와 같다 —
+    // 표 안의 빨간색은 음수·오류로 읽힌다.
+    'row-marker':         ['info',    600, '방금 다녀온 행의 가장자리 마커'],
   },
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
@@ -241,6 +246,7 @@ const SEMANTIC = {
     'tooltip-fg':         ['neutral', 1000,'툴팁 글자'],
     'hint-ring':          ['brand',   400, '안내가 가리키는 대상 둘레'],
     'hint-bg':            ['#000000', null, '힌트 말풍선 바탕 (bg-surface 별칭)'],
+    'row-marker':         ['info',    400, '방금 다녀온 행의 가장자리 마커'],
   },
 };
 // 별칭 토큰 — 값은 대상에서 복사해 두고(검증·tokens.json 이 정직해진다),
@@ -403,6 +409,10 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
   check(`${theme} 툴팁 글자 on 툴팁 바탕`, contrast(resolveTok(SEMANTIC[theme]['tooltip-fg']), tb), 4.5, 'text');
   check(`${theme} 툴팁 바탕이 표면과 구별된다`, contrast(tb, bg), 3.0, 'nontext');
   check(`${theme} hint-ring on surface`, contrast(resolveTok(SEMANTIC[theme]['hint-ring']), bg), 3.0, 'nontext');
+  // 다녀온 행 마커는 기본 행·선택된 행 양쪽 바탕에서 보여야 한다. 선택된 행 위에도 얹히기 때문이다.
+  const marker = resolveTok(SEMANTIC[theme]['row-marker']);
+  check(`${theme} row-marker on surface`, contrast(marker, bg), 3.0, 'nontext');
+  check(`${theme} row-marker on 선택된 행`, contrast(marker, resolveTok(SEMANTIC[theme]['bg-selected'])), 3.0, 'nontext');
 }
 
 // 스켈레톤 대비. 양쪽 끝이 다 문제다 —
@@ -433,6 +443,9 @@ const dePairs = [
   ['에러 글자 vs 경고 글자 (라이트)', P.danger[700], P.warning[700], 10],
   ['에러 글자 vs 경고 글자 (다크)',   P.danger[400], P.warning[400], 10],
   ['에러 vs 성공 (라이트)',           P.danger[700], P.success[700], 10],
+  // 다녀온 행 마커는 표 안에 놓인다. 에러로 오독되면 "문제 있는 행"으로 보인다.
+  ['다녀온 행 마커 vs 에러 (라이트)', P.info[600],   P.danger[700],  10],
+  ['다녀온 행 마커 vs 에러 (다크)',   P.info[400],   P.danger[400],  10],
   // 링크를 info 블루로 분리한 효과 검증. 브랜드 레드였다면 ΔE 6 대였다.
   ['링크 글자 vs 에러 글자 (라이트)', P.info[700],   P.danger[700],  10],
   ['링크 글자 vs 에러 글자 (다크)',   P.info[300],   P.danger[400],  10],
@@ -601,7 +614,7 @@ const TW_NAME = {
   'chart-target': 'chart-target', 'chart-point': 'chart-point',
   'skeleton-bg': 'skeleton',      'skeleton-highlight': 'skeleton-highlight',
   'tooltip-bg': 'tooltip',        'tooltip-fg': 'tooltip-fg',
-  'hint-ring': 'hint-ring',       'hint-bg': 'hint-bg',
+  'hint-ring': 'hint-ring',       'hint-bg': 'hint-bg',         'row-marker': 'row-marker',
   'progress-track': 'progress-track', 'progress-fill': 'progress-fill',
 };
 const missing = Object.keys(S.light).filter((k) => !TW_NAME[k]);

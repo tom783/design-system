@@ -155,6 +155,7 @@
     --tooltip-fg              : var(--color-neutral-50)           ;  /* 툴팁 글자 */
     --hint-ring               : var(--color-brand-600)            ;  /* 안내가 가리키는 대상 둘레 */
     --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 (bg-surface 별칭) */
+    --row-marker              : var(--color-info-600)             ;  /* 방금 다녀온 행의 가장자리 마커 */
 
     /* ── 타이포그래피 ──────────────────────────────────────────────────────
        행간은 고정 비율이 아니라 글자 크기에 반비례하는 함수다.
@@ -306,6 +307,7 @@
     --tooltip-fg              : var(--color-neutral-1000)         ;  /* 툴팁 글자 */
     --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
     --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 (bg-surface 별칭) */
+    --row-marker              : var(--color-info-400)             ;  /* 방금 다녀온 행의 가장자리 마커 */
     --shadow-overlay        : var(--shadow-overlay-dark);
       color-scheme: dark;
     }
@@ -357,6 +359,7 @@
     --tooltip-fg              : var(--color-neutral-1000)         ;  /* 툴팁 글자 */
     --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
     --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 (bg-surface 별칭) */
+    --row-marker              : var(--color-info-400)             ;  /* 방금 다녀온 행의 가장자리 마커 */
     --shadow-overlay        : var(--shadow-overlay-dark);
     color-scheme: dark;
   }
