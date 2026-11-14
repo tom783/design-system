@@ -61,10 +61,18 @@ test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 �
   assert.deepEqual(button.extends, components.find((c) => c.name === 'Button').extends);
   assert.ok(manifest.components.every((c) => !Object.hasOwn(c, 'propNames')));
 });
+// 예산은 파일이 아니라 **전송되는 compact JSON** 을 잰다 (pretty 는 53% 더 크다).
+// 그래서 인자는 직렬화 문자열이 아니라 객체다.
 test('크기 예산은 경계값을 허용하고 UTF-8 바이트 초과를 차단', (t) => {
   t.mock.method(console, 'error', () => {});
-  const catalog = ['x'.repeat(80_000 - Buffer.byteLength(JSON.stringify([''], null, 2)))];
-  assert.doesNotThrow(() => assertSizeBudget(catalog, 'x'.repeat(160_000)));
-  assert.throws(() => assertSizeBudget([catalog[0] + '가'], ''), /크기 예산 초과/);
-  assert.throws(() => assertSizeBudget([], 'x'.repeat(159_998) + '가'), /크기 예산 초과/);
+  // JSON.stringify(['x'.repeat(n)]) 는 정확히 n+4 바이트다 (["..."]).
+  const atLimit = (limit) => ['x'.repeat(limit - 4)];
+  const components = atLimit(80_000);
+  const manifest = atLimit(160_000);
+  assert.equal(Buffer.byteLength(JSON.stringify(components)), 80_000);
+  assert.equal(Buffer.byteLength(JSON.stringify(manifest)), 160_000);
+  assert.doesNotThrow(() => assertSizeBudget(components, manifest));
+  // '가' 는 UTF-8 3바이트라 한 글자만 바꿔도 넘는다 — 글자 수가 아니라 바이트로 센다
+  assert.throws(() => assertSizeBudget([components[0] + '가'], []), /크기 예산 초과/);
+  assert.throws(() => assertSizeBudget([], [manifest[0] + '가']), /크기 예산 초과/);
 });

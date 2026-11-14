@@ -1,0 +1,42 @@
+# 검증 게이트. 로직은 전부 `pnpm gate` 안에 있고 그건 로컬에서 돌려 확인한 것이다
+# (147초, exit 0). 이 파일은 그걸 부르는 껍데기라 일부러 얇게 뒀다.
+#
+# pre-commit 은 빠른 것만(약 1.5초), pre-push 는 전체를 돌린다 — .githooks/ 참고.
+# 여기는 --no-verify 로 건너뛴 푸시를 받아내는 마지막 그물이다.
+name: verify
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 범위(engines ">=22")를 넘기면 해석이 모호해서 명시한다. 로컬과 같은 메이저.
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # GUI Chrome 을 쓰지 않는다 — 이유는 AGENTS.md "이미 밟은 함정" 참고.
+      # chromium 전체가 아니라 headless shell 만 받는다.
+      - run: npx playwright install --with-deps chromium-headless-shell
+
+      - run: pnpm gate
+
+      # 실패했을 때 화면을 볼 수 없으므로 스크린샷을 남긴다.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-shots
+          path: .qa-shots/
+          retention-days: 7
+          if-no-files-found: ignore

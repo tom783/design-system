@@ -32,6 +32,19 @@ pnpm build-storybook
 pnpm verify       # 위 세 개를 순서대로
 ```
 
+### 게이트는 자동으로 돈다
+
+```
+pre-commit  토큰·매니페스트 재생성 + 산출물 동기 확인 + 타입 + 단위 (약 1.5초)
+pre-push    pnpm verify + pnpm qa (약 147초)   SKIP_QA=1 로 건너뛸 수 있다
+CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지막 그물
+```
+
+훅은 `.githooks/` 에 있고 `pnpm install` 이 `core.hooksPath` 를 걸어준다
+(husky 없음 — git 기본 기능이다). **가장 중요한 검사는 "생성 파일이 소스와 맞는가"** 다.
+생성기를 고치고 산출물 커밋을 잊는 것이 가장 흔한 사고라 pre-commit 이 재생성 후
+`git diff` 로 막는다.
+
 `pnpm verify`가 통과하지 않은 작업은 완료가 아니다.
 토큰을 건드렸으면 `pnpm tokens` 출력의 실패 항목을 반드시 읽어라 — 종료 코드 1로 막는다.
 

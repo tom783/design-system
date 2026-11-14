@@ -147,11 +147,14 @@ export function validate({ components, intents, sections, tokens, expectedNames,
   return errors;
 }
 
-// UTF-8 바이트로 검사한다. 전송용 compact JSON보다 큰 실제 파일 형식에도 예산을 보장한다.
-export function assertSizeBudget(catalog, serialized) {
+// 예산은 **AI 에게 실제로 가는 바이트**를 잰다. 파일의 pretty 형식이 아니다.
+// 처음에는 파일 크기를 쟀는데, 그건 서버가 보내는 양보다 53% 크다
+// (155.5KB vs 101.7KB). 아무도 읽지 않는 들여쓰기 때문에 게이트가 먼저 터진다.
+// 파일은 git 에서 읽기 쉽도록 pretty 로 두고, 재는 것은 compact 쪽이다.
+export function assertSizeBudget(catalog, manifest) {
   const sizes = [
-    ['components', Buffer.byteLength(JSON.stringify(catalog, null, 2)), 80_000],
-    ['전체', Buffer.byteLength(serialized), 160_000],
+    ['components (전송)', Buffer.byteLength(JSON.stringify(catalog)), 80_000],
+    ['전체 (전송)', Buffer.byteLength(JSON.stringify(manifest)), 160_000],
   ];
   for (const [name, bytes, limit] of sizes)
     console.error(`MCP 크기 ${name}: ${bytes}바이트 / ${limit}바이트 (${(bytes / 1000).toFixed(2)}KB / ${limit / 1000}KB)`);
@@ -187,7 +190,7 @@ export async function build() {
   });
   const manifest = { schemaVersion: 1, tokens, components: catalog, principles };
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
-  assertSizeBudget(catalog, serialized);
+  assertSizeBudget(catalog, manifest);
   await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
   console.error(`MCP 검증 6종 통과: export ${catalog.length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }
