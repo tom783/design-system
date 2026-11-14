@@ -31,3 +31,7 @@ export { Tooltip, Hint, Tour, useTour, placeFallback, resolveStep, useAnchored, 
 export { Field, FormFlow, useFormFlow, useComposition, nextFocusable, shouldValidate,
   type FieldProps, type FormFlowOptions, type FormFlowProps, type FocusCandidate, type ValidationTiming } from './components/form';
 export * from './components/peek';
+
+export * from './components/state';
+export * from './components/avatar';
+export * from './components/thumbnail';

@@ -41,6 +41,7 @@ const HARNESSES = [
   ['render-verify.mjs', '기본 컴포넌트·테이블'],
   ['charts-render-verify.mjs', '차트 로딩·오류'],
   ['loading-render-verify.mjs', '스켈레톤·진행률'],
+  ['state-render-verify.mjs', '상태·아바타·썸네일'],
   ['guide-render-verify.mjs', 'Tooltip·Hint·Tour'],
   ['form-render-verify.mjs', '폼·한글 IME'],
   ['peek-render-verify.mjs', 'Peek·다녀온 행'],

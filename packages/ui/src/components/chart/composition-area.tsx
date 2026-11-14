@@ -2,11 +2,10 @@ import { scaleLinear, scaleTime } from '@visx/scale';
 import { AreaStack, Bar, Line } from '@visx/shape';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
-import { ChartSkeleton } from '../loading/skeleton-patterns';
-import { ChartFrame, type ChartFrameProps, axisLabel, dateFormat, defaultChartHeight, numericStyle, timeDomain, timeTicks } from './chart-frame';
+import { ChartFrame, type ChartFrameProps, axisLabel, dateFormat, numericStyle, timeDomain, timeTicks } from './chart-frame';
 import { normalizePercentages, nonNegative } from './normalize';
 
-export interface CompositionAreaProps<T> extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage'> {
+export interface CompositionAreaProps<T> extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage' | 'onRetry'> {
   data: T[];
   x: (d: T) => Date;
   /** 정의 순서대로 아래부터 쌓는다. 색은 의미 토큰의 CSS 변수를 전달한다. */
@@ -18,7 +17,7 @@ export interface CompositionAreaProps<T> extends Pick<ChartFrameProps, 'state' |
 }
 interface CompositionPoint { date: Date; values: number[] | null }
 
-export function CompositionArea<T>({ data, x: getX, series, height, summary, title, className, state, emptyMessage, errorMessage }: CompositionAreaProps<T>) {
+export function CompositionArea<T>({ data, x: getX, series, height, summary, title, className, state, emptyMessage, errorMessage, onRetry }: CompositionAreaProps<T>) {
   const keys = series.map((s) => s.key);
   const rows: CompositionPoint[] = data.map((datum) => ({
     date: getX(datum), values: normalizePercentages(keys.map((key) => nonNegative(datum[key]))),
@@ -26,10 +25,9 @@ export function CompositionArea<T>({ data, x: getX, series, height, summary, tit
   const last = [...rows].reverse().find((d) => d.values !== null);
   const dates = rows.map((d) => d.date);
   // 미지정 높이는 CSS 토큰으로 해소한다. 스켈레톤은 폭 측정을 기다리지 않아 SSR에서도 DOM을 읽으면 안 된다.
-  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage}
-    skeleton={<ChartSkeleton variant="plot" legend={false} height={height !== undefined && Number.isFinite(height) && height > 0 ? Math.max(100, height) : undefined} />} title={title} summary={summary} className={className} empty={!last || !series.length} legend={series}>
-    {(width) => {
-      const h = Math.max(100, height !== undefined && Number.isFinite(height) && height > 0 ? height : defaultChartHeight());
+  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage} onRetry={onRetry}
+    height={height} title={title} summary={summary} className={className} empty={!last || !series.length} legend={series}>
+    {(width, h) => {
       const top = 16;
       const bottom = h - 28;
       // 이름과 비율을 직접 읽을 공간을 남기고 나머지 폭으로 시간축을 다시 계산한다.

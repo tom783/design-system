@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { flexRender, type Column, type RowData } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowDown, ArrowUp, ArrowUpDown, CircleAlert, Download } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Download } from 'lucide-react';
 import { Button } from '../button';
+import { EmptyState, ErrorState, type EmptyStateProps } from '../state';
 import { Skeleton } from '../loading/skeleton';
 import { cn } from '../../lib/cn';
 import { useDataTable, type DataTableFeatures, type UseDataTableOptions } from './use-data-table';
@@ -18,6 +19,7 @@ export interface DataTableProps<T extends RowData> extends UseDataTableOptions<T
   state?: 'idle' | 'loading' | 'empty' | 'error';
   emptyMessage?: string;
   errorMessage?: string;
+  emptyAction?: EmptyStateProps['action'];
   onRetry?: () => void;
   exportFileName?: string;
   /** 셀 표시와 원본 값을 분리한다. 금액은 쉼표 없는 문자열을 반환한다. */
@@ -42,7 +44,7 @@ const INTERACTIVE = 'button, a, input, select, textarea, [role="button"], [role=
 export function DataTable<T extends RowData>({
   revisitedRowId, onRowClick, density = 'default', state = 'idle',
   emptyMessage = '표시할 데이터가 없습니다', errorMessage = '데이터를 불러오지 못했습니다',
-  onRetry, exportFileName, exportValue, align, caption = '데이터 목록', className,
+  onRetry, emptyAction, exportFileName, exportValue, align, caption = '데이터 목록', className,
   virtualize = 100, hasMore, onLoadMore, loadingMore = false, ...options
 }: DataTableProps<T>) {
   const table = useDataTable(options);
@@ -288,14 +290,9 @@ export function DataTable<T extends RowData>({
                 </td>
               </tr>
             )) : effectiveState === 'empty' ? (
-              <tr><td colSpan={colSpan} className="h-48 px-4 text-center text-fg-muted"><span role="status">{emptyMessage}</span></td></tr>
+              <tr><td colSpan={colSpan} className="p-0"><EmptyState title={emptyMessage} action={emptyAction} /></td></tr>
             ) : effectiveState === 'error' ? (
-              <tr><td colSpan={colSpan} className="h-48 bg-danger-tint px-4 text-center text-danger-ink">
-                <div className="flex flex-col items-center gap-3">
-                  <p role="alert" className="flex items-center gap-2"><CircleAlert className="size-5 shrink-0" aria-hidden="true" />{errorMessage}</p>
-                  {onRetry && <Button variant="secondary" size="sm" onClick={onRetry}>다시 시도</Button>}
-                </div>
-              </td></tr>
+              <tr><td colSpan={colSpan} className="p-0"><ErrorState title={errorMessage} onRetry={onRetry} /></td></tr>
             ) : <>
               {padTop > 0 && <tr data-slot="data-table-spacer" aria-hidden="true" style={{ height: padTop }}><td colSpan={colSpan} /></tr>}
               {renderedRows.map(({ row, index }) => (

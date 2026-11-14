@@ -194,12 +194,25 @@ export function storybook(session, { base = 'http://localhost:6099' } = {}) {
           same = len === prev ? same + 1 : 0; prev = len; await sleep(200);
         }
       }
-      return {
-        errors: errors().filter((m) => !/Warning:|DevTools|favicon|preload/i.test(m)),
-        sbError: await ev(`(() => { const el = document.querySelector('#error-message');
-          return document.body.classList.contains('sb-show-errordisplay') || el
-            ? (el ? el.textContent.slice(0, 300) : 'errordisplay') : null; })()`).catch(() => null),
-      };
+      const sbError = await ev(`(() => { const el = document.querySelector('#error-message');
+        return document.body.classList.contains('sb-show-errordisplay') || el
+          ? (el ? el.textContent.slice(0, 300) : 'errordisplay') : null; })()`).catch(() => null);
+
+      // 빈 페이지는 "오류 없음"으로 보인다. 서버가 엉뚱한 디렉터리에서 돌거나(404)
+      // 스토리 id 가 틀리면 모든 검사가 조용히 통과해버린다 — 실제로 당했다.
+      // 캔버스가 비어 있으면 뒤따르는 단언이 전부 무의미하므로 여기서 멈춘다.
+      if (!sbError) {
+        const rendered = await ev(`(() => { const r = ${CANVAS};
+          return r ? r.innerHTML.trim().length : -1; })()`).catch(() => -1);
+        if (rendered <= 0) {
+          throw new Error(
+            `스토리가 렌더되지 않았습니다: ${id}\n` +
+            `  캔버스 ${rendered === -1 ? '없음(#storybook-root 부재)' : '비어 있음'}.\n` +
+            `  ${base} 가 storybook-static 을 서빙하는지, 스토리 id 가 맞는지 확인하세요.`,
+          );
+        }
+      }
+      return { errors: errors().filter((m) => !/Warning:|DevTools|favicon|preload/i.test(m)), sbError };
     },
   };
 }

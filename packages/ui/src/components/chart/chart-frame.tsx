@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { CircleAlert } from 'lucide-react';
+import { EmptyState, ErrorState } from '../state';
+import { ChartSkeleton } from '../loading/skeleton-patterns';
 import { cn } from '../../lib/cn';
 import { useElementWidth } from '../../lib/use-element-width';
 
@@ -12,15 +13,24 @@ export interface ChartFrameProps {
   state?: 'idle' | 'loading' | 'empty' | 'error';
   emptyMessage?: string;
   errorMessage?: string;
+  onRetry?: () => void;
+  height?: number;
+  skeletonVariant?: 'plot' | 'bullet';
+  skeletonRows?: number;
   loadingLabel?: string;
   skeleton?: ReactNode;
   className?: string;
-  children: (width: number) => ReactNode;
+  children: (width: number, height: number) => ReactNode;
 }
 
-export function ChartFrame({ title, summary, legend = [], empty, state = 'idle', emptyMessage = '표시할 데이터가 없습니다', errorMessage = '데이터를 불러오지 못했습니다', loadingLabel = '불러오는 중', skeleton, className, children }: ChartFrameProps) {
+export function ChartFrame({ title, summary, legend = [], empty, state = 'idle', emptyMessage = '표시할 데이터가 없습니다', errorMessage = '데이터를 불러오지 못했습니다', onRetry, height, skeletonVariant = 'plot', skeletonRows = 3, loadingLabel = '불러오는 중', skeleton, className, children }: ChartFrameProps) {
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const effectiveState = state === 'idle' && empty ? 'empty' : state;
+  // 네 상태의 플롯과 스켈레톤은 이 값 하나를 공유한다. 미지정 값은 SSR에서도 CSS 토큰으로 예약한다.
+  const rows = Number.isFinite(skeletonRows) ? Math.max(0, Math.floor(skeletonRows)) : 3;
+  const plotHeight = skeletonVariant === 'bullet' ? rows * 44
+    : height !== undefined && Number.isFinite(height) && height > 0 ? Math.max(100, height) : undefined;
+  const plotStyle = { blockSize: plotHeight ?? 'var(--chart-h-default)', '--chart-skeleton-h': plotHeight === undefined ? 'var(--chart-h-default)' : `${plotHeight}px` } as CSSProperties;
   return <figure aria-busy={effectiveState === 'loading'} data-slot="chart-frame" className={cn('m-0 min-w-0 rounded-[var(--radius-lg)] border border-line-strong bg-surface p-4', className)}>
     {title && <figcaption data-slot="chart-title" className="mb-3 text-[length:var(--text-body-lg)] font-semibold text-fg">{title}</figcaption>}
     {legend.length > 0 && <ul data-slot="chart-legend" aria-label="범례" className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--text-caption)] text-fg-muted">
@@ -29,13 +39,13 @@ export function ChartFrame({ title, summary, legend = [], empty, state = 'idle',
         <span className="min-w-0 break-words">{item.label}</span>
       </li>)}
     </ul>}
-    <div ref={ref} data-slot="chart-plot" className="min-w-0">
+    <div ref={ref} data-slot="chart-plot" className="min-w-0" style={plotStyle}>
       {effectiveState === 'loading' ? <div data-slot="chart-loading" role="status">
         <span className="sr-only">{loadingLabel}</span>
-        <div aria-hidden="true">{skeleton}</div>
-      </div> : effectiveState === 'error' ? <p data-slot="chart-error" role="alert" className="flex items-center justify-center gap-2 bg-danger-tint py-8 text-[length:var(--text-body-sm)] text-danger-ink">
-        <CircleAlert aria-hidden="true" className="size-5 shrink-0" />{errorMessage}
-      </p> : effectiveState === 'empty' ? <p data-slot="chart-empty" role="status" className="py-8 text-center text-[length:var(--text-body-sm)] text-fg-muted">{emptyMessage}</p> : width > 0 ? children(width) : null}
+        <div aria-hidden="true">{skeleton ?? <ChartSkeleton variant={skeletonVariant} rows={rows} legend={false} />}</div>
+      </div> : effectiveState === 'error' ? <div data-slot="chart-error"><ErrorState title={errorMessage} onRetry={onRetry} /></div>
+        : effectiveState === 'empty' ? <div data-slot="chart-empty"><EmptyState title={emptyMessage} /></div>
+          : width > 0 ? children(width, plotHeight ?? defaultChartHeight()) : null}
     </div>
   </figure>;
 }

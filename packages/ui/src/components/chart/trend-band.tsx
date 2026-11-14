@@ -3,11 +3,10 @@ import { AreaClosed, LinePath } from '@visx/shape';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { curveMonotoneX } from '@visx/curve';
-import { ChartSkeleton } from '../loading/skeleton-patterns';
-import { ChartFrame, type ChartFrameProps, axisLabel, dateFormat, defaultChartHeight, numericStyle, timeDomain, timeTicks } from './chart-frame';
+import { ChartFrame, type ChartFrameProps, axisLabel, dateFormat, numericStyle, timeDomain, timeTicks } from './chart-frame';
 import { resolveYDomain } from './resolve-y-domain';
 
-export interface TrendBandProps<T> extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage'> {
+export interface TrendBandProps<T> extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage' | 'onRetry'> {
   data: T[];
   x: (d: T) => Date;
   y: (d: T) => number;
@@ -24,7 +23,7 @@ export interface TrendBandProps<T> extends Pick<ChartFrameProps, 'state' | 'empt
   className?: string;
 }
 
-export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'auto', height, valueFormat = (v) => v.toLocaleString('ko-KR'), summary, title, className, state, emptyMessage, errorMessage }: TrendBandProps<T>) {
+export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'auto', height, valueFormat = (v) => v.toLocaleString('ko-KR'), summary, title, className, state, emptyMessage, errorMessage, onRetry }: TrendBandProps<T>) {
   const hasBand = Boolean(yLow && yHigh);
   const points = data.map((datum) => {
     const value = getY(datum);
@@ -35,11 +34,10 @@ export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'a
   const dates = points.map((d) => d.date);
   const [low, high] = resolveYDomain(points, yDomain);
   // 미지정 높이는 CSS 토큰으로 해소한다. 스켈레톤은 폭 측정을 기다리지 않아 SSR에서도 DOM을 읽으면 안 된다.
-  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage}
-    skeleton={<ChartSkeleton variant="plot" legend={false} height={height !== undefined && Number.isFinite(height) && height > 0 ? Math.max(100, height) : undefined} />} title={title} summary={summary} className={className} empty={!points.length}
+  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage} onRetry={onRetry}
+    height={height} title={title} summary={summary} className={className} empty={!points.length}
     legend={[{ label: '추이', color: 'var(--chart-line)' }, ...(hasBand ? [{ label: '분포 범위', color: 'var(--chart-band)' }] : [])]}>
-    {(width) => {
-      const h = Math.max(100, height !== undefined && Number.isFinite(height) && height > 0 ? height : defaultChartHeight());
+    {(width, h) => {
       // 축 값의 길이에 맞춰 여백을 확보하되 작은 화면의 플롯을 남긴다.
       const left = Math.min(width * 0.4, Math.max(44, Math.max(valueFormat(low).length, valueFormat(high).length) * 8 + 12));
       const right = Math.max(left + 1, width - 8);

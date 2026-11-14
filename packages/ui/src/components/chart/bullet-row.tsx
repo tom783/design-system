@@ -1,7 +1,6 @@
 import { scaleLinear } from '@visx/scale';
 import { Bar, Line } from '@visx/shape';
 import { Group } from '@visx/group';
-import { ChartSkeleton } from '../loading/skeleton-patterns';
 import { ChartFrame, type ChartFrameProps, numericStyle } from './chart-frame';
 import { isBulletAchieved, nonNegative } from './normalize';
 
@@ -14,7 +13,7 @@ export interface BulletMetric {
   unit?: string;
   lowerIsBetter?: boolean;
 }
-export interface BulletRowProps extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage'> {
+export interface BulletRowProps extends Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage' | 'onRetry'> {
   metrics: BulletMetric[];
   summary: string;
   title?: string;
@@ -23,11 +22,11 @@ export interface BulletRowProps extends Pick<ChartFrameProps, 'state' | 'emptyMe
   skeletonRows?: number;
 }
 
-export function BulletRow({ metrics, summary, title, className, state, emptyMessage, errorMessage, skeletonRows = 3 }: BulletRowProps) {
-  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage}
-    skeleton={<ChartSkeleton variant="bullet" legend={false} rows={skeletonRows} />} title={title} summary={summary} className={className} empty={!metrics.length}
+export function BulletRow({ metrics, summary, title, className, state, emptyMessage, errorMessage, onRetry, skeletonRows = 3 }: BulletRowProps) {
+  return <ChartFrame state={state} emptyMessage={emptyMessage} errorMessage={errorMessage} onRetry={onRetry}
+    skeletonVariant="bullet" skeletonRows={(!state || state === 'idle') && metrics.length ? metrics.length : skeletonRows} title={title} summary={summary} className={className} empty={!metrics.length}
     legend={[{ label: '실적', color: 'var(--chart-line)' }, { label: '정상 범위', color: 'var(--chart-range)' }, { label: '목표 눈금', color: 'var(--chart-target)' }]}>
-    {(width) => <svg data-slot="bullet-row" role="img" aria-label={summary} width={width} height={metrics.length * 44} style={{ display: 'block' }}>
+    {(width, plotHeight) => <svg data-slot="bullet-row" role="img" aria-label={summary} width={width} height={plotHeight} style={{ display: 'block' }}>
       {metrics.map((metric, index) => {
         const achieved = isBulletAchieved(metric.actual, metric.target, metric.lowerIsBetter);
         const status = achieved ? '달성' : '미달';

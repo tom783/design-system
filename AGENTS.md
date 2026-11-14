@@ -38,7 +38,7 @@ pnpm verify       # 위 세 개를 순서대로
 ### 브라우저 하네스
 
 ```bash
-pnpm qa           # 아래를 전부 — 빌드·서버 기동·7개 하네스 (181건)
+pnpm qa           # 아래를 전부 — 빌드·서버 기동·8개 하네스 (207건)
 
 # 개별 실행
 pnpm build-storybook
@@ -46,6 +46,7 @@ npx http-server storybook-static -p 6099 -s &
 node docs/qa/render-verify.mjs         # 기본 컴포넌트·테이블   10건
 node docs/qa/charts-render-verify.mjs  # 차트 로딩·오류         22건
 node docs/qa/loading-render-verify.mjs # 스켈레톤·진행률        42건
+node docs/qa/state-render-verify.mjs   # 상태·아바타·썸네일      26건
 node docs/qa/guide-render-verify.mjs   # Tooltip·Hint·Tour      30건
 node docs/qa/form-render-verify.mjs    # 폼·한글 IME            19건
 node docs/qa/peek-render-verify.mjs    # Peek·다녀온 행         22건
