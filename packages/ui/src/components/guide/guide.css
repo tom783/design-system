@@ -12,6 +12,11 @@
     overlay   var(--dur-fast) allow-discrete,
     display   var(--dur-fast) allow-discrete;
 }
+/* 말풍선 자체는 포커스 링을 그리지 않는다.
+   키보드로 도달하는 요소가 아니라(tabindex -1) 포커스가 착지만 하는 자리다.
+   링은 "대상을 가리키는" 신호로만 남겨둔다 — 10.3.1. */
+[data-slot="guide-bubble"]:focus,
+[data-slot="guide-bubble"]:focus-visible { outline: none; }
 [data-slot="guide-bubble"]:popover-open { opacity: 1; translate: 0 0; }
 @starting-style {
   [data-slot="guide-bubble"]:popover-open { opacity: 0; translate: 0 2px; }
@@ -23,6 +28,9 @@
   position-area: var(--guide-area, block-start);
   position-try-fallbacks: flip-block, flip-inline;
   margin-block: var(--anchor-gap);
+  /* position-area 의 클램프 영역을 좁혀 가장자리 여백을 만든다.
+     여유가 있을 때의 중앙 정렬에는 영향이 없다. */
+  margin-inline: var(--anchor-edge-pad);
 }
 /* JS 폴백 경로 — 덮어쓰기가 아니라 분리된 선택자다 */
 [data-slot="guide-bubble"][data-place="js"] {

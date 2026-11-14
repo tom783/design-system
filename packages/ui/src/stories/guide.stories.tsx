@@ -87,6 +87,26 @@ export const 투어_3단계: Story = {
     const trigger = c.getByRole('button', { name: '둘러보기' });
     await userEvent.click(trigger); await waitFor(() => opened(root));
     await expect(bubble(root)).toHaveFocus();
+    const target = c.getByRole('button', { name: '기능 1' });
+    // 토큰 색을 브라우저의 계산 색상으로 정규화해 테마별 실제 링과 비교한다.
+    const ringColor = document.createElement('span');
+    ringColor.style.color = 'var(--hint-ring)';
+    target.append(ringColor);
+    const expectedRingColor = getComputedStyle(ringColor).color;
+    ringColor.remove();
+    // getComputedStyle은 라이브 객체이므로 포커스를 옮기기 전에 문자열을 복사한다.
+    const outlines = {
+      bubble: getComputedStyle(bubble(root)).outlineStyle,
+      target: getComputedStyle(target).outlineStyle,
+      targetColor: getComputedStyle(target).outlineColor,
+    };
+    await expect(outlines).toEqual({ bubble: 'none', target: 'solid', targetColor: expectedRingColor });
+    // 실제 키보드 이동으로 안쪽 버튼의 :focus-visible 링도 보존되는지 확인한다.
+    await userEvent.tab();
+    const focusedButton = document.activeElement as HTMLElement;
+    const buttonOutline = getComputedStyle(focusedButton).outlineStyle;
+    await expect(within(bubble(root)).getAllByRole('button')).toContain(focusedButton);
+    await expect(buttonOutline).toBe('solid');
     await expect(c.getByLabelText('진행 단계')).toHaveTextContent('1 / 3');
     await userEvent.click(c.getByRole('button', { name: '다음' }));
     await expect(c.getByLabelText('진행 단계')).toHaveTextContent('2 / 3');
