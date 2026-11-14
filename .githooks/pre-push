@@ -1,22 +1,26 @@
 #!/bin/sh
-# 전체 게이트 — 스토리북 빌드 + 브라우저 207건.
-# 몇 분 걸린다. 급하면 `git push --no-verify` 로 건너뛸 수 있지만,
-# 그러면 CI 가 대신 잡는다 (.github/workflows/verify.yml).
+# 전체 게이트 — 스토리북 빌드 + 브라우저 207건. 약 147초.
+# 급하면 `git push --no-verify` 로 건너뛸 수 있지만,
+# 그러면 CI 가 대신 잡는다 (.github/workflows/verify.yml → pnpm gate).
 set -e
 cd "$(git rev-parse --show-toplevel)"
 
+# verify 는 어떤 경우에도 돈다. 3초짜리를 건너뛸 이유가 없고,
+# 토큰 대비·MCP drift·타입이 여기서 걸린다.
+pnpm -s verify || { printf '\n\033[31m✗ pnpm verify 실패\033[0m\n'; exit 1; }
+
+# 건너뛸 수 있는 것은 느린 브라우저 검증뿐이다.
 if [ "$SKIP_QA" = "1" ]; then
-  echo "  (SKIP_QA=1 — 브라우저 검증 건너뜀)"
+  printf '\033[33m⚠ SKIP_QA=1 — 브라우저 검증을 건너뜁니다. CI 가 대신 돌립니다.\033[0m\n'
   exit 0
 fi
 
-# 브라우저가 없으면 막지 말고 알려만 준다. 설치는 개발자의 선택이다.
+# 브라우저가 없으면 막지 말고 알려만 준다. 설치는 개발자의 선택이고 CI 가 받아낸다.
 if ! node -e "import('./docs/qa/browser.mjs').then(m=>m.resolveHeadlessShell())" 2>/dev/null; then
   printf '\033[33m⚠ chrome-headless-shell 이 없어 브라우저 검증을 건너뜁니다.\033[0m\n'
   printf '  npx playwright install chromium-headless-shell\n'
-  exec pnpm -s verify
+  exit 0
 fi
 
-pnpm -s verify || { printf '\n\033[31m✗ pnpm verify 실패\033[0m\n'; exit 1; }
-pnpm -s qa     || { printf '\n\033[31m✗ pnpm qa 실패 — 위 하네스 출력을 읽어라\033[0m\n'; exit 1; }
+pnpm -s qa || { printf '\n\033[31m✗ pnpm qa 실패 — 위 하네스 출력을 읽어라\033[0m\n'; exit 1; }
 printf '\033[32m✓ pre-push 통과\033[0m\n'
