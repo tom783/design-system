@@ -32,6 +32,17 @@ export function ChartFrame({ title, summary, legend = [], empty, className, chil
 export const numericStyle: CSSProperties = { fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' };
 export const axisLabel = () => ({ fill: 'var(--chart-axis)', fontSize: 13, style: numericStyle });
 export const dateFormat = (date: Date) => `${date.getMonth() + 1}/${date.getDate()}`;
+// SVG 좌표 계산에는 숫자가 필요하다. 폭 측정 후 호출하므로 SSR에서는 DOM을 읽지 않는다.
+//
+// 폴백이 반드시 있어야 한다. 토큰을 못 읽으면(소비 앱이 tokens.css 를 안 불러왔거나,
+// CSS 가 JS 보다 늦게 적용되는 첫 렌더) parseFloat('') 가 NaN 이 되고,
+// Math.max(100, NaN) 은 100 이 아니라 NaN 이라 호출부의 바닥값이 막아주지 못한다.
+// 그러면 height="NaN" 으로 차트 전체가 조용히 깨진다 — 실측으로 확인한 동작이다.
+const CHART_H_FALLBACK = 220;
+export const defaultChartHeight = (): number => {
+  const value = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chart-h-default'));
+  return Number.isFinite(value) && value > 0 ? value : CHART_H_FALLBACK;
+};
 export function timeDomain(dates: Date[]): [Date, Date] {
   const first = dates[0]!;
   const last = dates[dates.length - 1]!;

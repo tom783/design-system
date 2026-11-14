@@ -3,7 +3,7 @@ import { AreaClosed, LinePath } from '@visx/shape';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { curveMonotoneX } from '@visx/curve';
-import { ChartFrame, axisLabel, dateFormat, numericStyle, timeDomain, timeTicks } from './chart-frame';
+import { ChartFrame, axisLabel, dateFormat, defaultChartHeight, numericStyle, timeDomain, timeTicks } from './chart-frame';
 import { resolveYDomain } from './resolve-y-domain';
 
 export interface TrendBandProps<T> {
@@ -23,7 +23,7 @@ export interface TrendBandProps<T> {
   className?: string;
 }
 
-export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'auto', height = 220, valueFormat = (v) => v.toLocaleString('ko-KR'), summary, title, className }: TrendBandProps<T>) {
+export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'auto', height, valueFormat = (v) => v.toLocaleString('ko-KR'), summary, title, className }: TrendBandProps<T>) {
   const hasBand = Boolean(yLow && yHigh);
   const points = data.map((datum) => {
     const value = getY(datum);
@@ -36,7 +36,7 @@ export function TrendBand<T>({ data, x: getX, y: getY, yLow, yHigh, yDomain = 'a
   return <ChartFrame title={title} summary={summary} className={className} empty={!points.length}
     legend={[{ label: '추이', color: 'var(--chart-line)' }, ...(hasBand ? [{ label: '분포 범위', color: 'var(--chart-band)' }] : [])]}>
     {(width) => {
-      const h = Math.max(100, height);
+      const h = Math.max(100, height ?? defaultChartHeight());
       // 축 값의 길이에 맞춰 여백을 확보하되 작은 화면의 플롯을 남긴다.
       const left = Math.min(width * 0.4, Math.max(44, Math.max(valueFormat(low).length, valueFormat(high).length) * 8 + 12));
       const right = Math.max(left + 1, width - 8);

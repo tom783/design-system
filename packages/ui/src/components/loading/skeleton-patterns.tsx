@@ -40,8 +40,7 @@ export function ChartSkeleton({ label = '불러오는 중', className }: Skeleto
   return <div data-slot="chart-skeleton" role="status" aria-busy="true" className={cn('loading-chart', className)}>
     <span className="sr-only">{label}</span>
     <div className="loading-chart-legend"><Skeleton variant="text" textStyle="caption" width="30%" /></div>
-    {/* TrendBand의 기본 플롯 높이 220과 축 여백(좌 44·상 24·하 28)을 보존한다.
-        차트에는 높이 토큰이 아직 없어 기존 공개 기본값을 그대로 따른다. */}
+    {/* 실제 차트와 --chart-h-default를 공유하고 TrendBand의 축 여백(좌 44·상 24·하 28)을 보존한다. */}
     <div data-slot="chart-skeleton-plot" className="loading-chart-plot" aria-hidden="true">
       <div className="loading-chart-axis"><Skeleton height="100%" /></div>
     </div>

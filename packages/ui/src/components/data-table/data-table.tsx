@@ -3,6 +3,7 @@ import { flexRender, type Column, type RowData } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowDown, ArrowUp, ArrowUpDown, CircleAlert, Download } from 'lucide-react';
 import { Button } from '../button';
+import { Skeleton } from '../loading/skeleton';
 import { cn } from '../../lib/cn';
 import { useDataTable, type DataTableFeatures, type UseDataTableOptions } from './use-data-table';
 import { SELECTION_COLUMN_ID } from './selection-column';
@@ -278,8 +279,8 @@ export function DataTable<T extends RowData>({
                   <div className="flex" aria-hidden="true">
                     {columns.map((column, cellIndex) => (
                       <div key={column.id} className={cellClass(column)} style={{ width: widths[column.id], flex: widths[column.id] ? 'none' : 1 }}>
-                        <div data-slot="data-table-skeleton" className="rounded-[var(--radius-sm)] bg-sunken"
-                          style={{ width: `${60 + ((index + cellIndex) % 3) * 10}%` }} />
+                        <Skeleton variant="text" textStyle="body-sm"
+                          width={`${60 + ((index + cellIndex) % 3) * 10}%`} />
                       </div>
                     ))}
                   </div>
@@ -340,7 +341,7 @@ export function DataTable<T extends RowData>({
             {(ready || effectiveState === 'empty') && loadingMore && (
               <tr data-slot="data-table-loading-more"><td colSpan={colSpan} className="px-4 py-3">
                 <div role="status" className="flex items-center gap-3 text-fg-muted">
-                  <span data-slot="data-table-skeleton" aria-hidden="true" className="min-w-16 rounded-[var(--radius-sm)] bg-sunken" />
+                  <Skeleton variant="text" textStyle="body-sm" width="auto" className="min-w-16" />
                   불러오는 중
                 </div>
               </td></tr>

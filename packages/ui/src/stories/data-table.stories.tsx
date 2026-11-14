@@ -256,6 +256,18 @@ export const 상태: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvasElement.querySelectorAll('[data-slot="data-table-skeleton-row"]')).toHaveLength(5);
+    const rows = canvasElement.querySelectorAll('[data-slot="data-table-skeleton-row"]');
+    const textHeight = parseFloat(getComputedStyle(canvasElement).getPropertyValue('--text-body-sm')) * 0.65;
+    for (const [index, row] of [...rows].entries()) {
+      const bars = row.querySelectorAll<HTMLElement>('[data-slot="skeleton"]');
+      await expect(bars).toHaveLength(columns.length);
+      for (const [cellIndex, bar] of [...bars].entries()) {
+        await expect(bar).toBeVisible();
+        await expect(bar).toHaveAttribute('data-variant', 'text');
+        await expect(bar.getBoundingClientRect().height).toBeCloseTo(textHeight, 1);
+        await expect(bar.style.width).toBe(`${60 + ((index + cellIndex) % 3) * 10}%`);
+      }
+    }
     await userEvent.click(canvas.getByRole('button', { name: '다시 시도' }));
     await expect(canvas.getByText('재시도 1회')).toBeVisible();
   },
@@ -340,6 +352,11 @@ export const 무한스크롤: Story = {
     for (let count = 50; count < infiniteTotal; count = Math.min(count + 50, infiniteTotal)) {
       scrollToTableEnd(canvasElement);
       await waitFor(() => expect(canvas.getByText('불러오는 중')).toBeVisible());
+      const bar = canvasElement.querySelector('[data-slot="data-table-loading-more"] [data-slot="skeleton"]');
+      await expect(bar).toBeVisible();
+      await expect(bar).toHaveAttribute('data-variant', 'text');
+      await expect(bar!.getBoundingClientRect().height).toBeCloseTo(parseFloat(getComputedStyle(canvasElement).getPropertyValue('--text-body-sm')) * 0.65, 1);
+      await expect(bar!.getBoundingClientRect().width).toBe(64);
       // 같은 길이에서 여러 프레임을 보내도 한 묶음만 추가되어야 한다.
       scrollToTableEnd(canvasElement);
       scrollToTableEnd(canvasElement);

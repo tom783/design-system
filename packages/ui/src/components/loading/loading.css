@@ -28,8 +28,8 @@
 .loading-form-input { border-radius: var(--radius-md); }
 .loading-chart { min-width: 0; padding: var(--space-16); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-surface); }
 .loading-chart-legend { height: var(--text-body-lh); margin-bottom: var(--space-12); display: flex; align-items: center; }
-/* TrendBand의 기본값 및 축 여백과 일치. 공용 차트 높이 토큰이 생기면 함께 옮긴다. */
-.loading-chart-plot { height: 220px; padding: 24px 8px 28px 44px; }
+/* 실제 차트와 높이 토큰을 공유하고 TrendBand의 축 여백을 보존한다. */
+.loading-chart-plot { height: var(--chart-h-default); padding: 24px 8px 28px 44px; }
 .loading-chart-axis { height: 100%; border-left: var(--border-width) solid var(--chart-axis); border-bottom: var(--border-width) solid var(--chart-axis); padding: var(--space-12); }
 .loading-progress { display: grid; min-width: 0; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .loading-progress-labels { display: flex; align-items: baseline; gap: var(--space-12); min-width: 0; }

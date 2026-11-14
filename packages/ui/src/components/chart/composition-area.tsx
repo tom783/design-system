@@ -2,7 +2,7 @@ import { scaleLinear, scaleTime } from '@visx/scale';
 import { AreaStack, Bar, Line } from '@visx/shape';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
-import { ChartFrame, axisLabel, dateFormat, numericStyle, timeDomain, timeTicks } from './chart-frame';
+import { ChartFrame, axisLabel, dateFormat, defaultChartHeight, numericStyle, timeDomain, timeTicks } from './chart-frame';
 import { normalizePercentages, nonNegative } from './normalize';
 
 export interface CompositionAreaProps<T> {
@@ -17,7 +17,7 @@ export interface CompositionAreaProps<T> {
 }
 interface CompositionPoint { date: Date; values: number[] | null }
 
-export function CompositionArea<T>({ data, x: getX, series, height = 220, summary, title, className }: CompositionAreaProps<T>) {
+export function CompositionArea<T>({ data, x: getX, series, height, summary, title, className }: CompositionAreaProps<T>) {
   const keys = series.map((s) => s.key);
   const rows: CompositionPoint[] = data.map((datum) => ({
     date: getX(datum), values: normalizePercentages(keys.map((key) => nonNegative(datum[key]))),
@@ -26,7 +26,7 @@ export function CompositionArea<T>({ data, x: getX, series, height = 220, summar
   const dates = rows.map((d) => d.date);
   return <ChartFrame title={title} summary={summary} className={className} empty={!last || !series.length} legend={series}>
     {(width) => {
-      const h = Math.max(100, height);
+      const h = Math.max(100, height ?? defaultChartHeight());
       const top = 16;
       const bottom = h - 28;
       // 이름과 비율을 직접 읽을 공간을 남기고 나머지 폭으로 시간축을 다시 계산한다.
