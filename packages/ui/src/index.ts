@@ -25,3 +25,6 @@ export {
 } from './components/loading';
 export { useDelayedLoading, type DelayedLoadingOptions } from './lib/use-delayed-loading';
 export { nextPhase, type LoadingPhase, type LoadingInput } from './lib/loading-state';
+export { Tooltip, Hint, Tour, useTour, placeFallback, resolveStep, useAnchored, supportsAnchor,
+  type TooltipProps, type HintProps, type TourStep, type TourProps, type UseTourOptions,
+  type Rect, type Placement } from './components/guide';

@@ -185,7 +185,7 @@ const SEMANTIC = {
     'tooltip-bg':         ['neutral', 950, '툴팁 바탕. 표면과 반전'],
     'tooltip-fg':         ['neutral', 50,  '툴팁 글자'],
     'hint-ring':          ['brand',   600, '안내가 가리키는 대상 둘레'],
-    'hint-bg':            ['bg-surface-ref', null, '힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다'],
+    'hint-bg':            ['#000000', null, '힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 (bg-surface 별칭)'],
   },
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
@@ -240,13 +240,21 @@ const SEMANTIC = {
     'tooltip-bg':         ['neutral', 200, '툴팁 바탕. 다크에서는 밝은 쪽으로 반전'],
     'tooltip-fg':         ['neutral', 1000,'툴팁 글자'],
     'hint-ring':          ['brand',   400, '안내가 가리키는 대상 둘레'],
-    'hint-bg':            ['bg-surface-ref', null, '힌트 말풍선 바탕'],
+    'hint-bg':            ['#000000', null, '힌트 말풍선 바탕 (bg-surface 별칭)'],
   },
 };
-const resolveTok = ([ref, step]) => {
-  if (ref === 'bg-surface-ref') return null;   // 아래에서 bg-surface 를 그대로 가리킨다
-  return ref.startsWith('#') ? ref : P[ref][step].hex;
-};
+// 별칭 토큰 — 값은 대상에서 복사해 두고(검증·tokens.json 이 정직해진다),
+// CSS 출력만 var(--대상) 으로 가리킨다(대상이 바뀌면 함께 따라간다).
+// 둘 중 하나만 하면 한쪽이 거짓말을 한다.
+const ALIAS = { 'hint-bg': 'bg-surface' };
+for (const theme of ['light', 'dark']) {
+  for (const [name, target] of Object.entries(ALIAS)) {
+    const [ref, step] = SEMANTIC[theme][target];
+    SEMANTIC[theme][name] = [ref, step, SEMANTIC[theme][name][2]];
+  }
+}
+
+const resolveTok = ([ref, step]) => (ref.startsWith('#') ? ref : P[ref][step].hex);
 
 // ═════════════════════════ 4. 타이포그래피 ═════════════════════════
 //  행간은 고정 비율이 아니라 "글자가 커질수록 줄어드는" 함수다.
@@ -470,7 +478,7 @@ css += `
 `;
 for (const [k, v] of Object.entries(S.light)) {
   const [ref, step, desc] = v;
-  const val = ref === 'bg-surface-ref' ? 'var(--bg-surface)' : ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
+  const val = ALIAS[k] ? `var(--${ALIAS[k]})` : ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
   css += `    --${pad(k, 24)}: ${pad(val, 34)};  /* ${desc} */\n`;
 }
 css += `
@@ -524,7 +532,7 @@ css += `
 `;
 const darkDecls = Object.entries(S.dark).map(([k, v]) => {
   const [ref, step, desc] = v;
-  const val = ref === 'bg-surface-ref' ? 'var(--bg-surface)' : ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
+  const val = ALIAS[k] ? `var(--${ALIAS[k]})` : ref.startsWith('#') ? ref : `var(--color-${ref}-${step})`;
   return `    --${pad(k, 24)}: ${pad(val, 34)};  /* ${desc} */`;
 }).join('\n');
 const darkShadow = `    --${pad('shadow-overlay', 22)}: var(--shadow-overlay-dark);`;

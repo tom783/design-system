@@ -154,7 +154,7 @@
     --tooltip-bg              : var(--color-neutral-950)          ;  /* 툴팁 바탕. 표면과 반전 */
     --tooltip-fg              : var(--color-neutral-50)           ;  /* 툴팁 글자 */
     --hint-ring               : var(--color-brand-600)            ;  /* 안내가 가리키는 대상 둘레 */
-    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 */
+    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 — 툴팁과 달리 읽을 분량이 있어 반전하지 않는다 (bg-surface 별칭) */
 
     /* ── 타이포그래피 ──────────────────────────────────────────────────────
        행간은 고정 비율이 아니라 글자 크기에 반비례하는 함수다.
@@ -305,7 +305,7 @@
     --tooltip-bg              : var(--color-neutral-200)          ;  /* 툴팁 바탕. 다크에서는 밝은 쪽으로 반전 */
     --tooltip-fg              : var(--color-neutral-1000)         ;  /* 툴팁 글자 */
     --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
-    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 */
+    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 (bg-surface 별칭) */
     --shadow-overlay        : var(--shadow-overlay-dark);
       color-scheme: dark;
     }
@@ -356,7 +356,7 @@
     --tooltip-bg              : var(--color-neutral-200)          ;  /* 툴팁 바탕. 다크에서는 밝은 쪽으로 반전 */
     --tooltip-fg              : var(--color-neutral-1000)         ;  /* 툴팁 글자 */
     --hint-ring               : var(--color-brand-400)            ;  /* 안내가 가리키는 대상 둘레 */
-    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 */
+    --hint-bg                 : var(--bg-surface)                 ;  /* 힌트 말풍선 바탕 (bg-surface 별칭) */
     --shadow-overlay        : var(--shadow-overlay-dark);
     color-scheme: dark;
   }
