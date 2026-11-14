@@ -18,76 +18,20 @@
 //  억제한다. 이걸 빠뜨리면 포커스 관련 기능이 "깨진 것처럼" 보인다.
 //  2026-11-14 에 실제로 이것 때문에 멀쩡한 포커스 복구 코드를 버그로 오판했다.
 // ============================================================================
-import { writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
-import { spawn } from 'node:child_process';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { launchBrowser, storybook } from './browser.mjs';
 
-const BASE = 'http://localhost:6099';
-const OUT = process.argv[2] || './shots2';
-const PORT = 9432;
+const BASE = 'http://localhost:6099', OUT = process.argv[2] || './shots', PORT = 9432;
 mkdirSync(OUT, { recursive: true });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
-  '--headless=new', `--remote-debugging-port=${PORT}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'v2-'))}`,
-  '--no-first-run', '--no-default-browser-check', '--disable-gpu',
-  '--window-size=1440,1000', '--force-device-scale-factor=1', '--disable-extensions',
-  'about:blank',
-], { stdio: 'ignore' });
-process.on('exit', () => { try { chrome.kill(); } catch {} });
-
-let ws, mid = 0;
-const pending = new Map();
-let consoleErrors = [];
-let pageExceptions = [];
-
-for (let i = 0; i < 80; i++) {
-  try {
-    const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
-    const p = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
-    if (p) { ws = new WebSocket(p.webSocketDebuggerUrl); break; }
-  } catch {}
-  await sleep(250);
-}
-await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-ws.onmessage = (e) => {
-  const m = JSON.parse(e.data);
-  if (m.id && pending.has(m.id)) {
-    const { res, rej } = pending.get(m.id); pending.delete(m.id);
-    return m.error ? rej(new Error(m.error.message)) : res(m.result);
-  }
-  // play 함수 실패는 콘솔 에러나 예외로 드러난다
-  if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') {
-    consoleErrors.push(m.params.args.map((a) => a.value ?? a.description ?? a.type).join(' ').slice(0, 400));
-  }
-  if (m.method === 'Runtime.exceptionThrown') {
-    pageExceptions.push((m.params.exceptionDetails.exception?.description ?? m.params.exceptionDetails.text ?? '').slice(0, 400));
-  }
-};
-const cdp = (method, params = {}) => new Promise((res, rej) => {
-  pending.set(++mid, { res, rej });
-  ws.send(JSON.stringify({ id: mid, method, params }));
-  setTimeout(() => { if (pending.has(mid)) { pending.delete(mid); rej(new Error(method + ' 타임아웃')); } }, 40000);
-});
-await cdp('Page.enable'); await cdp('Runtime.enable');
-// 헤드리스는 문서가 시스템 포커스를 갖지 않아 focus/focusin 이벤트를 억제한다.
-// 이걸 켜지 않으면 포커스 관련 기능이 "깨진 것처럼" 보인다 — 실제로 오판했던 지점.
-await cdp('Emulation.setFocusEmulationEnabled', { enabled: true });
-
-const evalIn = async (src) => {
-  const r = await cdp('Runtime.evaluate', { expression: src, returnByValue: true, awaitPromise: true });
-  if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text);
-  return r.result?.value;
-};
-const shot = async (name) => {
-  const r = await cdp('Page.captureScreenshot', { format: 'png' });
-  writeFileSync(`${OUT}/${name}.png`, Buffer.from(r.data, 'base64'));
-};
+// GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
+// 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.
+const session = await launchBrowser({ port: PORT, windowSize: '1440,1000', outDir: OUT });
+const { cdp, ev, shot, sleep } = session;
+const evalIn = ev;
 
 /** 스토리를 열고 play 함수가 끝날 때까지 기다린다. */
 async function openStory(id, extra = '') {
-  consoleErrors = []; pageExceptions = [];
+  session.resetErrors();
   await cdp('Page.navigate', { url: `${BASE}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story${extra}` });
   for (let i = 0; i < 80; i++) {
     if (await evalIn('document.readyState').catch(() => '') === 'complete') break;
@@ -108,8 +52,8 @@ async function openStory(id, extra = '') {
     await sleep(250);
   }
   return {
-    errors: [...consoleErrors],
-    exceptions: [...pageExceptions],
+    errors: session.errors(),
+    exceptions: session.errors(),
     // Storybook 은 렌더·play 실패 시 에러 표시를 띄운다
     sbError: await evalIn(`(() => {
       const el = document.querySelector('#error-message, .sb-errordisplay_code, #error-stack');
@@ -223,7 +167,7 @@ check('다크에서 셀 배경이 어둡다 (토큰이 실제로 먹음)', lum <
   `${dk.cellBg} → 휘도 ${lum.toFixed(3)} · 토큰 --bg-surface=${dk.tokenSurface}`);
 
 // ══ 요약 ══
-ws.close(); chrome.kill();
+session.close();
 const fail = results.filter((r) => !r.pass);
 console.log('\n' + '═'.repeat(64));
 console.log(`검사 ${results.length}건 · 통과 ${results.length - fail.length} · 실패 ${fail.length}`);

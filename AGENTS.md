@@ -26,7 +26,7 @@ React 19.3.1 · Storybook 10.6.7 · Tailwind CSS **4**.3.5 · TypeScript **7**.0
 ## 검증
 
 ```bash
-pnpm tokens       # 토큰 재생성 + 대비 48건 · 의미분리 6건 · 테마 3상태 검증
+pnpm tokens       # 토큰 재생성 + 대비 74건 · 의미분리 8건 · 테마 3상태 검증
 pnpm typecheck
 pnpm build-storybook
 pnpm verify       # 위 세 개를 순서대로
@@ -34,6 +34,26 @@ pnpm verify       # 위 세 개를 순서대로
 
 `pnpm verify`가 통과하지 않은 작업은 완료가 아니다.
 토큰을 건드렸으면 `pnpm tokens` 출력의 실패 항목을 반드시 읽어라 — 종료 코드 1로 막는다.
+
+### 브라우저 하네스
+
+```bash
+pnpm qa           # 아래를 전부 — 빌드·서버 기동·7개 하네스 (181건)
+
+# 개별 실행
+pnpm build-storybook
+npx http-server storybook-static -p 6099 -s &
+node docs/qa/render-verify.mjs         # 기본 컴포넌트·테이블   10건
+node docs/qa/charts-render-verify.mjs  # 차트 로딩·오류         22건
+node docs/qa/loading-render-verify.mjs # 스켈레톤·진행률        42건
+node docs/qa/guide-render-verify.mjs   # Tooltip·Hint·Tour      30건
+node docs/qa/form-render-verify.mjs    # 폼·한글 IME            19건
+node docs/qa/peek-render-verify.mjs    # Peek·다녀온 행         22건
+node docs/qa/mcp-client-verify.mjs     # MCP 서버 (브라우저 없음) 36건
+```
+
+전부 `docs/qa/browser.mjs` 를 거친다. **GUI Chrome 을 직접 띄우지 마라** —
+이유는 "이미 밟은 함정" 절에 있다.
 
 ## 상시 규칙
 
@@ -69,11 +89,31 @@ success는 3.89:1이다. "600단계는 안전하다"는 규칙은 없다. 실측
 
 **대비 임계값 판정에 반올림한 값을 쓰지 마라.** 4.4992가 4.50으로 통과한다.
 
+**macOS 에서 `/Applications/*.app/Contents/MacOS/*` 를 직접 실행하지 마라.**
+에이전트 샌드박스(Orca/Codex 의 Seatbelt) 안에서 **크래시한다.** 실제 리포트:
+
+```
+Parent Process: node   ·   Responsible Process: Orca
+Termination Reason: SIGNAL 6, Abort trap
+  abort() → ___RegisterApplication_block_invoke → _RegisterApplication
+  → TransformProcessType → ChromeMain
+```
+
+Chrome 이 GUI 앱으로 등록(`TransformProcessType`)을 시도하는데 샌드박스 안에서는
+coreservicesd 체크인이 실패해 abort 한다. **`--headless=new` 도 안전하지 않다** —
+그건 GUI 바이너리를 창 없이 돌리는 것이라 같은 경로를 탄다.
+
+`--no-sandbox` · Chrome 재설치 · 프로필 삭제는 해결책이 아니다.
+Chrome 내부 샌드박스와 Orca 의 외부 Seatbelt 는 별개이고, 끄면 보안만 약해진다.
+
+**브라우저 검증은 `docs/qa/browser.mjs` 를 거친다.** 거기서
+`chrome-headless-shell`(AppKit 을 링크하지 않는 별도 바이너리)을 찾아 띄우고,
+GUI 앱 번들 경로는 **거부**한다. 없으면 `npx playwright install chromium-headless-shell`.
+
 **헤드리스 브라우저로 포커스 동작을 검증할 때는 포커스 에뮬레이션을 켜라.**
 헤드리스 Chrome 은 문서가 시스템 포커스를 갖지 않으면 `focus`/`focusin` 이벤트를
 억제한다. CDP 의 `Emulation.setFocusEmulationEnabled: true` 를 빠뜨리면
-포커스 관련 기능이 전부 "깨진 것처럼" 보인다. 검증 하네스는
-`docs/qa/render-verify.mjs` 에 있고 이 설정이 들어가 있으니 그것을 쓴다.
+포커스 관련 기능이 전부 "깨진 것처럼" 보인다. `docs/qa/browser.mjs` 의 `launchBrowser()` 가 이미 켜고 있으니 그것을 쓴다.
 
 **테마 토큰을 `@media`나 `[data-theme]` 블록 안에서만 정의하지 마라.**
 테마 미지정 상태(사용자 대부분)에서 해소되지 않아 한쪽 테마 글자가 반대 테마 바탕에 얹힌다.

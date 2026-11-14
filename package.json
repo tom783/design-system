@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm build-storybook --quiet",
     "mcp": "node packages/mcp/server.mjs",
-    "mcp:build": "node docs/research/mcp-build.mjs"
+    "mcp:build": "node docs/research/mcp-build.mjs",
+    "qa": "node docs/qa/run-all.mjs"
   },
   "devDependencies": {
     "@storybook/react-vite": "^10.6.7",

@@ -18,31 +18,23 @@
 //     (스토리가 일부러 둔 외부 <p>). 실재 여부로 판정해라.
 //  5. 검증 시점 검사는 play 가 끝난 뒤라 hasErrored 가 이미 true 다.
 //     "첫 오류 전 침묵"은 스토리 play 가 깨끗한 마운트에서 단언한다.
-import { writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
-import { spawn } from 'node:child_process';
-import { tmpdir } from 'node:os'; import { join } from 'node:path';
-const BASE='http://localhost:6099', OUT=process.argv[2]||'./shots', PORT=9503;
-mkdirSync(OUT,{recursive:true});
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const ch=spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',['--headless=new',`--remote-debugging-port=${PORT}`,`--user-data-dir=${mkdtempSync(join(tmpdir(),'r9-'))}`,'--no-first-run','--disable-gpu','--window-size=1200,900','--force-device-scale-factor=1','--disable-extensions','about:blank'],{stdio:'ignore'});
-process.on('exit',()=>{try{ch.kill()}catch{}});
-let ws,mid=0; const pend=new Map(); let cerr=[],pexc=[];
-for(let i=0;i<80;i++){try{const l=await(await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();const p=l.find(t=>t.type==='page'&&t.webSocketDebuggerUrl);if(p){ws=new WebSocket(p.webSocketDebuggerUrl);break}}catch{} await sleep(250)}
-await new Promise((a,b)=>{ws.onopen=a;ws.onerror=b});
-ws.onmessage=e=>{const m=JSON.parse(e.data);
-  if(m.id&&pend.has(m.id)){const{a,b}=pend.get(m.id);pend.delete(m.id);return m.error?b(new Error(m.error.message)):a(m.result)}
-  if(m.method==='Runtime.consoleAPICalled'&&m.params.type==='error') cerr.push(m.params.args.map(x=>x.value??x.description??'').join(' ').slice(0,300));
-  if(m.method==='Runtime.exceptionThrown') pexc.push((m.params.exceptionDetails.exception?.description??'').slice(0,300));};
-const cdp=(method,params={})=>new Promise((a,b)=>{pend.set(++mid,{a,b});ws.send(JSON.stringify({id:mid,method,params}));setTimeout(()=>{if(pend.has(mid)){pend.delete(mid);b(new Error(method+' 타임아웃'))}},45000)});
-await cdp('Page.enable'); await cdp('Runtime.enable'); await cdp('Emulation.setFocusEmulationEnabled',{enabled:true});
-const ev=async s=>{const r=await cdp('Runtime.evaluate',{expression:s,returnByValue:true,awaitPromise:true}); if(r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description??r.exceptionDetails.text); return r.result?.value};
-const shot=async n=>{const r=await cdp('Page.captureScreenshot',{format:'png'});writeFileSync(`${OUT}/${n}.png`,Buffer.from(r.data,'base64'))};
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { launchBrowser, storybook } from './browser.mjs';
+
+const BASE = 'http://localhost:6099', OUT = process.argv[2] || './shots', PORT = 9503;
+mkdirSync(OUT, { recursive: true });
+// GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
+// 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.
+const session = await launchBrowser({ port: PORT, windowSize: '1200,900', outDir: OUT });
+const { cdp, ev, shot, sleep } = session;
+const evalIn = ev;
+
 async function go(id){
-  cerr=[];pexc=[];
+  session.resetErrors();
   await cdp('Page.navigate',{url:`${BASE}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story`});
   for(let i=0;i<80;i++){if(await ev('document.readyState').catch(()=>'')==='complete')break; await sleep(150)}
   for(let i=0;i<70;i++){ if(await ev(`!!document.querySelector('[data-play-complete="true"]')`).catch(()=>false)) break; await sleep(200); }
-  return {errors:[...cerr,...pexc].filter(m=>!/Warning:|DevTools|favicon|preload/i.test(m)),
+  return {errors:session.errors().filter(m=>!/Warning:|DevTools|favicon|preload/i.test(m)),
     sbError: await ev(`(()=>{const el=document.querySelector('#error-message');return document.body.classList.contains('sb-show-errordisplay')||el?(el?el.textContent.slice(0,300):'errordisplay'):null})()`).catch(()=>null)};
 }
 const R=[]; const check=(l,pass,d)=>{R.push({l,pass,d});console.log(`  ${pass?'✓':'✗'} ${l}${d?` — ${d}`:''}`)};
@@ -178,7 +170,7 @@ await sleep(150);
 const taAfter=await ev(`(()=>{const t=${CANVAS}.querySelector('textarea');return {값:JSON.stringify(t.value), 포커스유지:document.activeElement===t}})()`);
 check('textarea 에서 Enter 후에도 포커스가 유지된다 (이동 안 함)', taAfter.포커스유지===true, `값 ${taAfter.값}`);
 
-ws.close(); ch.kill();
+session.close();
 const f=R.filter(x=>!x.pass);
 console.log('\n'+'═'.repeat(64));
 console.log(`검사 ${R.length}건 · 통과 ${R.length-f.length} · 실패 ${f.length}`);

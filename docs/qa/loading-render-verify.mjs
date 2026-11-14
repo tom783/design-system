@@ -13,65 +13,19 @@
 //  짧게 떴다 사라지는 로더를 놓치고, 페이지에 원래 있던 스켈레톤과 구분하지 못한다.
 //  스토리의 play 가 MutationObserver 로 더 정확히 검증한다.
 // ============================================================================
-import { writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
-import { spawn } from 'node:child_process';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { launchBrowser, storybook } from './browser.mjs';
 
-const BASE = 'http://localhost:6099';
-const OUT = process.argv[2] || './loading-shots';
-const PORT = 9477;
+const BASE = 'http://localhost:6099', OUT = process.argv[2] || './loading-shots', PORT = 9477;
 mkdirSync(OUT, { recursive: true });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
+// 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.
+const session = await launchBrowser({ port: PORT, windowSize: '1440,1000', outDir: OUT });
+const { cdp, ev, shot, sleep } = session;
+const evalIn = ev;
 
-const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
-  '--headless=new', `--remote-debugging-port=${PORT}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'ld-'))}`,
-  '--no-first-run', '--disable-gpu', '--window-size=1440,1000',
-  '--force-device-scale-factor=1', '--disable-extensions', 'about:blank',
-], { stdio: 'ignore' });
-process.on('exit', () => { try { chrome.kill(); } catch {} });
-
-let ws, mid = 0; const pending = new Map();
-let consoleErrors = [], pageExceptions = [];
-for (let i = 0; i < 80; i++) {
-  try {
-    const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
-    const p = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
-    if (p) { ws = new WebSocket(p.webSocketDebuggerUrl); break; }
-  } catch {}
-  await sleep(250);
-}
-await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-ws.onmessage = (e) => {
-  const m = JSON.parse(e.data);
-  if (m.id && pending.has(m.id)) {
-    const { res, rej } = pending.get(m.id); pending.delete(m.id);
-    return m.error ? rej(new Error(m.error.message)) : res(m.result);
-  }
-  if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error')
-    consoleErrors.push(m.params.args.map((a) => a.value ?? a.description ?? '').join(' ').slice(0, 300));
-  if (m.method === 'Runtime.exceptionThrown')
-    pageExceptions.push((m.params.exceptionDetails.exception?.description ?? '').slice(0, 300));
-};
-const cdp = (method, params = {}) => new Promise((res, rej) => {
-  pending.set(++mid, { res, rej });
-  ws.send(JSON.stringify({ id: mid, method, params }));
-  setTimeout(() => { if (pending.has(mid)) { pending.delete(mid); rej(new Error(method + ' 타임아웃')); } }, 40000);
-});
-await cdp('Page.enable'); await cdp('Runtime.enable');
-await cdp('Emulation.setFocusEmulationEnabled', { enabled: true });
-
-const evalIn = async (src) => {
-  const r = await cdp('Runtime.evaluate', { expression: src, returnByValue: true, awaitPromise: true });
-  if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text);
-  return r.result?.value;
-};
-const shot = async (n) => {
-  const r = await cdp('Page.captureScreenshot', { format: 'png' });
-  writeFileSync(`${OUT}/${n}.png`, Buffer.from(r.data, 'base64'));
-};
 async function open(id, extra = '') {
-  consoleErrors = []; pageExceptions = [];
+  session.resetErrors();
   await cdp('Page.navigate', { url: `${BASE}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story${extra}` });
   for (let i = 0; i < 80; i++) { if (await evalIn('document.readyState').catch(() => '') === 'complete') break; await sleep(150); }
   let prev = 0, stable = 0;
@@ -80,7 +34,7 @@ async function open(id, extra = '') {
     stable = t === prev ? stable + 1 : 0; prev = t; await sleep(200);
   }
   return {
-    errors: [...consoleErrors, ...pageExceptions].filter((m) => !/Warning:|DevTools|favicon|preload/i.test(m)),
+    errors: session.errors().filter((m) => !/Warning:|DevTools|favicon|preload/i.test(m)),
     sbError: await evalIn(`(() => { const el=document.querySelector('#error-message');
       return document.body.classList.contains('sb-show-errordisplay')||el ? (el?el.textContent.slice(0,300):'errordisplay') : null; })()`).catch(() => null),
   };
@@ -211,7 +165,7 @@ const rgb = (dk.bg?.match(/\d+/g) ?? []).map(Number);
 const lum = rgb.length >= 3 ? (0.2126*rgb[0]+0.7152*rgb[1]+0.0722*rgb[2])/255 : 1;
 check('다크에서 스켈레톤이 어둡다 (토큰 적용)', lum < 0.3, `${dk.bg} → 휘도 ${lum.toFixed(3)} · 토큰 ${dk.token}`);
 
-ws.close(); chrome.kill();
+session.close();
 const f = results.filter((r) => !r.pass);
 console.log('\n' + '═'.repeat(62));
 console.log(`검사 ${results.length}건 · 통과 ${results.length - f.length} · 실패 ${f.length}`);
