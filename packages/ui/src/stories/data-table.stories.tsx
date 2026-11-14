@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { createColumnHelper } from '@tanstack/react-table';
 import { DataTable, dataTableFeatures, type SelectionMode } from '../components/data-table';
 import { Button } from '../components/button';
@@ -264,4 +264,154 @@ export const 상태: Story = {
 export const 내보내기: Story = {
   parameters: { docs: { description: { story: '선택한 행이 있으면 그 행만, 없으면 현재 정렬된 전체 주문을 내보냅니다. 화면의 금액에는 천 단위 쉼표를 쓰지만 CSV는 exportValue를 통해 원본 숫자 문자열을 사용해 Excel의 숫자 인식을 보존합니다.' } } },
   args: { selectionMode: 'multi', exportFileName: '주문내역-20261114', exportValue: { amount: (row) => String(row.amount) } },
+};
+
+// 같은 주문 패턴을 재사용하되 ID는 고유하게 만들어 추가 로드 후에도 선택의 대상을 보존한다.
+const tenThousandOrders: Order[] = Array.from({ length: 10_000 }, (_, index) => ({
+  ...orders[index % orders.length]!,
+  id: `ORD-LARGE-${String(index + 1).padStart(5, '0')}`,
+}));
+const infiniteTotal = 1_284;
+
+function useMockOrderLoader() {
+  const [count, setCount] = React.useState(50);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
+  const loadMore = React.useCallback(() => {
+    if (timer.current !== null) return;
+    setLoadingMore(true);
+    timer.current = setTimeout(() => {
+      setCount((previous) => Math.min(previous + 50, infiniteTotal));
+      setLoadingMore(false);
+      timer.current = null;
+    }, 500);
+  }, []);
+  const data = React.useMemo(() => tenThousandOrders.slice(0, count), [count]);
+  return { data, loadingMore, hasMore: count < infiniteTotal, onLoadMore: loadMore };
+}
+
+function InfiniteExample({ selection = false }: { selection?: boolean }) {
+  const loader = useMockOrderLoader();
+  const [ids, setIds] = React.useState<string[]>([]);
+  return <div className="flex min-w-0 flex-col gap-3">
+    <p>로드된 <output data-testid="loaded-count">{loader.data.length}</output> / 1,284건 · 하단에서 50건씩, 500ms 후 추가합니다.</p>
+    {selection && <p>선택된 ID: <output data-testid="selected-ids" aria-live="polite">{ids.join(', ') || '없음'}</output></p>}
+    <DataTable {...loader} columns={columns} getRowId={getRowId} totalCount={infiniteTotal}
+      virtualize={selection ? 100 : false}
+      selectionMode={selection ? 'multi' : 'none'} selectedIds={ids} onSelectedIdsChange={setIds}
+      exportFileName="로드된-주문" className="[--data-table-viewport-height:240px]"
+      caption="전체 1,284건 중 순차적으로 불러오는 주문 목록" />
+  </div>;
+}
+
+function scrollToTableEnd(canvasElement: HTMLElement) {
+  const scroll = canvasElement.querySelector<HTMLElement>('[data-slot="data-table-scroll"]')!;
+  scroll.scrollTop = scroll.scrollHeight;
+  scroll.dispatchEvent(new Event('scroll'));
+  return scroll;
+}
+
+export const 가상화_1만행: Story = {
+  parameters: { docs: { description: { story: '10,000행을 즉시 제공해도 DOM 에는 약 20행만 존재한다(뷰포트와 overscan에 따라 달라짐). 가상화의 대가로 Ctrl+F 는 보이지 않는 행을 찾을 수 없다. 모든 행의 브라우저 검색이 필요하면 virtualize={false}를 사용한다. 행에 포커스를 둔 뒤 멀리 스크롤하면 스크롤 컨테이너로 포커스가 이동한다.' } } },
+  args: { data: tenThousandOrders, onRowClick: () => {}, caption: '가상화된 주문 10,000건', className: '[--data-table-viewport-height:240px]' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() => expect(canvasElement.querySelectorAll('[data-slot="data-table-row"]').length).toBeGreaterThan(0));
+    await expect(canvas.getByRole('table')).toHaveAttribute('aria-rowcount', '10000');
+    const first = canvasElement.querySelector<HTMLElement>('[data-slot="data-table-row"]')!;
+    await expect(first).toHaveAttribute('aria-rowindex', '2');
+    first.focus();
+    const scroll = scrollToTableEnd(canvasElement);
+    await waitFor(() => expect(scroll).toHaveFocus());
+    await expect(canvasElement.querySelectorAll('[data-slot="data-table-row"]').length).toBeLessThan(40);
+    await expect(canvasElement.querySelector('[aria-rowindex="10001"]')).toBeInTheDocument();
+    for (const spacer of canvasElement.querySelectorAll('[data-slot="data-table-spacer"]')) {
+      await expect(spacer).toHaveAttribute('aria-hidden', 'true');
+    }
+  },
+};
+
+export const 무한스크롤: Story = {
+  parameters: { docs: { description: { story: '가상화를 명시적으로 끈 상태에서도 바닥 120px 전부터 500ms 지연으로 50건씩 불러온다. 기존 행 아래의 로딩 행, 로드된 건수만 내보낸다는 라벨, 마지막 전체 1,284건을 모두 불러왔습니다 표시를 확인한다.' } } },
+  render: () => <InfiniteExample />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (let count = 50; count < infiniteTotal; count = Math.min(count + 50, infiniteTotal)) {
+      scrollToTableEnd(canvasElement);
+      await waitFor(() => expect(canvas.getByText('불러오는 중')).toBeVisible());
+      // 같은 길이에서 여러 프레임을 보내도 한 묶음만 추가되어야 한다.
+      scrollToTableEnd(canvasElement);
+      scrollToTableEnd(canvasElement);
+      await waitFor(() => expect(canvas.getByTestId('loaded-count')).toHaveTextContent(String(Math.min(count + 50, infiniteTotal))));
+    }
+    scrollToTableEnd(canvasElement);
+    await expect(canvas.getByText('전체 1,284건을 모두 불러왔습니다')).toBeVisible();
+    await expect(canvas.queryByText('불러오는 중')).not.toBeInTheDocument();
+  },
+};
+
+export const 무한스크롤_선택유지: Story = {
+  parameters: { docs: { description: { story: '행 두 개를 선택한 뒤 추가 로드하고 처음으로 돌아와 선택 유지와 새 행 미선택을 확인한다. 선택된 id 목록을 계속 표시한다. 100건을 넘으면 기본 가상화가 켜지므로 이후 Ctrl+F 는 보이지 않는 행을 찾지 못한다.' } } },
+  render: () => <InfiniteExample selection />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const order of tenThousandOrders.slice(0, 2)) {
+      await userEvent.click(canvas.getByRole('checkbox', { name: `${order.id} 선택` }));
+    }
+    for (const count of [100, 150]) {
+      scrollToTableEnd(canvasElement);
+      await waitFor(() => expect(canvas.getByTestId('loaded-count')).toHaveTextContent(String(count)));
+    }
+    await expect(canvasElement.querySelector<HTMLElement>('[data-slot="data-table-scroll"]')!.scrollTop).toBeGreaterThan(0);
+    await waitFor(() => expect(canvas.getByRole('checkbox', { name: `${tenThousandOrders[100]!.id} 선택` })).not.toBeChecked());
+    await expect(canvas.getByTestId('selected-ids')).toHaveTextContent(tenThousandOrders.slice(0, 2).map((order) => order.id).join(', '));
+    const scroll = canvasElement.querySelector<HTMLElement>('[data-slot="data-table-scroll"]')!;
+    scroll.scrollTop = 0;
+    scroll.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(canvas.getByRole('checkbox', { name: `${tenThousandOrders[0]!.id} 선택` })).toBeChecked());
+    await expect(canvas.getByRole('checkbox', { name: `${tenThousandOrders[1]!.id} 선택` })).toBeChecked();
+  },
+};
+
+const virtualPinnedColumns = helper.columns([
+  ...columns,
+  helper.accessor('quantity', { header: '수량' }),
+  helper.accessor('orderedAt', { header: '주문 일시' }),
+  helper.accessor('channel', { header: '판매 채널' }),
+  helper.accessor('address', { header: '배송지' }),
+  helper.accessor('phone', { header: '연락처' }),
+  helper.accessor('shippingFee', { header: '배송비' }),
+  helper.accessor('memo', { header: '배송 메모' }),
+]);
+
+export const 가상화_컬럼고정: Story = {
+  parameters: { docs: { description: { story: '10,000행과 가로 스크롤에서 start의 선택·주문번호·수취인, end의 연락처·배송 메모를 고정한다. 스페이서 행은 고정 스타일을 받지 않고 일반 셀의 실측 sticky 오프셋이 유지되는지 확인한다. 가상화 중 Ctrl+F 는 보이지 않는 행을 찾지 못한다.' } } },
+  args: { data: tenThousandOrders, columns: virtualPinnedColumns, selectionMode: 'multi', pinnedStart: ['id', 'recipient'], pinnedEnd: ['phone', 'memo'], className: 'max-w-[960px] [--data-table-viewport-height:240px]', caption: '컬럼 고정과 행 가상화를 함께 사용하는 주문 10,000건' },
+  play: async ({ canvasElement }) => {
+    const scroll = scrollToTableEnd(canvasElement);
+    scroll.scrollLeft = scroll.scrollWidth;
+    scroll.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(canvasElement.querySelector('[aria-rowindex="10001"]')).toBeInTheDocument());
+    const row = canvasElement.querySelector('[data-slot="data-table-row"]')!;
+    for (const id of ['id', 'recipient', 'phone', 'memo']) {
+      const cell = row.querySelector<HTMLElement>(`[data-column-id="${id}"]`)!;
+      const head = canvasElement.querySelector<HTMLElement>(`th[data-column-id="${id}"]`)!;
+      await expect(cell.style.position).toBe('sticky');
+      await expect(cell.style.left).toBe(head.style.left);
+      await expect(cell.style.right).toBe(head.style.right);
+    }
+  },
+};
+
+export const 부분로드_전체선택: Story = {
+  parameters: { docs: { description: { story: '50/1,284건에서 헤더 라벨은 로드된 50건 선택이다. 체크하면 로드된 50건이 선택됨 · 전체 1,284건을 툴바에 안내한다. 서버 전체 선택 버튼은 제공하지 않으며 선택 전 CSV 라벨도 로드된 범위를 알린다.' } } },
+  args: { data: tenThousandOrders.slice(0, 50), totalCount: infiniteTotal, selectionMode: 'multi', exportFileName: '부분-주문', caption: '전체 1,284건 중 처음 50건의 선택 범위' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('button', { name: '로드된 50건만 내보냅니다' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('checkbox', { name: '로드된 50건 선택' }));
+    await expect(canvas.getByText('로드된 50건이 선택됨 · 전체 1,284건')).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: '전체 선택' })).not.toBeInTheDocument();
+  },
 };

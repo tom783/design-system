@@ -23,6 +23,8 @@ export type SelectionMode = 'none' | 'single' | 'multi';
 
 export interface UseDataTableOptions<T extends RowData> {
   data: T[];
+  /** 서버 전체 건수. 생략하면 로드된 data.length를 전체로 간주한다. */
+  totalCount?: number;
   columns: DataTableColumns<T>;
   getRowId: (row: T) => string;
   selectionMode?: SelectionMode;
@@ -35,7 +37,7 @@ export interface UseDataTableOptions<T extends RowData> {
 const NO_PINS: string[] = [];
 
 export function useDataTable<T extends RowData>({
-  data, columns, getRowId, selectionMode = 'none', selectedIds, onSelectedIdsChange,
+  data, totalCount, columns, getRowId, selectionMode = 'none', selectedIds, onSelectedIdsChange,
   pinnedStart = NO_PINS, pinnedEnd = NO_PINS,
 }: UseDataTableOptions<T>) {
   const [internalIds, setInternalIds] = React.useState<string[]>([]);
@@ -48,9 +50,11 @@ export function useDataTable<T extends RowData>({
     return selection;
   }, [ids, selectionMode]);
 
+  const selectionLabel = totalCount !== undefined && totalCount > data.length
+    ? `로드된 ${data.length.toLocaleString('ko-KR')}건 선택` : '전체 선택';
   const tableColumns = React.useMemo(() => selectionMode === 'none'
     ? columns
-    : [createSelectionColumn<T>(selectionMode), ...columns], [columns, selectionMode]);
+    : [createSelectionColumn<T>(selectionMode, selectionLabel), ...columns], [columns, selectionMode, selectionLabel]);
 
   const columnPinning = React.useMemo(() => {
     const start = [...new Set([
