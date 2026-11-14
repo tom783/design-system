@@ -1,0 +1,44 @@
+#!/bin/sh
+# 빠른 게이트 — 약 1.5초. 느려지면 사람들이 --no-verify 로 끄기 시작한다.
+# 느린 검증(스토리북 빌드·브라우저 207건)은 pre-push 에 있다.
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+# 머지·리베이스 중에는 끼어들지 않는다. 충돌 해결 중에 생성기를 돌리면 더 꼬인다.
+if [ -e .git/MERGE_HEAD ] || [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+  echo "  (머지/리베이스 중 — pre-commit 건너뜀)"
+  exit 0
+fi
+
+fail() { printf '\n\033[31m✗ %s\033[0m\n' "$1"; exit 1; }
+
+# 1. 생성 파일이 소스와 맞는가.
+#    생성기를 고치고 산출물 커밋을 잊는 것이 가장 흔한 사고다.
+#    토큰 검증(대비 78건·ΔE 8건)과 MCP drift 검사도 여기서 함께 돈다.
+pnpm -s tokens    > /dev/null || fail "토큰 검증 실패 — pnpm tokens 출력을 읽어라"
+pnpm -s mcp:build > /dev/null || fail "MCP 매니페스트 검증 실패 — pnpm mcp:build 출력을 읽어라"
+
+GENERATED="packages/tokens docs/research/tokens.json packages/mcp/manifest.json"
+if ! git diff --quiet -- $GENERATED; then
+  printf '\n\033[31m✗ 생성 파일이 소스와 어긋나 있다.\033[0m\n'
+  git --no-pager diff --stat -- $GENERATED
+  printf '\n  재생성된 파일을 함께 커밋해라:\n    git add %s\n' "$GENERATED"
+  exit 1
+fi
+
+# 2. 타입
+pnpm -s typecheck || fail "타입 검사 실패"
+
+# 3. 단위 테스트
+node --test \
+  packages/ui/src/lib/*.test.mjs \
+  packages/ui/src/components/*/*.test.mjs \
+  packages/mcp/*.test.mjs \
+  docs/qa/*.test.mjs > /dev/null 2>&1 || {
+    echo ""
+    node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs packages/mcp/*.test.mjs docs/qa/*.test.mjs 2>&1 | grep -E "^(not ok|✖|  [A-Za-z])" | head -20
+    fail "단위 테스트 실패"
+  }
+
+printf '\033[32m✓ pre-commit 통과\033[0m — 토큰·매니페스트·타입·단위\n'

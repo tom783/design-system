@@ -56,19 +56,37 @@ export function resolveHeadlessShell() {
     }
     return override;
   }
-  const cache = join(homedir(), 'Library/Caches/ms-playwright');
-  if (!existsSync(cache)) throw new Error(`headless shell 을 찾지 못했습니다.\n  ${INSTALL_HINT}`);
-  // 리비전 번호가 큰 쪽이 최신이다. 자릿수가 달라지면(999 vs 1234) 문자열 정렬이 틀린다.
-  const dirs = readdirSync(cache)
-    .filter((d) => d.startsWith('chromium_headless_shell-'))
-    .sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]));
-  for (const dir of dirs.reverse()) {
-    for (const arch of ['mac-arm64', 'mac-x64', 'linux64', 'win64']) {
-      const bin = join(cache, dir, `chrome-headless-shell-${arch}`, 'chrome-headless-shell');
+  const cache = playwrightCaches().find(existsSync);
+  if (!cache) throw new Error(`headless shell 을 찾지 못했습니다.\n  ${INSTALL_HINT}`);
+  for (const dir of revisionsNewestFirst(readdirSync(cache))) {
+    for (const arch of ARCHES) {
+      const bin = join(cache, dir, `chrome-headless-shell-${arch}`, binName());
       if (existsSync(bin)) return bin;
     }
   }
   throw new Error(`headless shell 을 찾지 못했습니다 (${cache} 확인).\n  ${INSTALL_HINT}`);
+}
+
+// ── 경로 규칙은 순수 함수로 빼둔다. CI(리눅스)에서 돌려봐야 하는데
+//    macOS 에서 그걸 실행해 볼 수는 없으므로 최소한 규칙은 테스트한다. ──
+
+const ARCHES = ['mac-arm64', 'mac-x64', 'linux64', 'linux-arm64', 'win64'];
+const binName = (platform = process.platform) => (platform === 'win32' ? 'chrome-headless-shell.exe' : 'chrome-headless-shell');
+
+/** Playwright 브라우저 캐시 후보. PLAYWRIGHT_BROWSERS_PATH 가 최우선이다. */
+export function playwrightCaches(env = process.env, platform = process.platform, home = homedir()) {
+  if (env.PLAYWRIGHT_BROWSERS_PATH && env.PLAYWRIGHT_BROWSERS_PATH !== '0') return [env.PLAYWRIGHT_BROWSERS_PATH];
+  if (platform === 'darwin') return [join(home, 'Library/Caches/ms-playwright')];
+  if (platform === 'win32') return [join(env.LOCALAPPDATA ?? join(home, 'AppData/Local'), 'ms-playwright')];
+  // 리눅스. XDG 를 따르는 설치본도 있어서 둘 다 본다.
+  return [join(home, '.cache/ms-playwright'), join(env.XDG_CACHE_HOME ?? join(home, '.cache'), 'ms-playwright')];
+}
+
+/** 리비전이 큰 쪽이 먼저. 자릿수가 달라지면(999 vs 1234) 문자열 정렬이 틀린다. */
+export function revisionsNewestFirst(entries) {
+  return entries
+    .filter((d) => /^chromium_headless_shell-\d+$/.test(d))
+    .sort((a, b) => Number(b.split('-')[1]) - Number(a.split('-')[1]));
 }
 
 /**
