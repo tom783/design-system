@@ -1,4 +1,30 @@
-# R03-B 후속 · 가상화 중 포커스 복구가 동작하지 않는다
+# R03-B 후속 · 포커스 복구 조사 — **제품 버그 아님 (2026-11-14 종결)**
+
+> ## 결론: 코드는 정상이다. 고치지 마라.
+>
+> 아래 "증상"은 **헤드리스 Chrome 의 측정 결함**이었다.
+> 헤드리스는 문서가 시스템 포커스를 갖지 않으면 `focus`/`focusin` 이벤트를 억제한다.
+> 그래서 `onFocusCapture`(`keepFocusVisible`)가 호출되지 않았고 `focusedRow.current`
+> 가 비어 있었다. CDP 의 `Emulation.setFocusEmulationEnabled: true` 를 켜고 재측정하니:
+>
+> ```
+> ① 행 focus()  → keepFocusVisible 호출됨 (rowId: ORD-LARGE-00001)
+> ② 멀리 스크롤 → hasRef=true connected=false → 복구 실행
+>                → activeElement = DIV[data-table-scroll]   ✓
+> ```
+>
+> `가상화_1만행` play 를 포함해 **14개 스토리 play 전부 통과**한다.
+> 검증 하네스는 `docs/qa/render-verify.mjs` 에 있고 이 설정이 들어가 있다.
+>
+> Codex 는 이 지시서를 받고도 **브라우저 계측이 막혀 원인을 확인할 수 없다는 이유로
+> 코드를 바꾸지 않았다.** 그 판단이 옳았다 — 지시서가 틀렸고, 추측으로 고쳤다면
+> 멀쩡한 코드를 망가뜨렸을 것이다.
+
+---
+
+## (이하는 당시의 잘못된 보고 — 기록용)
+
+
 
 렌더 검증에서 발견했다. **당신이 작성한 play 테스트가 이것을 잡는다** —
 브라우저 접근이 막혀 실행하지 못했을 뿐이다.
