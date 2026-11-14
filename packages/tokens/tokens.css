@@ -147,6 +147,10 @@
     --chart-range             : var(--color-neutral-300)          ;  /* 불릿 차트의 정상 범위 띠 */
     --chart-target            : var(--color-neutral-950)          ;  /* 목표 기준선. 데이터보다 진해야 읽힌다 */
     --chart-point             : var(--color-brand-600)            ;  /* 강조 포인트(마지막 값 등) */
+    --skeleton-bg             : var(--color-neutral-200)          ;  /* 스켈레톤 블록 */
+    --skeleton-highlight      : var(--color-neutral-100)          ;  /* shimmer 하이라이트(옵트인) */
+    --progress-track          : var(--color-neutral-200)          ;  /* 진행 막대 트랙 */
+    --progress-fill           : var(--color-brand-600)            ;  /* 진행 막대 채움 */
 
     /* ── 타이포그래피 ──────────────────────────────────────────────────────
        행간은 고정 비율이 아니라 글자 크기에 반비례하는 함수다.
@@ -226,6 +230,12 @@
     --ease-decelerate       : cubic-bezier(0,0,.2,1);
     --ease-spring           : cubic-bezier(.34,1.4,.64,1);
 
+    /* ── 로딩 타이밍 · 근거는 DESIGN.md 9절 ─────────────────────────────────── */
+    --loading-delay         : 200ms;
+    --loading-min-visible   : 400ms;
+    --loading-pulse-dur     : 1400ms;
+    --loading-long-task     : 10000ms;
+
     color-scheme: light;
   }
 
@@ -277,6 +287,10 @@
     --chart-range             : var(--color-neutral-800)          ;  /* 불릿 정상 범위 띠 */
     --chart-target            : var(--color-neutral-50)           ;  /* 목표 기준선 */
     --chart-point             : var(--color-brand-400)            ;  /* 강조 포인트 */
+    --skeleton-bg             : var(--color-neutral-900)          ;  /* 스켈레톤 블록 */
+    --skeleton-highlight      : var(--color-neutral-800)          ;  /* shimmer 하이라이트(옵트인) */
+    --progress-track          : var(--color-neutral-900)          ;  /* 진행 막대 트랙 */
+    --progress-fill           : var(--color-brand-500)            ;  /* 진행 막대 채움 */
     --shadow-overlay        : var(--shadow-overlay-dark);
       color-scheme: dark;
     }
@@ -320,6 +334,10 @@
     --chart-range             : var(--color-neutral-800)          ;  /* 불릿 정상 범위 띠 */
     --chart-target            : var(--color-neutral-50)           ;  /* 목표 기준선 */
     --chart-point             : var(--color-brand-400)            ;  /* 강조 포인트 */
+    --skeleton-bg             : var(--color-neutral-900)          ;  /* 스켈레톤 블록 */
+    --skeleton-highlight      : var(--color-neutral-800)          ;  /* shimmer 하이라이트(옵트인) */
+    --progress-track          : var(--color-neutral-900)          ;  /* 진행 막대 트랙 */
+    --progress-fill           : var(--color-brand-500)            ;  /* 진행 막대 채움 */
     --shadow-overlay        : var(--shadow-overlay-dark);
     color-scheme: dark;
   }

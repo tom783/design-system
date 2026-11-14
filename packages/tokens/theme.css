@@ -43,6 +43,10 @@
   --color-chart-range               : var(--chart-range);
   --color-chart-target              : var(--chart-target);
   --color-chart-point               : var(--chart-point);
+  --color-skeleton                  : var(--skeleton-bg);
+  --color-skeleton-highlight        : var(--skeleton-highlight);
+  --color-progress-track            : var(--progress-track);
+  --color-progress-fill             : var(--progress-fill);
 
   --color-brand-50                  : var(--color-brand-50);
   --color-brand-100                 : var(--color-brand-100);

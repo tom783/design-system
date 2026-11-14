@@ -174,6 +174,12 @@ const SEMANTIC = {
     'chart-range':        ['neutral', 300, '불릿 차트의 정상 범위 띠'],
     'chart-target':       ['neutral', 950, '목표 기준선. 데이터보다 진해야 읽힌다'],
     'chart-point':        ['brand',   600, '강조 포인트(마지막 값 등)'],
+    // 로딩 — 스켈레톤은 "보이되 콘텐츠로 오인되면 안 되는" 좁은 띠 안에 있어야 한다.
+    // 너무 옅으면 아무것도 안 오는 것처럼 보이고, 너무 진하면 실제 글자로 읽힌다.
+    'skeleton-bg':        ['neutral', 200, '스켈레톤 블록'],
+    'skeleton-highlight': ['neutral', 100, 'shimmer 하이라이트(옵트인)'],
+    'progress-track':     ['neutral', 200, '진행 막대 트랙'],
+    'progress-fill':      ['brand',   600, '진행 막대 채움'],
   },
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
@@ -221,6 +227,10 @@ const SEMANTIC = {
     'chart-range':        ['neutral', 800, '불릿 정상 범위 띠'],
     'chart-target':       ['neutral', 50,  '목표 기준선'],
     'chart-point':        ['brand',   400, '강조 포인트'],
+    'skeleton-bg':        ['neutral', 900, '스켈레톤 블록'],
+    'skeleton-highlight': ['neutral', 800, 'shimmer 하이라이트(옵트인)'],
+    'progress-track':     ['neutral', 900, '진행 막대 트랙'],
+    'progress-fill':      ['brand',   500, '진행 막대 채움'],
   },
 };
 const resolveTok = ([ref, step]) => (ref.startsWith('#') ? ref : P[ref][step].hex);
@@ -267,6 +277,15 @@ const SIZING = {
 };
 
 // 마이크로 인터랙션. 상호작용이 많은 서비스이므로 지속시간을 짧게 유지한다.
+// 로딩 타이밍. 응답시간 연구(0.1s 즉시 / 1s 주의유지 / 10s 이탈)와
+// 로더 깜빡임 방지 관행(200~400ms 지연)에서 나온 값이다. 자세한 근거는 DESIGN.md 9절.
+const LOADING = {
+  'loading-delay':       '200ms',  // 이 시간 안에 끝나면 로더를 아예 띄우지 않는다
+  'loading-min-visible': '400ms',  // 한번 뜬 로더는 최소 이만큼 유지한다(깜빡임 방지)
+  'loading-pulse-dur':   '1400ms', // 스켈레톤 맥박 주기
+  'loading-long-task':   '10000ms',// 이 이상이면 떠날 수 있는 경로를 준다
+};
+
 const MOTION = {
   'dur-instant': '80ms', 'dur-fast': '140ms', 'dur-normal': '200ms', 'dur-slow': '320ms',
   'ease-standard': 'cubic-bezier(.２,0,.13,1)'.replace('２','2'),
@@ -345,6 +364,17 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
   const gridC = contrast(resolveTok(SEMANTIC[theme]['chart-grid']), bg);
   const lineC = contrast(resolveTok(SEMANTIC[theme]['chart-line']), bg);
   check(`${theme} 격자가 데이터선보다 약하다`, lineC / gridC, 2.0, 'ratio');
+}
+
+// 스켈레톤 대비. 양쪽 끝이 다 문제다 —
+//  · 너무 옅으면(바탕과 구별 안 되면) 아무것도 오지 않는 것처럼 보인다
+//  · 너무 진하면 실제 글자로 읽혀 사용자가 내용을 읽으려 한다
+for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
+  const sk = contrast(resolveTok(SEMANTIC[theme]['skeleton-bg']), bg);
+  const tx = contrast(resolveTok(SEMANTIC[theme]['text-primary']), bg);
+  check(`${theme} 스켈레톤이 바탕과 구별된다`, sk, 1.15, 'ratio');
+  check(`${theme} 스켈레톤이 본문 글자보다 훨씬 약하다`, tx / sk, 5.0, 'ratio');
+  check(`${theme} progress-fill on surface`, contrast(resolveTok(SEMANTIC[theme]['progress-fill']), bg), 3.0, 'nontext');
 }
 
 // 테마 3상태 안전성: 다크에만 정의된 토큰이 있으면, 테마 미지정 상태에서
@@ -443,6 +473,10 @@ css += `
     /* ── 모션 · 상호작용이 잦으므로 지속시간을 짧게 유지한다 ─────────────────── */
 `;
 for (const [k, v] of Object.entries(MOTION)) css += `    --${pad(k, 22)}: ${v};\n`;
+css += `
+    /* ── 로딩 타이밍 · 근거는 DESIGN.md 9절 ─────────────────────────────────── */
+`;
+for (const [k, v] of Object.entries(LOADING)) css += `    --${pad(k, 22)}: ${v};\n`;
 
 css += `
     color-scheme: light;
@@ -526,6 +560,8 @@ const TW_NAME = {
   'chart-line': 'chart-line',     'chart-band': 'chart-band',
   'chart-track': 'chart-track',   'chart-range': 'chart-range',
   'chart-target': 'chart-target', 'chart-point': 'chart-point',
+  'skeleton-bg': 'skeleton',      'skeleton-highlight': 'skeleton-highlight',
+  'progress-track': 'progress-track', 'progress-fill': 'progress-fill',
 };
 const missing = Object.keys(S.light).filter((k) => !TW_NAME[k]);
 if (missing.length) throw new Error('TW_NAME 매핑 누락: ' + missing.join(', '));
@@ -566,7 +602,7 @@ const json = {
   primitives: Object.fromEntries(Object.entries(P).map(([k, v]) => [k, Object.fromEntries(Object.entries(v).map(([s, x]) => [s, { hex: x.hex, oklch: `oklch(${(x.L * 100).toFixed(1)}% ${x.C.toFixed(3)} ${x.H})`, onWhite: r2(contrast(x.hex, '#FFFFFF')) }]))])),
   semantic: Object.fromEntries(Object.entries(SEMANTIC).map(([theme, toks]) => [theme, Object.fromEntries(Object.entries(toks).map(([k, v]) => [k, { ref: v[0].startsWith('#') ? v[0] : `${v[0]}-${v[1]}`, hex: resolveTok(v), purpose: v[2] }]))])),
   typography: TYPE.map(([n, size, lh, ls, w, d]) => ({ token: n, size, lineHeight: lh, lineHeightPct: Math.round((lh / size) * 100), letterSpacing: ls, weight: w, purpose: d })),
-  spacing: SPACE, shape: SHAPE, sizing: SIZING, motion: MOTION,
+  spacing: SPACE, shape: SHAPE, sizing: SIZING, motion: MOTION, loading: LOADING,
   verification: { contrast: checks, separation: deResults, themeIssues },
 };
 
