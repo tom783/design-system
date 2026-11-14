@@ -33,20 +33,55 @@ export function extractComponents() {
       const signature = checker.getSignaturesOfType(type, SignatureKind.Call)[0];
       const param = signature?.getParameters()[0];
       const propsType = param && checker.getTypeOfSymbolAtLocation(param, declaration);
-      const props = propsType ? checker.getPropertiesOfType(propsType).map((prop) => ({
-        name: prop.name,
-        type: checker.typeToString(checker.getTypeOfSymbolAtLocation(prop, declaration)),
-        required: !(prop.flags & SymbolFlags.Optional),
-        // 표준 DOM 속성은 별도로 표시한다. 커스텀 API가 수백 개 DOM 속성에 묻히지 않게 한다.
-        inherited: !(prop.declarations ?? []).some((d) => (d.resolve()?.getSourceFile().fileName ?? "").startsWith(resolve(root, 'packages/ui/src'))),
-      })) : [];
+      const allProps = propsType ? checker.getPropertiesOfType(propsType) : [];
+      const uiRoot = resolve(root, 'packages/ui/src') + '/';
+      // 선언 원점으로 분리한다. VariantProps의 mapped prop도 원점이 로컬 cva 키면 자체 API다.
+      const props = allProps.filter((prop) => (prop.declarations ?? []).some((d) =>
+        d.resolve()?.getSourceFile().fileName.startsWith(uiRoot),
+      )).map((prop) => {
+        const nodes = (prop.declarations ?? []).map((d) => d.resolve());
+        const doc = nodes.flatMap((node) => (node?.jsDoc ?? []).map((comment) =>
+          ast.getTextOfJSDocComment(comment.comment),
+        )).filter(Boolean).join('\n');
+        return {
+          name: prop.name,
+          type: checker.typeToString(checker.getTypeOfSymbolAtLocation(prop, declaration)),
+          required: !(prop.flags & SymbolFlags.Optional),
+          ...(doc ? { doc } : {}),
+        };
+      });
+      const bases = new Set();
+      function recordBase(node) {
+        if (!node) return;
+        if (ast.isIntersectionTypeNode(node)) { node.types.forEach(recordBase); return; }
+        if (!ast.isTypeReferenceNode(node)) return;
+        let symbol = checker.getSymbolAtLocation(node.typeName);
+        if (symbol?.flags & SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+        const localInterfaces = (symbol?.declarations ?? []).map((d) => d.resolve()).filter((d) =>
+          ast.isInterfaceDeclaration(d) && d.getSourceFile().fileName.startsWith(uiRoot),
+        );
+        if (localInterfaces.length) {
+          for (const iface of localInterfaces) for (const clause of iface.heritageClauses ?? [])
+            for (const base of clause.types) bases.add(base.getText(iface.getSourceFile()));
+        } else if (!(symbol?.declarations ?? []).some((d) => d.resolve()?.getSourceFile().fileName.startsWith(uiRoot))) {
+          bases.add(node.getText(node.getSourceFile()));
+        }
+      }
+      // 일반 함수의 인자 타입과 forwardRef의 props 타입 인자를 모두 소스 그대로 보존한다.
+      for (const handle of param?.declarations ?? []) {
+        const node = handle.resolve();
+        if (node?.getSourceFile().fileName.startsWith(uiRoot)) recordBase(node.type);
+      }
+      const initializer = declaration.initializer;
+      if (initializer && ast.isCallExpression(initializer) && initializer.expression.getText(source).endsWith('forwardRef'))
+        recordBase(initializer.typeArguments?.at(-1));
       const slots = new Set();
       function visit(node) {
         if (ast.isJsxAttribute(node) && node.name.getText(source) === 'data-slot' && node.initializer && ast.isStringLiteral(node.initializer)) slots.add(node.initializer.text);
         node.forEachChild(visit);
       }
       visit(declaration);
-      return [{ name: symbol.name, kind: signature ? 'component' : 'constant', source: relative(root, source.fileName), props, slots: [...slots].sort() }];
+      return [{ name: symbol.name, kind: signature ? 'component' : 'constant', source: relative(root, source.fileName), props, extends: [...bases], propNames: allProps.map((p) => p.name), slots: [...slots].sort() }];
     });
   } finally { api.close(); }
 }
@@ -90,7 +125,7 @@ export function validate({ components, intents, sections, tokens, expectedNames,
     const source = components.find((c) => c.name === item.name);
     if (!source) errors.push(`[1 export] ${item.name}: 공개 소스 export 없음`);
     if (intents.filter((c) => c.name === item.name).length !== 1) errors.push(`[1 export] ${item.name}: 중복 항목`);
-    for (const prop of item.props) if (!source?.props.some((p) => p.name === prop)) errors.push(`[2 props] ${item.name}.${prop}: 실제 props에 없음`);
+    for (const prop of item.props) if (!source?.propNames.includes(prop)) errors.push(`[2 props] ${item.name}.${prop}: 실제 props에 없음`);
     for (const slot of item.slots) if (!source?.slots.includes(slot)) errors.push(`[3 slot] ${item.name}: data-slot="${slot}" 없음`);
     for (const related of item.related) if (!names.has(related) || !sourceNames.has(related)) errors.push(`[5 related] ${item.name} → ${related}: 항목 없음`);
     for (const token of item.tokens ?? []) if (!tokenNames.has(token)) errors.push(`[6 token] ${item.name} → ${token}: tokens.json에 없음`);
@@ -110,6 +145,17 @@ export function validate({ components, intents, sections, tokens, expectedNames,
   if (tokens.length !== tokenNames.size) errors.push('[6 token] 토큰 이름 중복');
   for (const name of bridgeTargets) if (!tokenNames.has(name) && !name.startsWith('font-')) errors.push(`[6 token] Tailwind 브리지 → ${name}: tokens.json에 없음`);
   return errors;
+}
+
+// UTF-8 바이트로 검사한다. 전송용 compact JSON보다 큰 실제 파일 형식에도 예산을 보장한다.
+export function assertSizeBudget(catalog, serialized) {
+  const sizes = [
+    ['components', Buffer.byteLength(JSON.stringify(catalog, null, 2)), 80_000],
+    ['전체', Buffer.byteLength(serialized), 160_000],
+  ];
+  for (const [name, bytes, limit] of sizes)
+    console.error(`MCP 크기 ${name}: ${bytes}바이트 / ${limit}바이트 (${(bytes / 1000).toFixed(2)}KB / ${limit / 1000}KB)`);
+  if (sizes.some(([, bytes, limit]) => bytes > limit)) throw new Error('MCP 크기 예산 초과');
 }
 
 export async function build() {
@@ -134,10 +180,15 @@ export async function build() {
   if (errors.length) throw new Error(`MCP 생성 검증 실패:\n${errors.join('\n')}`);
   const catalog = intents.map(({ props: _props, slots: _slots, ...intent }) => {
     const source = components.find((c) => c.name === intent.name);
-    return { ...intent, ...source, import: `import { ${intent.name} } from '@commerce-ds/ui';` };
+    const { propNames: _propNames, ...api } = source;
+    // R11-B의 요약 계약은 Button의 네 속성만 펼친다. iconOnly는 VariantProps 상속으로 보존한다.
+    if (api.name === 'Button') api.props = api.props.filter((p) => p.name !== 'iconOnly');
+    return { ...intent, ...api, import: `import { ${intent.name} } from '@commerce-ds/ui';` };
   });
   const manifest = { schemaVersion: 1, tokens, components: catalog, principles };
-  await writeFile(resolve(root, 'packages/mcp/manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
+  assertSizeBudget(catalog, serialized);
+  await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
   console.error(`MCP 검증 6종 통과: export ${catalog.length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

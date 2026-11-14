@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { extractComponents, normalizeTokens, validate } from '../../docs/research/mcp-build.mjs';
+import { extractComponents, normalizeTokens, validate, assertSizeBudget } from '../../docs/research/mcp-build.mjs';
 import intents, { principles } from '../../docs/research/component-intent.mjs';
 const data = JSON.parse(await readFile(new URL('../../docs/research/tokens.json', import.meta.url), 'utf8'));
 const design = await readFile(new URL('../../DESIGN.md', import.meta.url), 'utf8');
@@ -41,4 +41,30 @@ test('6: 토큰 누락·추가·중복·끊긴 참조·브리지 이름 drift를
 test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 결과와 동일', async () => {
   const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   assert.deepEqual(manifest.tokens.map(({ name, light, dark }) => ({ name, light, dark })), tokens.map(({ name, light, dark }) => ({ name, light, dark })));
+});
+
+test('자체 prop은 선언 원점으로 보존하고 DOM prop은 상속 이름으로 요약', () => {
+  const button = components.find((c) => c.name === 'Button');
+  assert.deepEqual(button.props.map((p) => p.name).sort(), ['iconOnly', 'leadingIcon', 'size', 'trailingIcon', 'variant']);
+  assert.deepEqual(button.extends, ['React.ButtonHTMLAttributes<HTMLButtonElement>', 'VariantProps<typeof buttonVariants>']);
+  assert.ok(button.props.find((p) => p.name === 'leadingIcon').doc.includes('라벨 왼쪽'));
+  assert.ok(button.propNames.includes('onClick'));
+  const card = components.find((c) => c.name === 'CardTitle');
+  assert.deepEqual(card.props, []);
+  assert.deepEqual(card.extends, ['React.HTMLAttributes<HTMLHeadingElement>']);
+  assert.ok(components.find((c) => c.name === 'FormFlow').props.some((p) => p.name === 'onSubmit'));
+});
+test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 보존', async () => {
+  const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+  const button = manifest.components.find((c) => c.name === 'Button');
+  assert.deepEqual(button.props.map((p) => p.name).sort(), ['leadingIcon', 'size', 'trailingIcon', 'variant']);
+  assert.deepEqual(button.extends, components.find((c) => c.name === 'Button').extends);
+  assert.ok(manifest.components.every((c) => !Object.hasOwn(c, 'propNames')));
+});
+test('크기 예산은 경계값을 허용하고 UTF-8 바이트 초과를 차단', (t) => {
+  t.mock.method(console, 'error', () => {});
+  const catalog = ['x'.repeat(80_000 - Buffer.byteLength(JSON.stringify([''], null, 2)))];
+  assert.doesNotThrow(() => assertSizeBudget(catalog, 'x'.repeat(160_000)));
+  assert.throws(() => assertSizeBudget([catalog[0] + '가'], ''), /크기 예산 초과/);
+  assert.throws(() => assertSizeBudget([], 'x'.repeat(159_998) + '가'), /크기 예산 초과/);
 });

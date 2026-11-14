@@ -587,7 +587,7 @@ const effectiveState = state === 'idle' && empty ? 'empty' : state;
 | 온보딩 투어 · 툴팁 | **완료** — Tooltip·Hint·Tour (R07/R07-B) |
 | 폼 연속 입력 UX | **완료** (R09) — 11절 |
 | 요약 Peek · 상세 전환 · 돌아오기 | **완료** (R10) — 12절 |
-| MCP 제공 레이어 | `tokens.json`이 기반. 컴포넌트 메타데이터 스키마 미설계 |
+| MCP 제공 레이어 | **완료** (R11) — 13절 |
 | 이미지 · 일러스트 자산 | 미착수 |
 
 ---
@@ -949,6 +949,89 @@ shouldValidate({ trigger, hasErrored, isComposing })
   `sessionStorage` 접근 자체가 throw 한다. 실패하면 조용히 기능만 꺼진다.
 - **저장소 내용은 외부 입력이다.** 깨진 JSON · 타입 불일치 · 미래 시각 ·
   음수 스크롤은 전부 `null` 로 거부하고 **절대 throw 하지 않는다.**
+
+---
+
+## 13. MCP — AI 가 이 시스템을 읽는 법 (R11)
+
+지침은 "MCP 를 제공해 AI 가 디자인 시스템을 읽고 사용할 수 있게"였다.
+핵심은 **DESIGN.md 를 통째로 떠먹이지 않는 것**이다. 물어보면 답하는 형태여야 한다.
+
+### 13.1 SDK 를 쓰지 않는다
+
+`@modelcontextprotocol/sdk` 는 stdio 서버 하나에 **express · hono · cors · jose ·
+ajv · zod** 를 끌고 온다 (4.5MB, 웹 프레임워크 둘). 우리가 필요한 건 stdin/stdout 에
+JSON 한 줄씩 주고받는 것뿐이다. **`packages/mcp` 의 의존성은 0개다.**
+
+playwright 대신 CDP 를 직접 쓰고, 차트 라이브러리 대신 visx 프리미티브를 쓴 것과
+같은 판단이다. 다만 이유가 다르다 — 거기서는 플랫폼이 기능을 제공했고,
+여기서는 **필요한 것에 비해 가져오는 게 너무 크다.**
+
+검증은 `docs/qa/mcp-client-verify.mjs` 가 독립 클라이언트로 36건 확인한다.
+프레이밍은 **줄바꿈 구분 JSON**이고 Content-Length 헤더는 없다(그건 LSP 다).
+**stdout 에 `console.log` 한 줄이면 연결이 조용히 깨진다.** 로그는 stderr 로만.
+
+### 13.2 매니페스트는 생성하고 검증한다
+
+손으로 쓴 메타데이터는 반드시 drift 한다. 그래서 `mcp-build.mjs` 가
+**소스와 대조해서 틀리면 `exit 1`** 한다 — `tokens-build.mjs` 와 같은 구조다.
+
+| 검사 | 무엇을 막나 |
+|---|---|
+| 모든 공개 export 에 항목이 있다 | 새 컴포넌트를 추가하고 설명을 안 쓰는 것 |
+| `props` 이름이 소스에 실제로 있다 | 이름을 바꾸고 문서를 안 고치는 것 |
+| `slots` 가 `data-slot="…"` 으로 있다 | 같음 |
+| `rules[].source` 절 번호가 DESIGN.md 에 있다 | **절 번호를 바꾸면 여기서 잡힌다** |
+| `related` 가 실재하는 이름이다 | 삭제된 컴포넌트 참조 |
+| 토큰 이름이 `tokens.json` 과 일치 | 토큰 이름 변경 |
+
+### 13.3 카탈로그 크기는 예산이다
+
+처음 만든 매니페스트는 **427KB** 였다. 컴포넌트 카탈로그가 361KB 였고,
+`Input` 하나에 props 가 **312개** 였다 — 상속된 DOM 속성을 전부 나열했기 때문이다.
+`Button` 295개 중 우리 것은 넷뿐이었다.
+
+**이건 그냥 큰 게 아니라 해롭다.** 카탈로그를 읽은 AI 가 컨텍스트를
+`onAnimationIterationCapture` 같은 이름으로 태우고, 정작 중요한 `dont` 와
+`rules` 가 밀려난다.
+
+그래서 **우리 prop 만 나열하고 상속은 한 줄로** 적는다:
+
+```jsonc
+"props": ["leadingIcon", "trailingIcon", "variant", "size"],
+"extends": ["React.ButtonHTMLAttributes<HTMLButtonElement>", "VariantProps<typeof buttonVariants>"]
+```
+
+`extends` 한 줄이 295개 나열보다 더 많은 것을 정확히 전달한다.
+결과는 **427KB → 97KB** (카탈로그 361KB → 31KB).
+생성기가 예산(카탈로그 80KB · 전체 160KB)을 넘으면 `exit 1` 한다.
+
+### 13.4 가장 중요한 도구는 `which_component`
+
+여섯 도구 중 AI 가 가장 먼저 부르는 것이다 — "표에서 행 요약을 보여주고 싶다"에
+Tooltip / Hint / Tour / Peek 중 무엇인지 답한다.
+
+**똑똑한 척하지 않는다.** 단순 키워드 점수로 **후보 여러 개와 그 근거**
+(`reasons` · `useWhen` · `dont`)를 돌려주고 **최종 판단은 호출자가** 한다.
+
+| 질문 | 1위 |
+|---|---|
+| 처음 온 사용자에게 기능 흐름을 단계별로 안내 | Tour (82) |
+| 오래 걸리는 작업의 진행 상황 | TaskProgress (44) |
+| 입력값이 틀렸을 때 오류 문구 | Field (67) |
+| 목표 대비 실적 | BulletRow (71) |
+
+15개 라우팅 질문을 `match.test.mjs` 가 못 박는다 — 컴포넌트를 추가하다 라우팅이
+깨지면 테스트가 잡는다. **점수 가중치를 테스트 통과용으로 조작하는 것은 금지다.**
+
+한계는 정직하게 둔다. 키워드 매칭이라 처음 보는 표현은 놓친다
+(실측: 명세 밖 질문 4개 중 2개). **놓쳤을 때 빈 손으로 보내지 않는 것**이 규칙이다 —
+`isError` 와 함께 "`list_components` 를 보라"고 알려준다.
+
+### 13.5 읽기 전용이다
+
+토큰을 고치거나 파일을 쓰는 도구는 없다. 이 서버가 하는 일은
+매니페스트를 읽어 질문에 답하는 것뿐이다.
 
 ---
 
