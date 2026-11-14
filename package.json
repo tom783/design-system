@@ -7,7 +7,9 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "verify": "pnpm tokens && pnpm typecheck && pnpm build-storybook --quiet"
+    "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm build-storybook --quiet",
+    "mcp": "node packages/mcp/server.mjs",
+    "mcp:build": "node docs/research/mcp-build.mjs"
   },
   "devDependencies": {
     "@storybook/react-vite": "^10.6.7",

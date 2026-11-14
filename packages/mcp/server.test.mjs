@@ -1,0 +1,110 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { createInterface } from 'node:readline';
+import { once } from 'node:events';
+
+// 실제 파이프의 모든 줄을 기록한다. 응답만 선별하면 console.log 오염을 놓치므로 파싱 실패도 보관한다.
+async function client(t) {
+  const child = spawn(process.execPath, [new URL('./server.mjs', import.meta.url).pathname], { stdio: ['pipe','pipe','pipe'] });
+  let sequence = 0;
+  const lines = [], pending = new Map(), pollution = [], unsolicited = [];
+  let stderr = '';
+  child.stderr.setEncoding('utf8'); child.stderr.on('data', (chunk) => { stderr += chunk; });
+  createInterface({ input: child.stdout }).on('line', (line) => {
+    lines.push(line);
+    let data;
+    try { data = JSON.parse(line); } catch { pollution.push(line); return; }
+    const callback = pending.get(data.id);
+    if (callback) { pending.delete(data.id); callback(data); } else unsolicited.push(data);
+  });
+  const write = (value) => child.stdin.write(`${typeof value === 'string' ? value : JSON.stringify(value)}\n`);
+  const request = (method, params) => {
+    const id = ++sequence;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => { pending.delete(id); reject(new Error(`응답 시간 초과: ${method}; ${stderr}`)); }, 5000);
+      pending.set(id, (response) => { clearTimeout(timeout); resolve(response); });
+      write({ jsonrpc: '2.0', id, method, ...(params === undefined ? {} : { params }) });
+    });
+  };
+  const rawRequest = (line) => new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error('파싱 오류 응답 시간 초과')), 5000);
+    pending.set(null, (data) => { clearTimeout(timeout); resolve(data); }); write(line);
+  });
+  t.after(async () => {
+    const closed = once(child, 'close'); child.stdin.end();
+    const timer = setTimeout(() => child.kill(), 5000);
+    const [code, signal] = await closed; clearTimeout(timer);
+    assert.equal(signal, null); assert.equal(code, 0, stderr);
+    assert.deepEqual(pollution, [], 'stdout에 JSON이 아닌 줄이 없어야 한다');
+    assert.deepEqual(unsolicited, [], '알림 응답이나 요청하지 않은 출력이 없어야 한다');
+    for (const line of lines) assert.equal(JSON.parse(line).jsonrpc, '2.0', '모든 stdout 줄은 MCP JSON-RPC 메시지다');
+  });
+  return { request, rawRequest, write, unsolicited, child };
+}
+const init = (protocolVersion) => ({ protocolVersion, capabilities: {}, clientInfo: { name: '스모크 테스트', version: '1' } });
+const call = (c, name, args) => c.request('tools/call', { name, arguments: args });
+
+test('실제 stdio 핸드셰이크·알림·버전 협상', { timeout: 10000 }, async (t) => {
+  const c = await client(t);
+  for (const version of ['2025-06-18','2025-03-26','2024-11-05']) {
+    const response = await c.request('initialize', init(version));
+    assert.equal(response.result.protocolVersion, version);
+    assert.deepEqual(response.result.capabilities, { tools: {}, resources: {} });
+    assert.ok(response.result.instructions.includes('which_component'));
+  }
+  const unknown = await c.request('initialize', init('2099-99-99'));
+  assert.equal(unknown.result.protocolVersion, '2025-06-18'); assert.equal(unknown.error, undefined);
+  c.write({ jsonrpc: '2.0', method: 'notifications/initialized' });
+  c.write({ jsonrpc: '2.0', method: 'ping' });
+  c.write({ jsonrpc: '2.0', method: '알수없는알림' });
+  assert.deepEqual((await c.request('ping')).result, {});
+  // ping 응답은 앞선 알림을 처리했다는 순서 장벽이다. 종료 시에도 늦은 응답까지 확인한다.
+  assert.deepEqual(c.unsolicited, []);
+});
+test('6개 도구·구조화 하위 호환·선택·규칙·인자 검증', async (t) => {
+  const c = await client(t);
+  const { result } = await c.request('tools/list');
+  assert.equal(result.tools.length, 6);
+  for (const tool of result.tools) { assert.ok(tool.title); assert.equal(tool.inputSchema.type, 'object'); }
+  const token = (await call(c, 'get_token', { name: '--bg-surface' })).result;
+  assert.deepEqual(JSON.parse(token.content[0].text), token.structuredContent);
+  assert.ok(token.structuredContent.light.value); assert.ok(token.structuredContent.dark.value);
+  assert.ok(token.structuredContent.tailwind.includes('bg-surface'));
+  assert.equal((await call(c, '없는도구', {})).error.code, -32602);
+  for (const args of [{}, { name: 7 }, { name: '' }, { name: 'bg-surface', extra: true }, null]) assert.equal((await call(c, 'get_token', args)).error.code, -32602);
+  assert.equal((await call(c, 'which_component', { description: '요약', limit: 0 })).error.code, -32602);
+  assert.equal((await call(c, 'get_rules', { topic: '없는주제' })).error.code, -32602);
+  const absent = await call(c, 'get_token', { name: '없는토큰' });
+  assert.equal(absent.error, undefined); assert.equal(absent.result.isError, true); assert.match(absent.result.content[0].text, /search_tokens/);
+  const found = (await call(c, 'search_tokens', { category: 'semantic', query: 'bg-surface' })).result;
+  assert.equal(found.structuredContent.tokens[0].name, 'bg-surface');
+  assert.ok((await call(c, 'list_components', {})).result.structuredContent.components.length > 20);
+  const peek = (await call(c, 'get_component', { name: 'Peek' })).result.structuredContent;
+  assert.ok(peek.props.some((p) => p.name === 'items')); assert.ok(peek.slots.includes('peek')); assert.ok(peek.rules.length);
+  const candidates = (await call(c, 'which_component', { description: '표에서 행 요약을 보여주고 싶다' })).result.structuredContent.candidates;
+  assert.equal(candidates[0].name, 'Peek'); assert.ok(candidates.length > 1);
+  assert.equal((await call(c, 'which_component', { description: 'zxq987' })).result.isError, true);
+  assert.ok((await call(c, 'get_rules', { topic: '폼' })).result.structuredContent.rules.every((rule) => rule.topic === '폼'));
+});
+test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
+  const c = await client(t);
+  const { resources } = (await c.request('resources/list')).result;
+  assert.equal(resources.length, 3);
+  for (const resource of resources) {
+    const result = (await c.request('resources/read', { uri: resource.uri })).result.contents[0];
+    assert.equal(result.uri, resource.uri); assert.equal(result.mimeType, resource.mimeType); assert.ok(result.text.length);
+    if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
+  }
+  assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
+  assert.equal((await c.request('resources/read', {})).error.code, -32602);
+  assert.equal((await c.request('unknown')).error.code, -32601);
+});
+test('깨진 JSON 후 생존·이후 정상 처리·stdout 오염 없음', async (t) => {
+  const c = await client(t);
+  assert.equal((await c.rawRequest('{broken')).error.code, -32700);
+  assert.equal(c.child.exitCode, null);
+  assert.deepEqual((await c.request('ping')).result, {});
+  assert.equal((await c.rawRequest('[]')).error.code, -32600);
+  assert.deepEqual((await c.request('ping')).result, {});
+});

@@ -1,0 +1,57 @@
+// 파서가 알 수 없는 선택 의도만 소유한다. 이름·props·slots·출처는 mcp-build가 소스와 대조한다.
+const rule = (text, section) => ({ text, source: `DESIGN.md ${section}` });
+const entry = (name, category, purpose, useWhen, dont, section, text, props, slots, related, keywords) => ({
+  name, category, purpose, useWhen, dont, rules: [rule(text, section)], props, slots, related, keywords,
+});
+export const principles = [
+  { topic: '색', ...rule('원시 색 대신 의미 토큰을 쓴다. 상태·오류는 실루엣이 다른 아이콘 + 문장 + 색으로 전달한다. 링크는 밑줄을 쓴다.', '2.4') },
+  { topic: '색', ...rule('본문 대비 4.5:1, 큰 글자·비텍스트 3:1 이상. 비활성 스타일에 읽어야 하는 정보를 담지 않는다.', '3.4') },
+  { topic: '색', ...rule('토큰은 :root 기본값과 OS 테마·명시적 라이트·명시적 다크를 모두 지원한다.', '2.5') },
+  { topic: '타이포', ...rule('최소 글자 크기는 13px. font-size는 text-[length:var(--토큰)]으로 명시한다.', '3.1') },
+  { topic: '타이포', ...rule('열로 정렬하는 숫자와 금액은 .tabular 고정폭 숫자를 쓴다.', '3.3') },
+  { topic: '간격', ...rule('Tailwind 기본 --spacing 배수를 덮어쓰지 않는다. --space-*는 var()로 직접 쓴다. 값은 최소 너비 + 넘침 처리 + 전체값 보존으로 배치한다.', '4') },
+  { topic: '간격', ...rule('평면 요소는 그림자 없이 경계선·여백으로 나눈다. 그림자는 떠 있는 레이어에만 쓴다. reduced-motion을 존중한다.', '5') },
+  { topic: '폼', ...rule('입력 경계는 border-field. 주요 버튼은 화면당 하나, 아이콘 전용 버튼은 aria-label 필수다.', '6') },
+  { topic: '폼', ...rule('IME 조합 중 값 변형·포커스 이동·검증 금지. 최초 검증은 blur, 오류 후 change에서 즉시 해제하고 제출 때만 첫 오류로 이동한다.', '11.2') },
+  { topic: '폼', ...rule('레이블 → 설명 → 입력 → 오류 순서. 오류 공간을 예약하고 aria-describedby는 오류부터 읽는다.', '11.4') },
+  { topic: '폼', ...rule('Enter 이동은 FormFlow 옵트인. Tab 순서를 따르고 textarea Enter는 줄바꿈, Shift+Enter는 이전 칸이다.', '11.5') },
+  { topic: '로딩', ...rule('짧은 대기에는 로딩 표시를 지연한다. 400ms~3초에는 형태를 아는 경우만 스켈레톤, 긴 대기는 진행률과 대략적 시간을 제공한다.', '9.1') },
+  { topic: '로딩', ...rule('스켈레톤은 실제 콘텐츠와 같은 치수·토큰을 쓴다. 형태를 모르면 쓰지 않는다. 텍스트 높이는 글자 높이 약 0.65em, 마지막 줄은 짧게 한다.', '9.2') },
+  { topic: '안내', ...rule('Tooltip은 한 줄 UI 설명, Hint는 한 번 알리는 2~3줄, Tour는 사용자가 시작하는 최대 3단계다. 자동 투어와 건너뛰기 차단 금지.', '10.2') },
+  { topic: '안내', ...rule('Tooltip은 포커스를 가져가지 않는다. Hint·Tour는 dialog로 포커스를 옮겼다가 닫을 때 돌려준다. 투어는 포커스를 가두지 않는다.', '10.4') },
+  { topic: '안내', ...rule('Peek은 UI 안내가 아닌 레코드 요약이다. 클릭으로만 열고 최대 6줄, 수정·삭제 없이 상세 보기 출구 하나만 둔다.', '12.1') },
+  { topic: '차트', ...rule('SVG와 의미 토큰을 쓴다. 색만으로 구분하지 않고 직접 라벨·텍스트 요약을 제공한다.', '7.5.3') },
+  { topic: '차트', ...rule('빈 데이터와 실패를 구분하고 실패를 0으로 표시하지 않는다.', '7.5.6') },
+  { topic: '표', ...rule('기본 행 높이와 밀도 토큰을 사용한다. 금액은 우측 정렬·고정폭 숫자. 값에 고정 너비를 주지 않고 전체값을 보존한다.', '4') },
+  { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
+];
+export default [
+  entry('Button','action','명시적인 사용자 동작을 실행한다.',['저장·취소·삭제 버튼이 필요할 때'],['primary를 여러 개 쓰지 마라','아이콘 전용 버튼의 aria-label을 빼지 마라'],'6','danger는 되돌릴 수 없는 작업에만 쓴다.',['variant','size','iconOnly','leadingIcon','trailingIcon'],['button'],['Input'],['버튼','저장','삭제','액션']),
+  entry('Input','form','단일 값을 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['오류를 색만으로 표시하지 마라'],'2.4','입력 경계선은 border-field를 쓴다.',['invalid','numeric'],['input'],['Field','FormFlow'],['입력','텍스트','금액']),
+  entry('StatusChip','status','레코드의 상태를 라벨과 실루엣으로 표시한다.',['완료·경고·오류 상태를 표시할 때'],['같은 원형 점의 색만 바꾸지 마라'],'2.3','아이콘 모양과 텍스트로 상태를 구분한다.',['tone','icon','hideIcon'],['status-chip'],['DataTable'],['상태','완료','경고','칩']),
+  ...[
+    ['Card','정보 묶음의 평면 컨테이너','card'],['CardHeader','카드의 제목과 보조 동작 영역','card-header'],
+    ['CardTitle','카드의 제목','card-title'],['CardBody','카드의 본문 영역','card-body'],['CardFooter','카드의 하단 보조 정보 영역','card-footer'],
+  ].map(([name,purpose,slot]) => entry(name,'layout',purpose,[`${purpose}이 필요할 때`],['평면 카드에 그림자를 넣지 마라'],'5','경계선과 여백으로 구조를 만든다.',['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
+  entry('Checkbox','form','네이티브 체크박스로 선택·혼합 상태를 표시한다.',['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라'],'6','포커스 표시와 비색상 신호를 유지한다.',['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),
+  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때'],['금액을 가변폭 숫자로 쓰지 마라'],'4','값은 최소 너비·말줄임·전체값 보존을 함께 쓴다.',['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip'],['표','테이블','행','정렬','목록','레코드']),
+  entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6','소스를 직접 소유하며 공개 export를 사용한다.',[],[],['DataTable'],['선택 열 식별자']),
+  entry('ChartFrame','chart','차트의 제목·범례·상태·폭 측정을 제공한다.',['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6','loading·empty·error 상태를 구분한다.',['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),
+  entry('TrendBand','chart','시간 추세와 상하 범위를 보여준다.',['시계열 추세와 밴드를 비교할 때'],['텍스트 요약을 빼지 마라'],'7.5.3','SVG에 의미 토큰과 직접 라벨을 쓴다.',['data','x','y','yLow','yHigh','summary'],['trend-band'],['ChartFrame'],['추세','시계열','밴드','선 그래프']),
+  entry('BulletRow','chart','목표 대비 실적을 행으로 비교한다.',['KPI 목표 달성도를 비교할 때'],['달성 여부를 색만으로 표현하지 마라'],'7.5.3','직접 라벨과 텍스트 요약을 제공한다.',['metrics','summary','skeletonRows'],['bullet-row'],['ChartFrame'],['실적','목표','KPI','불릿']),
+  entry('CompositionArea','chart','시간별 구성비를 누적 면적으로 보여준다.',['구성 비중 변화를 비교할 때'],['텍스트 라벨을 생략하지 마라'],'7.5.3','색 외에 직접 라벨을 제공한다.',['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','비중','누적','면적']),
+  entry('Skeleton','loading','알려진 콘텐츠 형태의 자리 표시자다.',['콘텐츠 모양을 미리 알 때'],['형태를 모르면 쓰지 마라'],'9.2','실제 콘텐츠와 같은 치수를 쓴다.',['variant','width','height','animation','textStyle'],['skeleton'],['SkeletonText','ProgressTrack'],['스켈레톤','자리 표시','로딩']),
+  entry('SkeletonText','loading','문단 형태의 로딩 자리 표시자다.',['여러 줄 텍스트를 기다릴 때'],['모든 줄을 같은 길이로 채우지 마라'],'9.2','글자 높이 0.65em와 짧은 마지막 줄을 쓴다.',['lines','textStyle','lastLineWidth'],['skeleton-text'],['Skeleton'],['문단 로딩','텍스트 스켈레톤']),
+  ...[
+    ['CardSkeleton','카드','card-skeleton',['label']],['ListSkeleton','목록','list-skeleton',['rows','label']],
+    ['FormSkeleton','폼','form-skeleton',['fields','label']],['ChartSkeleton','차트','chart-skeleton',['height','legend','variant','rows']],
+  ].map(([name,label,slot,props]) => entry(name,'loading',`${label} 형태의 로딩 자리 표시자다.`,[`${label}의 콘텐츠 배치와 치수를 알 때`],['실제 콘텐츠와 다른 치수로 쓰지 마라'],'9.2','실제 컴포넌트와 토큰을 공유한다.',props,[slot],['Skeleton'],[`${label} 로딩`,`${label} 스켈레톤`])),
+  entry('ProgressTrack','loading','진행률과 예상 시간을 표시한다.',['긴 작업의 진행 정도를 알릴 때'],['모르는 진행률을 지어내지 마라'],'9.1','긴 대기는 진행률과 대략적 시간을 제공한다.',['value','label','etaSeconds'],['progress-track'],['TaskProgress'],['진행률','진행 표시','대기']),
+  entry('TaskProgress','loading','드문 장기 작업의 단계와 진행을 표시한다.',['대량 내보내기·일괄 작업을 기다릴 때'],['자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라'],'9.3','모션 예산은 빈도와 대기시간으로 정한다.',['title','value','steps','etaSeconds','onDismiss'],['task-progress'],['ProgressTrack'],['대량','일괄','장기 작업','내보내기']),
+  entry('Tooltip','guide','컨트롤의 뜻을 한 줄로 설명한다.',['호버·키보드 포커스로 UI 의미를 확인할 때'],['데이터 요약이나 액션을 넣지 마라','여러 문장을 넣지 마라'],'10.4','포커스를 가져가지 않고 aria-describedby로 연결한다.',['children','content','disabled'],['guide-tooltip'],['Hint','Tour','Peek'],['툴팁','호버','한 줄','컨트롤 설명','UI 설명']),
+  entry('Hint','guide','새 기능·놓치기 쉬운 UI를 한 번 알린다.',['새 기능을 2~3줄과 액션으로 알릴 때'],['레코드 요약용으로 쓰지 마라'],'10.2','닫은 안내를 반복하지 않도록 앱이 기억한다.',['children','open','title','body','onDismiss','action'],['guide-hint'],['Tooltip','Tour','Peek'],['힌트','새 기능','한 번','맥락형 안내']),
+  entry('Tour','guide','사용자가 요청한 UI 흐름을 단계로 안내한다.',['사용자가 전체 흐름 학습을 요청할 때'],['자동 실행하지 마라','닫기·Escape를 막지 마라'],'10.1','최대 3단계이며 항상 건너뛸 수 있다.',['steps','active','next','previous','skip'],['guide-hint'],['Tooltip','Hint','Peek'],['투어','온보딩','단계','사용법','흐름 학습']),
+  entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],['필드 값을 소유하게 하지 마라'],'11.4','레이블 → 설명 → 입력 → 오류 순서를 지킨다.',['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증']),
+  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5','Tab 순서와 같게 이동하고 Shift+Enter는 이전 칸이다.',['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동']),
+  entry('Peek','overlay','레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.',['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제 액션을 넣지 마라'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
+];
