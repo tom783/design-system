@@ -874,8 +874,13 @@ shouldValidate({ trigger, hasErrored, isComposing })
   `disabled` · `hidden` · `tabindex="-1"` 를 Tab 과 똑같이 건너뛰고,
   `readOnly` 는 건너뛰지 않는다(Tab 이 안 건너뛰므로).
 - `<textarea>` 에서 Enter 는 **줄바꿈**이다. `Ctrl/Cmd+Enter` 로만 제출한다.
+  **`Shift+Enter` 도 줄바꿈이다.** 여러 줄 입력에서 Shift+Enter 는 널리 쓰는 줄바꿈
+  습관이다. 그걸 칸 이동으로 빼앗으면 메모를 쓰다가 **문장 중간에 포커스가 뒤로 튄다.**
+  반대 방향 손실은 없다 — 뒤로 가려면 `Shift+Tab` 이 있다.
 - `<select>` · `<button>` 은 네이티브 동작을 유지한다.
-- **Shift+Enter 는 이전 칸.** 되돌아가기가 없으면 오타 하나에 마우스를 잡아야 한다.
+- **Shift+Enter 는 이전 칸** — **단일 행 입력에서만.** 되돌아가기가 없으면 오타 하나에
+  마우스를 잡아야 한다. `<textarea>` 는 위 항목을 따른다(줄바꿈이다).
+  이 두 항목이 분리돼 있어 한 번 반대로 구현된 적이 있다. 묶어서 읽어라.
 - `restartOnSubmit` 이면 제출 후 첫 칸으로 돌아간다. 같은 종류를 연달아
   접수하는 화면용이고, 기본값은 꺼져 있다.
 
@@ -1476,6 +1481,106 @@ roving tabindex는 **지연된다.** 한 번도 포커스를 받지 않은 탭 �
 browser.mjs를 통해 스토리 play 완료와 실제 키보드·포커스·닫기·Select·알림·복원을
 검사한다. play가 끝난 뒤에는 다이얼로그가 모두 닫혀 있으므로 하네스가 다시 연다.
 포커스는 조건 대기 후 단언한다. 실행은 `pnpm qa`에 포함한다.
+
+---
+
+## 17. 나머지 입력 — Textarea · RadioGroup · Switch · Label · Input 타입 (R16)
+
+### 17.1 Input — 타입은 전달하고 조용한 사고를 막는다
+
+기존 Input을 확장한다. text(기본)·number·search·password·email·tel·url·date를
+그대로 전달한다. **금액·수량은 `type="text" inputMode="numeric" numeric`**을 쓴다.
+`numeric`은 기존 `.tabular`와 우측 정렬이다. 값의 쉼표나 한글 조합을 변형하지 않는다.
+
+사전 브라우저 실측에서 number는 `1,000`을 조용히 `1000`으로 바꾸고 validity도 true였다.
+`1e5`는 통과하여 valueAsNumber=100000, `--5`는 빈 문자열·invalid가 됐다.
+포커스된 칸 위 휠과 ArrowUp은 각각 10을 11로 바꿨다. step=0.01 위반 문구는
+lang=ko여도 영어였다. **네이티브 검증 문구에 의존하지 않는다.** 앱은 noValidate와
+Field의 한국어 오류를 조합하고 검증 내용·제출 가능 여부를 소유한다(§11.6).
+
+number 휠 가드는 **blur 방식**이다. 세 방식을 나란히 재서 정했다
+(페이지가 스크롤 가능한 상태, 포커스된 `type=number` 위에서 휠):
+
+| 방식 | 값 | 페이지 스크롤 |
+|---|---|---|
+| 처리 안 함 | **11 / 9 로 바뀐다** | **0 — 입력이 휠을 먹는다** |
+| `preventDefault()` | 10 (안전) | **0 — 막힌다** |
+| `blur()` | 10 (안전) | **+120 — 스크롤된다** |
+
+처리하지 않으면 사용자가 페이지를 넘기려다 **수량이 조용히 바뀌고 페이지는 움직이지도
+않는다.** `preventDefault` 는 값은 지키지만 스크롤을 막아 더 나쁜 회귀를 만든다 —
+작업 지시서가 이쪽을 선호한다고 적었는데 **그 지시가 틀렸다.** 측정이 뒤집었다.
+`blur` 는 값과 스크롤을 모두 지키고 포커스가 풀리는 비용만 남는다.
+ArrowUp 은 네이티브 동작을 유지한다. 금액·수량은 처음부터 number 를 쓰지 않으므로
+이 트레이드오프를 만나지 않는다.
+
+password는 같은 입력의 type을 text/password로 바꾸는 내장 버튼을 제공한다.
+aria-label은 `비밀번호 표시`/`비밀번호 숨기기`, aria-pressed는 표시 여부다.
+search는 값이 있고 편집 가능할 때만 자체 `검색어 지우기` 버튼을 표시한다.
+클릭하면 제어·비제어 입력 모두 input/onChange 경로로 비움을 알리고 입력에 포커스를
+돌려준다. 네이티브 지우기는 실측 헤드리스에서 나타나지 않아 존재를 가정하지 않았다.
+webkit 지우기 UI는 자체 버튼과 겹치지 않도록 숨긴다.
+
+**date는 통과시키되 권장하지 않는다.** 사전 실측 너비는 125px로 같은 조건 text 153px와
+달랐다. value는 `2026-11-15`지만 valueAsDate는 UTC 자정(한국에서는 09:00)이다.
+로컬 날짜로 꺼내면 시간대에 따라 하루가 어긋난다. 검증 문구도 영어다. 날짜 문자열을
+유지하는 DatePicker를 우선 쓰고(§15), 네이티브 타입이 꼭 필요하면 value 문자열만 쓴다.
+
+### 17.2 Textarea — 값과 높이를 구분한다
+
+rows 기본값은 3이다. 사전 **네이티브** rows=3 측정은 51px였다. 이 수치를 고정 높이로
+복사하지 않는다. 스타일된 컨트롤은 §3의 본문 14px/20px 행간과 상하 8px 여백·경계선을
+사용하므로 rows가 가리키는 세 줄을 실제로 보여줄 수 있어야 한다.
+
+autoGrow 기본값은 false이며 기본 resize:vertical을 보존한다. true이면 scrollHeight와
+경계선으로 높이를 계산하고 resize:none·overflow:hidden을 쓴다. maxHeight 기본 240px는
+본문 약 10줄을 볼 수 있는 상한이며, 닿으면 overflow-y:auto로 칸 안에서 스크롤한다.
+내용 삭제·제어 value 변경·폼 reset·너비 변경 때도 재계산한다. 꺼지면 수동 resize로 돌아간다.
+
+**IME 조합 중에도 자란다.** 사전 실측은 자동 높이 25→74px, 한글 조합의 줄바꿈 경계는
+27→44px로 한 번 증가했고 확정 후에도 44px로 유지됐다. §11.2가 금지하는 것은 값 변형이다.
+높이는 값이 아니므로 composition 플래그로 높이 변경을 막지 않는다.
+
+FormFlow의 기존 textarea 분기를 **그대로** 유지한다. Enter는 줄바꿈,
+Ctrl/Cmd+Enter는 제출, **Shift+Enter도 줄바꿈**이다. §11.5의 "Shift+Enter는 이전 칸"은
+단일 행 입력 규칙이며 textarea 에는 적용되지 않는다 — 한 번 반대로 구현됐다가 되돌렸다.
+이유는 §11.5 에 적혀 있다. 스타일된 Textarea 도 textarea 요소이므로 별도 탐색 체계를
+만들지 않는다.
+
+### 17.3 RadioGroup — 화살표는 선택도 옮긴다
+
+Radix 기본 ARIA 라디오 패턴을 그대로 쓴다. 사전 실측 role은 radiogroup이고 화살표는
+포커스·선택을 함께 옮겨 끝에서 순환했다. Tabs manual 같은 포커스 전용 모드는 없다.
+RadioGroupItem은 RadioGroup의 부품이다. 선택은 **점 + 이중 테두리 변화**로 표현하여
+색 단독 신호를 피한다. 각 항목에 id와 Label htmlFor를 연결해 레이블도 선택할 수 있게 한다.
+
+### 17.4 Switch와 Checkbox — 적용 시점을 구분한다
+
+Switch는 **누르는 즉시 적용되며 저장 버튼이 없는 설정**이다(알림, 자동 재고 차감).
+Checkbox는 **폼의 일부이며 제출할 때 함께 적용**한다(약관 동의, 목록 선택).
+**폼 안에 Switch를 넣지 않는다.** 즉시 적용인지 제출 대기인지 모호해진다.
+Radix의 button type=button·role=switch·aria-checked와 Space 토글을 유지한다.
+켜짐/꺼짐은 손잡이 위치가 1차 신호이고 색이 보조한다. 비활성·Label 연결도 유지한다.
+
+### 17.5 Label과 Field — 자리와 책임이 다르다
+
+Label은 **Field를 쓰지 않는 자리**, Switch·Checkbox·Radio 옆에 오는 입력 이름이다.
+Radix label을 쓰고 htmlFor로 연결한다. 필수 표시는 Field와 같은
+`role="img" aria-label="필수 입력"`을 쓴다. required 표시는 컨트롤의 required 검증을
+대신하지 않으므로 앱이 컨트롤에도 required를 지정한다.
+Field는 세로 레이블→설명→입력→오류와 접근성 연결을 계속 소유한다.
+Field를 Label로 재구현하지 않고 둘을 공존시킨다.
+
+### 17.6 검증 책임과 사전 실측
+
+이번 작업은 브라우저를 실행하지 않으며 새 실측값을 주장하지 않는다.
+`docs/qa/input-render-verify.mjs`는 browser.mjs로 실제 휠·페이지 스크롤, 타입 토글,
+검색 비움·포커스, 자동 높이·상한 스크롤·IME, FormFlow Enter/Shift+Enter,
+라디오 화살표·순환·레이블, Switch Space, 콘솔 오류를 검사한다. `pnpm qa`에 등록한다.
+play는 토글을 원복하고 비밀번호를 다시 숨긴 뒤 끝나며 하네스는 필요한 상태를 다시 만든다.
+라디오 키 입력은 rawKeyDown 후 포커스·선택 조건을 기다리고 keyUp을 보내어
+Radix의 document 화살표 추적 플래그가 포커스 처리 전에 지워지는 거짓 실패를 피한다.
+포커스 단정은 전부 조건 대기 뒤 수행한다.
 
 ---
 

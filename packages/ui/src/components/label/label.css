@@ -1,0 +1,4 @@
+@layer components {
+  .ds-label { font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); font-weight: 500; cursor: pointer; }
+  [data-slot="label-required"] { color: var(--status-danger-fg); }
+}

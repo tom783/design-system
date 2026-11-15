@@ -1,0 +1,12 @@
+@layer components {
+  .ds-textarea {
+    box-sizing: border-box; display: block; width: 100%; min-width: var(--field-min-w);
+    padding: var(--space-8) var(--space-12); border: var(--border-width) solid var(--border-input);
+    border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary);
+    font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); resize: vertical;
+  }
+  .ds-textarea::placeholder { color: var(--text-tertiary); }
+  .ds-textarea:hover { border-color: var(--text-tertiary); }
+  .ds-textarea[aria-invalid="true"] { border-color: var(--status-danger-fg); }
+  .ds-textarea:disabled { background: var(--bg-sunken); color: var(--text-disabled); cursor: not-allowed; }
+}

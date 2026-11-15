@@ -1,0 +1,12 @@
+@layer components {
+  .ds-radio-group { display: grid; gap: var(--space-12); }
+  .ds-radio-group-item {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: var(--space-16); height: var(--space-16); border: 1px solid var(--border-input);
+    border-radius: 50%; background: var(--bg-surface); cursor: pointer;
+  }
+  /* 점과 이중 테두리로 선택을 색 없이도 구별한다. */
+  .ds-radio-group-item[data-state="checked"] { border: 3px double var(--action-primary-bg); }
+  .ds-radio-group-indicator { width: var(--space-4); height: var(--space-4); border-radius: 50%; background: var(--action-primary-bg); }
+  .ds-radio-group-item:disabled { opacity: .5; cursor: not-allowed; }
+}

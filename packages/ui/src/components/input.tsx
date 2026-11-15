@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Eye, EyeOff, X } from 'lucide-react';
 import { cn } from '../lib/cn';
 
 /**
@@ -20,13 +21,37 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, invalid, numeric, ...props }, ref) => (
-    <input
-      ref={ref}
+  ({ className, invalid, numeric, type = 'text', onChange, onWheel, ...props }, ref) => {
+    const inputRef = React.useRef<HTMLInputElement | null>(null);
+    const [visible, setVisible] = React.useState(false);
+    const [hasValue, setHasValue] = React.useState(() => String(props.defaultValue ?? '').length > 0);
+    const setRef = React.useCallback((node: HTMLInputElement | null) => {
+      inputRef.current = node;
+      if (typeof ref === 'function') return ref(node);
+      if (ref) ref.current = node;
+    }, [ref]);
+    React.useEffect(() => { setVisible(false); }, [type]);
+    React.useEffect(() => {
+      const input = inputRef.current;
+      const form = input?.form;
+      let frame = 0;
+      // reset 기본 동작이 값을 돌려놓은 다음 지우기 버튼도 동기화한다.
+      const reset = () => { frame = requestAnimationFrame(() => setHasValue(Boolean(input?.value))); };
+      form?.addEventListener('reset', reset);
+      return () => { form?.removeEventListener('reset', reset); cancelAnimationFrame(frame); };
+    }, [props.form, type]);
+    const password = type === 'password';
+    const search = type === 'search';
+    const clearable = search && !props.disabled && !props.readOnly &&
+      (props.value !== undefined ? String(props.value).length > 0 : hasValue);
+    const input = <input
+      {...props}
+      type={password && visible ? 'text' : type}
+      ref={setRef}
       data-slot="input"
-      aria-invalid={invalid || undefined}
+      aria-invalid={invalid || props['aria-invalid'] || undefined}
       className={cn(
-        'h-[var(--control-h-md)] w-full min-w-[var(--field-min-w)] px-3',
+        'h-[var(--control-h-md)] w-full min-w-[var(--field-min-w)]',
         'rounded-[var(--radius-md)] border bg-surface',
         'text-[length:var(--text-body-sm)] text-fg',
         'placeholder:text-fg-subtle',
@@ -34,10 +59,39 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         'disabled:cursor-not-allowed disabled:bg-sunken disabled:text-fg-disabled',
         invalid ? 'border-danger-ink' : 'border-field hover:border-fg-subtle',
         numeric && 'tabular text-right',
+        (password || search) ? 'ds-input-with-action ps-3' : 'px-3',
         className,
       )}
-      {...props}
-    />
-  ),
+      onChange={event => { setHasValue(Boolean(event.currentTarget.value)); onChange?.(event); }}
+      onWheel={event => {
+        onWheel?.(event);
+        // number의 증감과 페이지 스크롤은 같은 기본 동작이다. 취소하면 스크롤도 막힌다.
+        // 명세가 허용한 blur 경로로 증감만 피하고 브라우저의 스크롤 체인을 보존한다.
+        if (!event.defaultPrevented && type === 'number' && document.activeElement === event.currentTarget) {
+          event.currentTarget.blur();
+        }
+      }}
+    />;
+    if (!password && !search) return input;
+    return <span data-slot="input-control" className="ds-input-control">
+      {input}
+      {password && <button type="button" data-slot="input-action" className="ds-input-action"
+        disabled={props.disabled} aria-label={visible ? '비밀번호 숨기기' : '비밀번호 표시'} aria-pressed={visible}
+        onClick={() => setVisible(current => !current)}>
+        {visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+      </button>}
+      {clearable && <button type="button" data-slot="input-action" className="ds-input-action" aria-label="검색어 지우기"
+        onClick={() => {
+          const node = inputRef.current;
+          if (!node) return;
+          // React 값 추적기를 우회하는 네이티브 setter + input 이벤트로 제어/비제어 onChange를 함께 알린다.
+          const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+          setter.call(node, '');
+          node.dispatchEvent(new Event('input', { bubbles: true }));
+          setHasValue(Boolean(node.value));
+          node.focus();
+        }}><X aria-hidden="true" /></button>}
+    </span>;
+  },
 );
 Input.displayName = 'Input';

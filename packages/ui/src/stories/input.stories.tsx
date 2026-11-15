@@ -1,3 +1,6 @@
+import * as React from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { Field } from '../components/form';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Input } from '../components/input';
 
@@ -80,9 +83,95 @@ export const 금액입력: Story = {
   },
   render: () => (
     <div className="flex w-60 flex-col gap-2">
-      <Input numeric defaultValue="1,248,500,000" />
-      <Input numeric defaultValue="47,600" />
-      <Input numeric defaultValue="389,000" />
+      <Input type="text" inputMode="numeric" numeric defaultValue="1,248,500,000" />
+      <Input type="text" inputMode="numeric" numeric defaultValue="47,600" />
+      <Input type="text" inputMode="numeric" numeric defaultValue="389,000" />
     </div>
   ),
+};
+
+// number는 범용 타입 전달 검증용이다. 금액·수량은 위처럼 text + inputMode=numeric을 쓴다.
+export const 숫자휠가드: Story = {
+  render: () => <div style={{ minHeight: '180vh', maxWidth: 400 }}>
+    <Field label="네이티브 숫자 타입 테스트" description="금액·수량에는 사용하지 않습니다. 휠 시 포커스를 해제하여 값 변경과 스크롤 차단을 피합니다.">
+      <Input type="number" defaultValue="10" />
+    </Field>
+  </div>,
+  play: async ({ canvasElement: root }) => {
+    await expect(within(root).getByRole('spinbutton')).toHaveValue(10);
+    root.dataset.playComplete = 'true';
+  },
+};
+export const 비밀번호: Story = {
+  render: () => <div className="max-w-sm"><Field label="비밀번호"><Input type="password" defaultValue="safe-password" /></Field></div>,
+  play: async ({ canvasElement: root }) => {
+    const canvas = within(root), input = canvas.getByLabelText('비밀번호');
+    await userEvent.click(canvas.getByRole('button', { name: '비밀번호 표시' }));
+    await expect(input).toHaveAttribute('type', 'text');
+    await expect(canvas.getByRole('button', { name: '비밀번호 숨기기' })).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(canvas.getByRole('button', { name: '비밀번호 숨기기' }));
+    await expect(input).toHaveAttribute('type', 'password');
+    await expect(canvas.getByRole('button', { name: '비밀번호 표시' })).toHaveAttribute('aria-pressed', 'false');
+    root.dataset.playComplete = 'true';
+  },
+};
+function SearchDemo() {
+  const [query, setQuery] = React.useState('배송');
+  return <div className="grid max-w-sm gap-3">
+    <Field label="제어 검색"><Input type="search" value={query} onChange={event => setQuery(event.target.value)} /></Field>
+    <output aria-label="검색 상태">{query || '검색어 없음'}</output>
+    <form><Field label="비제어 검색"><Input type="search" defaultValue="주문" /></Field>
+      <button type="reset">검색 초기화</button>
+    </form>
+  </div>;
+}
+export const 검색: Story = {
+  render: () => <SearchDemo />,
+  play: async ({ canvasElement: root }) => {
+    const canvas = within(root);
+    for (const label of ['제어 검색', '비제어 검색']) {
+      const input = canvas.getByLabelText(label);
+      const clear = input.parentElement!.querySelector<HTMLButtonElement>('[aria-label="검색어 지우기"]')!;
+      await userEvent.click(clear);
+      await expect(input).toHaveValue('');
+      await waitFor(() => expect(input).toHaveFocus());
+      await expect(input.parentElement!.querySelector('[aria-label="검색어 지우기"]')).toBeNull();
+      if (label === '제어 검색') await expect(canvas.getByLabelText('검색 상태')).toHaveTextContent('검색어 없음');
+      await userEvent.type(input, label === '제어 검색' ? '배송' : '주문');
+    }
+    root.dataset.playComplete = 'true';
+  },
+};
+export const 이메일: Story = {
+  render: () => <div className="max-w-sm"><Field label="담당자 이메일" description="예: name@example.com"><Input type="email" /></Field></div>,
+  play: async ({ canvasElement: root }) => {
+    await expect(within(root).getByLabelText('담당자 이메일')).toHaveAttribute('type', 'email');
+    root.dataset.playComplete = 'true';
+  },
+};
+export const 전화번호: Story = {
+  render: () => <div className="max-w-sm"><Field label="연락처" description="예: 010-1234-5678"><Input type="tel" /></Field></div>,
+  play: async ({ canvasElement: root }) => {
+    await expect(within(root).getByLabelText('연락처')).toHaveAttribute('type', 'tel');
+    root.dataset.playComplete = 'true';
+  },
+};
+export const 날짜비권장: Story = {
+  name: '날짜 — 권장하지 않음',
+  render: () => <div className="max-w-sm"><Field label="네이티브 날짜" description="권장하지 않음: 브라우저 치수·UTC 변환·영어 검증 메시지. DatePicker를 사용하세요.">
+    <Input type="date" defaultValue="2026-11-15" />
+  </Field></div>,
+  play: async ({ canvasElement: root }) => {
+    const input = within(root).getByLabelText('네이티브 날짜');
+    await expect(input).toHaveAttribute('type', 'date');
+    await expect(input).toHaveValue('2026-11-15');
+    root.dataset.playComplete = 'true';
+  },
+};
+export const 주소: Story = {
+  render: () => <div className="max-w-sm"><Field label="쇼핑몰 주소"><Input type="url" /></Field></div>,
+  play: async ({ canvasElement: root }) => {
+    await expect(within(root).getByLabelText('쇼핑몰 주소')).toHaveAttribute('type', 'url');
+    root.dataset.playComplete = 'true';
+  },
 };

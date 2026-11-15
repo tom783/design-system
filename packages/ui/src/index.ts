@@ -43,3 +43,7 @@ export * from './components/date-picker';
 export * from './components/tabs';
 export * from './components/breadcrumb';
 export * from './components/dialog';
+export * from './components/textarea';
+export * from './components/radio-group';
+export * from './components/switch';
+export * from './components/label';

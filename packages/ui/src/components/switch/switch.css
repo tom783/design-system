@@ -1,0 +1,13 @@
+@layer components {
+  .ds-switch {
+    /* 36×20 트랙과 12px 손잡이: 안쪽 3px 여백, 16px 이동으로 위치가 1차 신호다. */
+    display: inline-flex; align-items: center; flex-shrink: 0; width: 36px; height: 20px;
+    padding: 3px; border: 1px solid var(--border-input); border-radius: 999px;
+    background: var(--bg-sunken); cursor: pointer;
+  }
+  .ds-switch-thumb { width: var(--space-12); height: var(--space-12); border-radius: 50%; background: var(--text-secondary); }
+  .ds-switch[data-state="checked"] { background: var(--action-primary-bg); border-color: var(--action-primary-border); }
+  .ds-switch[data-state="checked"] .ds-switch-thumb { transform: translateX(16px); background: var(--text-on-brand); }
+  .ds-switch:dir(rtl)[data-state="checked"] .ds-switch-thumb { transform: translateX(-16px); }
+  .ds-switch:disabled { opacity: .5; cursor: not-allowed; }
+}

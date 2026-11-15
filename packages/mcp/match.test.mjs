@@ -78,3 +78,19 @@ for (const [query, expected] of [
     assert.equal(matchComponents(query, components)[0]?.name, expected);
   });
 }
+
+for (const [query, expected] of [
+  ['여러 줄 메모', 'Textarea'], ['하나만 선택', 'RadioGroup'],
+  ['즉시 적용되는 토글', 'Switch'], ['금액 입력', 'Input'],
+  ['비밀번호', 'Input'], ['검색창', 'Input'], ['전화번호', 'Input'], ['입력 이름', 'Label'],
+]) {
+  test(`나머지 입력 라우팅 1위: ${query} → ${expected}`, () => {
+    assert.equal(matchComponents(query, components)[0]?.name, expected);
+  });
+}
+test('금액 입력은 number 금지·text와 numeric 입력 모드 규칙을 제공', () => {
+  const input = matchComponents('금액 입력', components)[0];
+  assert.ok(input.dont.some(rule => rule.includes('type=number')));
+  const detail = components.find(component => component.name === input.name);
+  assert.ok(detail.rules.some(rule => rule.text.includes('type=text inputMode=numeric')));
+});

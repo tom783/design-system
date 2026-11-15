@@ -11,3 +11,8 @@
 @import "./components/tabs/tabs.css";
 @import "./components/breadcrumb/breadcrumb.css";
 @import "./components/dialog/dialog.css";
+@import "./components/input.css";
+@import "./components/textarea/textarea.css";
+@import "./components/radio-group/radio-group.css";
+@import "./components/switch/switch.css";
+@import "./components/label/label.css";
