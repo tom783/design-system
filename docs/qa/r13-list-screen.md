@@ -91,7 +91,7 @@ Input과 Select 모두 `--control-h-md`를 참조한다. `셀렉트-높이일치
 현재 샌드박스 밖에서 정상 실행 가능한 저장소 터미널에서 다음 순서로 실행한다. GUI Chrome이나 `--no-sandbox`는 사용하지 않는다.
 
 ```bash
-cd /Users/hellground/dev/design-system
+cd <저장소 루트>
 pnpm verify
 node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs
 node docs/qa/list-screen-contract-verify.mjs
