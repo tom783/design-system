@@ -20,5 +20,7 @@ export function matchComponents(description, components, limit = 5) {
       if (matches.length) { score += matches.length * weight; reasons.push(`${field}: ${matches.join(', ')} (+${matches.length * weight})`); }
     }
     return { name: component.name, score, reasons, purpose: component.purpose, useWhen: component.useWhen, dont: component.dont };
-  }).filter((c) => c.score > 0).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'en')).slice(0, limit);
+    // purpose 한 토큰(2점)만 맞은 것은 매칭 근거가 못 된다. 조사·일반어가 우연히 겹친다 —
+    // "zzzz 아무 관련 없는 말" 이 AlertDialog 의 "되돌릴 수 없는" 과 '없는' 으로 붙었다.
+  }).filter((c) => c.score > 2).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'en')).slice(0, limit);
 }

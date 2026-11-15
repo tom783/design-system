@@ -1,0 +1,35 @@
+@layer components {
+  .ds-tabs-list {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    /* 안쪽 여백은 전역 2px 링 + 2px offset이 overflow 경계에 잘리지 않게 한다. */
+    padding: var(--space-4);
+    border-bottom: var(--border-width) solid var(--border-default);
+    gap: var(--space-4);
+  }
+  .ds-tabs-trigger {
+    flex: 0 0 auto;
+    min-height: var(--control-h-md);
+    padding: var(--space-8) var(--space-12);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    font-weight: 400;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .ds-tabs-trigger[data-state="active"] {
+    /* 선택은 브랜드 밑줄 + 굵기, 포커스는 별도의 전역 outline이다 (§16). */
+    border-bottom-color: var(--action-primary-bg);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .ds-tabs-trigger:hover { background: var(--bg-hover); }
+  .ds-tabs-trigger:disabled { cursor: not-allowed; color: var(--text-disabled); }
+  .ds-tabs-content { min-width: 0; margin-top: var(--space-16); }
+}

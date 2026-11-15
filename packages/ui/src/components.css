@@ -8,3 +8,6 @@
 @import "./components/state/state.css";
 @import "./components/thumbnail/thumbnail.css";
 @import "./components/toast/toast.css";
+@import "./components/tabs/tabs.css";
+@import "./components/breadcrumb/breadcrumb.css";
+@import "./components/dialog/dialog.css";

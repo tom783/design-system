@@ -89,6 +89,29 @@ node docs/qa/mcp-client-verify.mjs     # MCP 서버 (브라우저 없음) 36건
 
 ## 이미 밟은 함정 — 반복하지 마라
 
+**Radix Tabs는 `click`이 아니라 `mousedown`에서 선택한다.**
+`element.click()`은 `click`만 보내므로 **선택이 바뀌지 않는다.** 하네스에서 이걸로
+5건이 거짓 실패했다. `dispatchEvent(new MouseEvent('mousedown', {bubbles:true, button:0}))`
+를 쓰거나 포커스 + 키보드를 쓴다. 좌표 CDP 클릭은 가로 스크롤 때문에 엉뚱한 곳을 누른다.
+
+**`CANVAS`는 선택자 문자열이 아니라 JS 표현식이다.**
+`` `${CANVAS} [data-x]` ``를 `querySelector`에 넘기면 `SyntaxError`다.
+문서 전역에서 유일한 선택자를 쓰거나 `${CANVAS}.querySelector(...)`로 평가해라.
+
+**하네스에서 내부 버튼을 좌표로 누르지 마라.**
+`scrollIntoView`가 문서를 움직여서 "문서가 안 밀린다" 같은 검사를 스스로 깨고,
+애니메이션 중 좌표가 흔들려 플레이키해진다. 요소에 `.click()`을 보내고,
+좌표 포인터는 **바깥 클릭처럼 진짜 포인터가 필요할 때만** 쓴다.
+
+**roving tabindex는 지연된다.**
+한 번도 포커스를 받지 않은 탭 목록은 선택된 탭까지 `tabIndex=-1`이다. 차가운 DOM에
+`선택 0·나머지 -1`을 단언하면 거짓 실패한다. Tab 도달 자체를 검사해라.
+
+**브라우저가 포커스된 요소를 알아서 스크롤해 온다.**
+포커스가 움직이는 경로에서는 우리 끌어오기 코드가 `delta=0`으로 조기 반환한다.
+그 코드를 검증하려면 **포커스 없이 값만 바뀌는 제어 경로**를 만들어야 한다.
+
+
 **Tailwind v4의 `--spacing`은 "값"이 아니라 "배수"다.**
 `--spacing-4: 4px` 같은 토큰을 `@theme`에 내보내면 `p-4`가 16px 대신 4px이 되고
 `size-4` 아이콘이 4px, `min-w-16`이 64px 대신 16px로 컴파일된다.

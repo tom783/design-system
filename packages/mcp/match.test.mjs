@@ -51,3 +51,13 @@ for (const [query, expected] of routingCases) {
       `${query}: 기대 ${expected}, 실제 순위 ${ranking.map((c, i) => `${i + 1}. ${c.name} (${c.score})`).join(', ') || '후보 없음'}`);
   });
 }
+
+// R15: 실제 화면을 요청하는 표현은 조립 루트를 먼저 안내한다.
+for (const [query, expected] of [
+  ['삭제 확인', 'AlertDialog'], ['모달 띄우기', 'Dialog'],
+  ['탭으로 나누기', 'Tabs'], ['목록으로 돌아가는 경로', 'Breadcrumb'],
+]) {
+  test(`상세 화면 라우팅 1위: ${query} → ${expected}`, () => {
+    assert.equal(matchComponents(query, components)[0]?.name, expected);
+  });
+}

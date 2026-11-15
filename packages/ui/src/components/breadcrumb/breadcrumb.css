@@ -1,0 +1,16 @@
+@layer components {
+  .ds-breadcrumb-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-8);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    overflow-wrap: anywhere;
+  }
+  .ds-breadcrumb-item { display: inline-flex; align-items: center; min-width: 0; }
+  .ds-breadcrumb-link { color: var(--text-link); text-decoration: underline; text-underline-offset: 3px; }
+  .ds-breadcrumb-page { color: var(--text-primary); font-weight: 600; }
+  .ds-breadcrumb-separator, .ds-breadcrumb-ellipsis { display: inline-flex; align-items: center; color: var(--text-tertiary); }
+  .ds-breadcrumb-separator svg, .ds-breadcrumb-ellipsis svg { width: var(--space-16); height: var(--space-16); }
+}

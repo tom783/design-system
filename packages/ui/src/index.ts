@@ -40,3 +40,6 @@ export * from './components/select';
 export * from './components/dropdown-menu';
 export * from './components/toast';
 export * from './components/date-picker';
+export * from './components/tabs';
+export * from './components/breadcrumb';
+export * from './components/dialog';

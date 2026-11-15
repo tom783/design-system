@@ -1338,6 +1338,113 @@ npmjs.com 의 패키지 설정에 **이 저장소 + 워크플로 파일명 + env
 
 ---
 
+## 16. 상세 화면 — Tabs · Breadcrumb · Dialog · AlertDialog (R15)
+
+R10의 복원 기록을 사용자가 누를 경로로 연결한다. 컴포넌트는 표현·접근성·상호작용을
+소유하고 앱은 라우팅·필터·스크롤·재방문 행을 소유한다.
+
+### 16.1 Tabs — 선택과 포커스를 구분한다
+
+Radix 기본값 `activationMode="automatic"`을 유지한다. ArrowRight는 포커스와 선택을
+함께 이동하고 패널을 즉시 교체한다. **서버 데이터를 조회하는 패널에는 `manual`을
+명시한다.** manual의 화살표는 포커스만 이동하고 Enter로 선택을 확정한다. 탭 네 개를
+지나는 동안 요청 네 번을 보내지 않기 위해서다.
+
+선택된 탭은 tabindex 0, 나머지는 -1이다. 패널의 tabindex 0과 aria-labelledby는
+Radix가 제공한다. 선택은 기존 브랜드 강조 토큰 `--action-primary-bg`의 **아래 2px 선과
+600 굵기**로 표시한다. §5의 일반 1px 경계선 규칙에서 선택 표시만 예외다.
+포커스는 별도의 `--border-focus` outline으로 유지한다.
+
+TabsList는 줄바꿈하지 않고 `overflow-x:auto`와 얇은 스크롤바를 쓴다.
+
+가려진 탭을 끌어올 때 **`scrollIntoView`를 쓰지 않는다.** 스크롤 가능한 조상을 전부
+움직이기 때문에 `block:'nearest'`로도 문서가 세로로 밀렸다 — 실측 `scrollY` 244 → 266.
+탭을 화살표로 지나갈 때마다 페이지가 튄다. 목록의 `scrollTo({left})`로 **가로만**
+움직이고, reduced-motion에서는 `behavior`를 `auto`로 떨어뜨린다. 안쪽 여백만큼 더
+당겨서 포커스 링 2px + offset 2px가 경계에 잘리지 않게 한다.
+
+그리고 **이 코드가 담당하는 경로는 좁다.** 포커스가 움직이는 클릭·화살표에서는
+브라우저가 포커스된 요소를 알아서 가로로 긁어와 `delta`가 0이 되고 조기 반환한다(실측).
+우리 코드가 실제로 일하는 곳은 **포커스 없이 값만 바뀌는 제어 탭**이다 — URL 동기화,
+"다음 단계" 버튼처럼 포커스가 탭 밖에 있는 변경. 그래서 검증 스토리도 제어 탭이다.
+
+### 16.2 Breadcrumb — 돌아가는 경로와 복원 책임
+
+`nav[aria-label="경로"] > ol` 안에 항목을 둔다. shadcn은 `"breadcrumb"`를 쓰지만 이
+시스템의 보조기기 문구는 전부 한국어다(닫기·필수 입력·범례·달력 열기·알림).
+영어 한 개만 남기지 않는다. 마지막 항목은 링크가 아닌
+BreadcrumbPage이며 `aria-current="page"`다. Separator는 li + role presentation +
+aria-hidden true다. 링크는 밑줄을 쓰고 asChild로 앱의 라우터 링크를 받는다.
+
+긴 경로는 **첫 항목 + BreadcrumbEllipsis + 마지막 두 항목**으로 앱에서 조립한다.
+Ellipsis의 `count`는 생략한 항목 수이며 `생략된 경로 N개`를 보조기기도 읽는다.
+컴포넌트가 경로나 라우터를 추측하지 않는다.
+
+Screens/DetailScreen에서 목록을 떠날 때 useReturnContext.capture로 행과 스크롤을
+기록한다. 필터는 앱의 별도 상태로 보관한다. 상세의 주문 목록 링크가 consume을
+호출하고 필터·스크롤·DataTable.revisitedRowId를 적용한다. 기록은 일회성·10분 TTL이다.
+
+### 16.3 Dialog — 입력을 보호하되 출구를 유지한다
+
+Dialog는 입력·편집·선택처럼 되돌릴 수 있는 일에 쓴다. 제목 → 설명 → 내용 → 푸터
+순서다(§11.4). DialogTitle과 DialogDescription을 제공한다. 설명이 정말 없으면
+Content에 `aria-describedby={undefined}`를 명시한다. 초기 포커스는 Radix의 첫 포커스
+가능 요소 규칙을 바꾸지 않는다. 파괴적 버튼을 첫 요소로 배치하지 않는다.
+
+DialogContent의 `dismissible` 기본값은 true다. false는 onEscapeKeyDown·
+onPointerDownOutside·onInteractOutside 모두 preventDefault로 막고 onDismissAttempt를
+호출한다. 같은 pointer 이벤트의 두 콜백은 한 시도로 알린다. 앱은 onDismissAttempt에서
+"작성 중인 내용이 사라집니다" 확인 AlertDialog를 열어야 한다. Escape를 무반응으로
+삼키지 않는다.
+
+**`dismissible`은 "입력이 있으면 false"가 아니라 저장하지 않은 변경에 묶는다** —
+`dismissible={!dirty}`. 이미 저장한 창을 닫을 때 "작성 중인 내용이 사라집니다"를
+묻는 것은 거짓말이다. 깨끗한 폼은 Escape·바깥 클릭으로 그냥 닫히고, 더티일 때만
+확인을 거친다.
+
+출구는 **내장한다.** `dismissible={false}`가 바깥 클릭과 Escape를 막는데 출구까지
+없으면 사용자가 갇힌다. DialogContent는 우상단 닫기 버튼(`showClose`, 기본 true)을
+children 뒤에 렌더한다 — 뒤에 두어야 Radix의 첫 포커스가 입력으로 간다. 확인을 받기로
+한 앱(onDismissAttempt 있음)에서는 이 버튼도 확인을 거치고, 확인을 안 받는 앱에서는
+그대로 닫는다. 어느 쪽이든 출구가 남는다.
+
+**푸터에 닫기를 중복으로 두지 않는다.** 내장 X의 접근명이 `닫기`이므로 푸터에 또
+`닫기`를 두면 보조기기가 둘을 구분하지 못한다. 푸터의 보조 동작은 `취소`이며,
+"버린다"는 명시적 의사이므로 확인 없이 닫는다.
+
+### 16.4 AlertDialog — 기본은 취소
+
+삭제·취소·되돌릴 수 없는 일의 확인에는 AlertDialog를 쓴다. **Cancel을 반드시 둔다.**
+Radix는 열린 직후 Cancel로 포커스를 옮긴다. 바깥 클릭은 닫지 않고 Escape는 닫는다.
+이 기본 동작을 덮어쓰지 않는다. AlertDialog에 폼을 넣지 않는다. 입력은 Dialog다.
+AlertDialogAction의 danger 변형은 기존 Button의 danger 액션 토큰을 재사용한다.
+
+### 16.5 레이어와 알림 — 사전 실측을 설계 근거로 유지한다
+
+순수 Radix + CDP 사전 측정에서 Dialog는 첫 입력에 포커스를 주고, Escape·바깥 클릭은
+preventDefault로 막히며 명시적 닫기는 계속 동작했다. 바깥 콘텐츠는 aria-hidden true다.
+Dialog 안 Select는 포털로 위에 표시됐다. native popover는 z-index auto여도 Dialog의
+z-index 50 위(top layer)에 그려졌고 픽셀은 rgb(0,248,0)이었다. sonner 토스트도 위에
+그려졌으며 픽셀은 rgb(255,0,0)이었다. **새 z-index 토큰·스케일을 만들지 않는다.**
+Tooltip·Hint·Tour의 popover manual도 추가 조정 없이 같은 규칙을 따른다.
+
+토스트의 aria-hidden이 없었던 이유는 sonner가 토스트 0개일 때 컨테이너를 제거하고
+나중에 마운트하기 때문이다. **Toaster를 강제로 상주시키지 않는다.** Dialog가 바깥에
+aria-hidden을 적용할 때 함께 숨겨져 저장 결과를 읽지 못하게 되는 회귀를 만든다.
+
+roving tabindex는 **지연된다.** 한 번도 포커스를 받지 않은 탭 목록은 선택된 탭까지
+`tabIndex=-1`이고, Tab이 도착하는 시점에 선택된 탭이 0이 된다(실측). 차가운 DOM
+스냅샷으로 `선택 0·나머지 -1`을 단언하면 거짓 실패한다. 검사해야 할 요구사항은
+스냅샷이 아니라 **Tab이 선택된 탭 하나에만 닿고 그다음이 패널이라는 것**이다.
+
+사전 측정표와 다른 동작을 채택하려면 먼저 재측정해야 한다. 이번 작업은 브라우저를
+실행하지 않으므로 새 실측값을 주장하지 않는다. docs/qa/detail-render-verify.mjs는
+browser.mjs를 통해 스토리 play 완료와 실제 키보드·포커스·닫기·Select·알림·복원을
+검사한다. play가 끝난 뒤에는 다이얼로그가 모두 닫혀 있으므로 하네스가 다시 연다.
+포커스는 조건 대기 후 단언한다. 실행은 `pnpm qa`에 포함한다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

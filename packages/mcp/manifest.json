@@ -4076,6 +4076,1000 @@
   ],
   "components": [
     {
+      "name": "Tabs",
+      "category": "navigation",
+      "purpose": "상세 정보를 탭으로 나누기 위한 루트다.",
+      "useWhen": [
+        "상세 화면을 분류별 패널로 나눌 때"
+      ],
+      "dont": [
+        "서버 조회 패널을 automatic으로 두지 마라"
+      ],
+      "rules": [
+        {
+          "text": "automatic 기본값을 유지하고 서버 패널은 manual을 명시한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "TabsList",
+        "TabsTrigger",
+        "TabsContent"
+      ],
+      "keywords": [
+        "탭",
+        "탭으로 나누기",
+        "분류별 패널"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Root>"
+      ],
+      "slots": [
+        "tabs"
+      ],
+      "import": "import { Tabs } from '@s2life/ui';"
+    },
+    {
+      "name": "TabsList",
+      "category": "navigation",
+      "purpose": "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.",
+      "useWhen": [
+        "탭 헤더를 묶을 때"
+      ],
+      "dont": [
+        "줄바꿈하거나 스크롤바를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "가로 스크롤과 선택 탭 끌어오기를 제공하고 reduced-motion에서 smooth를 끈다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Tabs"
+      ],
+      "keywords": [
+        "탭 헤더",
+        "탭 목록"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.List>"
+      ],
+      "slots": [
+        "tabs-list"
+      ],
+      "import": "import { TabsList } from '@s2life/ui';"
+    },
+    {
+      "name": "TabsTrigger",
+      "category": "navigation",
+      "purpose": "패널을 선택하는 탭 버튼이다.",
+      "useWhen": [
+        "탭의 선택 항목을 표시할 때"
+      ],
+      "dont": [
+        "선택을 색만으로 표시하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도의 outline이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Tabs"
+      ],
+      "keywords": [
+        "탭 버튼",
+        "탭 선택"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Trigger>"
+      ],
+      "slots": [
+        "tabs-trigger"
+      ],
+      "import": "import { TabsTrigger } from '@s2life/ui';"
+    },
+    {
+      "name": "TabsContent",
+      "category": "navigation",
+      "purpose": "선택한 상세 패널을 표시한다.",
+      "useWhen": [
+        "탭에 연결할 내용을 렌더할 때"
+      ],
+      "dont": [
+        "aria-labelledby와 패널 포커스를 제거하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "Radix의 패널 연결과 tabindex를 유지한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Tabs"
+      ],
+      "keywords": [
+        "탭 패널",
+        "탭 내용"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Content>"
+      ],
+      "slots": [
+        "tabs-content"
+      ],
+      "import": "import { TabsContent } from '@s2life/ui';"
+    },
+    {
+      "name": "Breadcrumb",
+      "category": "navigation",
+      "purpose": "목록으로 돌아가는 경로를 빵부스러기로 표현한다.",
+      "useWhen": [
+        "상세에서 상위 목록과 뒤로 가는 경로가 필요할 때"
+      ],
+      "dont": [
+        "컴포넌트에 라우팅이나 복원 로직을 넣지 마라"
+      ],
+      "rules": [
+        {
+          "text": "nav와 ol로 표현한다. 앱이 consume으로 필터·스크롤·재방문 행을 복원한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "BreadcrumbList",
+        "BreadcrumbPage"
+      ],
+      "keywords": [
+        "경로",
+        "빵부스러기",
+        "뒤로",
+        "목록으로 돌아가는 경로"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'nav'>"
+      ],
+      "slots": [
+        "breadcrumb"
+      ],
+      "import": "import { Breadcrumb } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbList",
+      "category": "navigation",
+      "purpose": "경로 항목의 순서 목록이다.",
+      "useWhen": [
+        "Breadcrumb의 경로를 조립할 때"
+      ],
+      "dont": [
+        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Breadcrumb"
+      ],
+      "keywords": [
+        "경로 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'ol'>"
+      ],
+      "slots": [
+        "breadcrumb-list"
+      ],
+      "import": "import { BreadcrumbList } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbItem",
+      "category": "navigation",
+      "purpose": "경로의 개별 항목이다.",
+      "useWhen": [
+        "Breadcrumb의 경로를 조립할 때"
+      ],
+      "dont": [
+        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Breadcrumb"
+      ],
+      "keywords": [
+        "경로 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'li'>"
+      ],
+      "slots": [
+        "breadcrumb-item"
+      ],
+      "import": "import { BreadcrumbItem } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbLink",
+      "category": "navigation",
+      "purpose": "라우터를 지정하지 않는 상위 경로 링크다.",
+      "useWhen": [
+        "Breadcrumb의 경로를 조립할 때"
+      ],
+      "dont": [
+        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Breadcrumb"
+      ],
+      "keywords": [
+        "상위 경로 링크"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean | undefined",
+          "required": false
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<'a'>"
+      ],
+      "slots": [
+        "breadcrumb-link"
+      ],
+      "import": "import { BreadcrumbLink } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbPage",
+      "category": "navigation",
+      "purpose": "링크가 아닌 현재 경로 항목이다.",
+      "useWhen": [
+        "Breadcrumb의 경로를 조립할 때"
+      ],
+      "dont": [
+        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Breadcrumb"
+      ],
+      "keywords": [
+        "현재 경로"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'span'>"
+      ],
+      "slots": [
+        "breadcrumb-page"
+      ],
+      "import": "import { BreadcrumbPage } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbSeparator",
+      "category": "navigation",
+      "purpose": "보조기기가 읽지 않는 경로 구분자다.",
+      "useWhen": [
+        "Breadcrumb의 경로를 조립할 때"
+      ],
+      "dont": [
+        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Breadcrumb"
+      ],
+      "keywords": [
+        "경로 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'li'>"
+      ],
+      "slots": [
+        "breadcrumb-separator"
+      ],
+      "import": "import { BreadcrumbSeparator } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbEllipsis",
+      "category": "navigation",
+      "purpose": "접힌 경로 수를 읽을 수 있는 생략 표시다.",
+      "useWhen": [
+        "Breadcrumb의 경로를 조립할 때"
+      ],
+      "dont": [
+        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
+      ],
+      "rules": [
+        {
+          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Breadcrumb"
+      ],
+      "keywords": [
+        "생략된 경로"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "props": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": true
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<'span'>"
+      ],
+      "slots": [
+        "breadcrumb-ellipsis"
+      ],
+      "import": "import { BreadcrumbEllipsis } from '@s2life/ui';"
+    },
+    {
+      "name": "Dialog",
+      "category": "overlay",
+      "purpose": "입력·편집·선택 모달을 여는 루트다.",
+      "useWhen": [
+        "되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"
+      ],
+      "dont": [
+        "삭제 확인에는 AlertDialog를 사용한다"
+      ],
+      "rules": [
+        {
+          "text": "제목 → 설명 → 내용 → 푸터 순서이며 초기 포커스는 첫 포커스 가능 요소다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "DialogContent",
+        "AlertDialog"
+      ],
+      "keywords": [
+        "모달",
+        "모달 띄우기",
+        "다이얼로그",
+        "팝업",
+        "편집"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [],
+      "slots": [],
+      "import": "import { Dialog } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogTrigger",
+      "category": "overlay",
+      "purpose": "입력 창을 여는 트리거다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Trigger>"
+      ],
+      "slots": [
+        "dialog-trigger"
+      ],
+      "import": "import { DialogTrigger } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogContent",
+      "category": "overlay",
+      "purpose": "입력 창의 포털과 닫기 보호다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [
+        {
+          "name": "dismissible",
+          "type": "boolean | undefined",
+          "required": false,
+          "doc": "false면 바깥 클릭·Escape로 닫히지 않는다. 명시적 닫기 버튼은 계속 동작한다."
+        },
+        {
+          "name": "onDismissAttempt",
+          "type": "(() => void) | undefined",
+          "required": false,
+          "doc": "dismissible=false일 때 닫으려는 시도를 알린다. 앱에서 확인 AlertDialog를 연다."
+        },
+        {
+          "name": "showClose",
+          "type": "boolean | undefined",
+          "required": false,
+          "doc": "우상단 닫기 버튼. 끄면 앱이 직접 출구를 제공해야 한다."
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Content>"
+      ],
+      "slots": [
+        "dialog-close-icon",
+        "dialog-content",
+        "dialog-overlay"
+      ],
+      "import": "import { DialogContent } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogHeader",
+      "category": "overlay",
+      "purpose": "입력 창 제목·설명 그룹이다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "dialog-header"
+      ],
+      "import": "import { DialogHeader } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogTitle",
+      "category": "overlay",
+      "purpose": "입력 창의 필수 제목이다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Title>"
+      ],
+      "slots": [
+        "dialog-title"
+      ],
+      "import": "import { DialogTitle } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogDescription",
+      "category": "overlay",
+      "purpose": "입력 창의 필수 설명이다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Description>"
+      ],
+      "slots": [
+        "dialog-description"
+      ],
+      "import": "import { DialogDescription } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogFooter",
+      "category": "overlay",
+      "purpose": "입력 창 하단의 액션 그룹이다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "dialog-footer"
+      ],
+      "import": "import { DialogFooter } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogClose",
+      "category": "overlay",
+      "purpose": "닫기 보호 중에도 동작하는 명시적 닫기다.",
+      "useWhen": [
+        "Dialog의 입력·편집 화면을 조립할 때"
+      ],
+      "dont": [
+        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
+        "확인 없이 Escape를 무반응으로 삼키지 마라"
+      ],
+      "rules": [
+        {
+          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "Dialog"
+      ],
+      "keywords": [
+        "입력 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Close>"
+      ],
+      "slots": [
+        "dialog-close"
+      ],
+      "import": "import { DialogClose } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialog",
+      "category": "overlay",
+      "purpose": "삭제 확인 등 되돌릴 수 없는 선택을 요구하는 확인창이다.",
+      "useWhen": [
+        "영구 삭제·작성 취소 확인이 필요할 때"
+      ],
+      "dont": [
+        "폼을 넣지 마라. 입력은 Dialog다",
+        "Cancel을 생략하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "Cancel 초기 포커스, 바깥 클릭 유지, Escape 닫기는 Radix 기본값을 유지한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialogContent",
+        "AlertDialogCancel",
+        "Dialog"
+      ],
+      "keywords": [
+        "확인창",
+        "삭제 확인",
+        "되돌릴 수 없",
+        "취소 확인"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [],
+      "slots": [],
+      "import": "import { AlertDialog } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogTrigger",
+      "category": "overlay",
+      "purpose": "확인 창을 여는 트리거다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Trigger>"
+      ],
+      "slots": [
+        "alert-dialog-trigger"
+      ],
+      "import": "import { AlertDialogTrigger } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogContent",
+      "category": "overlay",
+      "purpose": "파괴적 선택 확인의 포털이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Content>"
+      ],
+      "slots": [
+        "alert-dialog-content",
+        "alert-dialog-overlay"
+      ],
+      "import": "import { AlertDialogContent } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogHeader",
+      "category": "overlay",
+      "purpose": "확인 제목·설명 그룹이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "alert-dialog-header"
+      ],
+      "import": "import { AlertDialogHeader } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogTitle",
+      "category": "overlay",
+      "purpose": "확인 창의 필수 제목이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Title>"
+      ],
+      "slots": [
+        "alert-dialog-title"
+      ],
+      "import": "import { AlertDialogTitle } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogDescription",
+      "category": "overlay",
+      "purpose": "되돌릴 수 없는 결과의 설명이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Description>"
+      ],
+      "slots": [
+        "alert-dialog-description"
+      ],
+      "import": "import { AlertDialogDescription } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogFooter",
+      "category": "overlay",
+      "purpose": "확인·취소 액션 그룹이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "alert-dialog-footer"
+      ],
+      "import": "import { AlertDialogFooter } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogAction",
+      "category": "overlay",
+      "purpose": "확정 동작과 기존 danger 변형이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"danger\" | \"ghost\" | \"primary\" | \"secondary\" | null | undefined",
+          "required": false
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Action>",
+        "Pick<ButtonProps, 'variant'>"
+      ],
+      "slots": [
+        "alert-dialog-action"
+      ],
+      "import": "import { AlertDialogAction } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogCancel",
+      "category": "overlay",
+      "purpose": "초기 포커스를 받는 필수 취소 버튼이다.",
+      "useWhen": [
+        "AlertDialog의 파괴적 선택 확인을 조립할 때"
+      ],
+      "dont": [
+        "폼을 넣거나 Cancel을 생략하지 마라",
+        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
+          "source": "DESIGN.md 16"
+        }
+      ],
+      "related": [
+        "AlertDialog"
+      ],
+      "keywords": [
+        "확인 창 구성"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Cancel>"
+      ],
+      "slots": [
+        "alert-dialog-cancel"
+      ],
+      "import": "import { AlertDialogCancel } from '@s2life/ui';"
+    },
+    {
       "name": "Select",
       "category": "form",
       "purpose": "상태·정렬 필터의 단일 선택 루트",

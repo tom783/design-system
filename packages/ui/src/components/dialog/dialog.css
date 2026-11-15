@@ -1,0 +1,49 @@
+@layer components {
+  .ds-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    /* 기존 포털과 같은 50. top layer·sonner를 위한 별도 스케일은 필요 없다 (§16 실측). */
+    z-index: 50;
+    background: color-mix(in srgb, var(--text-primary) 35%, transparent);
+  }
+  .ds-dialog-content {
+    position: fixed;
+    z-index: 50;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* 좁은 화면은 가장자리 16px, 큰 화면은 읽기 좋은 최대 폭으로 제한한다. 값의 고정 너비가 아니다. */
+    width: calc(100% - var(--space-32));
+    max-width: 36rem;
+    max-height: calc(100dvh - var(--space-32));
+    overflow-y: auto;
+    display: grid;
+    gap: var(--space-24);
+    padding: var(--space-24);
+    border: var(--border-width) solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-overlay);
+    overflow-wrap: anywhere;
+  }
+  .ds-dialog-close {
+    position: absolute;
+    top: var(--space-12);
+    right: var(--space-12);
+    display: grid;
+    place-items: center;
+    min-width: var(--control-h-sm);
+    min-height: var(--control-h-sm);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .ds-dialog-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+  /* 제목이 닫기 버튼 밑으로 흐르지 않게 한다. 아이콘 폭 + 좌우 여백만큼 비운다. */
+  .ds-dialog-header { padding-right: calc(var(--control-h-sm) + var(--space-8)); }
+  .ds-dialog-header { display: grid; gap: var(--space-8); min-width: 0; }
+  .ds-dialog-title { font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: 600; }
+  .ds-dialog-description { font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-secondary); }
+  .ds-dialog-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-8); }
+}

@@ -42,6 +42,9 @@ export const toast: typeof sonnerToast = Object.assign((message: Message, option
 });
 /** shadcn Sonner 래퍼에서 next-themes를 제거하고 3상태 테마와 의미 상태 토큰을 연결한다. */
 export function Toaster(props: React.ComponentProps<typeof Sonner>) {
+  // §16 실측: sonner는 알림이 없으면 컨테이너를 제거하고 나중에 마운트한다.
+  // 강제로 상주시키면 Dialog가 바깥을 aria-hidden으로 덮을 때 알림도 숨겨져 읽히지 않는다.
+  // DOM 상주 최적화를 넣지 않는다. Dialog 안 저장 결과도 지연 마운트한 live region으로 읽힌다.
   const theme = useTheme();
   return <div data-slot="toaster"><Sonner {...props} theme={theme} className="ds-toaster toaster group" closeButton
     containerAriaLabel="알림"
