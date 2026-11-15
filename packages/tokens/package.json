@@ -1,19 +1,35 @@
 {
   "name": "@s2life/tokens",
   "version": "0.1.0",
-  "description": "디자인 토큰 — OKLCH 기반으로 생성되며 대비·의미분리가 자동 검증된다",
+  "description": "S2Life 디자인 시스템 토큰 — OKLCH 기반 색·타이포·간격. 의존성 없음",
   "exports": {
     "./tokens.css": "./tokens.css",
     "./theme.css": "./theme.css",
     "./tokens.json": "./tokens.json"
   },
   "files": [
-    "tokens.css",
+    "README.md",
     "theme.css",
+    "tokens.css",
     "tokens.json"
   ],
   "scripts": {
     "build": "node ../../docs/research/tokens-build.mjs",
-    "prepack": "pnpm build"
-  }
+    "prepack": "pnpm build",
+    "prepublishOnly": "node ../../scripts/publish-guard.mjs"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hellground/design-system.git",
+    "directory": "packages/tokens"
+  },
+  "homepage": "https://github.com/hellground/design-system#readme",
+  "bugs": {
+    "url": "https://github.com/hellground/design-system/issues"
+  },
+  "license": "UNLICENSED"
 }

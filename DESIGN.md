@@ -1220,6 +1220,53 @@ eslint 를 쓰지 않는다 — 지금까지와 같은 생성기 게이트 방�
 
 ---
 
+### 15.8 저장소 하나, 레지스트리는 npmjs 공개 (확정)
+
+**저장소는 모노레포 하나다** (`hellground/design-system`). 일반론이 아니라
+이 코드베이스의 결합 때문이다:
+
+| 결합 | 쪼개면 |
+|---|---|
+| `mcp-build.mjs` 가 TypeScript 컴파일러로 `packages/ui/src` 를 읽어 매니페스트 생성 | MCP 가 UI 소스 트리를 직접 필요로 하므로 생성 불가 |
+| 같은 생성기가 `DESIGN.md` 절 번호를 검증 | 문서·코드 drift 검사 소멸 |
+| `check-boundaries.mjs` 가 `packages/ui/src` 스캔 | Radix 경계 게이트 소멸 (15.6) |
+| `pack-verify.mjs` 가 세 패키지를 함께 빌드·설치 | 배포 리허설 불가 (15.7) |
+| 버전 lockstep (15.3) | 세 레포 버전 맞추기 |
+
+컴포넌트 하나를 더하면 `ui` 소스 · `component-intent.mjs` · 매니페스트가
+**한 커밋**으로 움직여야 한다.
+
+**레지스트리는 npmjs.com 공개다.** GitHub Packages 를 쓰지 않는 이유 둘:
+
+1. **스코프가 GitHub 소유자 이름이다.** 레지스트리가 직접 그렇게 답한다 —
+   `npm package "x" does not exist under **owner** "octocat"`.
+   `@s2life/*` 를 쓰려면 `s2life` 라는 계정·조직이 있어야 한다.
+2. **공개로 올려도 설치에 토큰이 필요하다.** GitHub 문서가
+   "You need an access token to publish, **install**, and delete private,
+   internal, **and public** packages" 라고 적는다.
+   → **"GitHub Packages + 공개" 는 공개인데 토큰도 필요해 양쪽 단점만 갖는다.**
+
+npmjs 공개면 소비 앱이 토큰 없이 설치하고, 저장소는 비공개로 둘 수 있다.
+스코프는 소유자와 무관하므로 `hellground` 계정에서 `@s2life/*` 를 낸다.
+
+**라이선스는 `UNLICENSED` 다.** 공개 배포지만 "모든 권리 유보" 라는 뜻이다.
+우리 네 제품이 쓰는 것이 목적이고 외부 사용을 의도하지 않는다.
+외부 공개 의사가 생기면 그때 바꾼다.
+
+### 15.9 배포는 세 겹으로 막혀 있다
+
+사람이 허가하기 전에는 나가지 않는다.
+
+1. 각 패키지의 `prepublishOnly` 가 `S2LIFE_PUBLISH=1` 을 요구한다
+2. `.github/workflows/release.yml` 은 **`workflow_dispatch` 단독**이다 —
+   push·tag·PR 로는 절대 실행되지 않는다
+3. 그 수동 실행조차 `confirm` 입력란에 정확히 `publish` 를 쳐야 하고,
+   기본값은 `dry-run: true` 다
+
+배포 전에 `pnpm gate`(배포 리허설 포함)와 버전 lockstep 검사를 통과해야 한다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

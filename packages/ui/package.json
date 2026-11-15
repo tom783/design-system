@@ -2,7 +2,7 @@
   "name": "@s2life/ui",
   "version": "0.1.0",
   "type": "module",
-  "description": "B2B 커머스 SaaS 컴포넌트 — shadcn/ui 방식으로 소스를 직접 소유한다",
+  "description": "S2Life B2B SaaS React 컴포넌트 — 토큰 기반, Tailwind v4",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -23,7 +23,8 @@
   ],
   "scripts": {
     "build": "node ../../scripts/build-ui.mjs",
-    "prepack": "pnpm build"
+    "prepack": "pnpm build",
+    "prepublishOnly": "node ../../scripts/publish-guard.mjs"
   },
   "peerDependencies": {
     "react": "^19.3.1",
@@ -50,5 +51,19 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.72.0",
     "tailwind-merge": "^3.7.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hellground/design-system.git",
+    "directory": "packages/ui"
+  },
+  "homepage": "https://github.com/hellground/design-system#readme",
+  "bugs": {
+    "url": "https://github.com/hellground/design-system/issues"
+  },
+  "license": "UNLICENSED"
 }
