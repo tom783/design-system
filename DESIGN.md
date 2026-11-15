@@ -1253,15 +1253,24 @@ npmjs 공개면 소비 앱이 토큰 없이 설치하고, 저장소는 비공개
 우리 네 제품이 쓰는 것이 목적이고 외부 사용을 의도하지 않는다.
 외부 공개 의사가 생기면 그때 바꾼다.
 
-### 15.9 배포는 네 겹으로 막혀 있다
+### 15.9 배포는 세 겹으로 막혀 있다
 
 사람이 허가하기 전에는 나가지 않는다.
 
 1. `.github/workflows/release.yml` 은 **`workflow_dispatch` 단독**이다 —
    push·tag·PR 로는 절대 실행되지 않는다
 2. 그 수동 실행조차 `confirm` 입력란에 정확히 `publish` 를 쳐야 한다
-3. `environment: npm-publish` 의 **필수 검토자 승인** — 사람이 눌러야 진행된다
-4. 각 패키지의 `prepublishOnly` 가 `S2LIFE_PUBLISH=1` 을 요구한다
+3. 각 패키지의 `prepublishOnly` 가 `S2LIFE_PUBLISH=1` 을 요구하고,
+   로컬 배포라면 `pnpm verify` 까지 통과해야 한다
+
+**네 번째 겹은 쓸 수 없다.** `environment: npm-publish` 에 필수 검토자를 걸려
+했지만 GitHub 이 거부한다 — `Failed to create the environment protection rule.
+Please ensure the billing plan supports the required reviewers protection rule.`
+(HTTP 422). **무료 계정 + 비공개 저장소**에서는 배포 보호 규칙이 제공되지 않는다.
+
+환경 자체는 만들어 뒀으므로, 저장소를 공개로 바꾸거나 플랜을 올리면
+워크플로 수정 없이 승인 게이트가 켜진다. (공개로 바꾸면 Actions 분 제한도
+사라진다 — 비공개 무료는 월 2,000분이고 우리 게이트는 회당 약 5.5분이다.)
 
 기본값이 `dry-run: true` 라, 끄지 않으면 올리지 않고 확인만 한다.
 배포 전에 `pnpm gate`(배포 리허설 포함)와 버전 lockstep 검사를 통과해야 한다.
