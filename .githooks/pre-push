@@ -1,9 +1,18 @@
 #!/bin/sh
-# 전체 게이트 — 스토리북 빌드 + 브라우저 207건. 약 147초.
+# 전체 게이트 — 스토리북 빌드 + 브라우저 352건.
 # 급하면 `git push --no-verify` 로 건너뛸 수 있지만,
 # 그러면 CI 가 대신 잡는다 (.github/workflows/verify.yml → pnpm gate).
 set -e
 cd "$(git rev-parse --show-toplevel)"
+
+# 태그만 보내는 푸시는 코드를 바꾸지 않는다. 게이트를 돌릴 이유가 없다 —
+# 그 커밋은 이미 통과했고 CI 도 녹색이다. git 이 stdin 으로 주는 ref 를 읽어 판별한다.
+# (형식: <local ref> <local sha> <remote ref> <remote sha>)
+refs="$(cat)"
+if [ -n "$refs" ] && ! printf '%s\n' "$refs" | awk '{print $3}' | grep -qv '^refs/tags/'; then
+  printf '\033[33m⚠ 태그만 푸시합니다 — 게이트를 건너뜁니다.\033[0m\n'
+  exit 0
+fi
 
 # verify 는 어떤 경우에도 돈다. 3초짜리를 건너뛸 이유가 없고,
 # 토큰 대비·MCP drift·타입이 여기서 걸린다.
