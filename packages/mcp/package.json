@@ -25,12 +25,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hellground/design-system.git",
+    "url": "git+https://github.com/tom783/design-system.git",
     "directory": "packages/mcp"
   },
-  "homepage": "https://github.com/hellground/design-system#readme",
+  "homepage": "https://github.com/tom783/design-system#readme",
   "bugs": {
-    "url": "https://github.com/hellground/design-system/issues"
+    "url": "https://github.com/tom783/design-system/issues"
   },
   "license": "UNLICENSED"
 }
