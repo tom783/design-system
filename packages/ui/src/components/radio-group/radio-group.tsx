@@ -7,7 +7,7 @@ export function RadioGroup({ className, ...props }: React.ComponentProps<typeof 
   return <Primitive.Root {...props} data-slot="radio-group" className={cn('ds-radio-group', className)} />;
 }
 export function RadioGroupItem({ className, ...props }: React.ComponentProps<typeof Primitive.Item>) {
-  return <Primitive.Item {...props} data-slot="radio-group-item" className={cn('ds-radio-group-item', className)}>
+  return <Primitive.Item data-form-control="advance" {...props} data-slot="radio-group-item" className={cn('ds-radio-group-item', className)}>
     <Primitive.Indicator data-slot="radio-group-indicator" className="ds-radio-group-indicator" />
   </Primitive.Item>;
 }

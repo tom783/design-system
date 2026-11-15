@@ -3,6 +3,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { Command } from '../../internal/command';
 import * as Popover from '../../internal/popover';
 import { useComposition } from '../form/use-composition';
+import { focusNextFormStop } from '../form/form-flow';
 import { cn } from '../../lib/cn';
 import { comboboxFilter } from './combobox-filter';
 
@@ -31,6 +32,9 @@ export function Combobox({ options, value, onValueChange, placeholder = '선택�
   const [composing, setComposing] = React.useState(false);
   const composition = useComposition();
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  React.useImperativeHandle(ref, () => triggerRef.current!, []);
+  const advanceAfterSelect = React.useRef(false);
   const [listId, setListId] = React.useState<string>();
   // 포털이 부모 layout effect보다 늦게 마운트될 수도 있으므로 실제 목록 ref에서 연결한다.
   const registerList = React.useCallback((node: HTMLDivElement | null) => setListId(node?.id), []);
@@ -53,6 +57,7 @@ export function Combobox({ options, value, onValueChange, placeholder = '선택�
   const selected = options.find(option => option.value === value);
   const hasError = invalid || wiring['aria-invalid'];
   const changeOpen = (next: boolean) => {
+    if (next) advanceAfterSelect.current = false;
     setOpen(next);
     if (!next) {
       setQuery(''); setComposing(false); composition.bind.onCompositionEnd();
@@ -65,7 +70,7 @@ export function Combobox({ options, value, onValueChange, placeholder = '선택�
           없이 같은 listbox 를 가리켰다. 스크린리더는 콤보박스 두 개를 본다.
           콤보박스는 aria-activedescendant 와 aria-controls 를 소유하는 **입력 하나**다.
           트리거는 그 입력이 든 팝오버를 여는 버튼이다. (shadcn 은 둘 다 주지만 그건 흠이다.) */}
-      <button {...wiring} ref={ref} type="button" data-slot="combobox-trigger"
+      <button {...wiring} ref={triggerRef} type="button" data-slot="combobox-trigger"
         className={cn('ds-combobox-trigger', className)} disabled={disabled}
         aria-haspopup="dialog" aria-expanded={open && !disabled}
         aria-invalid={hasError || undefined} aria-required={required || wiring['aria-required']}
@@ -83,6 +88,12 @@ export function Combobox({ options, value, onValueChange, placeholder = '선택�
       <Popover.Content data-slot="combobox-content" className="ds-combobox-content" align="start" sideOffset={4}
         aria-label={wiring['aria-label'] ?? placeholder} aria-labelledby={wiring['aria-labelledby']}
         onOpenAutoFocus={event => { event.preventDefault(); inputRef.current?.focus(); }}
+        onCloseAutoFocus={event => {
+          // 닫힘 뒤 Radix의 복귀 시점에 이동한다. Escape·바깥 클릭과 폼 밖은 원래대로 둔다.
+          const advance = advanceAfterSelect.current;
+          advanceAfterSelect.current = false;
+          if (advance && triggerRef.current && focusNextFormStop(triggerRef.current)) event.preventDefault();
+        }}
         onEscapeKeyDown={event => {
           // Radix는 document capture에서 Escape를 받으므로 React의 키 가드보다 먼저 보호한다.
           if (composition.isComposing()) event.preventDefault();
@@ -110,6 +121,7 @@ export function Combobox({ options, value, onValueChange, placeholder = '선택�
               onMouseDown={event => event.preventDefault()}
               onSelect={() => {
                 if (composition.isComposing()) return;
+                advanceAfterSelect.current = true;
                 onValueChange?.(option.value); changeOpen(false);
               }}>
               <span className="ds-combobox-option-label">{option.label}</span>

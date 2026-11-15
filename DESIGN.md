@@ -877,7 +877,40 @@ shouldValidate({ trigger, hasErrored, isComposing })
   **`Shift+Enter` 도 줄바꿈이다.** 여러 줄 입력에서 Shift+Enter 는 널리 쓰는 줄바꿈
   습관이다. 그걸 칸 이동으로 빼앗으면 메모를 쓰다가 **문장 중간에 포커스가 뒤로 튄다.**
   반대 방향 손실은 없다 — 뒤로 가려면 `Shift+Tab` 이 있다.
-- `<select>` · `<button>` 은 네이티브 동작을 유지한다.
+
+Enter는 원칙적으로 **“이 칸 끝났다, 다음으로”**다. 컨트롤의 값 변경은 Space·화살표가
+맡는다. 후보를 골라야 하는 Combobox만 “열고, 고르면 다음으로”다.
+
+| 컨트롤 | FormFlow 안 Enter | 고유 동작 |
+|---|---|---|
+| Input | 다음 칸. 마지막 일반 Input은 기존 암묵적 제출을 유지한다 | — |
+| Textarea | 줄바꿈 (Shift+Enter도 동일) | Ctrl/Cmd+Enter 제출 |
+| Combobox | 닫혀 있으면 연다. 고르면 닫힌 뒤 다음 칸 | 화살표·Space로도 열기 |
+| Switch | 다음 칸. 토글하지 않는다 | Space 토글 |
+| RadioGroup | 다음 칸 | 화살표로 선택·포커스 이동 |
+| 제출 버튼 | 네이티브 제출 | — |
+| 그 밖의 버튼·select | 네이티브 유지 | 주소 찾기 같은 실제 액션 실행 |
+
+**`data-form-control="advance"`가 명시적 이동 계약이다.** Switch·RadioGroupItem에
+기본으로 붙이고 앱의 자체 컨트롤도 실제 포커스 요소에 붙일 수 있다. 컴포넌트 이름이나
+role을 FormFlow에 하드코딩하지 않는다. 이 계약은 Enter를 preventDefault하고 다음 Tab
+정지점에 포커스한다. 명시적 이동이므로 다음이 제출 버튼이어도 자동 제출 대신 그 버튼에
+포커스한다. **그래서 마지막 입력 칸에는 붙이지 않는다** — 붙이면 §11.5의 암묵적 제출이
+사라지고 연속 등록이 레코드마다 Enter를 한 번 더 쓴다. 기존 일반 Input의 마지막 칸
+Enter 제출은 유지한다. textarea·contenteditable의 줄바꿈은 계약 속성보다
+우선한다. 실제 액션 버튼에는 붙이지 않는다.
+
+라디오는 내부 keydown에서 Enter를 취소하므로 옵트인 이동은 **폼의 capture 단계**에서
+처리한다. 소비자가 이미 취소한 이벤트·IME 조합·Ctrl/Cmd/Alt 조합은 가로채지 않는다.
+표식은 FormFlow 안에서만 의미가 있으며 폼 밖 컨트롤 동작에는 영향을 주지 않는다.
+
+Combobox 트리거에는 이동 속성을 **붙이지 않는다.** 선택 완료를 기록했다가 팝오버의
+닫힘 자동 포커스 시점에 form 모듈의 `focusNextFormStop(from: HTMLElement): boolean`을
+호출한다. 성공하면 트리거 복귀를 취소한다. 이 헬퍼는 `form[data-form-flow]` 안에서만
+작동하고, 없거나 다음 정지점이 없으면 false다. FormFlow와 동일한 tabStops·nextFocusable을
+사용하며 별도 Tab 순서를 만들지 않는다. 조합 중 선택은 막혀 있어 이 경로에 들어오지 않는다.
+Escape·바깥 클릭 및 폼 밖 선택은 기존 포커스 복귀를 유지한다.
+
 - **Shift+Enter 는 이전 칸** — **단일 행 입력에서만.** 되돌아가기가 없으면 오타 하나에
   마우스를 잡아야 한다. `<textarea>` 는 위 항목을 따른다(줄바꿈이다).
   이 두 항목이 분리돼 있어 한 번 반대로 구현된 적이 있다. 묶어서 읽어라.
@@ -1647,6 +1680,96 @@ combobox-render-verify.mjs는 browser.mjs를 통해 Input.imeSetComposition으�
 확정 후 Enter 선택·실재 option으로 활성 이동·입력 포커스·ARIA 배선·초성 검색·진짜 빈
 결과·Escape 트리거 복귀·콘솔 오류를 검사한다. 실행은 사용자의 pnpm qa에 맡긴다.
 모든 스토리 play는 열린 목록을 닫고 끝나며, 포커스 단정은 조건 대기 뒤 수행한다.
+
+---
+
+## 19. 등록 화면 조립과 Enter 계약 (R18)
+
+### 19.1 조립 전 사용자가 측정한 실패
+
+다음은 작업 의뢰자가 브라우저에서 측정해 제공한 값이다. 이번 구현에서 새로 측정한
+값이 아니며 브라우저 재검증은 사용자 `pnpm qa`로 수행한다.
+
+상품명에서 Enter 9번을 누른 실제 경로와 제출 횟수 0:
+
+```
+name → combobox-trigger → combobox-input → combobox-trigger → combobox-input
+     → combobox-trigger → combobox-input → combobox-trigger → combobox-input
+     → combobox-trigger
+```
+
+| 측정 | 제공된 결과 | 적용한 계약 |
+|---|---|---|
+| 닫힌 Combobox Enter | 열리고 검색 입력으로 이동 | 유지 |
+| 목록 Enter 선택 | 닫힌 뒤 트리거 복귀, 다음 Enter로 재개방 | FormFlow 안 선택 완료 후 다음 정지점 |
+| Switch Enter | aria-checked false → true | FormFlow 안 값 보존·다음 칸 |
+| RadioGroup Enter | 선택도 이동도 없음 | FormFlow 안 다음 칸 |
+| 차가운 RadioGroupItem | 양쪽 tabIndex=-1 | 변경 없음 |
+| 그룹 루트 | div tabindex=0, Tab 정지점 존재 | 변경 없음 |
+
+제공된 실제 Tab 정지점은 name[input] · combobox-trigger[button] · qty[input] ·
+radio-group[div] · switch[button] · memo[textarea] · owner[input] · submit[button]이었다.
+문제는 Tab 탐색이 아니라 모든 버튼을 네이티브로 분류한 Enter 처리와 선택 뒤 포커스 복귀다.
+`tabStops`·`nextFocusable`의 필터링·정렬·건너뛰기 규칙은 그대로 둔다.
+
+### 19.2 주문 등록과 연속 등록
+
+`Screens/CreateScreen`은 주문 관리 / 주문 목록 / 신규 등록 Breadcrumb와 FormFlow를
+조립한다. 상품명(필수) → 사업장(검색 선택·필수) → 수량(text·inputMode=numeric) → 배송
+(RadioGroup) → 알림(Switch) → 비고(Textarea) → 담당자(Input) → 저장 순서다.
+금액·수량에 number를 쓰지 않는다. Field 오류는 앱이 한국어로 검증하며 noValidate로
+네이티브 검증 문구를 피한다. 상품명·수량의 첫 검증은 blur·submit, 이미 오류가 있으면
+change에서 풀고 IME 조합 중 검증하지 않는다. 사업장 필수 검증은 제출 시 수행한다.
+제출 실패 시 FormFlow가 첫 오류로 이동한다.
+사업장이 첫 오류이면 실제 Combobox 트리거의 aria-invalid를 찾아 포커스한다.
+
+§17.4의 Switch 원칙을 유지한다. **알림은 주문 초안이 아닌 계정 설정으로 즉시 적용**하며
+저장·작성 취소와 관계없이 화면 상위 상태에 남는다. 이 사실을 입력 위 설명에 표시한다.
+주문 저장 시 함께 적용할 불리언 값이라면 Checkbox를 써야 한다.
+
+저장 성공은 toast.success와 목록 복귀로 확인한다. 연속 등록 변형은 restartOnSubmit을
+켜고 초안·오류를 초기화하며 첫 칸으로 돌아간다. 실제 액션 버튼인 입력 도움말도 폼 안에
+둔다. Enter로 실행되어야 하므로 이동 표식은 붙이지 않는다.
+
+**“Enter만으로 저장까지”와 “Textarea Enter 줄바꿈”은 동시에 만족할 수 없다.**
+줄바꿈 계약을 우선한다. 검증할 전체 경로는 다음과 같으며 비고 이탈 한 단계는 Tab이다.
+
+```
+상품명 → 사업장(트리거) → 사업장(검색 입력·열림) → 선택 확정 → 수량
+      → 배송 → 알림 → 비고 → [Enter: 줄바꿈·머무름, Tab: 이탈] → 담당자 → 저장
+```
+
+담당자에는 data-form-control=advance를 명시해 저장 버튼으로 포커스하고, 그 버튼의
+Enter가 제출한다. textarea에서 Ctrl/Cmd+Enter로 바로 저장하는 경로도 유지한다.
+이 경로는 구현의 예상 계약이며 실제 측정 결과는 새 하네스 results.json에 기록한다.
+
+### 19.3 목록 → 등록 → 저장 → 목록
+
+`Screens/Flow`는 같은 등록 폼 조립을 재사용한다. 신규 등록으로 떠날 때
+useReturnContext.capture로 현재 보이는 첫 행과 목록 내부 스크롤을 기록한다.
+필터는 앱 ref·state에 보관하고, Breadcrumb 이탈은 consume으로 일회성 복원한다.
+깨끗한 초안은 바로 돌아가고 변경이 있으면 AlertDialog로 확인하며 기본 포커스는
+계속 작성(Cancel)이다. 취소하면 초안을 보존하고 작성 취소를 확정하면 목록으로 간다.
+
+저장 성공도 기록을 consume한다. 새 행을 목록 앞에 추가하고 새 id를 revisitedRowId로
+넘겨 재방문 마커를 표시한다. 저장 결과가 보이도록 스크롤은 새 행이 있는 맨 위로 간다.
+필터는 그대로 보관하며 새 행이 검색과 불일치해도 **방금 저장한 그 행만 함께 표시**하고
+설명한다. 사용자의 검색 조건을 몰래 지우지 않는다. 작성 취소로 복귀할 때는 원래 행·
+필터·스크롤을 복원한다. 라우터는 라이브러리가 아니라 앱 예제가 소유한다 (§12.3).
+
+### 19.4 검증과 유지보수
+
+`docs/qa/create-render-verify.mjs`는 browser.mjs를 사용하고 run-all.mjs에 등록한다.
+전체 포커스 경로를 정확히 비교하고 focusin 중간 기록도 저장해 트리거 ↔ 검색 입력
+왕복을 검출한다. Switch Enter 값 보존·Space, 라디오 Enter·화살표, 폼 밖 세 컨트롤,
+실제 액션 버튼, 상품명·Combobox 첫 오류, Textarea 줄바꿈·단축 제출, 연속 등록,
+목록 저장·새 행 마커·필터·스크롤 복원·이탈 확인·콘솔 오류를 검사한다.
+Enter는 text='\r', 화살표·Space는 rawKeyDown → 대기 → keyUp이며 포커스는 조건 대기한다.
+cmdk id를 가정하지 않고 data-slot·data-probe를 사용하며 내부 좌표 클릭을 하지 않는다.
+
+기존 폼·IME 19건과 검색 선택 29건 하네스 및 match.test.mjs는 수정하지 않는다.
+RadioGroupItem의 MCP 규칙은 기존 부품 스키마에 따라 부모 RadioGroup.rules에 보관하고
+부품 purpose에도 Enter 계약을 명시한다. 새 컴포넌트·토큰·z-index·라우팅은 추가하지 않는다.
 
 ---
 

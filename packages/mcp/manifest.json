@@ -4091,6 +4091,14 @@
         {
           "text": "shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.",
           "source": "DESIGN.md 18"
+        },
+        {
+          "text": "FormFlow 안 Enter는 열기이며 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+          "source": "DESIGN.md 19"
         }
       ],
       "related": [
@@ -5456,7 +5464,7 @@
       ],
       "rules": [
         {
-          "text": "rows 기본 3. autoGrow는 scrollHeight로 높이를 계산하고 maxHeight(기본 240px)에서 스크롤한다. FormFlow 안 Enter는 줄바꿈, Shift+Enter는 이전 칸이다.",
+          "text": "rows 기본 3. autoGrow는 scrollHeight로 높이를 계산하고 maxHeight(기본 240px)에서 스크롤한다. FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다.",
           "source": "DESIGN.md 17"
         }
       ],
@@ -5514,6 +5522,14 @@
         {
           "text": "Radix 기본 화살표는 포커스와 선택을 함께 옮기고 끝에서 순환한다. 점과 테두리 변화로 선택을 표시하고 Label htmlFor로 각 항목을 연결한다.",
           "source": "DESIGN.md 17"
+        },
+        {
+          "text": "RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+          "source": "DESIGN.md 19"
         }
       ],
       "related": [
@@ -5542,7 +5558,7 @@
     {
       "name": "RadioGroupItem",
       "partOf": "RadioGroup",
-      "purpose": "하나의 라디오 선택지와 선택 점이다.",
+      "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
       "kind": "component",
       "source": "packages/ui/src/components/radio-group/radio-group.tsx",
       "props": [],
@@ -5563,13 +5579,21 @@
         "알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때"
       ],
       "dont": [
-        "폼 안에 Switch를 넣지 마라",
+        "주문 저장 대기 값에 Switch를 쓰지 마라",
         "제출할 때 함께 적용하는 값은 Checkbox를 써라"
       ],
       "rules": [
         {
           "text": "Radix button type=button role=switch aria-checked와 Space 토글을 유지한다. 손잡이 위치를 1차 신호로 삼고 Label로 연결한다.",
           "source": "DESIGN.md 17"
+        },
+        {
+          "text": "data-form-control=advance로 FormFlow 안 Enter는 토글하지 않고 다음 칸으로 간다. Space 토글과 FormFlow 밖 Enter는 그대로다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+          "source": "DESIGN.md 19"
         }
       ],
       "related": [
@@ -7513,8 +7537,12 @@
       ],
       "rules": [
         {
-          "text": "Tab 순서와 같게 이동하고 Shift+Enter는 이전 칸이다.",
+          "text": "Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.",
           "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+          "source": "DESIGN.md 19"
         }
       ],
       "related": [
@@ -7689,7 +7717,7 @@
     },
     {
       "topic": "폼",
-      "text": "Enter 이동은 FormFlow 옵트인. Tab 순서를 따르고 textarea Enter는 줄바꿈, Shift+Enter는 이전 칸이다.",
+      "text": "Enter 이동은 FormFlow 옵트인. Tab 순서를 따른다. textarea Enter·Shift+Enter는 줄바꿈, 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 값 변경 없이 이동하며 Combobox는 선택 후 이동한다.",
       "source": "DESIGN.md 11.5"
     },
     {

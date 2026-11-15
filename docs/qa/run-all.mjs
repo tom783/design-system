@@ -51,6 +51,7 @@ const HARNESSES = [
   ['mcp-client-verify.mjs', 'MCP 서버'],
   ['list-screen-render-verify.mjs', '목록 필터·행 액션·알림'],
   ['detail-render-verify.mjs', '상세 탭·경로·편집·삭제 확인'],
+  ['create-render-verify.mjs', '등록·Enter 계약·목록 왕복'],
 ];
 
 const failed = [];

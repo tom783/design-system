@@ -17,6 +17,25 @@ function tabStops(form: HTMLFormElement): HTMLElement[] {
   return stops.sort((a, b) => (a.tabIndex > 0 ? a.tabIndex : Infinity) - (b.tabIndex > 0 ? b.tabIndex : Infinity));
 }
 
+function destinationFrom(stops: HTMLElement[], from: HTMLElement, direction: 1 | -1) {
+  // roving 그룹의 실제 항목이 -1이면 Tab 정지점인 조상에서 이어 간다.
+  const index = stops.indexOf(from);
+  const origin = index >= 0 ? index : stops.findIndex(stop => stop.contains(from));
+  if (origin < 0) return undefined;
+  const next = nextFocusable(stops.map(node => ({ tabIndex: node.tabIndex })), origin, direction);
+  return next === null ? undefined : stops[next];
+}
+
+/** 폼 안의 다음 Tab 정지점으로 포커스를 옮긴다. FormFlow 폼이 아니면 아무것도 하지 않는다. */
+export function focusNextFormStop(from: HTMLElement): boolean {
+  const form = from.closest<HTMLFormElement>('form[data-form-flow]');
+  if (!form) return false;
+  const next = destinationFrom(tabStops(form), from, 1);
+  if (!next) return false;
+  next.focus();
+  return next.ownerDocument.activeElement === next || next.contains(next.ownerDocument.activeElement);
+}
+
 export interface FormFlowOptions {
   /** false 반환 또는 preventDefault는 실패다. 비동기 저장은 완료될 때 resolve한다. */
   onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void | boolean | Promise<void | boolean>;
@@ -27,6 +46,17 @@ export interface FormFlowOptions {
 export function useFormFlow({ onSubmit, restartOnSubmit = false, onSubmitError }: FormFlowOptions = {}) {
   const composition = useComposition();
   const pending = React.useRef(false);
+  const onKeyDownCapture = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.defaultPrevented || event.key !== 'Enter' || composition.isComposing() ||
+      event.altKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.matches('[data-form-control="advance"]') ||
+      target.matches('textarea') || target.isContentEditable) return;
+    // RadioGroupItem은 내부 keydown에서 Enter를 취소한다. capture에서 먼저 계약을 적용하고
+    // Switch의 네이티브 Enter 클릭도 막아, 이동이 값 변경으로 바뀌지 않게 한다 (§11.5).
+    event.preventDefault();
+    destinationFrom(tabStops(event.currentTarget), target, event.shiftKey ? -1 : 1)?.focus();
+  };
   const onKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
     if (event.defaultPrevented || event.key !== 'Enter' || composition.isComposing()) return;
     const target = event.target;
@@ -42,8 +72,7 @@ export function useFormFlow({ onSubmit, restartOnSubmit = false, onSubmitError }
     const from = stops.indexOf(target);
     if (from < 0) return;
     event.preventDefault();
-    const next = nextFocusable(stops.map(node => ({ tabIndex: node.tabIndex })), from, event.shiftKey ? -1 : 1);
-    const destination = next === null ? undefined : stops[next];
+    const destination = destinationFrom(stops, target, event.shiftKey ? -1 : 1);
     if (!event.shiftKey && (!destination || destination.matches('button[type="submit"], button:not([type]), input[type="submit"]'))) {
       form.requestSubmit(destination as HTMLButtonElement | HTMLInputElement | undefined);
     } else destination?.focus();
@@ -70,15 +99,16 @@ export function useFormFlow({ onSubmit, restartOnSubmit = false, onSubmitError }
       onSubmitError?.(error);
     } finally { pending.current = false; }
   };
-  return { onKeyDown, onSubmit: submit,
+  return { onKeyDown, onKeyDownCapture, onSubmit: submit,
     onCompositionStartCapture: composition.bind.onCompositionStart,
     onCompositionEndCapture: composition.bind.onCompositionEnd };
 }
 
 export interface FormFlowProps extends Omit<React.ComponentPropsWithRef<'form'>, 'onSubmit'>, FormFlowOptions {}
-export function FormFlow({ onSubmit, restartOnSubmit, onSubmitError, onKeyDown, onCompositionStartCapture, onCompositionEndCapture, ...props }: FormFlowProps) {
+export function FormFlow({ onSubmit, restartOnSubmit, onSubmitError, onKeyDown, onKeyDownCapture, onCompositionStartCapture, onCompositionEndCapture, ...props }: FormFlowProps) {
   const flow = useFormFlow({ onSubmit, restartOnSubmit, onSubmitError });
-  return <form {...props} data-slot="form-flow" onSubmit={flow.onSubmit}
+  return <form {...props} data-slot="form-flow" data-form-flow="" onSubmit={flow.onSubmit}
+    onKeyDownCapture={event => { onKeyDownCapture?.(event); flow.onKeyDownCapture(event); }}
     onKeyDown={event => { onKeyDown?.(event); flow.onKeyDown(event); }}
     onCompositionStartCapture={event => { flow.onCompositionStartCapture(); onCompositionStartCapture?.(event); }}
     onCompositionEndCapture={event => { flow.onCompositionEndCapture(); onCompositionEndCapture?.(event); }} />;

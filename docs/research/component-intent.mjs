@@ -16,7 +16,7 @@ export const principles = [
   { topic: '폼', ...rule('입력 경계는 border-field. 주요 버튼은 화면당 하나, 아이콘 전용 버튼은 aria-label 필수다.', '6') },
   { topic: '폼', ...rule('IME 조합 중 값 변형·포커스 이동·검증 금지. 최초 검증은 blur, 오류 후 change에서 즉시 해제하고 제출 때만 첫 오류로 이동한다.', '11.2') },
   { topic: '폼', ...rule('레이블 → 설명 → 입력 → 오류 순서. 오류 공간을 예약하고 aria-describedby는 오류부터 읽는다.', '11.4') },
-  { topic: '폼', ...rule('Enter 이동은 FormFlow 옵트인. Tab 순서를 따르고 textarea Enter는 줄바꿈, Shift+Enter는 이전 칸이다.', '11.5') },
+  { topic: '폼', ...rule('Enter 이동은 FormFlow 옵트인. Tab 순서를 따른다. textarea Enter·Shift+Enter는 줄바꿈, 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 값 변경 없이 이동하며 Combobox는 선택 후 이동한다.', '11.5') },
   { topic: '로딩', ...rule('짧은 대기에는 로딩 표시를 지연한다. 400ms~3초에는 형태를 아는 경우만 스켈레톤, 긴 대기는 진행률과 대략적 시간을 제공한다.', '9.1') },
   { topic: '로딩', ...rule('스켈레톤은 실제 콘텐츠와 같은 치수·토큰을 쓴다. 형태를 모르면 쓰지 않는다. 텍스트 높이는 글자 높이 약 0.65em, 마지막 줄은 짧게 한다.', '9.2') },
   { topic: '안내', ...rule('Tooltip은 한 줄 UI 설명, Hint는 한 번 알리는 2~3줄, Tour는 사용자가 시작하는 최대 3단계다. 자동 투어와 건너뛰기 차단 금지.', '10.2') },
@@ -91,10 +91,10 @@ const intents = [
 
   entry('Button','action','명시적인 사용자 동작을 실행한다.',['저장·취소·삭제 버튼이 필요할 때'],['primary를 여러 개 쓰지 마라','아이콘 전용 버튼의 aria-label을 빼지 마라'],'6','danger는 되돌릴 수 없는 작업에만 쓴다.',['variant','size','iconOnly','leadingIcon','trailingIcon'],['button'],['Input'],['버튼','저장','삭제','액션']),
   entry('Input','form','단일 값·비밀번호·검색어를 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['금액·수량에 type=number를 쓰지 마라','네이티브 검증 메시지에 의존하지 마라','오류를 색만으로 표시하지 마라'],'17','금액·수량은 type=text inputMode=numeric과 numeric 고정폭 숫자를 쓴다. number는 휠 시 blur로 값 변경을 피하고 페이지 스크롤을 보존한다. password는 보기 토글, search는 자체 지우기와 입력 포커스 복귀를 제공한다. date는 UTC·치수·영어 검증 때문에 비권장이다. border-field 경계선과 Field의 한국어 오류를 쓴다.',['invalid','numeric','type','inputMode'],['input','input-control','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
-  entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],['IME 조합 중 높이 변경을 막지 마라','autoGrow가 꺼진 입력의 resize를 막지 마라'],'17','rows 기본 3. autoGrow는 scrollHeight로 높이를 계산하고 maxHeight(기본 240px)에서 스크롤한다. FormFlow 안 Enter는 줄바꿈, Shift+Enter는 이전 칸이다.',['rows','autoGrow','maxHeight','invalid'],['textarea'],['Field','FormFlow','Input'],['여러 줄','메모','비고','긴 글']),
+  entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],['IME 조합 중 높이 변경을 막지 마라','autoGrow가 꺼진 입력의 resize를 막지 마라'],'17','rows 기본 3. autoGrow는 scrollHeight로 높이를 계산하고 maxHeight(기본 240px)에서 스크롤한다. FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다.',['rows','autoGrow','maxHeight','invalid'],['textarea'],['Field','FormFlow','Input'],['여러 줄','메모','비고','긴 글']),
   entry('RadioGroup','form','여러 선택지 중 하나만 선택한다.',['여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때'],['화살표에 포커스만 이동하는 모드를 넣지 마라','레이블 없이 점만 클릭하게 하지 마라'],'17','Radix 기본 화살표는 포커스와 선택을 함께 옮기고 끝에서 순환한다. 점과 테두리 변화로 선택을 표시하고 Label htmlFor로 각 항목을 연결한다.',['value','defaultValue','onValueChange','disabled'],['radio-group'],['RadioGroupItem','Label'],['라디오','하나만 선택','택일']),
-  part('RadioGroupItem','RadioGroup','하나의 라디오 선택지와 선택 점이다.',['value','disabled'],['radio-group-item','radio-group-indicator']),
-  entry('Switch','form','켜기 끄기 설정을 즉시 적용한다.',['알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때'],['폼 안에 Switch를 넣지 마라','제출할 때 함께 적용하는 값은 Checkbox를 써라'],'17','Radix button type=button role=switch aria-checked와 Space 토글을 유지한다. 손잡이 위치를 1차 신호로 삼고 Label로 연결한다.',['checked','defaultChecked','onCheckedChange','disabled'],['switch','switch-thumb'],['Label','Checkbox'],['스위치','토글','켜기 끄기','즉시 적용']),
+  part('RadioGroupItem','RadioGroup','하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.',['value','disabled'],['radio-group-item','radio-group-indicator']),
+  entry('Switch','form','켜기 끄기 설정을 즉시 적용한다.',['알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때'],['주문 저장 대기 값에 Switch를 쓰지 마라','제출할 때 함께 적용하는 값은 Checkbox를 써라'],'17','Radix button type=button role=switch aria-checked와 Space 토글을 유지한다. 손잡이 위치를 1차 신호로 삼고 Label로 연결한다.',['checked','defaultChecked','onCheckedChange','disabled'],['switch','switch-thumb'],['Label','Checkbox'],['스위치','토글','켜기 끄기','즉시 적용']),
   entry('Label','form','컨트롤 옆의 레이블로 입력 이름을 연결한다.',['Field를 쓰지 않는 Switch·Checkbox·Radio 옆에 입력 이름이 필요할 때'],['Field를 Label로 재구현하지 마라'],'17','htmlFor로 컨트롤과 연결하여 레이블 클릭도 동작하게 한다. 필수 표시는 role=img aria-label=필수 입력이다. Field는 레이블·설명·입력·오류를 세로로 묶는 역할을 유지한다.',['htmlFor','required'],['label','label-required'],['Field','Switch','Checkbox','RadioGroup'],['레이블','입력 이름']),
   entry('StatusChip','status','레코드의 상태를 라벨과 실루엣으로 표시한다.',['완료·경고·오류 상태를 표시할 때'],['같은 원형 점의 색만 바꾸지 마라'],'2.3','아이콘 모양과 텍스트로 상태를 구분한다.',['tone','icon','hideIcon'],['status-chip'],['DataTable'],['상태','완료','경고','칩','주문 상태','배송 상태','상태 표시']),
   ...[
@@ -124,9 +124,19 @@ const intents = [
   entry('Hint','guide','새 기능·놓치기 쉬운 UI를 한 번 알린다.',['새 기능을 2~3줄과 액션으로 알릴 때'],['레코드 요약용으로 쓰지 마라'],'10.2','닫은 안내를 반복하지 않도록 앱이 기억한다.',['children','open','title','body','onDismiss','action'],['guide-hint'],['Tooltip','Tour','Peek'],['힌트','새 기능','한 번','맥락형 안내']),
   entry('Tour','guide','사용자가 요청한 UI 흐름을 단계로 안내한다.',['사용자가 전체 흐름 학습을 요청할 때'],['자동 실행하지 마라','닫기·Escape를 막지 마라'],'10.1','최대 3단계이며 항상 건너뛸 수 있다.',['steps','active','next','previous','skip'],['guide-hint'],['Tooltip','Hint','Peek'],['투어','온보딩','단계','단계별','단계별 안내','사용법','흐름 학습','기능 흐름','처음 온 사용자','둘러보기','시작 안내']),
   entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],['필드 값을 소유하게 하지 마라'],'11.4','레이블 → 설명 → 입력 → 오류 순서를 지킨다.',['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사']),
-  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5','Tab 순서와 같게 이동하고 Shift+Enter는 이전 칸이다.',['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
+  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5','Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.',['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
   entry('Peek','overlay','레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.',['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제 액션을 넣지 마라'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
+
+// 부품의 공통 규칙은 부모에만 보관한다 (MCP 7번 게이트). RadioGroupItem 계약도 부모에서 제공한다.
+for (const [name, text] of [
+  ['Combobox', 'FormFlow 안 Enter는 열기이며 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.'],
+  ['Switch', 'data-form-control=advance로 FormFlow 안 Enter는 토글하지 않고 다음 칸으로 간다. Space 토글과 FormFlow 밖 Enter는 그대로다.'],
+  ['RadioGroup', 'RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.'],
+]) intents.find(item => item.name === name).rules.push(rule(text, '11.5'));
+for (const name of ['FormFlow', 'Combobox', 'Switch', 'RadioGroup']) {
+  intents.find(item => item.name === name).rules.push(rule('Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.', '19'));
+}
 
 for (const parent of intents) {
   const parts = intents.filter((item) => item.partOf === parent.name).map((item) => item.name);

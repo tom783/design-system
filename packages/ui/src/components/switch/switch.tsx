@@ -4,7 +4,7 @@ import { cn } from '../../lib/cn';
 
 /** 저장 대기 폼에는 Checkbox를 쓴다. Switch는 누르는 즉시 적용하는 설정이다. */
 export function Switch({ className, ...props }: React.ComponentProps<typeof Primitive.Root>) {
-  return <Primitive.Root {...props} data-slot="switch" className={cn('ds-switch', className)}>
+  return <Primitive.Root data-form-control="advance" {...props} data-slot="switch" className={cn('ds-switch', className)}>
     <Primitive.Thumb data-slot="switch-thumb" className="ds-switch-thumb" />
   </Primitive.Root>;
 }
