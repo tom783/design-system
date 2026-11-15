@@ -2,6 +2,14 @@
 
 읽기 전용 stdio 서버다. 런타임은 Node 내장 모듈과 `manifest.json`만 사용하며 의존성·HTTP·쓰기 도구가 없다.
 
+npm 패키지로 연결하려면 다음 명령을 실행한다.
+
+```sh
+claude mcp add s2life -- npx -y @s2life/mcp
+```
+
+`npx @s2life/mcp`로 직접 실행할 수도 있다. 아래는 저장소에서 개발할 때의 연결 방법이다.
+
 1. 저장소 루트에서 `pnpm mcp:build`로 매니페스트를 생성한다. 토큰은 기존 `docs/research/tokens.json`을 읽으며 재생성하지 않는다.
 2. MCP 클라이언트의 서버 설정에 아래 command와 args를 등록한다. 경로는 해당 저장소의 절대 경로로 바꾼다.
 3. 클라이언트에서 연결한 뒤 `which_component`에 작업을 설명하고, `get_component`로 후보의 API·규칙을 확인한다. `search_tokens` → `get_token`, `get_rules`로 필요한 정보만 조회한다.

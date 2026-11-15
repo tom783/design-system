@@ -4105,7 +4105,7 @@
         "React.ComponentProps<typeof SelectPrimitive.Root>"
       ],
       "slots": [],
-      "import": "import { Select } from '@commerce-ds/ui';"
+      "import": "import { Select } from '@s2life/ui';"
     },
     {
       "name": "SelectTrigger",
@@ -4140,7 +4140,7 @@
         "select-icon",
         "select-trigger"
       ],
-      "import": "import { SelectTrigger } from '@commerce-ds/ui';"
+      "import": "import { SelectTrigger } from '@s2life/ui';"
     },
     {
       "name": "SelectValue",
@@ -4174,7 +4174,7 @@
       "slots": [
         "select-value"
       ],
-      "import": "import { SelectValue } from '@commerce-ds/ui';"
+      "import": "import { SelectValue } from '@s2life/ui';"
     },
     {
       "name": "SelectContent",
@@ -4209,7 +4209,7 @@
         "select-content",
         "select-viewport"
       ],
-      "import": "import { SelectContent } from '@commerce-ds/ui';"
+      "import": "import { SelectContent } from '@s2life/ui';"
     },
     {
       "name": "SelectGroup",
@@ -4243,7 +4243,7 @@
       "slots": [
         "select-group"
       ],
-      "import": "import { SelectGroup } from '@commerce-ds/ui';"
+      "import": "import { SelectGroup } from '@s2life/ui';"
     },
     {
       "name": "SelectLabel",
@@ -4277,7 +4277,7 @@
       "slots": [
         "select-label"
       ],
-      "import": "import { SelectLabel } from '@commerce-ds/ui';"
+      "import": "import { SelectLabel } from '@s2life/ui';"
     },
     {
       "name": "SelectItem",
@@ -4311,7 +4311,7 @@
       "slots": [
         "select-item"
       ],
-      "import": "import { SelectItem } from '@commerce-ds/ui';"
+      "import": "import { SelectItem } from '@s2life/ui';"
     },
     {
       "name": "SelectSeparator",
@@ -4345,7 +4345,7 @@
       "slots": [
         "select-separator"
       ],
-      "import": "import { SelectSeparator } from '@commerce-ds/ui';"
+      "import": "import { SelectSeparator } from '@s2life/ui';"
     },
     {
       "name": "SelectScrollUpButton",
@@ -4379,7 +4379,7 @@
       "slots": [
         "select-scroll-up-button"
       ],
-      "import": "import { SelectScrollUpButton } from '@commerce-ds/ui';"
+      "import": "import { SelectScrollUpButton } from '@s2life/ui';"
     },
     {
       "name": "SelectScrollDownButton",
@@ -4413,7 +4413,7 @@
       "slots": [
         "select-scroll-down-button"
       ],
-      "import": "import { SelectScrollDownButton } from '@commerce-ds/ui';"
+      "import": "import { SelectScrollDownButton } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenu",
@@ -4443,7 +4443,7 @@
       "props": [],
       "extends": [],
       "slots": [],
-      "import": "import { DropdownMenu } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenu } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuTrigger",
@@ -4477,7 +4477,7 @@
       "slots": [
         "dropdown-menu-trigger"
       ],
-      "import": "import { DropdownMenuTrigger } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuTrigger } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuContent",
@@ -4511,7 +4511,7 @@
       "slots": [
         "dropdown-menu-content"
       ],
-      "import": "import { DropdownMenuContent } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuContent } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuItem",
@@ -4557,7 +4557,7 @@
         "dropdown-menu-destructive-icon",
         "dropdown-menu-item"
       ],
-      "import": "import { DropdownMenuItem } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuItem } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuCheckboxItem",
@@ -4591,7 +4591,7 @@
       "slots": [
         "dropdown-menu-checkbox-item"
       ],
-      "import": "import { DropdownMenuCheckboxItem } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuCheckboxItem } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuRadioItem",
@@ -4625,7 +4625,7 @@
       "slots": [
         "dropdown-menu-radio-item"
       ],
-      "import": "import { DropdownMenuRadioItem } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuRadioItem } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuLabel",
@@ -4665,7 +4665,7 @@
       "slots": [
         "dropdown-menu-label"
       ],
-      "import": "import { DropdownMenuLabel } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuLabel } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuSeparator",
@@ -4699,7 +4699,7 @@
       "slots": [
         "dropdown-menu-separator"
       ],
-      "import": "import { DropdownMenuSeparator } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuSeparator } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuShortcut",
@@ -4733,7 +4733,7 @@
       "slots": [
         "dropdown-menu-shortcut"
       ],
-      "import": "import { DropdownMenuShortcut } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuShortcut } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuGroup",
@@ -4767,7 +4767,7 @@
       "slots": [
         "dropdown-menu-group"
       ],
-      "import": "import { DropdownMenuGroup } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuGroup } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuPortal",
@@ -4797,7 +4797,7 @@
       "props": [],
       "extends": [],
       "slots": [],
-      "import": "import { DropdownMenuPortal } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuPortal } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuSub",
@@ -4827,7 +4827,7 @@
       "props": [],
       "extends": [],
       "slots": [],
-      "import": "import { DropdownMenuSub } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuSub } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuSubContent",
@@ -4861,7 +4861,7 @@
       "slots": [
         "dropdown-menu-sub-content"
       ],
-      "import": "import { DropdownMenuSubContent } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuSubContent } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuSubTrigger",
@@ -4901,7 +4901,7 @@
       "slots": [
         "dropdown-menu-sub-trigger"
       ],
-      "import": "import { DropdownMenuSubTrigger } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuSubTrigger } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuRadioGroup",
@@ -4935,7 +4935,7 @@
       "slots": [
         "dropdown-menu-radio-group"
       ],
-      "import": "import { DropdownMenuRadioGroup } from '@commerce-ds/ui';"
+      "import": "import { DropdownMenuRadioGroup } from '@s2life/ui';"
     },
     {
       "name": "Toaster",
@@ -4969,7 +4969,7 @@
       "slots": [
         "toaster"
       ],
-      "import": "import { Toaster } from '@commerce-ds/ui';"
+      "import": "import { Toaster } from '@s2life/ui';"
     },
     {
       "name": "DatePicker",
@@ -5042,7 +5042,7 @@
         "date-picker-error",
         "date-picker-presets"
       ],
-      "import": "import { DatePicker } from '@commerce-ds/ui';"
+      "import": "import { DatePicker } from '@s2life/ui';"
     },
     {
       "name": "Button",
@@ -5103,7 +5103,7 @@
       "slots": [
         "button"
       ],
-      "import": "import { Button } from '@commerce-ds/ui';"
+      "import": "import { Button } from '@s2life/ui';"
     },
     {
       "name": "Input",
@@ -5155,7 +5155,7 @@
       "slots": [
         "input"
       ],
-      "import": "import { Input } from '@commerce-ds/ui';"
+      "import": "import { Input } from '@s2life/ui';"
     },
     {
       "name": "StatusChip",
@@ -5213,7 +5213,7 @@
       "slots": [
         "status-chip"
       ],
-      "import": "import { StatusChip } from '@commerce-ds/ui';"
+      "import": "import { StatusChip } from '@s2life/ui';"
     },
     {
       "name": "Card",
@@ -5249,7 +5249,7 @@
       "slots": [
         "card"
       ],
-      "import": "import { Card } from '@commerce-ds/ui';"
+      "import": "import { Card } from '@s2life/ui';"
     },
     {
       "name": "CardHeader",
@@ -5283,7 +5283,7 @@
       "slots": [
         "card-header"
       ],
-      "import": "import { CardHeader } from '@commerce-ds/ui';"
+      "import": "import { CardHeader } from '@s2life/ui';"
     },
     {
       "name": "CardTitle",
@@ -5317,7 +5317,7 @@
       "slots": [
         "card-title"
       ],
-      "import": "import { CardTitle } from '@commerce-ds/ui';"
+      "import": "import { CardTitle } from '@s2life/ui';"
     },
     {
       "name": "CardBody",
@@ -5351,7 +5351,7 @@
       "slots": [
         "card-body"
       ],
-      "import": "import { CardBody } from '@commerce-ds/ui';"
+      "import": "import { CardBody } from '@s2life/ui';"
     },
     {
       "name": "CardFooter",
@@ -5385,7 +5385,7 @@
       "slots": [
         "card-footer"
       ],
-      "import": "import { CardFooter } from '@commerce-ds/ui';"
+      "import": "import { CardFooter } from '@s2life/ui';"
     },
     {
       "name": "Checkbox",
@@ -5427,7 +5427,7 @@
         "checkbox",
         "checkbox-control"
       ],
-      "import": "import { Checkbox } from '@commerce-ds/ui';"
+      "import": "import { Checkbox } from '@s2life/ui';"
     },
     {
       "name": "DataTable",
@@ -5623,7 +5623,7 @@
         "data-table-table",
         "data-table-toolbar"
       ],
-      "import": "import { DataTable } from '@commerce-ds/ui';"
+      "import": "import { DataTable } from '@s2life/ui';"
     },
     {
       "name": "SELECTION_COLUMN_ID",
@@ -5652,7 +5652,7 @@
       "props": [],
       "extends": [],
       "slots": [],
-      "import": "import { SELECTION_COLUMN_ID } from '@commerce-ds/ui';"
+      "import": "import { SELECTION_COLUMN_ID } from '@s2life/ui';"
     },
     {
       "name": "ChartFrame",
@@ -5768,7 +5768,7 @@
         "chart-plot",
         "chart-title"
       ],
-      "import": "import { ChartFrame } from '@commerce-ds/ui';"
+      "import": "import { ChartFrame } from '@s2life/ui';"
     },
     {
       "name": "TrendBand",
@@ -5891,7 +5891,7 @@
         "trend-band-point",
         "trend-band-value"
       ],
-      "import": "import { TrendBand } from '@commerce-ds/ui';"
+      "import": "import { TrendBand } from '@s2life/ui';"
     },
     {
       "name": "BulletRow",
@@ -5985,7 +5985,7 @@
         "bullet-track",
         "bullet-value"
       ],
-      "import": "import { BulletRow } from '@commerce-ds/ui';"
+      "import": "import { BulletRow } from '@s2life/ui';"
     },
     {
       "name": "CompositionArea",
@@ -6086,7 +6086,7 @@
         "composition-single",
         "composition-value"
       ],
-      "import": "import { CompositionArea } from '@commerce-ds/ui';"
+      "import": "import { CompositionArea } from '@s2life/ui';"
     },
     {
       "name": "EmptyState",
@@ -6149,7 +6149,7 @@
         "state-graphic",
         "state-title"
       ],
-      "import": "import { EmptyState } from '@commerce-ds/ui';"
+      "import": "import { EmptyState } from '@s2life/ui';"
     },
     {
       "name": "ErrorState",
@@ -6211,7 +6211,7 @@
         "state-graphic",
         "state-title"
       ],
-      "import": "import { ErrorState } from '@commerce-ds/ui';"
+      "import": "import { ErrorState } from '@s2life/ui';"
     },
     {
       "name": "Avatar",
@@ -6272,7 +6272,7 @@
         "avatar-fallback",
         "avatar-image"
       ],
-      "import": "import { Avatar } from '@commerce-ds/ui';"
+      "import": "import { Avatar } from '@s2life/ui';"
     },
     {
       "name": "Thumbnail",
@@ -6329,7 +6329,7 @@
         "thumbnail-fallback",
         "thumbnail-image"
       ],
-      "import": "import { Thumbnail } from '@commerce-ds/ui';"
+      "import": "import { Thumbnail } from '@s2life/ui';"
     },
     {
       "name": "Skeleton",
@@ -6400,7 +6400,7 @@
       "slots": [
         "skeleton"
       ],
-      "import": "import { Skeleton } from '@commerce-ds/ui';"
+      "import": "import { Skeleton } from '@s2life/ui';"
     },
     {
       "name": "SkeletonText",
@@ -6454,7 +6454,7 @@
         "skeleton-text",
         "skeleton-text-line"
       ],
-      "import": "import { SkeletonText } from '@commerce-ds/ui';"
+      "import": "import { SkeletonText } from '@s2life/ui';"
     },
     {
       "name": "CardSkeleton",
@@ -6500,7 +6500,7 @@
       "slots": [
         "card-skeleton"
       ],
-      "import": "import { CardSkeleton } from '@commerce-ds/ui';"
+      "import": "import { CardSkeleton } from '@s2life/ui';"
     },
     {
       "name": "ListSkeleton",
@@ -6554,7 +6554,7 @@
         "list-skeleton",
         "list-skeleton-row"
       ],
-      "import": "import { ListSkeleton } from '@commerce-ds/ui';"
+      "import": "import { ListSkeleton } from '@s2life/ui';"
     },
     {
       "name": "FormSkeleton",
@@ -6608,7 +6608,7 @@
         "form-skeleton",
         "form-skeleton-field"
       ],
-      "import": "import { FormSkeleton } from '@commerce-ds/ui';"
+      "import": "import { FormSkeleton } from '@s2life/ui';"
     },
     {
       "name": "ChartSkeleton",
@@ -6679,7 +6679,7 @@
         "chart-skeleton-bullets",
         "chart-skeleton-plot"
       ],
-      "import": "import { ChartSkeleton } from '@commerce-ds/ui';"
+      "import": "import { ChartSkeleton } from '@s2life/ui';"
     },
     {
       "name": "ProgressTrack",
@@ -6741,7 +6741,7 @@
         "progress-percent",
         "progress-track"
       ],
-      "import": "import { ProgressTrack } from '@commerce-ds/ui';"
+      "import": "import { ProgressTrack } from '@s2life/ui';"
     },
     {
       "name": "TaskProgress",
@@ -6815,7 +6815,7 @@
         "task-step",
         "task-steps"
       ],
-      "import": "import { TaskProgress } from '@commerce-ds/ui';"
+      "import": "import { TaskProgress } from '@s2life/ui';"
     },
     {
       "name": "Tooltip",
@@ -6871,7 +6871,7 @@
         "guide-bubble",
         "guide-tooltip"
       ],
-      "import": "import { Tooltip } from '@commerce-ds/ui';"
+      "import": "import { Tooltip } from '@s2life/ui';"
     },
     {
       "name": "Hint",
@@ -6939,7 +6939,7 @@
         "guide-bubble",
         "guide-hint"
       ],
-      "import": "import { Hint } from '@commerce-ds/ui';"
+      "import": "import { Hint } from '@s2life/ui';"
     },
     {
       "name": "Tour",
@@ -7015,7 +7015,7 @@
         "guide-bubble",
         "guide-hint"
       ],
-      "import": "import { Tour } from '@commerce-ds/ui';"
+      "import": "import { Tour } from '@s2life/ui';"
     },
     {
       "name": "Field",
@@ -7086,7 +7086,7 @@
         "field-label",
         "field-required"
       ],
-      "import": "import { Field } from '@commerce-ds/ui';"
+      "import": "import { Field } from '@s2life/ui';"
     },
     {
       "name": "FormFlow",
@@ -7146,7 +7146,7 @@
       "slots": [
         "form-flow"
       ],
-      "import": "import { FormFlow } from '@commerce-ds/ui';"
+      "import": "import { FormFlow } from '@s2life/ui';"
     },
     {
       "name": "Peek",
@@ -7221,7 +7221,7 @@
         "peek-item",
         "peek-items"
       ],
-      "import": "import { Peek } from '@commerce-ds/ui';"
+      "import": "import { Peek } from '@s2life/ui';"
     }
   ],
   "principles": [

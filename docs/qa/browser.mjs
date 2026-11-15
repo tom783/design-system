@@ -212,9 +212,14 @@ export function storybook(session, { base = 'http://localhost:6099' } = {}) {
           same = len === prev ? same + 1 : 0; prev = len; await sleep(200);
         }
       }
-      const sbError = await ev(`(() => { const el = document.querySelector('#error-message');
-        return document.body.classList.contains('sb-show-errordisplay') || el
-          ? (el ? el.textContent.slice(0, 300) : 'errordisplay') : null; })()`).catch(() => null);
+      // #error-message 는 오류가 없어도 빈 채로 존재한다(레이아웃에 따라).
+      // 요소의 존재만으로 오류 처리하면 멀쩡한 스토리가 ''(빈 문자열) 오류로 잡힌다 —
+      // 실제로 components-toast--다크 가 그렇게 거짓 실패했다.
+      // 판정 기준은 "표시 중인 오류 화면" 이거나 "실제 오류 문구가 있음" 이다.
+      const sbError = await ev(`(() => {
+        const shown = document.body.classList.contains('sb-show-errordisplay');
+        const text = (document.querySelector('#error-message')?.textContent ?? '').trim();
+        return shown || text ? (text.slice(0, 300) || 'errordisplay') : null; })()`).catch(() => null);
 
       // 빈 페이지는 "오류 없음"으로 보인다. 서버가 엉뚱한 디렉터리에서 돌거나(404)
       // 스토리 id 가 틀리면 모든 검사가 조용히 통과해버린다 — 실제로 당했다.

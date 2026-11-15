@@ -1,7 +1,6 @@
 import { useId } from 'react';
 import { cn } from '../../lib/cn';
 import { progressEta, progressValue } from './progress-state';
-import './loading.css';
 
 export interface ProgressTrackProps {
   /** 0~1. 생략하면 불확정 진행률. */

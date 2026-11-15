@@ -5,3 +5,6 @@ storybook-static/
 *.log
 .context/
 .qa-shots/
+
+# pnpm 로컬 콘텐츠 저장소는 배포 소스가 아니다.
+.pnpm-store/

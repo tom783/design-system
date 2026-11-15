@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react';
 import { cn } from '../../lib/cn';
-import './loading.css';
 
 export type SkeletonTextStyle = 'caption' | 'body-sm' | 'body' | 'title';
 export interface SkeletonProps {

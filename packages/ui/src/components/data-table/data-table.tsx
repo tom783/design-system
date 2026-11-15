@@ -10,7 +10,6 @@ import { useDataTable, type DataTableFeatures, type UseDataTableOptions } from '
 import { SELECTION_COLUMN_ID } from './selection-column';
 import { downloadCsv } from './export-csv';
 import { shouldLoadMore } from './should-load-more';
-import './data-table.css';
 
 export interface DataTableProps<T extends RowData> extends UseDataTableOptions<T> {
   revisitedRowId?: string;

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve, relative } from 'node:path';
 import { API, SymbolFlags, SignatureKind } from 'typescript/unstable/sync';
 import * as ast from 'typescript/unstable/ast';
+import { checkBoundaries } from '../../scripts/check-boundaries.mjs';
 import intents, { principles } from './component-intent.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -162,6 +163,7 @@ export function assertSizeBudget(catalog, manifest) {
 }
 
 export async function build() {
+  await checkBoundaries();
   const data = JSON.parse(await read('docs/research/tokens.json'));
   const design = await read('DESIGN.md');
   const components = extractComponents();
@@ -186,7 +188,7 @@ export async function build() {
     const { propNames: _propNames, ...api } = source;
     // R11-B의 요약 계약은 Button의 네 속성만 펼친다. iconOnly는 VariantProps 상속으로 보존한다.
     if (api.name === 'Button') api.props = api.props.filter((p) => p.name !== 'iconOnly');
-    return { ...intent, ...api, import: `import { ${intent.name} } from '@commerce-ds/ui';` };
+    return { ...intent, ...api, import: `import { ${intent.name} } from '@s2life/ui';` };
   });
   const manifest = { schemaVersion: 1, tokens, components: catalog, principles };
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;

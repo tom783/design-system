@@ -743,6 +743,7 @@ const files = [
   write('packages/tokens/tokens.css', css),
   write('packages/tokens/theme.css', tw),
   write('docs/research/tokens.json', JSON.stringify(json, null, 2)),
+  write('packages/tokens/tokens.json', JSON.stringify(json, null, 2)),
 ];
 
 // ═══════════════════════════ 9. 보고 ═══════════════════════════

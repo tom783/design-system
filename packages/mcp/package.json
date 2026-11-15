@@ -1,0 +1,21 @@
+{
+  "name": "@s2life/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "s2life 디자인 시스템 읽기 전용 MCP CLI",
+  "bin": {
+    "s2life-mcp": "./server.mjs"
+  },
+  "files": [
+    "server.mjs",
+    "manifest.json",
+    "match.mjs"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node ../../docs/research/mcp-build.mjs",
+    "prepack": "pnpm build"
+  }
+}

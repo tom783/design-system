@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { CircleCheck, CircleAlert, Info, TriangleAlert } from 'lucide-react';
 import { Toaster as Sonner, toast as sonnerToast, type ExternalToast } from 'sonner';
-import './toast.css';
 
 /** 명시적 테마가 우선이며, 미지정이면 OS 설정을 따른다. 두 입력의 변경도 구독한다. */
 function useTheme() {
@@ -24,7 +23,7 @@ function announcement(message: Message, error = false) {
   return <span data-slot="toast-message" role={error ? 'alert' : 'status'}>{typeof message === 'function' ? message() : message}</span>;
 }
 /** 오류는 운영자가 읽고 닫을 때까지 남긴다. 원본 객체를 변형하지 않고 공개 메서드를 감싼다. */
-export const toast = Object.assign((message: Message, options?: ExternalToast) => sonnerToast(announcement(message), options), sonnerToast, {
+export const toast: typeof sonnerToast = Object.assign((message: Message, options?: ExternalToast) => sonnerToast(announcement(message), options), sonnerToast, {
   success: (message: Message, options?: ExternalToast) => sonnerToast.success(announcement(message), options),
   info: (message: Message, options?: ExternalToast) => sonnerToast.info(announcement(message), options),
   warning: (message: Message, options?: ExternalToast) => sonnerToast.warning(announcement(message), options),

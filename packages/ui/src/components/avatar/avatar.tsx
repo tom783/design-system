@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { cn } from '../../lib/cn';
 import { initials } from './initials';
-import './avatar.css';
 
 export interface AvatarProps {
   name: string;

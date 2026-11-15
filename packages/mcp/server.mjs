@@ -1,6 +1,9 @@
+#!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { matchComponents } from './match.mjs';
+
+const { version } = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
 
 const versions = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const objectSchema = (properties, required = []) => ({ type: 'object', properties, required, additionalProperties: false });
@@ -68,7 +71,7 @@ function dispatch(manifest, method, params) {
   switch (method) {
     case 'initialize':
       if (!isObject(params) || typeof params.protocolVersion !== 'string' || !isObject(params.capabilities) || !isObject(params.clientInfo) || typeof params.clientInfo.name !== 'string' || typeof params.clientInfo.version !== 'string') invalid('initialize에 protocolVersion, capabilities, clientInfo가 필요합니다.');
-      return { protocolVersion: versions.includes(params.protocolVersion) ? params.protocolVersion : versions[0], capabilities: { tools: {}, resources: {} }, serverInfo: { name: 'commerce-ds', version: '0.1.0' }, instructions: '작업 설명으로 which_component를 먼저 호출하고 후보의 useWhen·dont를 비교하세요. 선택한 컴포넌트는 get_component로 props·slots·규칙을 확인하고, 색·치수는 search_tokens와 get_token으로 찾으세요. get_rules로 주제별 하드 규칙을 확인하며 원시 색 대신 의미 토큰을 사용하세요. 전체 목록은 list_components와 design:// 리소스에서 조회할 수 있습니다. 이 서버는 읽기 전용입니다.' };
+      return { protocolVersion: versions.includes(params.protocolVersion) ? params.protocolVersion : versions[0], capabilities: { tools: {}, resources: {} }, serverInfo: { name: 's2life', version }, instructions: '작업 설명으로 which_component를 먼저 호출하고 후보의 useWhen·dont를 비교하세요. 선택한 컴포넌트는 get_component로 props·slots·규칙을 확인하고, 색·치수는 search_tokens와 get_token으로 찾으세요. get_rules로 주제별 하드 규칙을 확인하며 원시 색 대신 의미 토큰을 사용하세요. 전체 목록은 list_components와 design:// 리소스에서 조회할 수 있습니다. 이 서버는 읽기 전용입니다.' };
     case 'ping': return {};
     case 'tools/list': return { tools: definitions };
     case 'tools/call': return callTool(manifest, params);

@@ -1114,6 +1114,112 @@ success 150 · info 250)과 **45° 이상 떨어진 자리가 네 칸뿐**이었
 
 ---
 
+## 15. 패키지 구조와 배포 (R14)
+
+### 15.1 MCP 는 npm 을 대체하지 않는다 — MCP 가 npm 을 타고 온다
+
+가장 흔한 오해부터 적어둔다. "MCP 로 제공하니 패키지 배포는 필요 없다"는
+성립하지 않는다. 다른 머신의 AI 는 이렇게 쓴다:
+
+```
+claude mcp add s2life -- npx -y @s2life/mcp
+```
+
+`npx` 가 npm 에서 받아온다. **MCP 서버 자체가 npm 패키지여야 한다.**
+
+더 근본적으로 **소비자가 다르다**:
+
+| | 받는 쪽 | 무엇을 |
+|---|---|---|
+| npm | 앱의 빌드 | 런타임 코드. 번들에 들어간다 |
+| MCP | AI 의 컨텍스트 | 무엇을 언제 쓰는가, 금지사항, 토큰 값 |
+
+AI 가 MCP 로 `<Peek>` 의 규칙을 배워도 **앱은 빌드 시점에 실제 구현이 필요하다.**
+MCP 는 문서를 서비스로 제공하는 것이지 배달 수단이 아니다.
+
+### 15.2 세 패키지, 그 이상 쪼개지 않는다
+
+| 패키지 | 내용 | 왜 분리하나 |
+|---|---|---|
+| `@s2life/tokens` | CSS · JSON | React 가 아닌 곳에서도 쓴다 — Figma 플러그인·문서 사이트·이메일 템플릿. **의존성 0** |
+| `@s2life/ui` | React 컴포넌트 | 내부는 3계층, 패키지는 하나 |
+| `@s2life/mcp` | CLI (`bin`) | 없으면 AI 가 못 쓴다. **의존성 0** |
+
+**primitives 와 patterns 를 별도 패키지로 쪼개지 않는다.** 버전 맞추기 비용만
+생긴다. 그건 레이어마다 담당 팀이 다를 때 하는 것이고, 네 제품을 한 팀이 쓰는
+규모에는 과분할이다.
+
+**`tokens` 는 잎(leaf)이다.** `ui` → `tokens` 단방향이어야 하고, 반대 방향
+의존이 생기면 tokens 를 React 밖에서 쓸 수 없게 된다.
+
+### 15.3 버전은 묶어서 올린다 (lockstep)
+
+MCP 매니페스트가 UI 를 기술한다. 버전이 따로 가면 "MCP 는 v2 컴포넌트를
+말하는데 ui 는 v1" 이 된다. `pnpm version:set <x.y.z>` 하나로 셋을 함께 올린다.
+changesets 는 도입하지 않는다 — 항상 함께 나가는 셋에는 불필요하다.
+
+### 15.4 소스 복사 모델을 쓰지 않는 이유
+
+`shadcn` 의 "소스를 복사해 가라" 는 **모르는 사람들이 각자 커스터마이징하라고**
+있는 모델이다. 우리는 같은 회사의 네 제품이고, `DataTable` 을 고치면 네 곳에
+**한 번에** 닿아야 한다. 복사 모델이면 네 번 복사해야 하고 각자 어긋난다.
+
+소스는 이 저장소가 소유하고, **배포는 버전 있는 패키지**로 한다.
+shadcn 에서 받아온 코드는 "우리 규약으로 번역해 우리가 소유한 소스"이지
+"복사해 쓰는 남의 코드"가 아니다.
+
+### 15.5 CSS 는 진입점 하나
+
+**JS 에서 CSS 를 import 하지 않는다.** 한때 컴포넌트 CSS 9개 중 6개는 `.tsx` 에서
+`import './x.css'` 로, 3개(guide·form·peek)는 `styles.css` 의 `@import` 로만
+들어왔다. 스토리북이 `styles.css` 를 불러서 가려져 있었지만, **패키지로 내보내면
+앱이 JS 만 import 했을 때 Tooltip·Tour·Field·Peek 이 스타일 없이 렌더된다.**
+
+소비자에게는 두 경로를 모두 제공한다:
+
+```js
+import '@s2life/ui/styles.css';   // 사전 컴파일 60KB. Tailwind 가 없어도 된다
+```
+```css
+/* 앱이 이미 Tailwind v4 를 쓴다면 유틸리티를 중복 없이 합친다 */
+@source "../node_modules/@s2life/ui/dist";
+```
+
+**기본은 사전 컴파일이다.** `.tabular`(금액 자릿수 정렬)·`:focus-visible`·
+reduced-motion 같은 손으로 쓴 base 규칙이 거기 함께 들어간다 —
+이것들이 빠지면 숫자 정렬이라는 이 시스템의 약속이 조용히 깨진다.
+
+### 15.6 내부 구현 계층 — Radix 는 경계 안에 있다
+
+```
+packages/ui/src/
+  internal/     ← Radix 를 직접 쓰는 유일한 곳. exports 에 없다
+  components/   ← Button · Select · Dialog …
+  patterns/     ← DataTable · 화면 조립
+  icons.ts      ← lucide 배럴. 앱이 lucide 를 직접 import 하지 않는다
+```
+
+**`exports` 맵에 `./internal` 이 없는 것이 경계다.** 거기에 더해
+`src/internal/` 밖에서 `@radix-ui/*` 를 import 하면 `pnpm verify` 가 `exit 1` 한다.
+eslint 를 쓰지 않는다 — 지금까지와 같은 생성기 게이트 방식이다.
+
+이 경계가 있어야 나중에 Radix 를 바꿀 수 있다. 컴포넌트가 쌓인 뒤에는 긋기 어렵다.
+
+### 15.7 배포는 리허설로 확인한다
+
+"배포되겠지" 가 아니라 **확인한다.** `pnpm qa:pack` 이 tarball 세 개를 만들어
+별도 Vite 앱에 설치하고:
+
+- 공개 타입이 해소되는가 (`.d.ts`)
+- **Tailwind 가 없는 앱에서** 실제로 렌더되는가
+- `styles.css` 한 줄로 Tooltip·Field·Peek 이 스타일을 받는가 (15.5 의 회귀 테스트)
+- Tailwind 통합 경로에서도 같은 결과가 나오는가
+- `npx @s2life/mcp` 가 `initialize` 에 응답하는가
+
+`pnpm qa` 에 들어 있다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

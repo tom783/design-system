@@ -1,6 +1,6 @@
 /** shadcn 원본의 Radix 동작은 유지하고, DESIGN.md 4절의 치수·슬롯·평면 규약만 번역한다. */
 import * as React from "react"
-import * as PopoverPrimitive from "@radix-ui/react-popover"
+import * as PopoverPrimitive from "../../internal/popover"
 
 import { cn } from "../../lib/cn"
 

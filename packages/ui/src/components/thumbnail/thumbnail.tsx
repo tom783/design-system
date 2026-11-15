@@ -2,7 +2,6 @@ import { useState, type CSSProperties } from 'react';
 import { ImageOff } from 'lucide-react';
 import { Skeleton } from '../loading/skeleton';
 import { cn } from '../../lib/cn';
-import './thumbnail.css';
 
 export interface ThumbnailProps {
   src?: string;

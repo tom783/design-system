@@ -51,7 +51,10 @@ CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지�
 ### 브라우저 하네스
 
 ```bash
-pnpm qa           # 아래를 전부 — 빌드·서버 기동·8개 하네스 (207건)
+pnpm qa           # 아래를 전부 — 빌드·서버 기동·10개 하네스 (배포 리허설 포함)
+pnpm build        # 패키지 빌드 (ui dist + CSS)
+pnpm qa:pack      # 배포 리허설만 — tarball → 샘플 앱 설치 → 실제 렌더
+pnpm version:set  # 세 패키지 버전을 함께 올린다 (lockstep)
 
 # 개별 실행
 pnpm build-storybook
@@ -102,6 +105,15 @@ Tailwind 기본값(`0.25rem` = 4px 배수)이 이미 우리 4px 그리드와 같
 success는 3.89:1이다. "600단계는 안전하다"는 규칙은 없다. 실측 검증에 맡겨라.
 
 **대비 임계값 판정에 반올림한 값을 쓰지 마라.** 4.4992가 4.50으로 통과한다.
+
+**`@radix-ui/*` 는 `packages/ui/src/internal/` 에서만 import 한다.**
+`components/` 는 `internal/` 을 거쳐 쓴다. 어기면 `pnpm verify` 가 `exit 1` 한다
+(`scripts/check-boundaries.mjs`). 이 경계가 있어야 나중에 Radix 를 바꿀 수 있다.
+`exports` 맵에 `./internal` 을 추가하지 마라 — 경계가 사라진다.
+
+**JS 에서 CSS 를 import 하지 마라.** 컴포넌트 CSS 는 `components.css` 한 곳에
+모은다. 섞여 있으면 앱이 JS 만 import 했을 때 일부 컴포넌트가 스타일 없이 렌더된다
+(실제로 guide·form·peek 이 그랬다).
 
 **macOS 에서 `/Applications/*.app/Contents/MacOS/*` 를 직접 실행하지 마라.**
 에이전트 샌드박스(Orca/Codex 의 Seatbelt) 안에서 **크래시한다.** 실제 리포트:

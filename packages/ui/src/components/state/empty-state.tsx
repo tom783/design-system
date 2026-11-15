@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { CircleAlert, Inbox } from 'lucide-react';
 import { Button } from '../button';
 import { cn } from '../../lib/cn';
-import './state.css';
 
 export interface EmptyStateProps {
   title: string;
