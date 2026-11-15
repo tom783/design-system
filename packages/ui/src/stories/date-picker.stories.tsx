@@ -1,12 +1,22 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, within, fireEvent } from 'storybook/test';
+import { expect, userEvent, within, fireEvent, waitFor } from 'storybook/test';
 import { DatePicker, type DateRange } from '../components/date-picker';
 import { formatValue } from '../components/date-picker/date-value';
 const meta = { title: 'Components/DatePicker' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const today = new Date(2026, 10, 15);
+async function pickDay(date: string) {
+  // DayPicker의 td도 data-day를 가진다. 선택 핸들러는 내부 button에만 있으므로
+  // 셀을 클릭하면 상태가 바뀌지 않는다. 포털이 마운트된 뒤 실제 조작 대상을 누른다.
+  const button = await waitFor(() => {
+    const day = document.querySelector<HTMLButtonElement>(`button[data-slot="calendar-day"][data-day="${date}"]`);
+    expect(day).toBeVisible();
+    return day!;
+  });
+  await userEvent.click(button);
+}
 function Demo({ single = false }: { single?: boolean }) {
   const [range, setRange] = React.useState<DateRange>(); const [date, setDate] = React.useState<Date>();
   return <><DatePicker today={today} defaultMonth={today} aria-label="주문 기간"
@@ -15,10 +25,13 @@ function Demo({ single = false }: { single?: boolean }) {
 }
 export const 기간선택: Story = { name: '날짜-기간선택', render: () => <Demo />, play: async ({ canvasElement: root }) => {
   await userEvent.click(within(root).getByRole('button', { name: '달력 열기' }));
-  await userEvent.click(document.querySelector<HTMLButtonElement>('[data-day="2026-11-10"]')!);
-  await userEvent.click(document.querySelector<HTMLButtonElement>('[data-day="2026-11-15"]')!);
+  await pickDay('2026-11-10');
+  await pickDay('2026-11-15');
   await expect(root.querySelector('output')).toHaveTextContent('2026-11-10 ~ 2026-11-15');
-  await userEvent.click(within(document.body).getByRole('button', { name: '완료' })); root.dataset.playComplete = 'true';
+  await userEvent.click(within(document.body).getByRole('button', { name: '완료' }));
+  await waitFor(() => expect(document.querySelector('[data-slot="calendar"]')).toBeNull());
+  await expect(within(root).getByRole('textbox', { name: '주문 기간' })).toHaveValue('2026-11-10 ~ 2026-11-15');
+  root.dataset.playComplete = 'true';
 } };
 export const 빠른선택: Story = { name: '날짜-빠른선택', render: () => <Demo />, play: async ({ canvasElement: root }) => {
   await userEvent.click(within(root).getByRole('button', { name: '달력 열기' }));
@@ -43,6 +56,9 @@ export const 직접입력: Story = { name: '날짜-직접입력-IME', render: ()
 } };
 export const 단일날짜: Story = { name: '날짜-단일', render: () => <Demo single />, play: async ({ canvasElement: root }) => {
   await userEvent.click(within(root).getByRole('button', { name: '달력 열기' }));
-  await userEvent.click(document.querySelector<HTMLButtonElement>('[data-day="2026-11-12"]')!);
-  await expect(root.querySelector('output')).toHaveTextContent('2026-11-12'); root.dataset.playComplete = 'true';
+  await pickDay('2026-11-12');
+  await expect(root.querySelector('output')).toHaveTextContent('2026-11-12');
+  await waitFor(() => expect(document.querySelector('[data-slot="calendar"]')).toBeNull());
+  await expect(within(root).getByRole('textbox', { name: '주문 기간' })).toHaveValue('2026-11-12');
+  root.dataset.playComplete = 'true';
 } };

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, within, waitFor } from 'storybook/test';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/select';
 import { Field, FormFlow } from '../components/form';
 import { Input } from '../components/input';
@@ -22,12 +22,30 @@ export const 필드: Story = { name: '셀렉트-Field', render: () => <Field lab
   const trigger = within(root).getByRole('combobox'); const label = root.querySelector('label')!;
   await expect(trigger.id).toBe(label.htmlFor); await expect(trigger).toHaveAttribute('aria-invalid', 'true');
   await expect(trigger).toHaveAttribute('aria-describedby', `${root.querySelector('[data-slot="field-error"]')!.id} ${root.querySelector('[data-slot="field-description"]')!.id}`);
-  await userEvent.click(label); await expect(trigger).toHaveFocus(); root.dataset.playComplete = 'true';
+  await userEvent.click(label);
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect(within(document.body).getByRole('listbox')).toBeVisible();
+  // Radix는 열린 모달 밖의 트리거를 aria-hidden 처리하고 목록으로 포커스를 옮긴다.
+  // Escape로 닫은 뒤 라벨에 연결된 원래 트리거로 포커스가 복귀하는지 검사한다.
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
+  await waitFor(() => expect(trigger).toHaveFocus()); root.dataset.playComplete = 'true';
 } };
 export const 폼흐름: Story = { name: '셀렉트-폼흐름', render: () => <FormFlow><StatusSelect /><Input aria-label="다음 칸" /></FormFlow>, play: async ({ canvasElement: root }) => {
-  const trigger = within(root).getByRole('combobox'); trigger.focus(); await userEvent.keyboard('{Enter}');
-  await expect(trigger).toHaveAttribute('aria-expanded', 'true'); await expect(within(root).getByRole('textbox')).not.toHaveFocus();
-  await userEvent.keyboard('{Escape}'); await expect(trigger).toHaveFocus(); root.dataset.playComplete = 'true';
+  const trigger = within(root).getByRole('combobox');
+  const next = within(root).getByRole('textbox', { name: '다음 칸' });
+  trigger.focus(); await expect(trigger).toHaveFocus();
+  await userEvent.keyboard('{Enter}');
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  const listbox = within(document.body).getByRole('listbox');
+  await waitFor(() => expect(listbox.contains(document.activeElement)).toBe(true));
+  await expect(next).not.toHaveFocus();
+  // 열린 동안 캔버스는 aria-hidden이다. 닫은 뒤 접근 가능한 역할과 복귀 포커스도 확인한다.
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
+  await waitFor(() => expect(trigger).toHaveFocus());
+  await expect(within(root).getByRole('textbox', { name: '다음 칸' })).toBe(next);
+  root.dataset.playComplete = 'true';
 } };
 export const 높이일치: Story = { name: '셀렉트-높이일치', render: () => <div className="flex items-start gap-2"><Input aria-label="검색" /><StatusSelect /></div>, play: async ({ canvasElement: root }) => {
   const input = within(root).getByRole('textbox').getBoundingClientRect().height;

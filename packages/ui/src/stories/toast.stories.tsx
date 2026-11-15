@@ -18,15 +18,30 @@ export const 성공오류: Story = { name: '토스트-성공오류', render: () 
 } };
 export const 다크: Story = { name: '토스트-다크', render: () => <Demo />, play: async ({ canvasElement: root }) => {
   const html = document.documentElement; const previous = html.getAttribute('data-theme');
-  toast.error('테마 검증'); await within(document.body).findByRole('alert');
+  toast.dismiss();
+  toast.success('성공 테마 검증', { duration: Infinity });
+  toast.error('오류 테마 검증');
+  toast.info('정보 테마 검증', { duration: Infinity });
+  await within(document.body).findByRole('alert');
   try {
     for (const theme of ['dark', 'light', 'system']) {
       if (theme === 'system') html.removeAttribute('data-theme'); else html.dataset.theme = theme;
       const expected = theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
       await waitFor(() => expect(document.querySelector('[data-sonner-toaster]')).toHaveAttribute('data-sonner-theme', expected));
-      const color = getComputedStyle(document.querySelector('[data-type="error"]')!).color;
-      const probe = document.createElement('span'); probe.style.color = 'var(--status-danger-fg)'; document.body.append(probe);
-      await expect(color).toBe(getComputedStyle(probe).color); probe.remove();
+      for (const [type, tone] of [['success', 'success'], ['error', 'danger'], ['info', 'info']]) {
+        const probe = document.createElement('span');
+        document.body.append(probe);
+        try {
+          for (const [property, token] of [['color', `--status-${tone}-fg`], ['backgroundColor', `--status-${tone}-bg`], ['borderTopColor', `--status-${tone}-fg`]] as const) {
+            probe.style[property] = `var(${token})`;
+            await waitFor(() => {
+              const notification = document.querySelector(`[data-sonner-toast][data-type="${type}"]`);
+              expect(notification).not.toBeNull();
+              expect(getComputedStyle(notification!)[property]).toBe(getComputedStyle(probe)[property]);
+            });
+          }
+        } finally { probe.remove(); }
+      }
     }
   } finally { if (previous === null) html.removeAttribute('data-theme'); else html.setAttribute('data-theme', previous); toast.dismiss(); }
   root.dataset.playComplete = 'true';

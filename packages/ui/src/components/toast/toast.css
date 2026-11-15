@@ -1,10 +1,11 @@
-/* Sonner의 기본 테마보다 의미 토큰이 우선한다. 오류는 assertive, 나머지는 polite로 읽힌다. */
-.ds-toaster [data-sonner-toast] { --normal-bg: var(--bg-surface); --normal-text: var(--text-primary); --normal-border: var(--border-subtle); border-radius: var(--radius-md); }
-.ds-toaster [data-type="success"] { background: var(--status-success-bg); color: var(--status-success-fg); border-color: var(--status-success-fg); }
-.ds-toaster [data-type="error"] { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-fg); }
-.ds-toaster [data-type="info"] { background: var(--status-info-bg); color: var(--status-info-fg); border-color: var(--status-info-fg); }
-.ds-toaster [data-type="warning"] { background: var(--status-warning-bg); color: var(--status-warning-fg); border-color: var(--status-warning-fg); }
-.ds-toaster [data-sonner-toast] [data-icon] svg { width: 20px; height: 20px; }
+/* Sonner는 런타임에 CSS를 뒤에 주입한다. 기본 규칙(속성 2개)보다 구체적으로
+   범위를 지정해 로드 순서와 테마에 관계없이 의미 토큰이 우선하도록 한다. */
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] { --normal-bg: var(--bg-surface); --normal-text: var(--text-primary); --normal-border: var(--border-subtle); border-radius: var(--radius-md); }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-type="success"] { --normal-bg: var(--status-success-bg); --normal-text: var(--status-success-fg); --normal-border: var(--status-success-fg); background: var(--normal-bg); color: var(--normal-text); border-color: var(--normal-border); }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-type="error"] { --normal-bg: var(--status-danger-bg); --normal-text: var(--status-danger-fg); --normal-border: var(--status-danger-fg); background: var(--normal-bg); color: var(--normal-text); border-color: var(--normal-border); }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-type="info"] { --normal-bg: var(--status-info-bg); --normal-text: var(--status-info-fg); --normal-border: var(--status-info-fg); background: var(--normal-bg); color: var(--normal-text); border-color: var(--normal-border); }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-type="warning"] { --normal-bg: var(--status-warning-bg); --normal-text: var(--status-warning-fg); --normal-border: var(--status-warning-fg); background: var(--normal-bg); color: var(--normal-text); border-color: var(--normal-border); }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] svg { width: 20px; height: 20px; }
 
-.ds-toaster [data-sonner-toast] [data-description] { color: inherit; }
-.ds-toaster [data-sonner-toast] [data-close-button] { background: inherit; color: inherit; border-color: currentColor; }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description] { color: inherit; }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] { background: inherit; color: inherit; border-color: currentColor; }
