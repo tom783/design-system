@@ -94,3 +94,10 @@ test('금액 입력은 number 금지·text와 numeric 입력 모드 규칙을 �
   const detail = components.find(component => component.name === input.name);
   assert.ok(detail.rules.some(rule => rule.text.includes('type=text inputMode=numeric')));
 });
+
+for (const [query, expected] of [
+  ['많은 옵션에서 검색해 선택', 'Combobox'], ['초성으로 찾기', 'Combobox'],
+  ['상태 필터 20개 이하', 'Select'],
+]) test(`검색 선택 라우팅 1위: ${query} → ${expected}`, () => {
+  assert.equal(matchComponents(query, components)[0]?.name, expected);
+});

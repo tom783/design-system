@@ -45,6 +45,7 @@ const HARNESSES = [
   ['state-render-verify.mjs', '상태·아바타·썸네일'],
   ['guide-render-verify.mjs', 'Tooltip·Hint·Tour'],
   ['form-render-verify.mjs', '폼·한글 IME'],
+  ['combobox-render-verify.mjs', '검색 선택·한글 IME'],
   ['input-render-verify.mjs', '입력 타입·Textarea·Radio·Switch'],
   ['peek-render-verify.mjs', 'Peek·다녀온 행'],
   ['mcp-client-verify.mjs', 'MCP 서버'],

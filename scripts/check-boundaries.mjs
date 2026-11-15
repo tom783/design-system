@@ -13,8 +13,8 @@ export async function checkBoundaries(sourceRoot = root) {
       const source = await readFile(path, 'utf8');
       const local = relative(sourceRoot, path);
       // 정적 import·재export뿐 아니라 동적 import와 require도 같은 경계를 따른다.
-      if (!local.startsWith(`internal${sep}`) && /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]@radix-ui\//.test(source))
-        errors.push(`${local}: Radix는 src/internal/을 통해서만 사용하세요.`);
+      if (!local.startsWith(`internal${sep}`) && /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"](?:@radix-ui\/|cmdk(?:\/|['"]))/.test(source))
+        errors.push(`${local}: Radix·cmdk는 src/internal/을 통해서만 사용하세요.`);
       if (/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?)['"][^'"]*\.css['"]/.test(source))
         errors.push(`${local}: JS의 CSS import 대신 공통 CSS 진입점을 사용하세요.`);
     }

@@ -1584,6 +1584,72 @@ Radix의 document 화살표 추적 플래그가 포커스 처리 전에 지워�
 
 ---
 
+## 18. Combobox — 한글 조합 중에 거짓말하지 않는 자동완성 (R17)
+
+### 18.1 선택 기준과 책임
+
+20개 이하의 상태·정렬 필터는 Select, 20개 초과의 후보를 타이핑으로 찾는 단일 선택은
+Combobox다. **다중 선택은 아직 없다.** 목록은 maxHeight(기본 240px)와 스크롤을 쓴다.
+가상 스크롤은 제공하지 않으며 **500개를 넘기면 서버에서 걸러 내려주는 것이 앱 책임**이다.
+트리거는 Select와 같은 --control-h-md와 3:1 비텍스트 대비의 --border-input을 재사용한다.
+Field가 준 id·aria-describedby·aria-invalid·required는 실제 트리거에 전달한다.
+오류 문장과 아이콘은 Field가 소유하며 invalid는 기존 Input과 같은 이름이다.
+
+### 18.2 필터와 한글 조합
+
+cmdk는 shouldFilter=false로 사용한다. comboboxFilter(query, value)는 순수 함수이며
+NFC·한국어 소문자·공백 제거 후 부분 문자열 → 초성만인 질의의 초성 열 → 자모 분해
+부분 문자열 순서로 판정한다. `ㅅㅇ`은 서울 본사, `물ㄹ`은 서산 물류센터를 찾는다.
+filter(query, option)으로 앱의 매칭 정책을 주입할 수 있다. 한글 분해는 §11.6의 언어
+처리 계층이다. 이메일 정규식·사업자번호 체크섬 등 도메인 검증을 추가하지 않는다.
+
+**조합 중에는 결과 없음을 말하지 않는다.** `ㅅ → 서 → 설 → 서울`에서 `설`은 정상
+중간 음절이지만 실제 매칭은 0개다. 필터 결과가 1개 이상일 때마다 직전 결과를 ref에
+보관하고, 조합 중 0개면 그 결과를 보여준다. 조합이 끝나면 즉시 실제 결과로 전환한다.
+최초 후보 자체가 없으면 조합 중 빈 문구만 숨긴다. 확정된 없는 질의에는 기본 문구
+"결과가 없습니다"를 보여준다. 검색어의 표시값은 조합 중에도 변형하지 않는다.
+기존 useComposition()을 재사용하고 조합 종료 자체도 렌더해 마지막 input이 없어도 갱신한다.
+
+### 18.3 키보드·활성·고른 값
+
+키보드 탐색·aria-activedescendant·스크롤 추적은 cmdk가 소유한다. **cmdk의
+aria-selected는 활성 후보라는 뜻을 그대로 채택한다.** 실제 고른 값(value)은 체크
+아이콘·굵기·"선택한 값" 보조 문구와 data-value-selected로 구분한다. cmdk 내부 선택자를
+덮어쓰면 화살표 탐색이 깨지므로 속성을 사후 변조하지 않는다. 초기 첫 후보는
+aria-selected=true지만 aria-activedescendant는 첫 이동 전 없을 수 있다.
+
+열려 있는 동안 DOM 포커스는 검색 입력에 남는다. 입력은 role=combobox,
+aria-autocomplete=list와 실제 role=listbox를 가리키는 aria-controls를 cmdk로부터 받는다.
+**트리거에는 role=combobox를 주지 않는다.** 주면 열린 동안 콤보박스가 두 개가 된다 —
+실측에서 트리거와 입력이 둘 다 role=combobox로, 둘 다 aria-hidden 조상 없이 같은
+listbox를 aria-controls로 가리켰다. 스크린리더는 콤보박스 두 개를 본다.
+콤보박스는 aria-activedescendant와 aria-controls를 소유하는 **입력 하나**다.
+트리거는 그 입력이 든 팝오버를 여는 버튼이며 aria-haspopup=dialog와 aria-expanded만 갖는다.
+shadcn은 둘 다 주지만 그건 흠이고 따라가지 않는다. 하네스가 role=combobox 개수를 센다.
+cmdk가 입력 id를 소유하므로 외부 Field 레이블은 트리거 id에 연결한다. 입력 이름은
+Command의 한국어 label로 연결한다. 검사는 data-slot을 쓰고 id 상수를 가정하지 않는다.
+
+조합 중 Enter·ArrowUp/Down·Escape는 cmdk나 조상 FormFlow로 전파하지 않고 IME 기본
+동작을 보존한다. Radix의 document capture Escape도 useComposition으로 별도 보호한다.
+조합이 끝난 Enter만 값을 선택하고 닫으며 Escape로 닫으면 트리거로 포커스가 돌아온다.
+기존 internal/popover의 포털과 포커스 복귀를 쓰며 새 포털 구현·z-index·토큰을 만들지 않는다.
+cmdk도 Radix처럼 internal/에서만 import하도록 경계 검사로 막는다.
+
+### 18.4 검증과 사전 실측의 한계
+
+이번 작업은 브라우저를 실행하지 않으며 새 실측값을 주장하지 않는다. 설치된 cmdk
+소스에는 nativeEvent.isComposing 또는 keyCode=229 검사도 있지만, 본 컴포넌트는
+§11.1의 단일 composition 이벤트 기준 가드를 명시적으로 유지한다. 사전 실측의
+Enter defaultPrevented=false만으로 라이브러리의 선택 여부를 단정하지 않는다.
+
+combobox-render-verify.mjs는 browser.mjs를 통해 Input.imeSetComposition으로 네 단계를
+그대로 재생하고 매 단계 표시 항목 >0·빈 문구 없음, 조합 Enter/화살표/Escape 보호,
+확정 후 Enter 선택·실재 option으로 활성 이동·입력 포커스·ARIA 배선·초성 검색·진짜 빈
+결과·Escape 트리거 복귀·콘솔 오류를 검사한다. 실행은 사용자의 pnpm qa에 맡긴다.
+모든 스토리 play는 열린 목록을 닫고 끝나며, 포커스 단정은 조건 대기 뒤 수행한다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

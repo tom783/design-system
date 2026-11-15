@@ -28,6 +28,7 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('Combobox','form','많은 옵션에서 검색해 단일 값을 선택한다.',['20개를 넘는 후보에서 타이핑으로 찾을 때','초성으로 찾기'],['조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지','다중 선택과 가상 스크롤은 제공하지 않는다'],'18','shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.',['options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택']),
   entry("Tabs","navigation","상세 정보를 탭으로 나누기 위한 루트다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라"],"16","automatic 기본값을 유지하고 서버 패널은 manual을 명시한다. 가로 스크롤과 선택 탭 끌어오기, reduced-motion을 지원한다. 줄바꿈하거나 스크롤바를 숨기지 않는다. 선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도 outline이다. 패널의 aria-labelledby와 tabindex를 유지한다.",["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent"],["탭", "탭으로 나누기", "분류별 패널"]),
   part("TabsList", "Tabs", "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.", ["aria-label"], ["tabs-list"]),
   part("TabsTrigger", "Tabs", "패널을 선택하는 탭 버튼이다.", ["value", "disabled"], ["tabs-trigger"]),
@@ -67,7 +68,7 @@ const intents = [
     ['SelectSeparator', '선택 그룹 구분선', ['select-separator'], 'Select'],
     ['SelectScrollUpButton', '목록 위로 스크롤', ['select-scroll-up-button'], 'Select'],
     ['SelectScrollDownButton', '목록 아래로 스크롤', ['select-scroll-down-button'], 'Select'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.', [], slots, ['Field'], ['선택 필터', '셀렉트'])),
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.', [], slots, ['Field', 'Combobox'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
   ...[
     ['DropdownMenu', '행 액션 메뉴 루트', [], null],
     ['DropdownMenuTrigger', '행 액션 열기', ['dropdown-menu-trigger'], 'DropdownMenu'],
