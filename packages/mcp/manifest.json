@@ -4087,7 +4087,7 @@
       ],
       "rules": [
         {
-          "text": "automatic 기본값을 유지하고 서버 패널은 manual을 명시한다.",
+          "text": "automatic 기본값을 유지하고 서버 패널은 manual을 명시한다. 가로 스크롤과 선택 탭 끌어오기, reduced-motion을 지원한다. 줄바꿈하거나 스크롤바를 숨기지 않는다. 선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도 outline이다. 패널의 aria-labelledby와 tabindex를 유지한다.",
           "source": "DESIGN.md 16"
         }
       ],
@@ -4100,6 +4100,11 @@
         "탭",
         "탭으로 나누기",
         "분류별 패널"
+      ],
+      "parts": [
+        "TabsList",
+        "TabsTrigger",
+        "TabsContent"
       ],
       "kind": "component",
       "source": "packages/ui/src/components/tabs/tabs.tsx",
@@ -4114,27 +4119,8 @@
     },
     {
       "name": "TabsList",
-      "category": "navigation",
+      "partOf": "Tabs",
       "purpose": "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.",
-      "useWhen": [
-        "탭 헤더를 묶을 때"
-      ],
-      "dont": [
-        "줄바꿈하거나 스크롤바를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "가로 스크롤과 선택 탭 끌어오기를 제공하고 reduced-motion에서 smooth를 끈다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Tabs"
-      ],
-      "keywords": [
-        "탭 헤더",
-        "탭 목록"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/tabs/tabs.tsx",
       "props": [],
@@ -4148,27 +4134,8 @@
     },
     {
       "name": "TabsTrigger",
-      "category": "navigation",
+      "partOf": "Tabs",
       "purpose": "패널을 선택하는 탭 버튼이다.",
-      "useWhen": [
-        "탭의 선택 항목을 표시할 때"
-      ],
-      "dont": [
-        "선택을 색만으로 표시하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도의 outline이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Tabs"
-      ],
-      "keywords": [
-        "탭 버튼",
-        "탭 선택"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/tabs/tabs.tsx",
       "props": [],
@@ -4182,27 +4149,8 @@
     },
     {
       "name": "TabsContent",
-      "category": "navigation",
+      "partOf": "Tabs",
       "purpose": "선택한 상세 패널을 표시한다.",
-      "useWhen": [
-        "탭에 연결할 내용을 렌더할 때"
-      ],
-      "dont": [
-        "aria-labelledby와 패널 포커스를 제거하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "Radix의 패널 연결과 tabindex를 유지한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Tabs"
-      ],
-      "keywords": [
-        "탭 패널",
-        "탭 내용"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/tabs/tabs.tsx",
       "props": [],
@@ -4226,7 +4174,7 @@
       ],
       "rules": [
         {
-          "text": "nav와 ol로 표현한다. 앱이 consume으로 필터·스크롤·재방문 행을 복원한다.",
+          "text": "nav와 ol로 표현한다. 마지막은 aria-current page, separator는 presentation·aria-hidden이다. 긴 경로는 첫 항목·생략·마지막 두 항목이며 생략 수를 알린다. 앱이 consume으로 필터·스크롤·재방문 행을 복원한다.",
           "source": "DESIGN.md 16"
         }
       ],
@@ -4239,6 +4187,14 @@
         "빵부스러기",
         "뒤로",
         "목록으로 돌아가는 경로"
+      ],
+      "parts": [
+        "BreadcrumbList",
+        "BreadcrumbItem",
+        "BreadcrumbLink",
+        "BreadcrumbPage",
+        "BreadcrumbSeparator",
+        "BreadcrumbEllipsis"
       ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
@@ -4253,26 +4209,8 @@
     },
     {
       "name": "BreadcrumbList",
-      "category": "navigation",
+      "partOf": "Breadcrumb",
       "purpose": "경로 항목의 순서 목록이다.",
-      "useWhen": [
-        "Breadcrumb의 경로를 조립할 때"
-      ],
-      "dont": [
-        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Breadcrumb"
-      ],
-      "keywords": [
-        "경로 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
       "props": [],
@@ -4286,26 +4224,8 @@
     },
     {
       "name": "BreadcrumbItem",
-      "category": "navigation",
+      "partOf": "Breadcrumb",
       "purpose": "경로의 개별 항목이다.",
-      "useWhen": [
-        "Breadcrumb의 경로를 조립할 때"
-      ],
-      "dont": [
-        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Breadcrumb"
-      ],
-      "keywords": [
-        "경로 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
       "props": [],
@@ -4319,26 +4239,8 @@
     },
     {
       "name": "BreadcrumbLink",
-      "category": "navigation",
+      "partOf": "Breadcrumb",
       "purpose": "라우터를 지정하지 않는 상위 경로 링크다.",
-      "useWhen": [
-        "Breadcrumb의 경로를 조립할 때"
-      ],
-      "dont": [
-        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Breadcrumb"
-      ],
-      "keywords": [
-        "상위 경로 링크"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
       "props": [
@@ -4358,26 +4260,8 @@
     },
     {
       "name": "BreadcrumbPage",
-      "category": "navigation",
+      "partOf": "Breadcrumb",
       "purpose": "링크가 아닌 현재 경로 항목이다.",
-      "useWhen": [
-        "Breadcrumb의 경로를 조립할 때"
-      ],
-      "dont": [
-        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Breadcrumb"
-      ],
-      "keywords": [
-        "현재 경로"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
       "props": [],
@@ -4391,26 +4275,8 @@
     },
     {
       "name": "BreadcrumbSeparator",
-      "category": "navigation",
+      "partOf": "Breadcrumb",
       "purpose": "보조기기가 읽지 않는 경로 구분자다.",
-      "useWhen": [
-        "Breadcrumb의 경로를 조립할 때"
-      ],
-      "dont": [
-        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Breadcrumb"
-      ],
-      "keywords": [
-        "경로 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
       "props": [],
@@ -4424,26 +4290,8 @@
     },
     {
       "name": "BreadcrumbEllipsis",
-      "category": "navigation",
+      "partOf": "Breadcrumb",
       "purpose": "접힌 경로 수를 읽을 수 있는 생략 표시다.",
-      "useWhen": [
-        "Breadcrumb의 경로를 조립할 때"
-      ],
-      "dont": [
-        "마지막 항목을 링크로 만들거나 생략 수를 숨기지 마라"
-      ],
-      "rules": [
-        {
-          "text": "마지막은 aria-current page, separator는 presentation·aria-hidden. 긴 경로는 첫 항목·생략·마지막 두 항목이다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Breadcrumb"
-      ],
-      "keywords": [
-        "생략된 경로"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
       "props": [
@@ -4473,7 +4321,7 @@
       ],
       "rules": [
         {
-          "text": "제목 → 설명 → 내용 → 푸터 순서이며 초기 포커스는 첫 포커스 가능 요소다.",
+          "text": "제목 → 설명 → 내용 → 푸터 순서이며 초기 포커스는 첫 포커스 가능 요소다. 파괴적 버튼을 첫 요소로 두지 않는다. 저장하지 않은 변경이 있을 때 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Escape를 무반응으로 삼키지 않는다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
           "source": "DESIGN.md 16"
         }
       ],
@@ -4488,6 +4336,15 @@
         "팝업",
         "편집"
       ],
+      "parts": [
+        "DialogTrigger",
+        "DialogContent",
+        "DialogHeader",
+        "DialogTitle",
+        "DialogDescription",
+        "DialogFooter",
+        "DialogClose"
+      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4497,27 +4354,8 @@
     },
     {
       "name": "DialogTrigger",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "입력 창을 여는 트리거다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4531,27 +4369,8 @@
     },
     {
       "name": "DialogContent",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "입력 창의 포털과 닫기 보호다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [
@@ -4586,27 +4405,8 @@
     },
     {
       "name": "DialogHeader",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "입력 창 제목·설명 그룹이다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4620,27 +4420,8 @@
     },
     {
       "name": "DialogTitle",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "입력 창의 필수 제목이다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4654,27 +4435,8 @@
     },
     {
       "name": "DialogDescription",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "입력 창의 필수 설명이다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4688,27 +4450,8 @@
     },
     {
       "name": "DialogFooter",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "입력 창 하단의 액션 그룹이다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4722,27 +4465,8 @@
     },
     {
       "name": "DialogClose",
-      "category": "overlay",
+      "partOf": "Dialog",
       "purpose": "닫기 보호 중에도 동작하는 명시적 닫기다.",
-      "useWhen": [
-        "Dialog의 입력·편집 화면을 조립할 때"
-      ],
-      "dont": [
-        "파괴적 버튼을 첫 포커스 요소로 배치하지 마라",
-        "확인 없이 Escape를 무반응으로 삼키지 마라"
-      ],
-      "rules": [
-        {
-          "text": "입력 Content는 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "Dialog"
-      ],
-      "keywords": [
-        "입력 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/dialog.tsx",
       "props": [],
@@ -4767,7 +4491,7 @@
       ],
       "rules": [
         {
-          "text": "Cancel 초기 포커스, 바깥 클릭 유지, Escape 닫기는 Radix 기본값을 유지한다.",
+          "text": "Cancel 초기 포커스, 바깥 클릭 유지, Escape 닫기는 Radix 기본값을 유지한다. danger 액션은 기존 Button 토큰을 재사용한다.",
           "source": "DESIGN.md 16"
         }
       ],
@@ -4782,6 +4506,16 @@
         "되돌릴 수 없",
         "취소 확인"
       ],
+      "parts": [
+        "AlertDialogTrigger",
+        "AlertDialogContent",
+        "AlertDialogHeader",
+        "AlertDialogTitle",
+        "AlertDialogDescription",
+        "AlertDialogFooter",
+        "AlertDialogAction",
+        "AlertDialogCancel"
+      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4791,27 +4525,8 @@
     },
     {
       "name": "AlertDialogTrigger",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "확인 창을 여는 트리거다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4825,27 +4540,8 @@
     },
     {
       "name": "AlertDialogContent",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "파괴적 선택 확인의 포털이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4860,27 +4556,8 @@
     },
     {
       "name": "AlertDialogHeader",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "확인 제목·설명 그룹이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4894,27 +4571,8 @@
     },
     {
       "name": "AlertDialogTitle",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "확인 창의 필수 제목이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4928,27 +4586,8 @@
     },
     {
       "name": "AlertDialogDescription",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "되돌릴 수 없는 결과의 설명이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4962,27 +4601,8 @@
     },
     {
       "name": "AlertDialogFooter",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "확인·취소 액션 그룹이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -4996,27 +4616,8 @@
     },
     {
       "name": "AlertDialogAction",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "확정 동작과 기존 danger 변형이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [
@@ -5037,27 +4638,8 @@
     },
     {
       "name": "AlertDialogCancel",
-      "category": "overlay",
+      "partOf": "AlertDialog",
       "purpose": "초기 포커스를 받는 필수 취소 버튼이다.",
-      "useWhen": [
-        "AlertDialog의 파괴적 선택 확인을 조립할 때"
-      ],
-      "dont": [
-        "폼을 넣거나 Cancel을 생략하지 마라",
-        "바깥 클릭·Escape 기본 동작을 덮어쓰지 마라"
-      ],
-      "rules": [
-        {
-          "text": "취소가 기본이며 danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
-        }
-      ],
-      "related": [
-        "AlertDialog"
-      ],
-      "keywords": [
-        "확인 창 구성"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
       "props": [],
@@ -5092,6 +4674,17 @@
         "선택 필터",
         "셀렉트"
       ],
+      "parts": [
+        "SelectTrigger",
+        "SelectValue",
+        "SelectContent",
+        "SelectGroup",
+        "SelectLabel",
+        "SelectItem",
+        "SelectSeparator",
+        "SelectScrollUpButton",
+        "SelectScrollDownButton"
+      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5103,27 +4696,8 @@
     },
     {
       "name": "SelectTrigger",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "선택 필터를 여는 38px 버튼",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5138,27 +4712,8 @@
     },
     {
       "name": "SelectValue",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "선택값 또는 플레이스홀더",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5172,27 +4727,8 @@
     },
     {
       "name": "SelectContent",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "포털의 선택 목록",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5207,27 +4743,8 @@
     },
     {
       "name": "SelectGroup",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "선택 항목 그룹",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5241,27 +4758,8 @@
     },
     {
       "name": "SelectLabel",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "선택 그룹 레이블",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5275,27 +4773,8 @@
     },
     {
       "name": "SelectItem",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "단일 선택 옵션",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5309,27 +4788,8 @@
     },
     {
       "name": "SelectSeparator",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "선택 그룹 구분선",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5343,27 +4803,8 @@
     },
     {
       "name": "SelectScrollUpButton",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "목록 위로 스크롤",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5377,27 +4818,8 @@
     },
     {
       "name": "SelectScrollDownButton",
-      "category": "form",
+      "partOf": "Select",
       "purpose": "목록 아래로 스크롤",
-      "useWhen": [
-        "20개 이하의 상태·정렬 옵션을 선택할 때"
-      ],
-      "dont": [
-        "20개 초과는 Combobox를 사용한다"
-      ],
-      "rules": [
-        {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
-          "source": "DESIGN.md 11.4"
-        }
-      ],
-      "related": [
-        "Field"
-      ],
-      "keywords": [
-        "선택 필터",
-        "셀렉트"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
@@ -5432,6 +4854,22 @@
         "행 메뉴",
         "드롭다운 액션"
       ],
+      "parts": [
+        "DropdownMenuTrigger",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuCheckboxItem",
+        "DropdownMenuRadioItem",
+        "DropdownMenuLabel",
+        "DropdownMenuSeparator",
+        "DropdownMenuShortcut",
+        "DropdownMenuGroup",
+        "DropdownMenuPortal",
+        "DropdownMenuSub",
+        "DropdownMenuSubContent",
+        "DropdownMenuSubTrigger",
+        "DropdownMenuRadioGroup"
+      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5441,27 +4879,8 @@
     },
     {
       "name": "DropdownMenuTrigger",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "행 액션 열기",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5475,27 +4894,8 @@
     },
     {
       "name": "DropdownMenuContent",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "포털 액션 목록",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5509,27 +4909,8 @@
     },
     {
       "name": "DropdownMenuItem",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "액션 실행 항목",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [
@@ -5555,27 +4936,8 @@
     },
     {
       "name": "DropdownMenuCheckboxItem",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "체크형 메뉴 항목",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5589,27 +4951,8 @@
     },
     {
       "name": "DropdownMenuRadioItem",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "라디오형 메뉴 항목",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5623,27 +4966,8 @@
     },
     {
       "name": "DropdownMenuLabel",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "메뉴 그룹 이름",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [
@@ -5663,27 +4987,8 @@
     },
     {
       "name": "DropdownMenuSeparator",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "메뉴 구분선",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5697,27 +5002,8 @@
     },
     {
       "name": "DropdownMenuShortcut",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "메뉴 단축키 표시",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5731,27 +5017,8 @@
     },
     {
       "name": "DropdownMenuGroup",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "메뉴 항목 그룹",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5765,27 +5032,8 @@
     },
     {
       "name": "DropdownMenuPortal",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "메뉴 포털",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5795,27 +5043,8 @@
     },
     {
       "name": "DropdownMenuSub",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 루트",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5825,27 +5054,8 @@
     },
     {
       "name": "DropdownMenuSubContent",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 목록",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -5859,27 +5069,8 @@
     },
     {
       "name": "DropdownMenuSubTrigger",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 열기",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [
@@ -5899,27 +5090,8 @@
     },
     {
       "name": "DropdownMenuRadioGroup",
-      "category": "action",
+      "partOf": "DropdownMenu",
       "purpose": "라디오 메뉴 그룹",
-      "useWhen": [
-        "표의 행에서 액션을 실행할 때"
-      ],
-      "dont": [
-        "파괴적 항목을 색만으로 구분하지 마라"
-      ],
-      "rules": [
-        {
-          "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
-        }
-      ],
-      "related": [
-        "DataTable"
-      ],
-      "keywords": [
-        "행 메뉴",
-        "드롭다운 액션"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
@@ -6234,6 +5406,12 @@
         "카드",
         "Card"
       ],
+      "parts": [
+        "CardHeader",
+        "CardTitle",
+        "CardBody",
+        "CardFooter"
+      ],
       "kind": "component",
       "source": "packages/ui/src/components/card.tsx",
       "props": [],
@@ -6247,27 +5425,8 @@
     },
     {
       "name": "CardHeader",
-      "category": "layout",
+      "partOf": "Card",
       "purpose": "카드의 제목과 보조 동작 영역",
-      "useWhen": [
-        "카드의 제목과 보조 동작 영역이 필요할 때"
-      ],
-      "dont": [
-        "평면 카드에 그림자를 넣지 마라"
-      ],
-      "rules": [
-        {
-          "text": "경계선과 여백으로 구조를 만든다.",
-          "source": "DESIGN.md 5"
-        }
-      ],
-      "related": [
-        "Card"
-      ],
-      "keywords": [
-        "카드",
-        "CardHeader"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/card.tsx",
       "props": [],
@@ -6281,27 +5440,8 @@
     },
     {
       "name": "CardTitle",
-      "category": "layout",
+      "partOf": "Card",
       "purpose": "카드의 제목",
-      "useWhen": [
-        "카드의 제목이 필요할 때"
-      ],
-      "dont": [
-        "평면 카드에 그림자를 넣지 마라"
-      ],
-      "rules": [
-        {
-          "text": "경계선과 여백으로 구조를 만든다.",
-          "source": "DESIGN.md 5"
-        }
-      ],
-      "related": [
-        "Card"
-      ],
-      "keywords": [
-        "카드",
-        "CardTitle"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/card.tsx",
       "props": [],
@@ -6315,27 +5455,8 @@
     },
     {
       "name": "CardBody",
-      "category": "layout",
+      "partOf": "Card",
       "purpose": "카드의 본문 영역",
-      "useWhen": [
-        "카드의 본문 영역이 필요할 때"
-      ],
-      "dont": [
-        "평면 카드에 그림자를 넣지 마라"
-      ],
-      "rules": [
-        {
-          "text": "경계선과 여백으로 구조를 만든다.",
-          "source": "DESIGN.md 5"
-        }
-      ],
-      "related": [
-        "Card"
-      ],
-      "keywords": [
-        "카드",
-        "CardBody"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/card.tsx",
       "props": [],
@@ -6349,27 +5470,8 @@
     },
     {
       "name": "CardFooter",
-      "category": "layout",
+      "partOf": "Card",
       "purpose": "카드의 하단 보조 정보 영역",
-      "useWhen": [
-        "카드의 하단 보조 정보 영역이 필요할 때"
-      ],
-      "dont": [
-        "평면 카드에 그림자를 넣지 마라"
-      ],
-      "rules": [
-        {
-          "text": "경계선과 여백으로 구조를 만든다.",
-          "source": "DESIGN.md 5"
-        }
-      ],
-      "related": [
-        "Card"
-      ],
-      "keywords": [
-        "카드",
-        "CardFooter"
-      ],
       "kind": "component",
       "source": "packages/ui/src/components/card.tsx",
       "props": [],

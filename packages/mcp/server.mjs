@@ -11,8 +11,8 @@ const string = { type: 'string', minLength: 1 };
 const definitions = [
   ['get_token','토큰 조회','토큰 이름으로 값·참조·용도·Tailwind 클래스와 라이트/다크 값을 조회한다.',objectSchema({ name: string }, ['name'])],
   ['search_tokens','토큰 검색','category 또는 부분 문자열 query로 토큰을 찾는다. 분류: primitive, semantic, typography, spacing, shape, sizing, motion, loading.',objectSchema({ category: string, query: string })],
-  ['list_components','컴포넌트 목록','공개 컴포넌트와 상수의 이름·용도·import 구문을 조회한다.',objectSchema({})],
-  ['get_component','컴포넌트 조회','props·slots·규칙·금지사항·관련 컴포넌트를 조회한다. inherited props는 표준 DOM 속성이다.',objectSchema({ name: string }, ['name'])],
+  ['list_components','컴포넌트 목록','공개 컴포넌트와 상수의 이름·용도·import 구문·부품의 partOf를 조회한다.',objectSchema({})],
+  ['get_component','컴포넌트 조회','props·slots·규칙·금지사항·부품 목록을 조회한다. 부품의 공통 의도는 부모에서 합치고 inheritedFrom으로 표시한다. extends는 상속 속성이다.',objectSchema({ name: string }, ['name'])],
   ['which_component','컴포넌트 선택','작업 설명을 단순 점수로 매칭해 후보·판단 근거·useWhen·dont를 함께 준다. 최종 선택은 호출자가 판단한다.',objectSchema({ description: string, limit: { type: 'integer', minimum: 1, maximum: 10 } }, ['description'])],
   ['get_rules','규칙 조회','주제별 하드 규칙과 DESIGN.md 출처를 조회한다. topic 생략 시 전체 규칙.',objectSchema({ topic: { type: 'string', enum: ['색','타이포','간격','로딩','폼','안내','차트','표'] } })],
 ].map(([name,title,description,inputSchema]) => ({ name,title,description,inputSchema }));
@@ -55,10 +55,15 @@ function callTool(manifest, params) {
       const tokens = manifest.tokens.filter((t) => (!args.category || t.category === args.category.trim().toLowerCase()) && `${t.name} ${t.purpose} ${t.tailwind.join(' ')}`.toLowerCase().includes(query));
       return tokens.length ? structured({ tokens }) : missing('일치하는 토큰이 없습니다. category를 생략하거나 search_tokens의 query를 짧게 해보세요.');
     }
-    case 'list_components': return structured({ components: manifest.components.map(({ name, kind, purpose, import: statement }) => ({ name, kind, purpose, import: statement })) });
+    case 'list_components': return structured({ components: manifest.components.map(({ name, kind, purpose, import: statement, partOf }) => ({ name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) })) });
     case 'get_component': {
       const component = manifest.components.find((c) => c.name.toLowerCase() === args.name.trim().toLowerCase());
-      return component ? structured(component) : missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
+      if (!component) return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
+      if (!component.partOf) return structured(component);
+      const parent = manifest.components.find((c) => c.name === component.partOf);
+      // 보관 형태는 바꾸지 않는다. 한 항목을 읽을 때만 부모의 공통 의도를 완성한다.
+      const { useWhen, dont, rules, category } = parent;
+      return structured({ ...component, useWhen, dont, rules, category, inheritedFrom: parent.name });
     }
     case 'which_component': {
       const candidates = matchComponents(args.description, manifest.components, args.limit);

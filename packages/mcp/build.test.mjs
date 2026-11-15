@@ -38,6 +38,25 @@ test('6: 토큰 누락·추가·중복·끊긴 참조·브리지 이름 drift를
   expectGate(6, (f) => { f.bridgeTargets = ['missing-token']; });
   expectGate(6, (f) => { f.intents[0].tokens = ['missing-token']; });
 });
+test('7: 부모·부품의 양방향 관계와 단일 보관을 검증', () => {
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'SelectTrigger').partOf = 'Missing'; });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'Select').parts = []; });
+  expectGate(7, (f) => { delete f.intents.find((c) => c.name === 'SelectTrigger').partOf; });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'Select').parts.push('Missing'); });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'Select').parts.push('CardSkeleton'); });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'Select').parts.push('SelectTrigger'); });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'SelectTrigger').partOf = 'SelectTrigger'; });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'SelectTrigger').partOf = 'CardBody'; });
+  expectGate(7, (f) => { f.intents.find((c) => c.name === 'SelectTrigger').rules = []; });
+});
+test('부품은 고유 API만 보관하고 목적·부모 목록을 보존', async () => {
+  const { components: catalog } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+  for (const part of catalog.filter((c) => c.partOf)) {
+    assert.deepEqual(Object.keys(part).sort(), ['name', 'kind', 'partOf', 'purpose', 'props', 'extends', 'slots', 'import', 'source'].sort());
+    assert.equal(part.purpose, intents.find((c) => c.name === part.name).purpose);
+    assert.ok(catalog.find((c) => c.name === part.partOf).parts.includes(part.name));
+  }
+});
 test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 결과와 동일', async () => {
   const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   assert.deepEqual(manifest.tokens.map(({ name, light, dark }) => ({ name, light, dark })), tokens.map(({ name, light, dark }) => ({ name, light, dark })));

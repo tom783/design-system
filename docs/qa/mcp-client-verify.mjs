@@ -16,6 +16,7 @@
 //  · components 카탈로그 크기 — 커지면 AI 컨텍스트를 태운다
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 // 절대경로를 박으면 내 기계에서만 돈다. 실제로 CI(리눅스)에서 initialize 타임아웃으로 죽었다.
 const SERVER = fileURLToPath(new URL('../../packages/mcp/server.mjs', import.meta.url));
 const proc = spawn('node', [SERVER], { stdio: ['pipe','pipe','pipe'] });
@@ -117,6 +118,16 @@ const t = async (name, args) => {
   check('get_component 가 규칙 출처를 준다', /DESIGN\.md/.test(s));
 }
 {
+  const parent = (await t('get_component', { name: 'Select' })).structuredContent;
+  const r = await t('get_component', { name: 'SelectTrigger' });
+  const part = r.structuredContent;
+  check('부품 조회는 부모의 useWhen·dont·rules·category를 합친다',
+    ['useWhen', 'dont', 'rules', 'category'].every((key) => parent[key]?.length && isDeepStrictEqual(part?.[key], parent[key])));
+  check('합친 부모를 inheritedFrom으로 표시한다', part?.inheritedFrom === 'Select' && part?.partOf === 'Select');
+  check('부품 고유 purpose·API를 보존하고 텍스트 응답도 같다', part?.purpose === '선택 필터를 여는 38px 버튼' && part?.slots.includes('select-trigger') && isDeepStrictEqual(JSON.parse(r.content[0].text), part));
+  check('부모 조회는 부품 목록을 제공하고 상속 표시는 없다', parent.parts?.includes('SelectTrigger') && !Object.hasOwn(parent, 'inheritedFrom'));
+}
+{
   const r = await t('get_rules', { topic: '폼' });
   const s = JSON.stringify(r.structuredContent ?? r.content?.[0]?.text ?? '');
   check('get_rules 가 폼 규칙을 준다', s.length > 100 && !r?.isError, s.slice(0,160));
@@ -129,12 +140,18 @@ const t = async (name, args) => {
   const r = await t('list_components', {});
   const s = JSON.stringify(r.structuredContent ?? '');
   check('list_components 가 import 구문을 준다', /import \{/.test(s), s.slice(0,110));
+  const list = r.structuredContent.components;
+  check('목록은 부품의 partOf를 주고 독립 CardSkeleton은 유지한다', list.find((c) => c.name === 'SelectTrigger')?.partOf === 'Select' && !Object.hasOwn(list.find((c) => c.name === 'CardSkeleton'), 'partOf'));
+  check('목록은 이름·종류·목적·import·partOf만 제공한다', list.every((c) => Object.keys(c).every((key) => ['name', 'kind', 'purpose', 'import', 'partOf'].includes(key))));
 }
 {
   // 카탈로그가 AI 컨텍스트를 태우지 않을 만큼 작은가
   const rr = await call('resources/read', { uri: 'design://components' });
   const kb = Buffer.byteLength(rr.result.contents[0].text) / 1024;
   check('components 카탈로그가 80KB 이하', kb <= 80, kb.toFixed(0) + 'KB');
+  const catalog = JSON.parse(rr.result.contents[0].text);
+  const part = catalog.find((c) => c.name === 'SelectTrigger');
+  check('리소스는 조회 후에도 상속을 합치지 않은 보관 형태다', part.partOf === 'Select' && ['useWhen', 'dont', 'rules', 'category', 'related', 'keywords', 'inheritedFrom'].every((key) => !Object.hasOwn(part, key)));
 }
 {
   const bad = await call('tools/call', { name: '없는도구', arguments: {} });

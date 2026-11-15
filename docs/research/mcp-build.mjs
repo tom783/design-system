@@ -128,10 +128,22 @@ export function validate({ components, intents, sections, tokens, expectedNames,
     if (intents.filter((c) => c.name === item.name).length !== 1) errors.push(`[1 export] ${item.name}: 중복 항목`);
     for (const prop of item.props) if (!source?.propNames.includes(prop)) errors.push(`[2 props] ${item.name}.${prop}: 실제 props에 없음`);
     for (const slot of item.slots) if (!source?.slots.includes(slot)) errors.push(`[3 slot] ${item.name}: data-slot="${slot}" 없음`);
-    for (const related of item.related) if (!names.has(related) || !sourceNames.has(related)) errors.push(`[5 related] ${item.name} → ${related}: 항목 없음`);
+    for (const related of item.related ?? []) if (!names.has(related) || !sourceNames.has(related)) errors.push(`[5 related] ${item.name} → ${related}: 항목 없음`);
     for (const token of item.tokens ?? []) if (!tokenNames.has(token)) errors.push(`[6 token] ${item.name} → ${token}: tokens.json에 없음`);
+    if (Object.hasOwn(item, 'partOf')) {
+      const parent = intents.find((c) => c.name === item.partOf);
+      if (!parent || !sourceNames.has(item.partOf)) errors.push(`[7 parts] ${item.name} → ${item.partOf}: 부모 없음`);
+      else if (parent === item || parent.partOf || !parent.parts?.includes(item.name)) errors.push(`[7 parts] ${item.name} → ${item.partOf}: 루트 부모의 parts와 불일치`);
+      for (const field of ['useWhen', 'dont', 'rules', 'related', 'keywords', 'category'])
+        if (Object.hasOwn(item, field)) errors.push(`[7 parts] ${item.name}.${field}: 공통 의도는 부모에만 보관`);
+    }
+    for (const name of item.parts ?? []) {
+      const part = intents.find((c) => c.name === name);
+      if (!part || !sourceNames.has(name) || part.partOf !== item.name) errors.push(`[7 parts] ${item.name}.parts → ${name}: 부품의 partOf와 불일치`);
+    }
+    if (new Set(item.parts).size !== (item.parts ?? []).length) errors.push(`[7 parts] ${item.name}: 부품 중복`);
   }
-  for (const item of [...intents.flatMap((c) => c.rules), ...principles]) {
+  for (const item of [...intents.flatMap((c) => c.rules ?? []), ...principles]) {
     const section = /^DESIGN\.md (\d+(?:\.\d+)*)$/.exec(item.source)?.[1];
     if (!sections.has(section)) errors.push(`[4 source] ${item.source}: 실제 DESIGN.md 제목 없음 (${item.text})`);
   }
@@ -194,7 +206,7 @@ export async function build() {
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
   assertSizeBudget(catalog, manifest);
   await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
-  console.error(`MCP 검증 6종 통과: export ${catalog.length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
+  console.error(`MCP 검증 7종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   build().catch((error) => { console.error(error.message); process.exitCode = 1; });

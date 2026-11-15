@@ -4,8 +4,25 @@ import { readFile } from 'node:fs/promises';
 import { matchComponents } from './match.mjs';
 const { components } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
 
-test('정확한 이름은 해당 컴포넌트가 1위', () => {
-  for (const c of components.filter((c) => c.kind === 'component')) assert.equal(matchComponents(c.name, components)[0].name, c.name);
+test('정확한 이름은 독립 컴포넌트가 1위이며 부품은 선택 후보에서 제외', () => {
+  for (const c of components.filter((c) => c.kind === 'component' && !c.partOf)) assert.equal(matchComponents(c.name, components)[0].name, c.name);
+  for (const c of components.filter((c) => c.partOf)) assert.ok(!matchComponents(c.name, components, components.length).some((candidate) => candidate.name === c.name));
+});
+test('가족 선택 질문에 부품이 끼지 않고 CardSkeleton은 독립 후보로 남는다', () => {
+  for (const [query, parent, excluded] of [
+    ['카드로 묶기', 'Card', ['CardBody', 'CardHeader', 'CardFooter', 'CardTitle']],
+    ['상태 선택 필터', 'Select', ['SelectTrigger']],
+    ['경로 구분자', 'Breadcrumb', ['BreadcrumbSeparator']],
+  ]) {
+    const candidates = matchComponents(query, components, components.length);
+    assert.equal(candidates[0]?.name, parent);
+    assert.ok(excluded.every((name) => !candidates.some((c) => c.name === name)));
+    assert.ok(candidates.every((c) => !components.find((item) => item.name === c.name).partOf));
+  }
+  assert.ok(!Object.hasOwn(components.find((c) => c.name === 'CardSkeleton'), 'partOf'));
+  assert.ok(!components.find((c) => c.name === 'Card').parts.includes('CardSkeleton'));
+  assert.equal(matchComponents('CardSkeleton', components)[0]?.name, 'CardSkeleton');
+  assert.ok(matchComponents('카드로 묶기', components).some((c) => c.name === 'CardSkeleton'));
 });
 test('한국어 행 요약은 Peek, 복수 후보에 근거·사용 조건·금지사항 포함', () => {
   const candidates = matchComponents('표에서 행 요약을 보여주고 싶다', components);

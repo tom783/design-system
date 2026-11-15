@@ -4,7 +4,8 @@ export function matchComponents(description, components, limit = 5) {
   const query = normalize(description);
   if (!query) return [];
   const words = description.normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 2);
-  return components.filter((c) => c.kind !== 'constant').map((component) => {
+  // 선택 질문에는 조립 루트만 답한다. 개별 부품은 부모의 parts와 get_component로 찾는다.
+  return components.filter((c) => c.kind !== 'constant' && !c.partOf).map((component) => {
     let score = 0;
     const reasons = [];
     if (query.includes(normalize(component.name))) { const weight = query === normalize(component.name) ? 2000 : 1000;
