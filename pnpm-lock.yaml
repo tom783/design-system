@@ -65,7 +65,7 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(@types/react@19.3.0)(react@19.3.1)
       '@s2life/tokens':
-        specifier: 0.1.0
+        specifier: 0.1.1
         version: link:../tokens
       '@tanstack/react-table':
         specifier: ^9.3.1
