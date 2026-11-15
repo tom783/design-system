@@ -1,12 +1,19 @@
 # 배포 워크플로 — **자동으로 돌지 않는다.**
 #
-# 트리거가 workflow_dispatch 뿐이라 push·tag·PR 로는 절대 실행되지 않는다.
-# 실행하려면 사람이 Actions 탭에서 직접 눌러야 하고, 그때도 confirm 입력란에
-# 정확히 "publish" 를 쳐야 한다. 거기에 더해 각 패키지의 prepublishOnly 가
-# S2LIFE_PUBLISH=1 을 요구한다 — 의도적인 동작이 세 번 겹쳐야 나간다.
+# 보호가 네 겹이다. 네 개를 전부 통과해야 패키지가 나간다:
+#   1) 트리거가 workflow_dispatch 뿐이다. push·tag·PR 로는 절대 실행되지 않는다
+#   2) confirm 입력란에 정확히 "publish" 를 쳐야 한다 (기본값은 비어 있다)
+#   3) environment: npm-publish 의 필수 검토자 승인 — 사람이 눌러야 진행된다
+#   4) 각 패키지의 prepublishOnly 가 S2LIFE_PUBLISH=1 을 요구한다
+# 게다가 기본값이 dry-run: true 라, 끄지 않으면 올리지 않고 확인만 한다.
 #
-# 레지스트리는 npmjs.com 공개다(각 package.json 의 publishConfig).
-# NPM_TOKEN 시크릿이 저장소에 등록돼 있어야 한다.
+# ── 인증: 토큰 없이 간다 (npm Trusted Publishing / OIDC) ──
+# npmjs.com 의 각 패키지 설정에 이 저장소와 이 워크플로 파일명을 신뢰 게시자로
+# 등록하면 장기 토큰이 필요 없다. 유출·만료·회전 대상이 사라진다.
+# 요건: npm ≥ 11.5.1 · Node ≥ 22.14 · 아래 id-token: write.
+#
+# 신뢰 게시자를 등록하지 않았다면 secrets.NPM_TOKEN 으로도 동작한다(폴백).
+# 둘 다 없으면 배포 단계에서 인증 실패로 멈춘다 — 조용히 넘어가지 않는다.
 name: release
 
 on:
@@ -21,10 +28,18 @@ on:
         type: boolean
         default: true
 
+# OIDC 토큰 발급에 필요하다. 이게 없으면 신뢰 게시도 --provenance 도 실패한다.
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # 필수 검토자를 걸어두면 여기서 사람 승인을 기다린다.
+    # Settings → Environments → npm-publish → Required reviewers
+    environment: npm-publish
     steps:
       - name: 확인 문구 검사
         if: inputs.confirm != 'publish'
@@ -33,6 +48,7 @@ jobs:
           exit 1
 
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -40,10 +56,22 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      - name: npm 버전 확인 (신뢰 게시 요건 11.5.1+)
+        run: |
+          echo "npm $(npm -v) · node $(node -v)"
+          V="$(npm -v)" node -e "
+            const [a, b, c] = process.env.V.split('.').map(Number);
+            if (a < 11 || (a === 11 && (b < 5 || (b === 5 && c < 1)))) {
+              console.error('npm 11.5.1 이상이 필요합니다 (신뢰 게시 요건). 현재 ' + process.env.V);
+              process.exit(1);
+            }
+          "
+
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps chromium-headless-shell
 
       # verify.yml 과 같은 이유 — Ubuntu 의 user namespace 제한만 푼다.
+      # --no-sandbox 로 끄지 않는다. 자세한 이유는 AGENTS.md 참고.
       - run: |
           if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
             echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
@@ -62,12 +90,17 @@ jobs:
 
       - name: 배포
         env:
+          # 신뢰 게시자를 등록했다면 비어 있어도 된다 — OIDC 로 인증한다.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           S2LIFE_PUBLISH: '1'
           DRY: ${{ inputs.dry-run }}
         run: |
           FLAG=""
-          [ "$DRY" = "true" ] && FLAG="--dry-run" && echo "::notice::dry-run 입니다. 실제로 올리지 않습니다."
+          if [ "$DRY" = "true" ]; then
+            FLAG="--dry-run"
+            echo "::notice::dry-run 입니다. 실제로 올리지 않습니다."
+          fi
+          # tokens → ui → mcp 순서. ui 가 tokens 를 참조하므로 먼저 올라가야 한다.
           for p in tokens ui mcp; do
             npm publish --workspace "packages/$p" --provenance $FLAG
           done

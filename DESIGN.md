@@ -1253,17 +1253,36 @@ npmjs 공개면 소비 앱이 토큰 없이 설치하고, 저장소는 비공개
 우리 네 제품이 쓰는 것이 목적이고 외부 사용을 의도하지 않는다.
 외부 공개 의사가 생기면 그때 바꾼다.
 
-### 15.9 배포는 세 겹으로 막혀 있다
+### 15.9 배포는 네 겹으로 막혀 있다
 
 사람이 허가하기 전에는 나가지 않는다.
 
-1. 각 패키지의 `prepublishOnly` 가 `S2LIFE_PUBLISH=1` 을 요구한다
-2. `.github/workflows/release.yml` 은 **`workflow_dispatch` 단독**이다 —
+1. `.github/workflows/release.yml` 은 **`workflow_dispatch` 단독**이다 —
    push·tag·PR 로는 절대 실행되지 않는다
-3. 그 수동 실행조차 `confirm` 입력란에 정확히 `publish` 를 쳐야 하고,
-   기본값은 `dry-run: true` 다
+2. 그 수동 실행조차 `confirm` 입력란에 정확히 `publish` 를 쳐야 한다
+3. `environment: npm-publish` 의 **필수 검토자 승인** — 사람이 눌러야 진행된다
+4. 각 패키지의 `prepublishOnly` 가 `S2LIFE_PUBLISH=1` 을 요구한다
 
+기본값이 `dry-run: true` 라, 끄지 않으면 올리지 않고 확인만 한다.
 배포 전에 `pnpm gate`(배포 리허설 포함)와 버전 lockstep 검사를 통과해야 한다.
+
+### 15.10 인증은 토큰 없이 — npm 신뢰 게시(OIDC)
+
+장기 토큰을 만들지 않는다. 유출·만료·회전 대상을 하나 줄이는 쪽이 낫다.
+
+npmjs.com 의 패키지 설정에 **이 저장소 + 워크플로 파일명 + environment 이름**을
+신뢰 게시자로 등록하면, GitHub Actions 가 발급한 OIDC 토큰으로 인증한다.
+워크플로에 `permissions: id-token: write` 가 **반드시** 있어야 한다 —
+없으면 신뢰 게시도 `--provenance` 도 실패한다(처음에 빠뜨려서 겪었다).
+
+요건: npm ≥ 11.5.1 · Node ≥ 22.14. 워크플로가 실행 시 검사한다.
+
+**주의 — 신뢰 게시자 설정은 등록 후 2일 안에 첫 배포를 해야 한다.**
+그래서 미리 등록하지 않는다. **배포하기로 한 날 등록한다.**
+
+등록하지 않았다면 `secrets.NPM_TOKEN`(granular access token)으로도 동작한다.
+그 경우 토큰은 npmjs.com → 프로필 → Access Tokens → Generate New Token 에서
+만들고, 범위는 `@s2life` 스코프로 좁힌다.
 
 ---
 
