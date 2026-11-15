@@ -35,3 +35,8 @@ export * from './components/peek';
 export * from './components/state';
 export * from './components/avatar';
 export * from './components/thumbnail';
+
+export * from './components/select';
+export * from './components/dropdown-menu';
+export * from './components/toast';
+export * from './components/date-picker';

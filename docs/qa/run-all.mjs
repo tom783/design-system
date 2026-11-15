@@ -46,6 +46,7 @@ const HARNESSES = [
   ['form-render-verify.mjs', '폼·한글 IME'],
   ['peek-render-verify.mjs', 'Peek·다녀온 행'],
   ['mcp-client-verify.mjs', 'MCP 서버'],
+  ['list-screen-render-verify.mjs', '목록 필터·행 액션·알림'],
 ];
 
 const failed = [];

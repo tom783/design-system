@@ -220,8 +220,15 @@ export function storybook(session, { base = 'http://localhost:6099' } = {}) {
       // 스토리 id 가 틀리면 모든 검사가 조용히 통과해버린다 — 실제로 당했다.
       // 캔버스가 비어 있으면 뒤따르는 단언이 전부 무의미하므로 여기서 멈춘다.
       if (!sbError) {
-        const rendered = await ev(`(() => { const r = ${CANVAS};
-          return r ? r.innerHTML.trim().length : -1; })()`).catch(() => -1);
+        // 렌더를 기다렸다가 판정한다. waitPlay:false 로 열면 React 마운트 전이라
+        // 한 번만 보면 멀쩡한 스토리도 '비어 있음' 으로 잡힌다.
+        let rendered = -1;
+        for (let i = 0; i < 40; i++) {
+          rendered = await ev(`(() => { const r = ${CANVAS};
+            return r ? r.innerHTML.trim().length : -1; })()`).catch(() => -1);
+          if (rendered > 0) break;
+          await sleep(125);
+        }
         if (rendered <= 0) {
           throw new Error(
             `스토리가 렌더되지 않았습니다: ${id}\n` +
