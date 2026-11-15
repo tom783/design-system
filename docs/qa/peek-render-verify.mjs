@@ -54,6 +54,10 @@ const peek=await ev(`(async()=>{
   // 닫혀 있으면 트리거를 눌러 연다
   if(!open()){ const t=${CANVAS}.querySelector('button'); t.click(); for(let i=0;i<30&&!open();i++) await w(100); }
   const p=open(); if(!p) return {열림:false};
+  // 포커스는 useAnchored 의 레이아웃 이펙트에서 옮겨진다. popover 가 열린 직후에는
+  // 아직 안 와 있을 수 있다 — 부하가 걸린 CI 러너에서 실제로 거짓 실패했다.
+  // 조건을 기다린다. 끝까지 안 오면 그때 실패로 잡힌다.
+  for(let i=0;i<40 && !(document.activeElement===p||p.contains(document.activeElement)); i++) await w(50);
   const dl=p.querySelector('dl');
   const trigger=${CANVAS}.querySelector('button');
   return {열림:true, popover:p.getAttribute('popover'), role:p.getAttribute('role'),
@@ -83,6 +87,8 @@ const esc=await ev(`(async()=>{
   const before=!!open();
   document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   await w(350);
+  // 복귀도 비동기다. 고정 sleep 대신 조건을 기다린다.
+  for(let i=0;i<40 && document.activeElement!==trig; i++) await w(50);
   return {전:before, 후:!!open(), 트리거로복귀:document.activeElement===trig};
 })()`);
 check('Escape 로 닫힌다', esc.전===true&&esc.후===false, JSON.stringify(esc));

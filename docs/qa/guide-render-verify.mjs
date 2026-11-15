@@ -109,6 +109,9 @@ const t=await ev(`(async()=>{
   const ring = ringEl ? (()=>{const c=getComputedStyle(ringEl);
     return {w:c.outlineWidth, s:c.outlineStyle, c:c.outlineColor, off:c.outlineOffset, el:ringEl.id};})() : null;
   const 단계 = bub.innerText.match(/(\\d+)\\s*\\/\\s*(\\d+)/)?.[0] ?? null;
+  // 포커스는 레이아웃 이펙트에서 옮겨진다. 열린 직후에는 아직 안 와 있을 수 있다
+  // (CI 에서 peek 쪽이 실제로 거짓 실패했다). 조건을 기다린다.
+  for(let i=0;i<40 && document.activeElement!==bub; i++) await w(50);
   const 포커스가_말풍선 = document.activeElement===bub;
   // 링이 레이아웃을 미는가 — 다른 형제 좌표 비교
   const sib=document.querySelector('#guide-step-2');
