@@ -43,6 +43,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps chromium-headless-shell
 
+      # verify.yml 과 같은 이유 — Ubuntu 의 user namespace 제한만 푼다.
+      - run: |
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+          fi
+
       # 배포 전에 전체 게이트를 통과해야 한다. 배포 리허설도 여기 포함된다.
       - run: pnpm gate
 

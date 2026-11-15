@@ -132,6 +132,11 @@ coreservicesd 체크인이 실패해 abort 한다. **`--headless=new` 도 안전
 `--no-sandbox` · Chrome 재설치 · 프로필 삭제는 해결책이 아니다.
 Chrome 내부 샌드박스와 Orca 의 외부 Seatbelt 는 별개이고, 끄면 보안만 약해진다.
 
+**리눅스 CI 의 `No usable sandbox!` 는 이것과 다른 문제다.** Ubuntu 23.10+ 가
+AppArmor 로 비특권 user namespace 를 막아 Chromium zygote 가 초기화에 실패하는
+것이다. 증상만 비슷하다. 거기서도 `--no-sandbox` 를 쓰지 않고 워크플로에서
+커널 제한만 푼다 — 샌드박스는 켜둔다.
+
 **브라우저 검증은 `docs/qa/browser.mjs` 를 거친다.** 거기서
 `chrome-headless-shell`(AppKit 을 링크하지 않는 별도 바이너리)을 찾아 띄우고,
 GUI 앱 번들 경로는 **거부**한다. 없으면 `npx playwright install chromium-headless-shell`.

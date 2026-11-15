@@ -9,7 +9,7 @@
 //    도달 가능하고 눌리는지만 본다 — 처음에 이걸 혼동해 거짓 실패를 냈다.
 //  · 빈 404 페이지는 "오류 없음"으로 보인다. browser.mjs 의 storybook.open 이
 //    캔버스가 비면 던지도록 해뒀다. 그 가드를 지우지 마라.
-import { launchBrowser, storybook, CANVAS } from '/Users/hellground/dev/design-system/docs/qa/browser.mjs';
+import { launchBrowser, storybook, CANVAS } from './browser.mjs';
 const OUT = process.argv[2] || './shots';
 const s = await launchBrowser({ port: 9613, windowSize: '1200,900', outDir: OUT });
 const sb = storybook(s);

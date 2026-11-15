@@ -15,7 +15,9 @@
 //  · 조회 실패는 JSON-RPC 에러가 아니라 isError 결과 + 다음에 뭘 할지 안내
 //  · components 카탈로그 크기 — 커지면 AI 컨텍스트를 태운다
 import { spawn } from 'node:child_process';
-const SERVER = '/Users/hellground/dev/design-system/packages/mcp/server.mjs';
+import { fileURLToPath } from 'node:url';
+// 절대경로를 박으면 내 기계에서만 돈다. 실제로 CI(리눅스)에서 initialize 타임아웃으로 죽었다.
+const SERVER = fileURLToPath(new URL('../../packages/mcp/server.mjs', import.meta.url));
 const proc = spawn('node', [SERVER], { stdio: ['pipe','pipe','pipe'] });
 let buf = '', stderrBuf = '';
 const pending = new Map(); const notifications = []; const badLines = [];

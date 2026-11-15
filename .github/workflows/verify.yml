@@ -30,6 +30,22 @@ jobs:
       # chromium 전체가 아니라 headless shell 만 받는다.
       - run: npx playwright install --with-deps chromium-headless-shell
 
+      # Ubuntu 23.10+ 는 AppArmor 로 비특권 user namespace 를 막는다.
+      # 그러면 Chromium 의 zygote 샌드박스가 초기화에 실패하고
+      # "No usable sandbox!" 로 죽는다 (실제로 첫 CI 에서 그랬다).
+      #
+      # --no-sandbox 로 끄지 않는다. Chromium 공식 문서가 안내하는 대로
+      # 커널 제한만 푼다 — 샌드박스는 켜진 채로 둔다.
+      # 러너는 일회용이고 우리가 띄우는 것은 로컬 스토리북뿐이지만,
+      # 보호를 끄는 것과 못 쓰게 막힌 것을 푸는 것은 다르다.
+      - name: Chromium user namespace 허용 (샌드박스는 유지)
+        run: |
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+          else
+            echo "제한 파일이 없습니다 — 그대로 진행합니다."
+          fi
+
       - run: pnpm gate
 
       # 실패했을 때 화면을 볼 수 없으므로 스크린샷을 남긴다.

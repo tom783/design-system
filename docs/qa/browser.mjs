@@ -20,8 +20,14 @@
 // `chrome-headless-shell` 은 AppKit·LaunchServices 를 아예 링크하지 않는 별도
 // 바이너리라 이 경로를 타지 않는다. 기동도 더 빠르다(실측 342ms).
 //
-// `--no-sandbox` 는 해결책이 아니다. Chrome 내부 샌드박스와 Orca 의 외부
-// Seatbelt 는 별개이고, 끄면 보안만 약해지고 크래시는 그대로다.
+// `--no-sandbox` 는 **이 문제의** 해결책이 아니다. Chrome 내부 샌드박스와
+// Orca 의 외부 Seatbelt 는 별개라, 꺼도 TransformProcessType 크래시는 그대로다.
+//
+// ── 헷갈리지 마라: 리눅스 CI 의 "No usable sandbox!" 는 다른 문제다 ──
+// Ubuntu 23.10+ 는 AppArmor 로 비특권 user namespace 를 막고, 그래서 Chromium
+// zygote 샌드박스가 초기화에 실패한다. 증상만 비슷하고 원인이 다르다.
+// 거기서도 `--no-sandbox` 를 쓰지 않는다 — CI 워크플로에서 커널 제한만 풀고
+// 샌드박스는 켜둔다 (.github/workflows/verify.yml).
 //
 // ══ 바이너리 구하기 ══
 //
