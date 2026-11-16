@@ -6,13 +6,12 @@ import { useComposition } from '../form/use-composition';
 import { focusNextFormStop } from '../form/form-flow';
 import { cn } from '../../lib/cn';
 import { comboboxFilter } from './combobox-filter';
+import { MultipleCombobox } from './multiple-combobox';
 
 export interface ComboboxOption { value: string; label: string; disabled?: boolean }
-export interface ComboboxProps extends Pick<React.ComponentPropsWithRef<'button'>,
-  'id' | 'ref' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'> {
+export interface ComboboxBaseProps extends Pick<React.ComponentPropsWithRef<'button'>,
+  'id' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'> {
   options: ComboboxOption[];
-  value?: string;
-  onValueChange?: (value: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   emptyText?: string;
@@ -22,11 +21,28 @@ export interface ComboboxProps extends Pick<React.ComponentPropsWithRef<'button'
   required?: boolean;
   maxHeight?: number | string;
 }
+export interface SingleComboboxProps extends ComboboxBaseProps {
+  multiple?: false;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  ref?: React.Ref<HTMLButtonElement>;
+}
+export interface MultipleComboboxProps extends ComboboxBaseProps {
+  multiple: true;
+  value?: string[];
+  onValueChange?: (value: string[]) => void;
+  ref?: React.Ref<HTMLInputElement>;
+}
+export type ComboboxProps = SingleComboboxProps | MultipleComboboxProps;
+
+export function Combobox(props: ComboboxProps) {
+  return props.multiple ? <MultipleCombobox {...props} /> : <SingleCombobox {...props} />;
+}
 const defaultFilter = (query: string, option: ComboboxOption) => comboboxFilter(query, option.label);
 
-export function Combobox({ options, value, onValueChange, placeholder = '선택하세요',
+function SingleCombobox({ multiple: _multiple, options, value, onValueChange, placeholder = '선택하세요',
   searchPlaceholder = '검색어를 입력하세요', emptyText = '결과가 없습니다', filter = defaultFilter,
-  disabled, invalid, required, maxHeight = 240, className, ref, ...wiring }: ComboboxProps) {
+  disabled, invalid, required, maxHeight = 240, className, ref, ...wiring }: SingleComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [composing, setComposing] = React.useState(false);

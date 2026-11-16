@@ -1,18 +1,18 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
-import { Combobox, Field, type ComboboxProps, type ComboboxOption } from '../index';
+import { Combobox, Field, FormFlow, type ComboboxProps, type ComboboxOption } from '../index';
 
 const meta = { title: 'Components/Combobox', component: Combobox, args: { options: [] },
   decorators: [(Story) => <div style={{ maxWidth: 480 }}><Story /></div>],
 } satisfies Meta<typeof Combobox>;
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<{ options: ComboboxOption[] }>;
 const locations: ComboboxOption[] = ['서울 본사', '서산 물류센터', '성남 지점', '부산 지점', '대구 물류센터', '수원 창고']
   .map((label, index) => ({ value: `location-${index}`, label }));
 const many: ComboboxOption[] = [...locations,
   ...Array.from({ length: 20 }, (_, index) => ({ value: `warehouse-${index}`, label: `지역 창고 ${index + 1}`, disabled: index === 19 }))];
-function Demo(props: Omit<ComboboxProps, 'value' | 'onValueChange'>) {
+function Demo(props: Omit<Extract<ComboboxProps, { multiple?: false }>, 'value' | 'onValueChange'>) {
   const [value, setValue] = React.useState('');
   return <><Combobox {...props} value={value} onValueChange={setValue} />
     <output data-slot="combobox-demo-value" aria-label="선택 값">{value || '선택 없음'}</output></>;
@@ -117,4 +117,30 @@ export const 맞춤검색: Story = {
     await expect(within(document.body).getByRole('option', { name: '부산 지점' })).toBeVisible();
     await close(root);
   },
+};
+
+// 320px 툴바에서 4글자 사업장 라벨로 줄바꿈 수치와 긴 값의 별도 말줄임을 검증한다.
+const multiOptions: ComboboxOption[] = ['서울본사', '부산지점', '대구창고', '수원창고', '성남지점', '서산물류',
+  '울산지점', '인천창고', '광주지점', '대전창고', '청주지점', '제주창고', '아주 긴 이름을 가진 사업장 전체 라벨 보존 확인용 서울특별시 강남구 제2물류센터']
+  .map((label, index) => ({ value: `multi-${index}`, label }));
+function MultipleDemo({ initial = 0, ime = false }: { initial?: number; ime?: boolean }) {
+  const [value, setValue] = React.useState(multiOptions.slice(0, initial).map(option => option.value));
+  return <FormFlow style={{ width: 320 }} onSubmit={event => event.preventDefault()}>
+    <button type="button" data-probe="before-chips">이전 입력</button>
+    <Field label="대상 사업장" description="여러 사업장을 검색해 선택하세요" required>
+      <Combobox multiple options={ime ? [...multiOptions, ...locations] : multiOptions} value={value} onValueChange={setValue} />
+    </Field>
+    <button type="button" data-probe="after-chips">다음 입력</button>
+    <output data-slot="combobox-demo-value">{JSON.stringify(value)}</output>
+    <div aria-label="검증용 선택 개수">
+      {[0, 1, 2, 3, 4, 5, 8, 12].map(count => <button type="button" key={count} data-count={count}
+        onClick={() => setValue(multiOptions.slice(0, count).map(option => option.value))}>{count}개</button>)}
+    </div>
+  </FormFlow>;
+}
+const multipleDone: NonNullable<Story['play']> = async ({ canvasElement }) => { canvasElement.dataset.playComplete = 'true'; };
+export const 다중선택: Story = { render: () => <MultipleDemo />, play: multipleDone };
+export const 다중선택_많음: Story = { name: '다중선택-많음', render: () => <MultipleDemo initial={8} />, play: multipleDone };
+export const 다중선택_한글조합: Story = {
+  name: '다중선택-한글조합', render: () => <MultipleDemo initial={1} ime />, play: multipleDone,
 };

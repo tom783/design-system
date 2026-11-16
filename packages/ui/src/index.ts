@@ -48,3 +48,4 @@ export * from './components/radio-group';
 export * from './components/switch';
 export * from './components/label';
 export * from './components/combobox';
+export * from './components/multi-select';

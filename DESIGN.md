@@ -881,13 +881,14 @@ SelectTrigger의 기본 `w-full`은 Field용이다. 툴바 필터에서는 `clas
   반대 방향 손실은 없다 — 뒤로 가려면 `Shift+Tab` 이 있다.
 
 Enter는 원칙적으로 **“이 칸 끝났다, 다음으로”**다. 컨트롤의 값 변경은 Space·화살표가
-맡는다. 후보를 골라야 하는 Combobox만 “열고, 고르면 다음으로”다.
+맡는다. 후보를 골라야 하는 단일 Combobox는 “열고, 고르면 다음으로”다. 다중 선택은 선택 후에도 머문다.
 
 | 컨트롤 | FormFlow 안 Enter | 고유 동작 |
 |---|---|---|
 | Input | 다음 칸. 마지막 일반 Input은 기존 암묵적 제출을 유지한다 | — |
 | Textarea | 줄바꿈 (Shift+Enter도 동일) | Ctrl/Cmd+Enter 제출 |
-| Combobox | 닫혀 있으면 연다. 고르면 닫힌 뒤 다음 칸 | 화살표·Space로도 열기 |
+| Combobox (단일) | 닫혀 있으면 연다. 고르면 닫힌 뒤 다음 칸 | 화살표·Space로도 열기 |
+| MultiSelect · Combobox multiple | 닫혀 있으면 연다. 고른 뒤에도 머문다 | Escape·Tab으로 떠난다. advance 표식 금지 |
 | Switch | 다음 칸. 토글하지 않는다 | Space 토글 |
 | RadioGroup | 다음 칸 | 화살표로 선택·포커스 이동 |
 | 제출 버튼 | 네이티브 제출 | — |
@@ -1628,7 +1629,7 @@ Radix의 document 화살표 추적 플래그가 포커스 처리 전에 지워�
 ### 18.1 선택 기준과 책임
 
 20개 이하의 상태·정렬 필터는 Select, 20개 초과의 후보를 타이핑으로 찾는 단일 선택은
-Combobox다. **다중 선택은 아직 없다.** 목록은 maxHeight(기본 240px)와 스크롤을 쓴다.
+Combobox다. 다중 선택은 §20의 MultiSelect와 Combobox multiple로 구분한다. 목록은 maxHeight(기본 240px)와 스크롤을 쓴다.
 가상 스크롤은 제공하지 않으며 **500개를 넘기면 서버에서 걸러 내려주는 것이 앱 책임**이다.
 트리거는 Select와 같은 --control-h-md와 3:1 비텍스트 대비의 --border-input을 재사용한다.
 Field가 준 id·aria-describedby·aria-invalid·required는 실제 트리거에 전달한다.
@@ -1776,6 +1777,61 @@ cmdk id를 가정하지 않고 data-slot·data-probe를 사용하며 내부 좌�
 기존 폼·IME 19건과 검색 선택 29건 하네스 및 match.test.mjs는 수정하지 않는다.
 RadioGroupItem의 MCP 규칙은 기존 부품 스키마에 따라 부모 RadioGroup.rules에 보관하고
 부품 purpose에도 Enter 계약을 명시한다. 새 컴포넌트·토큰·z-index·라우팅은 추가하지 않는다.
+
+---
+
+## 20. 다중 선택 — MultiSelect 요약 · Combobox 태그 (R21)
+
+검색 없이 여러 값을 고르면 MultiSelect, 타이핑으로 찾으며 태그를 편집하면
+Combobox multiple이다. Select는 그대로 단일 선택이며 Radix Select를 확장하지 않는다.
+MultiSelect는 internal/popover 위의 독립 컴포넌트다. 두 다중 선택 모두 고른 뒤 목록을
+닫거나 FormFlow의 다음 칸으로 이동하지 않는다. 닫힌 Enter는 열기, Escape·Tab은 이탈이며
+`data-form-control="advance"`를 붙이지 않는다 (§11.5).
+
+### 20.1 MultiSelect — 높이를 보존하는 요약
+
+트리거는 선택 0·1·5개 모두 control-h-md 고정이다. 기본 요약은 첫 라벨과
+“외 n개”이며 summary로 교체한다. 긴 문구는 말줄임하고 title에 전체를 보존한다.
+패널은 listbox·aria-multiselectable=true, 항목은 option·aria-selected이며 메뉴 역할을 쓰지
+않는다. 체크 아이콘을 함께 표시한다. DOM 포커스는 목록에 두고 aria-activedescendant로
+활성을 가리킨다. 화살표·Home/End는 비활성 항목을 건너뛰고 Space/Enter는 토글한다.
+Escape는 트리거로 복귀한다. 푸터는 전체 해제와 n개 선택을 제공하며 0개일 때 해제를 막는다.
+Field의 id·invalid·required·aria-describedby는 트리거와 목록에 연결한다.
+
+### 20.2 Combobox multiple — 태그와 내부 커서
+
+multiple=true는 value·onValueChange를 string[]로 구분하는 판별 유니온이다.
+미지정·false는 기존 단일 선택 구현을 그대로 사용한다. 다중 모드만 내부 검색 입력 앞에
+태그를 두며 role=combobox는 검색 입력 하나다. Field의 id와 레이블은 실제 입력에 연결한다.
+고른 후보도 목록에 남고 aria-selected와 체크로 표시하며 aria-multiselectable=true를 쓴다.
+단일 모드의 cmdk 활성 의미는 §18.3 그대로다. 다중 모드는 선택과 활성을 별도 관리하여
+aria-selected는 실제 선택, data-selected와 aria-activedescendant는 활성 후보를 가리킨다.
+한글 필터·조합 중 직전 결과 유지·빈 문구 억제·Enter/화살표/Escape 양보는 동일하다.
+
+칩 높이는 28px, 해제 버튼은 24×24px 이상이며 접근명은 “{라벨} 선택 해제”다.
+라벨은 말줄임하고 title로 보존한다. 칩과 입력이 흐르는 영역은 2줄(28×2+2=58px) 상한과
+내부 스크롤을 사용한다. 외곽 여백 8px+경계 2px로 첫 줄은 38px, 두 줄부터 68px다.
+다음 수치는 사용자가 제공한 320px 툴바 측정이며 이번 작업에서 새로 측정한 값이 아니다.
+
+| 선택 개수 | 요구 컨트롤 높이 |
+|---|---|
+| 1·2·3 | 38px |
+| 4 | 68px |
+| 8·12 | 68px, 칩 영역 내부 스크롤 |
+
+줄바꿈 개수는 라벨 길이에 영향을 받는다. 하네스는 4글자 사업장 라벨과 320px 폭을
+고정해 위 수치를 그대로 단언하고, 긴 라벨은 별도로 말줄임·전체값 보존을 검사한다.
+칩 묶음은 현재 항목만 tabindex=0인 roving tabindex로 Tab 정지점 하나다.
+좌우 화살표는 이웃, Delete/Backspace는 제거 후 다음 이웃(없으면 이전), 마지막 제거는
+입력으로 포커스한다. 빈 입력 Backspace는 첫 회 마지막 칩 강조만, 두 번째 제거다.
+다른 키·입력·blur는 강조를 풀며 조합 중에는 강조·삭제하지 않는다.
+
+### 20.3 검증 책임
+
+이번 작업에서는 브라우저를 실행하지 않는다. multi-select-render-verify.mjs를 run-all에
+등록하고 사용자의 pnpm qa에서 치수·키보드·IME·Field·FormFlow·콘솔 오류를 실측한다.
+기존 브라우저 370건과 R17 검색 선택 29건의 하네스는 바꾸지 않고 함께 실행한다.
+새 토큰·z-index·버전 변경은 없다.
 
 ---
 

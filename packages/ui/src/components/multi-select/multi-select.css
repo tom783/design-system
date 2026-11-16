@@ -1,0 +1,36 @@
+@layer components {
+  .ds-multi-select-trigger {
+    display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-8);
+    width: 100%; min-width: var(--field-min-w); height: var(--control-h-md);
+    padding-inline: var(--space-12); border: 1px solid var(--border-input); border-radius: var(--radius-md);
+    background: var(--bg-surface); color: var(--text-primary); text-align: start;
+    font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
+  }
+  .ds-multi-select-trigger > span, .ds-multi-select-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ds-multi-select-trigger svg, .ds-multi-select-check svg { width: var(--space-16); height: var(--space-16); flex-shrink: 0; }
+  .ds-multi-select-trigger[data-placeholder] { color: var(--text-tertiary); }
+  .ds-multi-select-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ds-multi-select-trigger[aria-invalid="true"] { border-color: var(--status-danger-fg); }
+  .ds-multi-select-content {
+    min-width: var(--radix-popover-trigger-width); max-width: calc(100vw - var(--space-16));
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-overlay);
+  }
+  .ds-multi-select-list { overflow-y: auto; overscroll-behavior: contain; padding: var(--space-4); outline-offset: -2px; }
+  .ds-multi-select-option {
+    display: flex; align-items: center; gap: var(--space-8); min-height: var(--control-h-md);
+    padding: var(--space-8); border-radius: var(--radius-sm); cursor: pointer;
+    font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
+  }
+  .ds-multi-select-option[data-active="true"] { background: var(--bg-hover); outline: 1px solid var(--border-focus); outline-offset: -1px; }
+  .ds-multi-select-option[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+  .ds-multi-select-check { display: flex; width: var(--space-16); flex-shrink: 0; }
+  .ds-multi-select-option[aria-selected="true"] { font-weight: 600; }
+  .ds-multi-select-footer {
+    display: flex; justify-content: space-between; align-items: center; gap: var(--space-12);
+    padding: var(--space-4) var(--space-8); border-top: 1px solid var(--border-default);
+    font-size: var(--text-body-sm); color: var(--text-secondary);
+  }
+  .ds-multi-select-footer button { min-height: var(--control-h-md); color: var(--text-link); text-decoration: underline; }
+  .ds-multi-select-footer button:disabled { opacity: 0.5; cursor: not-allowed; }
+}

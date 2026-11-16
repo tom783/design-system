@@ -4078,22 +4078,27 @@
     {
       "name": "Combobox",
       "category": "form",
-      "purpose": "많은 옵션에서 검색해 단일 값을 선택한다.",
+      "purpose": "많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.",
       "useWhen": [
         "20개를 넘는 후보에서 타이핑으로 찾을 때",
-        "초성으로 찾기"
+        "초성으로 찾기",
+        "검색해서 여러 개 고르기"
       ],
       "dont": [
         "조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지",
-        "다중 선택과 가상 스크롤은 제공하지 않는다"
+        "가상 스크롤은 제공하지 않는다"
       ],
       "rules": [
         {
-          "text": "shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.",
+          "text": "shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 단일 모드 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.",
           "source": "DESIGN.md 18"
         },
         {
-          "text": "FormFlow 안 Enter는 열기이며 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.",
+          "text": "multiple은 string[] 값과 콜백을 쓰며 검색 입력 앞에 28px 태그를 둔다. 24px 해제 버튼은 라벨 선택 해제로 읽고 칩 묶음은 roving tabindex 하나·좌우 이동·Delete/Backspace 제거 후 이웃 포커스를 쓴다. 빈 입력 Backspace는 첫 회 강조·두 번째 제거, 다른 키는 강조 해제다. 조합 중 강조·삭제하지 않는다. 칩 영역은 2줄·58px 내부 스크롤로 320px 툴바의 컨트롤 높이를 38→68px에 제한한다. 선택해도 목록을 닫거나 다음 칸으로 이동하지 않는다. 검색 없이 고르기만 하면 MultiSelect다.",
+          "source": "DESIGN.md 20"
+        },
+        {
+          "text": "단일 선택은 FormFlow 안 Enter로 열고 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.",
           "source": "DESIGN.md 11.5"
         },
         {
@@ -4103,6 +4108,7 @@
       ],
       "related": [
         "Select",
+        "MultiSelect",
         "Field"
       ],
       "keywords": [
@@ -4114,25 +4120,37 @@
         "목록에서 찾기",
         "타이핑으로 찾기",
         "초성으로 찾기",
-        "많은 옵션에서 검색해 선택"
+        "많은 옵션에서 검색해 선택",
+        "검색해서 여러 개 고르기",
+        "태그 선택"
       ],
       "kind": "component",
       "source": "packages/ui/src/components/combobox/combobox.tsx",
       "props": [
         {
-          "name": "options",
-          "type": "ComboboxOption[]",
-          "required": true
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false
         },
         {
           "name": "value",
-          "type": "string | undefined",
+          "type": "string | string[] | undefined",
           "required": false
         },
         {
           "name": "onValueChange",
-          "type": "((value: string) => void) | undefined",
+          "type": "((value: string) => void) | ((value: string[]) => void) | undefined",
           "required": false
+        },
+        {
+          "name": "ref",
+          "type": "RefObject<HTMLButtonElement | null> | RefObject<HTMLInputElement | null> | ((instance: HTMLButtonElement | null) => void | (() => VoidOrUndefinedOnly)) | ((instance: HTMLInputElement | null) => void | (() => VoidOrUndefinedOnly)) | null | undefined",
+          "required": false
+        },
+        {
+          "name": "options",
+          "type": "ComboboxOption[]",
+          "required": true
         },
         {
           "name": "placeholder",
@@ -4176,19 +4194,124 @@
         }
       ],
       "extends": [
-        "Pick<React.ComponentPropsWithRef<'button'>,\n  'id' | 'ref' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'>"
+        "Pick<React.ComponentPropsWithRef<'button'>,\n  'id' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'>"
       ],
       "slots": [
         "combobox",
+        "combobox-chip",
+        "combobox-chip-area",
+        "combobox-chip-remove",
+        "combobox-chips",
         "combobox-content",
         "combobox-empty",
         "combobox-input",
         "combobox-list",
+        "combobox-multiple",
+        "combobox-multiple-control",
         "combobox-option",
         "combobox-trigger",
         "combobox-value"
       ],
       "import": "import { Combobox } from '@s2life/ui';"
+    },
+    {
+      "name": "MultiSelect",
+      "category": "form",
+      "purpose": "요약 트리거와 체크 목록으로 여러 사업장을 고른다.",
+      "useWhen": [
+        "여러 사업장 고르기",
+        "검색 없이 여러 개 선택할 때"
+      ],
+      "dont": [
+        "검색은 Combobox multiple을 쓴다",
+        "고를 때 닫거나 data-form-control=advance를 붙이지 마라"
+      ],
+      "rules": [
+        {
+          "text": "트리거 높이는 control-h-md로 고정하고 요약을 말줄임·title로 보존한다. 목록은 listbox·aria-multiselectable, option·aria-selected와 체크 아이콘을 쓴다. 화살표·Home/End는 aria-activedescendant를 옮기고 Space/Enter는 토글한다. Escape로 닫고 트리거로 복귀한다. 전체 해제와 선택 개수를 제공한다.",
+          "source": "DESIGN.md 20"
+        }
+      ],
+      "related": [
+        "Select",
+        "Combobox",
+        "Field"
+      ],
+      "keywords": [
+        "다중 선택",
+        "여러 개 선택",
+        "복수 선택",
+        "태그 선택",
+        "체크 목록",
+        "여러 사업장 고르기"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/multi-select/multi-select.tsx",
+      "props": [
+        {
+          "name": "options",
+          "type": "MultiSelectOption[]",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string[] | undefined",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "((value: string[]) => void) | undefined",
+          "required": false
+        },
+        {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "summary",
+          "type": "((selected: { value: string; label: string; }[]) => string) | undefined",
+          "required": false,
+          "doc": "요약 문구를 앱이 바꾼다. 기본은 \"{첫 라벨} 외 {n-1}개\"다."
+        },
+        {
+          "name": "clearLabel",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        {
+          "name": "invalid",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        {
+          "name": "required",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        {
+          "name": "maxHeight",
+          "type": "string | number | undefined",
+          "required": false
+        }
+      ],
+      "extends": [
+        "Pick<React.ComponentPropsWithRef<'button'>,\n  'id' | 'ref' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'>"
+      ],
+      "slots": [
+        "multi-select-content",
+        "multi-select-footer",
+        "multi-select-list",
+        "multi-select-option",
+        "multi-select-trigger",
+        "multi-select-value"
+      ],
+      "import": "import { MultiSelect } from '@s2life/ui';"
     },
     {
       "name": "Tabs",
@@ -4784,7 +4907,8 @@
       ],
       "related": [
         "Field",
-        "Combobox"
+        "Combobox",
+        "MultiSelect"
       ],
       "keywords": [
         "선택 필터",
@@ -4807,7 +4931,8 @@
       "source": "packages/ui/src/components/select/select.tsx",
       "props": [],
       "extends": [
-        "React.ComponentProps<typeof SelectPrimitive.Root>"
+        "React.ComponentProps<typeof SelectPrimitive.Root>",
+        "Pick<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>, 'id' | 'aria-describedby' | 'aria-invalid' | 'aria-label' | 'aria-labelledby'>"
       ],
       "slots": [],
       "import": "import { Select } from '@s2life/ui';"
@@ -4855,6 +4980,8 @@
       ],
       "slots": [
         "select-content",
+        "select-scroll-down-button",
+        "select-scroll-up-button",
         "select-viewport"
       ],
       "import": "import { SelectContent } from '@s2life/ui';"
@@ -5320,11 +5447,19 @@
           "required": true
         }
       ],
-      "extends": [],
+      "extends": [
+        "Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type'>"
+      ],
       "slots": [
+        "button",
+        "calendar",
         "date-picker",
         "date-picker-error",
-        "date-picker-presets"
+        "date-picker-presets",
+        "input",
+        "input-action",
+        "input-control",
+        "popover-content"
       ],
       "import": "import { DatePicker } from '@s2life/ui';"
     },
@@ -6050,6 +6185,7 @@
         "UseDataTableOptions<T>"
       ],
       "slots": [
+        "button",
         "data-table",
         "data-table-body",
         "data-table-cell",
@@ -6063,7 +6199,13 @@
         "data-table-sort",
         "data-table-spacer",
         "data-table-table",
-        "data-table-toolbar"
+        "data-table-toolbar",
+        "empty-state",
+        "error-state",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
       ],
       "import": "import { DataTable } from '@s2life/ui';"
     },
@@ -6202,13 +6344,24 @@
       ],
       "extends": [],
       "slots": [
+        "button",
         "chart-empty",
         "chart-error",
         "chart-frame",
         "chart-legend",
         "chart-loading",
         "chart-plot",
-        "chart-title"
+        "chart-skeleton",
+        "chart-skeleton-bullet-row",
+        "chart-skeleton-bullets",
+        "chart-skeleton-plot",
+        "chart-title",
+        "empty-state",
+        "error-state",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
       ],
       "import": "import { ChartFrame } from '@s2life/ui';"
     },
@@ -6327,6 +6480,24 @@
         "Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage' | 'onRetry'>"
       ],
       "slots": [
+        "button",
+        "chart-empty",
+        "chart-error",
+        "chart-frame",
+        "chart-legend",
+        "chart-loading",
+        "chart-plot",
+        "chart-skeleton",
+        "chart-skeleton-bullet-row",
+        "chart-skeleton-bullets",
+        "chart-skeleton-plot",
+        "chart-title",
+        "empty-state",
+        "error-state",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title",
         "trend-band",
         "trend-band-area",
         "trend-band-line",
@@ -6425,7 +6596,25 @@
         "bullet-status",
         "bullet-target",
         "bullet-track",
-        "bullet-value"
+        "bullet-value",
+        "button",
+        "chart-empty",
+        "chart-error",
+        "chart-frame",
+        "chart-legend",
+        "chart-loading",
+        "chart-plot",
+        "chart-skeleton",
+        "chart-skeleton-bullet-row",
+        "chart-skeleton-bullets",
+        "chart-skeleton-plot",
+        "chart-title",
+        "empty-state",
+        "error-state",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
       ],
       "import": "import { BulletRow } from '@s2life/ui';"
     },
@@ -6522,11 +6711,29 @@
         "Pick<ChartFrameProps, 'state' | 'emptyMessage' | 'errorMessage' | 'onRetry'>"
       ],
       "slots": [
+        "button",
+        "chart-empty",
+        "chart-error",
+        "chart-frame",
+        "chart-legend",
+        "chart-loading",
+        "chart-plot",
+        "chart-skeleton",
+        "chart-skeleton-bullet-row",
+        "chart-skeleton-bullets",
+        "chart-skeleton-plot",
+        "chart-title",
         "composition-area",
         "composition-label",
         "composition-series",
         "composition-single",
-        "composition-value"
+        "composition-value",
+        "empty-state",
+        "error-state",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
       ],
       "import": "import { CompositionArea } from '@s2life/ui';"
     },
@@ -6586,6 +6793,7 @@
       ],
       "extends": [],
       "slots": [
+        "button",
         "empty-state",
         "state-description",
         "state-graphic",
@@ -6648,6 +6856,7 @@
       ],
       "extends": [],
       "slots": [
+        "button",
         "error-state",
         "state-description",
         "state-graphic",
@@ -6767,6 +6976,7 @@
       ],
       "extends": [],
       "slots": [
+        "skeleton",
         "thumbnail",
         "thumbnail-fallback",
         "thumbnail-image"
@@ -6893,6 +7103,7 @@
       ],
       "extends": [],
       "slots": [
+        "skeleton",
         "skeleton-text",
         "skeleton-text-line"
       ],
@@ -6940,7 +7151,14 @@
       ],
       "extends": [],
       "slots": [
-        "card-skeleton"
+        "card",
+        "card-body",
+        "card-footer",
+        "card-header",
+        "card-skeleton",
+        "skeleton",
+        "skeleton-text",
+        "skeleton-text-line"
       ],
       "import": "import { CardSkeleton } from '@s2life/ui';"
     },
@@ -6994,7 +7212,8 @@
       ],
       "slots": [
         "list-skeleton",
-        "list-skeleton-row"
+        "list-skeleton-row",
+        "skeleton"
       ],
       "import": "import { ListSkeleton } from '@s2life/ui';"
     },
@@ -7048,7 +7267,10 @@
       ],
       "slots": [
         "form-skeleton",
-        "form-skeleton-field"
+        "form-skeleton-field",
+        "skeleton",
+        "skeleton-text",
+        "skeleton-text-line"
       ],
       "import": "import { FormSkeleton } from '@s2life/ui';"
     },
@@ -7119,7 +7341,8 @@
         "chart-skeleton",
         "chart-skeleton-bullet-row",
         "chart-skeleton-bullets",
-        "chart-skeleton-plot"
+        "chart-skeleton-plot",
+        "skeleton"
       ],
       "import": "import { ChartSkeleton } from '@s2life/ui';"
     },
@@ -7251,6 +7474,12 @@
       ],
       "extends": [],
       "slots": [
+        "button",
+        "progress-bar",
+        "progress-eta",
+        "progress-fill",
+        "progress-percent",
+        "progress-track",
         "task-document",
         "task-motion",
         "task-progress",
@@ -7378,6 +7607,7 @@
       ],
       "extends": [],
       "slots": [
+        "button",
         "guide-bubble",
         "guide-hint"
       ],
@@ -7452,8 +7682,11 @@
           "required": true
         }
       ],
-      "extends": [],
+      "extends": [
+        "ReturnType<typeof useTour>"
+      ],
       "slots": [
+        "button",
         "guide-bubble",
         "guide-hint"
       ],
@@ -7543,7 +7776,7 @@
       ],
       "rules": [
         {
-          "text": "Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.",
+          "text": "Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 단일 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. MultiSelect·multiple은 선택 뒤 머문다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.",
           "source": "DESIGN.md 11.5"
         },
         {
@@ -7662,6 +7895,7 @@
       ],
       "extends": [],
       "slots": [
+        "button",
         "guide-bubble",
         "peek",
         "peek-item",
@@ -7723,7 +7957,7 @@
     },
     {
       "topic": "폼",
-      "text": "Enter 이동은 FormFlow 옵트인. Tab 순서를 따른다. textarea Enter·Shift+Enter는 줄바꿈, 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 값 변경 없이 이동하며 Combobox는 선택 후 이동한다.",
+      "text": "Enter 이동은 FormFlow 옵트인. Tab 순서를 따른다. textarea Enter·Shift+Enter는 줄바꿈, 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 값 변경 없이 이동하며 단일 Combobox는 선택 후 이동하며 MultiSelect·multiple은 선택 뒤 머문다.",
       "source": "DESIGN.md 11.5"
     },
     {

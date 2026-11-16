@@ -17,6 +17,8 @@ export function extractComponents() {
     const { program, checker } = snapshot.getProject(resolve(root, 'tsconfig.json'));
     const index = program.getSourceFile(resolve(root, 'packages/ui/src/index.ts'));
     const exports = checker.getExportsOfModule(checker.getSymbolAtLocation(index));
+    // 공개로 내보내는 타입 이름. extends 에서 이 이름들은 펼치지 않고 그대로 남긴다.
+    const publicTypeNames = new Set(exports.map((symbol) => symbol.name));
     return exports.filter((symbol) => /^[A-Z]/.test(symbol.name)).flatMap((symbol) => {
       if ((symbol.declarations ?? []).some((handle) => {
         let node = handle.resolve();
@@ -52,19 +54,31 @@ export function extractComponents() {
         };
       });
       const bases = new Set();
-      function recordBase(node) {
-        if (!node) return;
-        if (ast.isIntersectionTypeNode(node)) { node.types.forEach(recordBase); return; }
-        if (!ast.isTypeReferenceNode(node)) return;
-        let symbol = checker.getSymbolAtLocation(node.typeName);
+      const visitedTypes = new Set();
+      // depth 0 은 컴포넌트 자신의 props 타입이다. 그건 언제나 펼친다 —
+      // 보존하면 \"DataTable extends DataTableProps<T>\" 라는 순환이 된다.
+      function recordBase(node, depth = 0) {
+        if (!node || visitedTypes.has(node)) return;
+        visitedTypes.add(node);
+        if (ast.isIntersectionTypeNode(node) || ast.isUnionTypeNode(node)) { node.types.forEach(child => recordBase(child, depth)); return; }
+        if (!ast.isTypeReferenceNode(node) && !ast.isExpressionWithTypeArguments(node)) return;
+        let symbol = checker.getSymbolAtLocation(node.typeName ?? node.expression);
         if (symbol?.flags & SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
-        const localInterfaces = (symbol?.declarations ?? []).map((d) => d.resolve()).filter((d) =>
-          ast.isInterfaceDeclaration(d) && d.getSourceFile().fileName.startsWith(uiRoot),
+        const localTypes = (symbol?.declarations ?? []).map(d => d.resolve()).filter(d =>
+          d && (ast.isInterfaceDeclaration(d) || ast.isTypeAliasDeclaration(d)) && d.getSourceFile().fileName.startsWith(uiRoot),
         );
-        if (localInterfaces.length) {
-          for (const iface of localInterfaces) for (const clause of iface.heritageClauses ?? [])
-            for (const base of clause.types) bases.add(base.getText(iface.getSourceFile()));
-        } else if (!(symbol?.declarations ?? []).some((d) => d.resolve()?.getSourceFile().fileName.startsWith(uiRoot))) {
+        // 공개로 내보내는 타입은 펼치지 않고 이름을 남긴다. 소비자가 찾아볼 수 있는
+        // 계약이기 때문이다. 펼치면 UseDataTableOptions<T> 같은 포인터가 사라진다.
+        if (depth > 0 && localTypes.length && publicTypeNames.has(symbol?.name)) {
+          bases.add(node.getText(node.getSourceFile()));
+        } else if (localTypes.length) {
+          for (const type of localTypes) {
+            // 별칭은 같은 층이다. 이름만 다른 같은 타입이라 홉이 아니다 —
+            // depth 를 올리면 ComboboxProps = A | B 의 A·B 가 "중첩" 으로 보여 보존된다.
+            if (ast.isTypeAliasDeclaration(type)) recordBase(type.type, depth);
+            else for (const clause of type.heritageClauses ?? []) for (const base of clause.types) recordBase(base, depth + 1);
+          }
+        } else if (!(symbol?.declarations ?? []).some(d => d.resolve()?.getSourceFile().fileName.startsWith(uiRoot))) {
           bases.add(node.getText(node.getSourceFile()));
         }
       }
@@ -77,8 +91,20 @@ export function extractComponents() {
       if (initializer && ast.isCallExpression(initializer) && initializer.expression.getText(source).endsWith('forwardRef'))
         recordBase(initializer.typeArguments?.at(-1));
       const slots = new Set();
+      const visited = new Set();
       function visit(node) {
-        if (ast.isJsxAttribute(node) && node.name.getText(source) === 'data-slot' && node.initializer && ast.isStringLiteral(node.initializer)) slots.add(node.initializer.text);
+        if (visited.has(node)) return;
+        visited.add(node);
+        const nodeSource = node.getSourceFile();
+        if (ast.isJsxAttribute(node) && node.name.getText(nodeSource) === 'data-slot' && node.initializer && ast.isStringLiteral(node.initializer)) slots.add(node.initializer.text);
+        // 판별 유니온으로 분기하는 로컬 구현도 공개 컴포넌트의 슬롯이다.
+        // DOM 태그·외부 라이브러리는 따라가지 않아 라이브러리 내부 슬롯이 새지 않게 한다.
+        if (ast.isJsxOpeningElement(node) || ast.isJsxSelfClosingElement(node)) {
+          let symbol = checker.getSymbolAtLocation(node.tagName);
+          if (symbol?.flags & SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+          const implementation = symbol?.valueDeclaration?.resolve();
+          if (implementation?.getSourceFile().fileName.startsWith(uiRoot)) visit(implementation);
+        }
         node.forEachChild(visit);
       }
       visit(declaration);

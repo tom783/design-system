@@ -10,6 +10,8 @@
 
 ## 0.3.0 — 미게시
 
+- R21: 요약 트리거·체크 목록의 MultiSelect와 Combobox multiple 태그 선택을 추가했다. 칩은 2줄 상한·24px 해제 타깃·roving tabindex·두 번 Backspace를 지원한다. 다중 선택 하네스를 등록했다.
+
 - R20: 매니페스트에서 의도·부모 규칙을 렌더하는 Storybook 한국어 사용 문서 5개와 이름 해소 단위 검사·문서 렌더 하네스를 추가했다.
 - G1: feature가 적용된 `createDataTableColumnHelper<T>()`와 필요한 `RowData`·`CellContext`·`HeaderContext` 타입을 공개한다. TanStack은 일반 의존성을 유지한다.
 - G2: `DataTableColumns<T>`를 유지하고 `unknown` 값 경계로 주석 시 셀 추론이 `any`로 넓어지는 문제를 고쳤다.

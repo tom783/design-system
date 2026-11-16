@@ -101,3 +101,17 @@ for (const [query, expected] of [
 ]) test(`검색 선택 라우팅 1위: ${query} → ${expected}`, () => {
   assert.equal(matchComponents(query, components)[0]?.name, expected);
 });
+
+for (const [query, expected] of [
+  ['여러 사업장 고르기', 'MultiSelect'], ['검색해서 여러 개 고르기', 'Combobox'],
+]) test(`다중 선택 라우팅 1위: ${query} → ${expected}`, () => {
+  assert.equal(matchComponents(query, components)[0]?.name, expected);
+});
+test('다중 선택의 공개 타입·분기 구현 슬롯과 독립 의도를 보존한다', () => {
+  const multi = components.find(component => component.name === 'MultiSelect');
+  assert.ok(!Object.hasOwn(multi, 'partOf'));
+  const combo = components.find(component => component.name === 'Combobox');
+  assert.ok(combo.props.some(prop => prop.name === 'multiple'));
+  assert.ok(combo.extends.some(base => base.includes('aria-describedby')));
+  for (const slot of ['combobox-trigger', 'combobox-input', 'combobox-list', 'combobox-chip-remove']) assert.ok(combo.slots.includes(slot), slot);
+});

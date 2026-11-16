@@ -16,7 +16,7 @@ export const principles = [
   { topic: '폼', ...rule('입력 경계는 border-field. 주요 버튼은 화면당 하나, 아이콘 전용 버튼은 aria-label 필수다.', '6') },
   { topic: '폼', ...rule('IME 조합 중 값 변형·포커스 이동·검증 금지. 최초 검증은 blur, 오류 후 change에서 즉시 해제하고 제출 때만 첫 오류로 이동한다.', '11.2') },
   { topic: '폼', ...rule('레이블 → 설명 → 입력 → 오류 순서. 오류 공간을 예약하고 aria-describedby는 오류부터 읽는다.', '11.4') },
-  { topic: '폼', ...rule('Enter 이동은 FormFlow 옵트인. Tab 순서를 따른다. textarea Enter·Shift+Enter는 줄바꿈, 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 값 변경 없이 이동하며 Combobox는 선택 후 이동한다.', '11.5') },
+  { topic: '폼', ...rule('Enter 이동은 FormFlow 옵트인. Tab 순서를 따른다. textarea Enter·Shift+Enter는 줄바꿈, 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 값 변경 없이 이동하며 단일 Combobox는 선택 후 이동하며 MultiSelect·multiple은 선택 뒤 머문다.', '11.5') },
   { topic: '로딩', ...rule('짧은 대기에는 로딩 표시를 지연한다. 400ms~3초에는 형태를 아는 경우만 스켈레톤, 긴 대기는 진행률과 대략적 시간을 제공한다.', '9.1') },
   { topic: '로딩', ...rule('스켈레톤은 실제 콘텐츠와 같은 치수·토큰을 쓴다. 형태를 모르면 쓰지 않는다. 텍스트 높이는 글자 높이 약 0.65em, 마지막 줄은 짧게 한다.', '9.2') },
   { topic: '안내', ...rule('Tooltip은 한 줄 UI 설명, Hint는 한 번 알리는 2~3줄, Tour는 사용자가 시작하는 최대 3단계다. 자동 투어와 건너뛰기 차단 금지.', '10.2') },
@@ -28,7 +28,8 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
-  entry('Combobox','form','많은 옵션에서 검색해 단일 값을 선택한다.',['20개를 넘는 후보에서 타이핑으로 찾을 때','초성으로 찾기'],['조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지','다중 선택과 가상 스크롤은 제공하지 않는다'],'18','shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.',['options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택']),
+  entry('Combobox','form','많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.',['20개를 넘는 후보에서 타이핑으로 찾을 때','초성으로 찾기','검색해서 여러 개 고르기'],['조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지','가상 스크롤은 제공하지 않는다'],'18','shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 단일 모드 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.',['multiple','options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','MultiSelect','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택','검색해서 여러 개 고르기','태그 선택']),
+  entry('MultiSelect','form','요약 트리거와 체크 목록으로 여러 사업장을 고른다.',['여러 사업장 고르기','검색 없이 여러 개 선택할 때'],['검색은 Combobox multiple을 쓴다','고를 때 닫거나 data-form-control=advance를 붙이지 마라'],'20','트리거 높이는 control-h-md로 고정하고 요약을 말줄임·title로 보존한다. 목록은 listbox·aria-multiselectable, option·aria-selected와 체크 아이콘을 쓴다. 화살표·Home/End는 aria-activedescendant를 옮기고 Space/Enter는 토글한다. Escape로 닫고 트리거로 복귀한다. 전체 해제와 선택 개수를 제공한다.',['options','value','onValueChange','placeholder','summary','clearLabel','disabled','invalid','required','maxHeight'],['multi-select-trigger','multi-select-list','multi-select-option','multi-select-footer'],['Select','Combobox','Field'],['다중 선택','여러 개 선택','복수 선택','태그 선택','체크 목록','여러 사업장 고르기']),
   entry("Tabs","navigation","상세 정보를 탭으로 나누기 위한 루트다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라"],"16","automatic 기본값을 유지하고 서버 패널은 manual을 명시한다. 가로 스크롤과 선택 탭 끌어오기, reduced-motion을 지원한다. 줄바꿈하거나 스크롤바를 숨기지 않는다. 선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도 outline이다. 패널의 aria-labelledby와 tabindex를 유지한다.",["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent"],["탭", "탭으로 나누기", "분류별 패널"]),
   part("TabsList", "Tabs", "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.", ["aria-label"], ["tabs-list"]),
   part("TabsTrigger", "Tabs", "패널을 선택하는 탭 버튼이다.", ["value", "disabled"], ["tabs-trigger"]),
@@ -68,7 +69,7 @@ const intents = [
     ['SelectSeparator', '선택 그룹 구분선', ['select-separator'], 'Select'],
     ['SelectScrollUpButton', '목록 위로 스크롤', ['select-scroll-up-button'], 'Select'],
     ['SelectScrollDownButton', '목록 아래로 스크롤', ['select-scroll-down-button'], 'Select'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.', [], slots, ['Field', 'Combobox'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
   ...[
     ['DropdownMenu', '행 액션 메뉴 루트', [], null],
     ['DropdownMenuTrigger', '행 액션 열기', ['dropdown-menu-trigger'], 'DropdownMenu'],
@@ -124,13 +125,15 @@ const intents = [
   entry('Hint','guide','새 기능·놓치기 쉬운 UI를 한 번 알린다.',['새 기능을 2~3줄과 액션으로 알릴 때'],['레코드 요약용으로 쓰지 마라'],'10.2','닫은 안내를 반복하지 않도록 앱이 기억한다.',['children','open','title','body','onDismiss','action'],['guide-hint'],['Tooltip','Tour','Peek'],['힌트','새 기능','한 번','맥락형 안내']),
   entry('Tour','guide','사용자가 요청한 UI 흐름을 단계로 안내한다.',['사용자가 전체 흐름 학습을 요청할 때'],['자동 실행하지 마라','닫기·Escape를 막지 마라'],'10.1','최대 3단계이며 항상 건너뛸 수 있다.',['steps','active','next','previous','skip'],['guide-hint'],['Tooltip','Hint','Peek'],['투어','온보딩','단계','단계별','단계별 안내','사용법','흐름 학습','기능 흐름','처음 온 사용자','둘러보기','시작 안내']),
   entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],['필드 값을 소유하게 하지 마라'],'11.4','레이블 → 설명 → 입력 → 오류 순서를 지킨다.',['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사']),
-  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5','Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.',['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
+  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5','Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 단일 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. MultiSelect·multiple은 선택 뒤 머문다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.',['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
   entry('Peek','overlay','레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.',['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제 액션을 넣지 마라'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
 
+intents.find(item => item.name === 'Combobox').rules.push(rule('multiple은 string[] 값과 콜백을 쓰며 검색 입력 앞에 28px 태그를 둔다. 24px 해제 버튼은 라벨 선택 해제로 읽고 칩 묶음은 roving tabindex 하나·좌우 이동·Delete/Backspace 제거 후 이웃 포커스를 쓴다. 빈 입력 Backspace는 첫 회 강조·두 번째 제거, 다른 키는 강조 해제다. 조합 중 강조·삭제하지 않는다. 칩 영역은 2줄·58px 내부 스크롤로 320px 툴바의 컨트롤 높이를 38→68px에 제한한다. 선택해도 목록을 닫거나 다음 칸으로 이동하지 않는다. 검색 없이 고르기만 하면 MultiSelect다.', '20'));
+
 // 부품의 공통 규칙은 부모에만 보관한다 (MCP 7번 게이트). RadioGroupItem 계약도 부모에서 제공한다.
 for (const [name, text] of [
-  ['Combobox', 'FormFlow 안 Enter는 열기이며 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.'],
+  ['Combobox', '단일 선택은 FormFlow 안 Enter로 열고 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.'],
   ['Switch', 'data-form-control=advance로 FormFlow 안 Enter는 토글하지 않고 다음 칸으로 간다. Space 토글과 FormFlow 밖 Enter는 그대로다.'],
   ['RadioGroup', 'RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.'],
 ]) intents.find(item => item.name === name).rules.push(rule(text, '11.5'));
