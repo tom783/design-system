@@ -53,13 +53,17 @@ const INSTALL_HINT =
 export function resolveHeadlessShell() {
   const override = process.env.DS_HEADLESS_SHELL;
   if (override) {
-    if (!existsSync(override)) throw new Error(`DS_HEADLESS_SHELL 경로가 없습니다: ${override}`);
+    // GUI 번들 거부가 **먼저**다. 이건 파일시스템이 아니라 의도에 관한 규칙이라
+    // 플랫폼과 무관해야 한다. 존재 확인을 앞에 두면 리눅스에서는 그 경로가 없어
+    // "경로가 없습니다" 로 새고, 이 규칙을 지키는 테스트가 macOS 에서만 통과한다
+    // (실제로 CI 에서 그렇게 깨졌다 — verify 에 단위 테스트를 넣고서야 드러났다).
     if (override.includes('.app/Contents/MacOS/')) {
       throw new Error(
         `DS_HEADLESS_SHELL 이 GUI 앱 번들을 가리킵니다: ${override}\n` +
         '  샌드박스 안에서 TransformProcessType 으로 크래시합니다. chrome-headless-shell 을 쓰세요.',
       );
     }
+    if (!existsSync(override)) throw new Error(`DS_HEADLESS_SHELL 경로가 없습니다: ${override}`);
     return override;
   }
   const cache = playwrightCaches().find(existsSync);

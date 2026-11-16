@@ -48,7 +48,9 @@ test('관계없는 디렉터리는 걸러낸다', () => {
   );
 });
 
-test('GUI 앱 번들을 지정하면 거부한다 — 샌드박스에서 크래시하는 경로다', () => {
+// 이 검사는 **플랫폼과 무관해야 한다.** 존재 확인이 앞에 있으면 리눅스에서는
+// 경로가 없어 다른 오류로 새고, macOS 에서만 통과한다 (CI 에서 실제로 깨졌다).
+test('GUI 앱 번들을 지정하면 거부한다 — 경로가 없는 플랫폼에서도', () => {
   const prev = process.env.DS_HEADLESS_SHELL;
   process.env.DS_HEADLESS_SHELL = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
   try {
