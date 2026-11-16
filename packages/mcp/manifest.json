@@ -5341,7 +5341,7 @@
       ],
       "rules": [
         {
-          "text": "danger는 되돌릴 수 없는 작업에만 쓴다.",
+          "text": "danger는 되돌릴 수 없는 작업에만 쓴다. asChild는 단일 링크에 스타일을 합치며 양쪽 아이콘도 링크 안에 보존한다.",
           "source": "DESIGN.md 6"
         }
       ],
@@ -5357,6 +5357,12 @@
       "kind": "component",
       "source": "packages/ui/src/components/button.tsx",
       "props": [
+        {
+          "name": "asChild",
+          "type": "boolean | undefined",
+          "required": false,
+          "doc": "단일 자식 링크 등에 스타일·이벤트·ref를 합친다."
+        },
         {
           "name": "leadingIcon",
           "type": "ReactNode",
@@ -5877,7 +5883,7 @@
       ],
       "rules": [
         {
-          "text": "값은 최소 너비·말줄임·전체값 보존을 함께 쓴다.",
+          "text": "값은 최소 너비·말줄임·전체값 보존을 함께 쓴다. @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다. TanStack 직접 설치는 필요 없다.",
           "source": "DESIGN.md 4"
         }
       ],
@@ -5914,7 +5920,7 @@
         },
         {
           "name": "columns",
-          "type": "ColumnDef<{ rowSelectionFeature: TableFeature; rowSortingFeature: TableFeature; columnPinningFeature: TableFeature; columnVisibilityFeature: TableFeature; sortedRowModel: (table: Table<...>) => () => RowModel<...>; }, T, any>[]",
+          "type": "DataTableColumns<T>",
           "required": true
         },
         {

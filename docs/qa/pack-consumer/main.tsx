@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createColumnHelper } from '@tanstack/react-table';
-import { Button, DataTable, dataTableFeatures, Select, SelectTrigger, SelectValue,
+import { Button, DataTable, createDataTableColumnHelper, Select, SelectTrigger, SelectValue,
   SelectContent, SelectItem, Field, Input, Tooltip, Peek, type ButtonProps } from '@s2life/ui';
 import { Check } from '@s2life/ui/icons';
 import '@s2life/ui/styles.css';
@@ -11,7 +10,7 @@ const typed: ButtonProps = { variant: 'primary' };
 // @ts-expect-error 공개 ButtonProps에는 없는 variant
 const invalid: ButtonProps = { variant: 'unknown' };
 void invalid;
-const helper = createColumnHelper<typeof dataTableFeatures, { id: string; name: string }>();
+const helper = createDataTableColumnHelper<{ id: string; name: string }>();
 const columns = helper.columns([helper.accessor('name', { header: '상품명' })]);
 function App() {
   const [open, setOpen] = useState(false);

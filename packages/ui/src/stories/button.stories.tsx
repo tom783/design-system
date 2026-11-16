@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Plus, Trash2, Download, Filter, ChevronDown } from 'lucide-react';
 import { Button } from '../components/button';
+import { expect, userEvent, within } from 'storybook/test';
 
 const meta = {
   title: 'Components/Button',
@@ -25,6 +26,28 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const 기본: Story = { args: { variant: 'primary', leadingIcon: <Plus /> } };
+
+export const 링크: Story = {
+  name: '링크와 양쪽 아이콘',
+  render: () => <Button asChild leadingIcon={<Plus data-probe="leading" />} trailingIcon={<ChevronDown data-probe="trailing" />}
+    onClick={event => { event.currentTarget.dataset.buttonClick = 'true'; }}>
+    <a href="/orders" className="order-link" onClick={event => { event.preventDefault(); event.currentTarget.dataset.linkClick = 'true'; }}>주문 목록</a>
+  </Button>,
+  play: async ({ canvasElement: root }) => {
+    const link = within(root).getByRole('link', { name: '주문 목록' });
+    await expect(link).toHaveAttribute('data-slot', 'button');
+    await expect(link).toHaveClass('order-link', 'inline-flex');
+    await expect(link).not.toHaveAttribute('type');
+    await expect(link.querySelectorAll('svg').length).toBe(2);
+    await expect(link.children[0]).toHaveAttribute('data-probe', 'leading');
+    await expect(link.children[1]).toHaveClass('truncate');
+    await expect(link.children[2]).toHaveAttribute('data-probe', 'trailing');
+    await expect(root.querySelector('button')).toBeNull();
+    await userEvent.click(link);
+    await expect(link).toHaveAttribute('data-link-click', 'true');
+    await expect(link).toHaveAttribute('data-button-click', 'true');
+  },
+};
 
 export const 변형: Story = {
   render: () => (

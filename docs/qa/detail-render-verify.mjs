@@ -173,6 +173,17 @@ try {
     assert.equal(await ev(`!!document.querySelector('${detail}')`), true);
     assert.equal(await ev(`document.querySelector('${alert}').textContent.includes('작성 중인 내용이 사라집니다')`), true);
   });
+  await check('중첩 확인창이 부모보다 좁고 양쪽에 부모가 남는다', async () => {
+    const boxes = await ev(`(() => {
+      const parent = document.querySelector('${detail}').getBoundingClientRect();
+      const confirm = document.querySelector('${alert}').getBoundingClientRect();
+      return { parent: { width: parent.width, left: parent.left, right: parent.right },
+        confirm: { width: confirm.width, left: confirm.left, right: confirm.right } };
+    })()`);
+    assert(boxes.confirm.width > 0 && boxes.confirm.width < boxes.parent.width, JSON.stringify(boxes));
+    assert(boxes.confirm.left > boxes.parent.left && boxes.confirm.right < boxes.parent.right, JSON.stringify(boxes));
+    console.log('중첩 창 폭 실측:', JSON.stringify(boxes));
+  });
   await check('중첩 AlertDialog 초기 포커스는 Cancel', async () => {
     await wait(`document.activeElement === document.querySelector('[data-slot="alert-dialog-cancel"]')`);
     assert.equal(await ev(`document.activeElement.textContent`), '계속 작성');

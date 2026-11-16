@@ -35,19 +35,24 @@ await save(join(consumer, 'package.json'), {
   name: 's2life-pack-consumer', private: true, type: 'module',
   dependencies: Object.fromEntries(packages.map((p, i) => [p.name, `file:${tarballs[i]}`]).concat([
     ['react', rootPkg.dependencies.react], ['react-dom', rootPkg.dependencies['react-dom']],
-    ['@tanstack/react-table', packages[1].dependencies['@tanstack/react-table']],
   ])),
   devDependencies: Object.fromEntries(['vite', 'typescript', '@types/react', '@types/react-dom'].map((name) => [name, rootPkg.devDependencies[name]])),
 });
 await copyFile(new URL('./pack-consumer/main.tsx', import.meta.url), join(consumer, 'main.tsx'));
+await copyFile(new URL('./pack-consumer/public-api.tsx', import.meta.url), join(consumer, 'public-api.tsx'));
 await writeFile(join(consumer, 'index.html'), '<!doctype html><html lang="ko"><meta charset="UTF-8"><div id="root"></div><script type="module" src="/main.tsx"></script></html>');
-await save(join(consumer, 'tsconfig.json'), { compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'bundler', jsx: 'react-jsx', types: ['vite/client'], strict: true, skipLibCheck: true, noEmit: true }, include: ['main.tsx'] });
+await save(join(consumer, 'tsconfig.json'), { compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'bundler', jsx: 'react-jsx', types: ['vite/client'], strict: true, skipLibCheck: true, noEmit: true }, include: ['main.tsx', 'public-api.tsx'] });
 // 같은 버전의 tarball을 다시 만들어도 이전 설치본이 남아 거짓 통과하지 않게 한다.
-for (const name of ['tokens', 'ui', 'mcp']) await rm(join(consumer, 'node_modules/@s2life', name), { recursive: true, force: true });
+await rm(join(consumer, 'node_modules'), { recursive: true, force: true });
 await rm(join(consumer, 'package-lock.json'), { force: true });
-run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--prefer-offline'], consumer);
-assert(!Object.hasOwn((await json(join(consumer, 'package-lock.json'))).packages, 'node_modules/tailwindcss'), '소비 앱에는 Tailwind가 없어야 한다');
-run('npx', ['--no-install', 'tsc', '-p', 'tsconfig.json'], consumer);
+await rm(join(consumer, 'pnpm-lock.yaml'), { force: true });
+// 평탄화가 누락된 공개 API를 가리지 않게 pnpm의 엄격한 의존성 격리를 사용한다.
+run('pnpm', ['install', '--ignore-workspace', '--no-frozen-lockfile', '--ignore-scripts', '--config.node-linker=isolated', '--config.hoist=false', '--config.shamefully-hoist=false'], consumer);
+run('node', ['--input-type=module', '-e', `import assert from 'node:assert/strict';
+  for (const name of ['@tanstack/react-table', 'tailwindcss']) {
+    assert.throws(() => import.meta.resolve(name), {code:'ERR_MODULE_NOT_FOUND'}, name + ' 직접 의존성 없음');
+  }`], consumer);
+run('npx', ['--no-install', 'tsc', '--noEmit', '--strict', '-p', 'tsconfig.json'], consumer);
 run('node', ['--input-type=module', '-e', `import assert from 'node:assert/strict'; import {Button,DataTable,Select} from '@s2life/ui'; assert(Button&&DataTable&&Select); assert.throws(()=>import.meta.resolve('@s2life/ui/internal'),{code:'ERR_PACKAGE_PATH_NOT_EXPORTED'});`], consumer);
 run('npx', ['--no-install', 'vite', 'build'], consumer);
 const installed = join(consumer, 'node_modules/@s2life');

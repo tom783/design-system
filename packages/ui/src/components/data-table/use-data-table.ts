@@ -2,8 +2,8 @@ import * as React from 'react';
 import {
   useTable, tableFeatures, rowSelectionFeature, rowSortingFeature,
   columnPinningFeature, columnVisibilityFeature, createSortedRowModel,
-  functionalUpdate,
-  type ColumnHelper, type RowData, type RowSelectionState, type SortingState,
+  functionalUpdate, createColumnHelper,
+  type ColumnDef, type ColumnHelper, type RowData, type RowSelectionState, type SortingState,
 } from '@tanstack/react-table';
 import { createSelectionColumn, SELECTION_COLUMN_ID } from './selection-column';
 
@@ -17,8 +17,14 @@ export const dataTableFeatures = tableFeatures({
 });
 
 export type DataTableFeatures = typeof dataTableFeatures;
-// helper.columns의 반환 타입을 그대로 사용해 서로 다른 셀 값 타입을 보존한다.
-export type DataTableColumns<T extends RowData> = ReturnType<ColumnHelper<DataTableFeatures, T>['columns']>;
+// 이종 컬럼의 저장 경계는 unknown이다. ReturnType<helper.columns>의 any를
+// 문맥으로 주면 accessor의 TValue까지 any로 추론되어 셀 타입이 사라진다.
+export type DataTableColumns<T extends RowData> = Array<ColumnDef<DataTableFeatures, T, unknown>>;
+
+/** DataTable 전용 컬럼 헬퍼. features는 이미 적용돼 있다. */
+export function createDataTableColumnHelper<T extends RowData>(): ColumnHelper<DataTableFeatures, T> {
+  return createColumnHelper<DataTableFeatures, T>();
+}
 export type SelectionMode = 'none' | 'single' | 'multi';
 
 export interface UseDataTableOptions<T extends RowData> {

@@ -27,6 +27,12 @@
     box-shadow: var(--shadow-overlay);
     overflow-wrap: anywhere;
   }
+  /* 확인창은 부모보다 양쪽 64px씩 좁혀 중첩된 층을 읽게 한다 (§16.4).
+     작은 화면에서도 양쪽 8px씩 부모가 남도록 기존 가장자리 여백에 16px를 더한다. */
+  .ds-dialog-content[data-slot="alert-dialog-content"] {
+    width: calc(100% - var(--space-32) - var(--space-16));
+    max-width: calc(36rem - var(--space-64) - var(--space-64));
+  }
   .ds-dialog-close {
     position: absolute;
     top: var(--space-12);

@@ -8,6 +8,15 @@
 
 ---
 
+## 0.3.0 — 미게시
+
+- G1: feature가 적용된 `createDataTableColumnHelper<T>()`와 필요한 `RowData`·`CellContext`·`HeaderContext` 타입을 공개한다. TanStack은 일반 의존성을 유지한다.
+- G2: `DataTableColumns<T>`를 유지하고 `unknown` 값 경계로 주석 시 셀 추론이 `any`로 넓어지는 문제를 고쳤다.
+- G3: `Button asChild`로 링크를 지원한다. 양쪽 아이콘·말줄임 라벨을 링크 안에 보존하며 `buttonVariants`도 유지한다.
+- G4: AlertDialog는 기존 간격 토큰으로 부모보다 좁게 표시한다. 중첩 폭 실측 회귀 검사를 추가했다.
+- G5: Select의 `w-full` 기본값을 유지하고 툴바 필터 폭 지정 스토리·문서를 추가했다.
+- 배포 리허설에 TanStack 직접 의존성 없는 격리 설치와 strict 소비자 타입 픽스처를 추가했다.
+
 ## 0.2.0 — 2026-11-16
 
 `v0.2.0` · run `43727619700` · OIDC 신뢰 게시, sigstore provenance 포함

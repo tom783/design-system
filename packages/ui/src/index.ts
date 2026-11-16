@@ -12,9 +12,9 @@ export {
 export { Checkbox, type CheckboxProps } from './components/checkbox';
 export {
   DataTable, useDataTable, dataTableFeatures, createSelectionColumn, SELECTION_COLUMN_ID,
-  toCsv, downloadCsv,
+  toCsv, downloadCsv, createDataTableColumnHelper,
   type DataTableProps, type DataTableFeatures, type DataTableColumns, type SelectionMode,
-  type UseDataTableOptions,
+  type UseDataTableOptions, type RowData, type CellContext, type HeaderContext,
 } from './components/data-table';
 export {
   Skeleton, SkeletonText, CardSkeleton, ListSkeleton, FormSkeleton, ChartSkeleton,

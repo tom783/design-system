@@ -7,7 +7,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm build-storybook --quiet",
+    "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm test && pnpm build-storybook --quiet",
     "mcp": "node packages/mcp/server.mjs",
     "mcp:build": "node docs/research/mcp-build.mjs",
     "qa": "node docs/qa/run-all.mjs",
@@ -15,7 +15,8 @@
     "gate": "pnpm verify && pnpm qa",
     "build": "pnpm --filter @s2life/tokens build && pnpm --filter @s2life/mcp build && pnpm --filter @s2life/ui build",
     "version:set": "node scripts/version-set.mjs",
-    "qa:pack": "node docs/qa/pack-verify.mjs"
+    "qa:pack": "node docs/qa/pack-verify.mjs",
+    "test": "node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs packages/mcp/*.test.mjs docs/qa/*.test.mjs"
   },
   "devDependencies": {
     "@storybook/react-vite": "^10.6.7",

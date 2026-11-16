@@ -64,7 +64,7 @@ test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 �
 
 test('자체 prop은 선언 원점으로 보존하고 DOM prop은 상속 이름으로 요약', () => {
   const button = components.find((c) => c.name === 'Button');
-  assert.deepEqual(button.props.map((p) => p.name).sort(), ['iconOnly', 'leadingIcon', 'size', 'trailingIcon', 'variant']);
+  assert.deepEqual(button.props.map((p) => p.name).sort(), ['asChild', 'iconOnly', 'leadingIcon', 'size', 'trailingIcon', 'variant']);
   assert.deepEqual(button.extends, ['React.ButtonHTMLAttributes<HTMLButtonElement>', 'VariantProps<typeof buttonVariants>']);
   assert.ok(button.props.find((p) => p.name === 'leadingIcon').doc.includes('라벨 왼쪽'));
   assert.ok(button.propNames.includes('onClick'));
@@ -76,7 +76,7 @@ test('자체 prop은 선언 원점으로 보존하고 DOM prop은 상속 이름�
 test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 보존', async () => {
   const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   const button = manifest.components.find((c) => c.name === 'Button');
-  assert.deepEqual(button.props.map((p) => p.name).sort(), ['leadingIcon', 'size', 'trailingIcon', 'variant']);
+  assert.deepEqual(button.props.map((p) => p.name).sort(), ['asChild', 'leadingIcon', 'size', 'trailingIcon', 'variant']);
   assert.deepEqual(button.extends, components.find((c) => c.name === 'Button').extends);
   assert.ok(manifest.components.every((c) => !Object.hasOwn(c, 'propNames')));
 });

@@ -4,9 +4,31 @@ import { expect, userEvent, within, waitFor } from 'storybook/test';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/select';
 import { Field, FormFlow } from '../components/form';
 import { Input } from '../components/input';
+import { Button } from '../components/button';
 const meta = { title: 'Components/Select' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
+export const 툴바필터: Story = {
+  name: '툴바 필터',
+  parameters: { docs: { description: { story: 'Field 안에서는 w-full이 기본이다. 툴바에서는 w-auto와 최소 폭으로 필터가 남은 행 너비를 독차지하지 않게 한다.' } } },
+  render: () => <div className="flex flex-wrap items-center gap-2">
+    <Input aria-label="주문 검색" placeholder="주문번호 검색" className="w-auto min-w-40 flex-1" />
+    <Select defaultValue="all"><SelectTrigger aria-label="주문 상태" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value="all">전체 상태</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem></SelectContent>
+    </Select>
+    <Button>내보내기</Button>
+  </div>,
+  // 이 파일의 스토리는 전부 완료 표식을 세운다. list-screen 하네스가 그걸 요구한다.
+  play: async ({ canvasElement: root }) => {
+    const canvas = within(root);
+    const trigger = canvas.getByRole('combobox', { name: '주문 상태' });
+    const box = trigger.getBoundingClientRect(), row = root.firstElementChild!.getBoundingClientRect();
+    // 툴바에서는 필터가 남은 폭을 독차지하지 않는다. 그게 이 스토리의 요지다.
+    await expect(box.width).toBeLessThan(row.width / 2);
+    await expect(Math.round(box.height)).toBe(38);
+    root.dataset.playComplete = 'true';
+  },
+};
 function StatusSelect(props: React.ComponentProps<typeof Select>) {
   return <Select {...props}><SelectTrigger aria-label="주문 상태"><SelectValue placeholder="상태 선택" /></SelectTrigger>
     <SelectContent><SelectItem value="all">전체</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem></SelectContent></Select>;

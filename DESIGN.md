@@ -865,6 +865,8 @@ shouldValidate({ trigger, hasErrored, isComposing })
 다만 `aria-describedby` 의 순서는 **오류가 먼저**다 — 급한 것을 먼저 읽어야 한다.
 눈으로 보는 순서와 읽어주는 순서가 다른 것은 의도다.
 
+SelectTrigger의 기본 `w-full`은 Field용이다. 툴바 필터에서는 `className="w-auto min-w-40"`처럼 폭을 지정한다 (Select / 툴바 필터 스토리).
+
 ### 11.5 Enter 로 다음 칸 — 옵트인
 
 `FormFlow` 로 감싼 폼에서만 Enter 가 다음 칸으로 간다. **HTML 의 기본 동작
@@ -1490,6 +1492,10 @@ children 뒤에 렌더한다 — 뒤에 두어야 Radix의 첫 포커스가 입�
 Radix는 열린 직후 Cancel로 포커스를 옮긴다. 바깥 클릭은 닫지 않고 Escape는 닫는다.
 이 기본 동작을 덮어쓰지 않는다. AlertDialog에 폼을 넣지 않는다. 입력은 Dialog다.
 AlertDialogAction의 danger 변형은 기존 Button의 danger 액션 토큰을 재사용한다.
+
+**확인창은 부모보다 좁다.** 최대 폭은 부모의 36rem에서 기존 `--space-64` 두 개를
+뺀다. 작은 화면도 부모보다 양쪽 `--space-8`씩 안으로 들어와 층이 읽힌다.
+부모의 축소·블러 없이 폭 차이로만 중첩을 표현한다 (§5).
 
 ### 16.5 레이어와 알림 — 사전 실측을 설계 근거로 유지한다
 

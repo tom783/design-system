@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../lib/cn';
+import { Slot, Slottable } from '../internal/slot';
 
 /**
  * 버튼
@@ -59,6 +60,8 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
+  /** 단일 자식 링크 등에 스타일·이벤트·ref를 합친다. */
+  asChild?: boolean;
   /** 라벨 왼쪽 아이콘. 동작을 설명하는 것만 쓴다. */
   leadingIcon?: React.ReactNode;
   /** 라벨 오른쪽 아이콘. 방향·열림 상태 표시에만 쓴다. */
@@ -67,21 +70,25 @@ export interface ButtonProps
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant, size, iconOnly, leadingIcon, trailingIcon, children, type = 'button', ...props },
+    { className, variant, size, iconOnly, asChild = false, leadingIcon, trailingIcon, children, type = 'button', ...props },
     ref,
-  ) => (
-    <button
+  ) => {
+    const Component = asChild ? Slot : 'button';
+    return <Component
       ref={ref}
-      type={type}
+      type={asChild ? undefined : type}
       data-slot="button"
       className={cn(buttonVariants({ variant, size, iconOnly }), className)}
       {...props}
     >
       {leadingIcon}
-      {children ? <span className="truncate">{children}</span> : null}
+      {/* Slot 대상은 링크 자체로 유지하고, 아이콘과 말줄임 라벨은 그 안에 배치한다. */}
+      {asChild
+        ? <Slottable child={children}>{label => <span className="truncate">{label}</span>}</Slottable>
+        : children ? <span className="truncate">{children}</span> : null}
       {trailingIcon}
-    </button>
-  ),
+    </Component>;
+  },
 );
 Button.displayName = 'Button';
 
