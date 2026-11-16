@@ -1,0 +1,53 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Intent } from './_intent';
+import { DesignLink } from './_page';
+
+<Meta title="문서/02 컴포넌트 고르기" />
+
+<div data-doc-page="컴포넌트 고르기">
+
+# 컴포넌트 고르기
+
+갈림길에서 한 줄로 결정한 뒤 아래의 매니페스트 규칙을 확인하세요. 각 블록은 MCP와 같은 데이터를 렌더합니다. 함께 보기 링크는 해당 컴포넌트의 소스를 엽니다.
+
+## Select와 Combobox
+
+옵션이 20개 이하면 Select, 20개를 넘으면 검색 가능한 Combobox를 고릅니다.
+
+<div className="intent-grid"><Intent name="Select" /><Intent name="Combobox" /></div>
+
+## Switch와 Checkbox
+
+조작 즉시 적용하는 설정이면 Switch, 제출할 때 함께 적용하는 값이면 Checkbox를 고릅니다.
+
+<div className="intent-grid"><Intent name="Switch" /><Intent name="Checkbox" /></div>
+
+## Dialog와 AlertDialog
+
+되돌릴 수 있는 편집은 Dialog, 되돌릴 수 없는 실행을 확인할 때는 AlertDialog를 고릅니다.
+
+<div className="intent-grid"><Intent name="Dialog" /><Intent name="AlertDialog" /></div>
+
+## Tooltip·Hint·Tour·Peek
+
+UI의 뜻 한 줄은 Tooltip, 새 기능 알림은 Hint, 요청한 단계 안내는 Tour, 레코드 미리보기는 Peek를 고릅니다.
+
+<div className="intent-grid"><Intent name="Tooltip" /><Intent name="Hint" /><Intent name="Tour" /><Intent name="Peek" /></div>
+
+## DatePicker와 네이티브 날짜 입력
+
+업무 날짜·기간 필터는 DatePicker를 우선하고, 네이티브 날짜 입력이 꼭 필요한 경우에만 `<input type="date">`의 문자열 value를 사용합니다.
+
+<div className="intent-grid"><Intent name="DatePicker" /><Intent name="Input" /></div>
+
+네이티브 날짜 입력은 실측에서 text 입력과 다른 고정적인 기본 폭을 보였고, `valueAsDate`는 UTC 자정이며 검증 문구는 영어였습니다. <DesignLink section="17.1">DESIGN.md §17.1 실측과 날짜 입력 근거</DesignLink>를 확인하세요. 위 Input 블록은 네이티브 타입을 전달하는 래퍼의 규칙입니다.
+
+## 금액·수량은 text 입력으로
+
+`type="number"`는 휠·화살표로 값이 달라지고 쉼표·지수 표기 해석이 업무 입력과 어긋날 수 있습니다. <DesignLink section="17.1">§17.1의 실측 표</DesignLink>를 읽고 다음처럼 시작하세요. 검증 오류는 앱에서 한국어로 제공합니다.
+
+```tsx
+<Input type="text" inputMode="numeric" numeric aria-label="주문 금액" />
+```
+
+</div>

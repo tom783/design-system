@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { Preview, Decorator } from '@storybook/react-vite';
 import '../packages/ui/src/styles.css';
+import { DocumentationContainer } from '../packages/ui/docs/_page';
 
 /**
  * 테마 전환은 html[data-theme] 속성으로 한다.
@@ -39,6 +40,10 @@ const preview: Preview = {
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true },
+    // MDX 의 <Meta parameters={{ docs: { container } }} /> 는 이 버전에서 적용되지 않는다.
+    // 실측: 컨테이너가 한 번도 실행되지 않아 문서가 테마도 Intent 스타일도 못 받았다.
+    // 스토리가 있는 페이지만 데코레이터 덕에 우연히 테마가 붙어 더 헷갈렸다.
+    docs: { container: DocumentationContainer },
   },
 };
 export default preview;

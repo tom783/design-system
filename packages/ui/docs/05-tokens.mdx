@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="문서/05 토큰" />
+
+<div data-doc-page="토큰">
+
+# 토큰
+
+이 페이지는 쓰는 자리만 안내합니다. 실제 색과 대비는 [Foundation/색상](?path=/story/foundation-색상--의미색상-라이트), 활자·간격 값은 [Foundation/활자와 간격](?path=/story/foundation-활자와-간격--타입스케일)에서 확인하세요.
+
+| 범주 | 토큰 이름 | 쓰는 자리 |
+| --- | --- | --- |
+| 배경 | `--bg-canvas` | 페이지 바탕 |
+| 배경 | `--bg-surface` | 카드·패널·표의 면 |
+| 배경 | `--bg-sunken` | 안으로 들어간 면 |
+| 배경 | `--bg-hover`, `--bg-selected` | 호버한 행·선택한 행 |
+| 글자 | `--text-primary` | 본문·데이터 값 |
+| 글자 | `--text-secondary`, `--text-tertiary` | 설명·메타 정보 |
+| 글자 | `--text-link`, `--text-on-brand` | 링크·채움 버튼 위 라벨 |
+| 글자 | `--text-disabled` | 비활성 컨트롤 |
+| 경계 | `--border-subtle`, `--border-default` | 분리선·카드 윤곽 |
+| 경계 | `--border-input`, `--border-focus` | 입력 경계·키보드 포커스 |
+| 액션 | `--action-primary-bg`, `--action-primary-bg-hover`, `--action-primary-border` | 주요 동작의 기본·호버·윤곽 |
+| 액션 | `--action-danger-bg`, `--action-danger-bg-hover`, `--action-danger-border` | 파괴적 동작의 기본·호버·윤곽 |
+| 상태 | `--status-success-bg`, `--status-success-fg` | 성공 배경·글자 |
+| 상태 | `--status-warning-bg`, `--status-warning-fg` | 경고 배경·글자 |
+| 상태 | `--status-danger-bg`, `--status-danger-fg` | 오류 배경·글자 |
+| 상태 | `--status-info-bg`, `--status-info-fg` | 안내 배경·글자 |
+
+원시 색상 토큰은 직접 쓰지 않고 의미 토큰을 거칩니다. Tailwind로 글자 크기를 지정할 때는 `text-[length:var(--text-body-sm)]`처럼 `length:`를 명시합니다.
+
+</div>

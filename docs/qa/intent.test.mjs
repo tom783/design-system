@@ -1,0 +1,56 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolveIntent } from '../../packages/ui/docs/_intent-data.ts';
+
+const entry = (name, extra = {}) => ({ name, purpose: `${name}의 목적`, source: `${name}.tsx`, ...extra });
+
+test('Intent: 이름이 없으면 조용히 비우지 않고 실패한다', () => {
+  assert.throws(() => resolveIntent([entry('Input')], '사라진컴포넌트'), /매니페스트.*사라진컴포넌트/);
+});
+test('Intent: 부품과 모든 부모를 보존하고 관련 링크는 합쳐 중복을 제거한다', () => {
+  const entries = [
+    entry('Root', { rules: [{ text: '부모 규칙', source: 'DESIGN.md 16' }], related: ['Other'] }),
+    entry('Part', { partOf: 'Root', related: ['Other', 'Root'] }),
+    entry('Child', { partOf: 'Part', rules: [{ text: '자체 규칙', source: 'DESIGN.md 6' }], related: ['Other'] }),
+    entry('Other'),
+  ];
+  const before = structuredClone(entries);
+  const result = resolveIntent(entries, 'Child');
+  assert.equal(result.component.name, 'Child');
+  assert.deepEqual(result.component.rules, entries[2].rules);
+  assert.deepEqual(result.parents.map(parent => parent.name), ['Part', 'Root']);
+  assert.deepEqual(result.parents[1].rules, entries[0].rules);
+  assert.deepEqual(result.related.map(related => related.name), ['Other']);
+  assert.deepEqual(entries, before, '매니페스트를 변경하지 않는다');
+});
+test('Intent: 부모나 관련 이름이 사라져도 실패한다', () => {
+  assert.throws(() => resolveIntent([entry('Part', { partOf: 'MissingParent' })], 'Part'), /MissingParent/);
+  assert.throws(() => resolveIntent([entry('Root', { related: ['MissingRelated'] })], 'Root'), /MissingRelated/);
+});
+test('Intent: partOf 순환 참조는 무한 루프 대신 실패한다', () => {
+  assert.throws(() => resolveIntent([entry('A', { partOf: 'B' }), entry('B', { partOf: 'A' })], 'A'), /순환 참조/);
+});
+
+const docs = new URL('../../packages/ui/docs/', import.meta.url);
+const manifest = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
+const pages = readdirSync(docs).filter(file => file.endsWith('.mdx')).sort();
+
+test('다섯 MDX 페이지의 모든 Intent 이름·부모·관련 이름을 실제 매니페스트로 해소한다', () => {
+  assert.equal(pages.length, 5);
+  const names = pages.flatMap(file => [...readFileSync(new URL(file, docs), 'utf8')
+    .matchAll(/<Intent name="([^"]+)"\s*\/>/g)].map(match => match[1]));
+  assert.ok(names.length >= 10, 'Intent 호출이 없어 검사가 공회전하면 안 된다');
+  for (const name of names) {
+    const resolved = resolveIntent(manifest.components, name);
+    assert.ok(resolved.component.purpose);
+    for (const component of [resolved.component, ...resolved.parents, ...resolved.related]) assert.ok(component.source);
+  }
+  assert.ok(resolveIntent(manifest.components, 'SelectTrigger').parents.some(parent => parent.name === 'Select'));
+  assert.ok(resolveIntent(manifest.components, 'DialogContent').parents.some(parent => parent.name === 'Dialog'));
+});
+test('문서에 적은 토큰 이름은 모두 매니페스트에 존재한다', () => {
+  const tokens = new Set(manifest.tokens.map(token => token.cssVariable));
+  const source = readFileSync(new URL('05-tokens.mdx', docs), 'utf8');
+  for (const match of source.matchAll(/--[a-z][a-z0-9-]+/g)) assert.ok(tokens.has(match[0]), match[0]);
+});

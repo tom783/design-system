@@ -1,0 +1,56 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks';
+import * as FormStories from '../src/stories/form.stories';
+import { Intent } from './_intent';
+import { DesignLink } from './_page';
+import { FormControlRecipe } from './_form-control';
+import { DirtyFormRecipe } from './_dirty-form';
+import controlCode from './_form-control.tsx?raw';
+import dirtyCode from './_dirty-form.tsx?raw';
+
+<Meta title="문서/04 폼 만들기" />
+
+<div data-doc-page="폼 만들기">
+
+# 폼 만들기
+
+값과 검증 내용은 앱에서 관리하고, Field가 레이블·설명·오류·접근성 배선을 맡도록 조립합니다.
+
+<Intent name="Field" />
+
+```tsx
+<Field label="수취인" description="주문서에 인쇄됩니다" error={error} required>
+  <Input value={recipient} onChange={event => setRecipient(event.target.value)} />
+</Field>
+```
+
+## Enter 이동
+
+FormFlow는 Enter를 Tab 순서의 다음 칸 이동으로 연결하며, 컨트롤별 예외는 <DesignLink section="11.5">DESIGN.md §11.5의 Enter 이동 계약 표</DesignLink>를 따릅니다.
+
+<Intent name="FormFlow" />
+
+첫 칸에 값을 입력하고 Enter를 눌러 보세요. 마지막 일반 입력에서는 제출됩니다.
+
+<Canvas of={FormStories.Enter_이동} sourceState="none" />
+
+## 앱의 자체 컨트롤 연결
+
+실제로 포커스를 받는 요소에 `data-form-control="advance"`를 붙입니다. 아래 예제의 상품 코드에서 Enter를 누르면 수취인으로 이동하고, 수취인에서 Enter를 누르면 저장 횟수가 올라갑니다.
+
+<div data-doc-demo="자체 컨트롤"><FormControlRecipe /></div>
+<Source code={controlCode.replace("from '../src'", "from '@s2life/ui'")} language="tsx" />
+
+## 저장하지 않은 변경 보호
+
+저장값과 초안을 비교한 `dirty`를 `dismissible={!dirty}`에 연결합니다. `onDismissAttempt`에서 확인 AlertDialog를 열고, 계속 작성하면 초안과 입력 위치를 보존합니다. 아래 예제에서 수취인을 바꾼 뒤 Escape나 닫기를 눌러 보세요.
+
+<Intent name="DialogContent" />
+
+<div data-doc-demo="더티 폼"><DirtyFormRecipe /></div>
+<Source code={dirtyCode.replace("from '../src'", "from '@s2life/ui'")} language="tsx" />
+
+## 한글 IME
+
+조합 중 검증·Enter 이동은 멈추며, Combobox는 빈 결과로 바뀌는 필터 반영을 보류합니다. 앱의 검증 시점은 <DesignLink section="11.2">§11.2</DesignLink>, 조합 근거는 <DesignLink section="11.1">§11.1</DesignLink>을 확인하세요.
+
+</div>

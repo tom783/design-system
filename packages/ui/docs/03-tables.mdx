@@ -1,0 +1,74 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks';
+import * as TableStories from '../src/stories/data-table.stories';
+import * as SelectStories from '../src/stories/select.stories';
+import tableCode from './_table-recipe.tsx?raw';
+import { Intent } from './_intent';
+
+<Meta title="문서/03 표 만들기" />
+
+<div data-doc-page="표 만들기">
+
+# 표 만들기
+
+**`@tanstack/react-table`을 앱에 설치하지 않습니다.** `@s2life/ui`에서 헬퍼와 표를 함께 가져오면 feature와 타입 버전이 맞습니다.
+
+<Intent name="DataTable" />
+
+## 소비 앱의 컬럼과 표
+
+`createDataTableColumnHelper<T>()` → `h.accessor(...)` → `h.columns([...])` 순서로 만듭니다. 컬럼 배열은 헬퍼의 추론을 그대로 사용하면 셀의 `getValue()` 타입이 유지됩니다.
+
+<Source code={"'use client';\n\n" + tableCode.replace("from '../src'", "from '@s2life/ui'")} language="tsx" />
+
+아래는 기존 DataTable 스토리입니다. 금액 헤더를 눌러 정렬 순서를 바꿔 보세요.
+
+<Canvas of={TableStories.기본} sourceState="none" />
+
+## 선택·정렬·밀도
+
+선택은 `selectionMode="single" | "multi"`로 켜고 `selectedIds`와 `onSelectedIdsChange`로 앱 상태와 연결합니다. 정렬은 헤더 버튼이 처리하며 금액은 원본 숫자로 보관합니다. 밀도는 `compact`, `default`, `comfortable` 중에서 고릅니다.
+
+<Canvas of={TableStories.복수선택} sourceState="none" />
+<Canvas of={TableStories.밀도} sourceState="none" />
+
+## 로딩·빈 결과·오류
+
+조회 상태를 아래 prop에 연결합니다. 정상 조회 결과를 표시할 때는 `state="idle"`입니다.
+
+| 상황 | 연결할 prop |
+| --- | --- |
+| 조회 중 | `state="loading"` |
+| 빈 결과 | `state="empty"`, `data={[]}`, `emptyMessage` |
+| 실패 | `state="error"`, `errorMessage`, `onRetry` |
+
+<Canvas of={TableStories.상태} sourceState="none" />
+
+## CSV 내보내기
+
+`exportFileName`을 주면 내보내기 버튼이 생깁니다. 선택한 행이 있으면 선택 행을, 없으면 현재 정렬된 로드 행을 내보냅니다. 금액 표시에 쉼표를 써도 `exportValue`에는 원본 숫자 문자열을 넘깁니다. 서버 전체 자료가 필요하면 앱에서 별도의 내보내기 API를 연결하세요.
+
+<Canvas of={TableStories.내보내기} sourceState="none" />
+
+## 툴바 필터 폭
+
+SelectTrigger는 Field 안에서 채워지도록 `w-full`이 기본입니다. 툴바에서는 `className="w-auto min-w-40"`처럼 폭과 최소 폭을 지정합니다. 다음은 R19에서 추가한 [Components/Select의 툴바 필터](?path=/story/components-select--툴바필터)입니다. 사전 컴파일 CSS에 이 예제의 클래스도 포함됩니다.
+
+<Intent name="SelectTrigger" />
+
+```tsx
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@s2life/ui';
+
+export function StatusFilter() {
+  return <Select defaultValue="all">
+    <SelectTrigger aria-label="주문 상태" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">전체 상태</SelectItem>
+      <SelectItem value="ready">준비 중</SelectItem>
+    </SelectContent>
+  </Select>;
+}
+```
+
+<Canvas of={SelectStories.툴바필터} sourceState="none" />
+
+</div>
