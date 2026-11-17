@@ -8,6 +8,8 @@ export function DialogTrigger(props: React.ComponentProps<typeof Primitive.Trigg
   return <Primitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 export interface DialogContentProps extends React.ComponentProps<typeof Primitive.Content> {
+  /** default는 기존 36rem, wide는 미디어처럼 뷰포트 폭이 필요한 내용에 쓴다. */
+  size?: 'default' | 'wide';
   /** false면 바깥 클릭·Escape로 닫히지 않는다. 명시적 닫기 버튼은 계속 동작한다. */
   dismissible?: boolean;
   /** dismissible=false일 때 닫으려는 시도를 알린다. 앱에서 확인 AlertDialog를 연다. */
@@ -15,7 +17,7 @@ export interface DialogContentProps extends React.ComponentProps<typeof Primitiv
   /** 우상단 닫기 버튼. 끄면 앱이 직접 출구를 제공해야 한다. */
   showClose?: boolean;
 }
-export function DialogContent({ dismissible = true, onDismissAttempt, showClose = true, onEscapeKeyDown,
+export function DialogContent({ size = 'default', dismissible = true, onDismissAttempt, showClose = true, onEscapeKeyDown,
   onPointerDownOutside, onInteractOutside, className, children, ...props }: DialogContentProps) {
   // pointerdownoutside와 interactoutside는 같은 이벤트를 전달한다. 한 번의 시도는 한 번만 알린다.
   const lastAttempt = React.useRef<Event | null>(null);
@@ -26,7 +28,7 @@ export function DialogContent({ dismissible = true, onDismissAttempt, showClose 
   };
   return <Primitive.Portal>
     <Primitive.Overlay data-slot="dialog-overlay" className="ds-dialog-overlay" />
-    <Primitive.Content {...props} data-slot="dialog-content" className={cn('ds-dialog-content', className)}
+    <Primitive.Content {...props} data-slot="dialog-content" data-size={size} className={cn('ds-dialog-content', className)}
       onEscapeKeyDown={event => { onEscapeKeyDown?.(event); guard(event); }}
       onPointerDownOutside={event => { onPointerDownOutside?.(event); guard(event); }}
       onInteractOutside={event => { onInteractOutside?.(event); guard(event); }}>

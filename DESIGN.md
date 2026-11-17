@@ -1870,6 +1870,73 @@ forceMount 입력 보존·기본 제거, reduce 시간 0과 콘솔 오류를 검
 
 ---
 
+## 22. 미디어 표시 — MediaViewer (R24)
+
+이미지 클릭 확대와 동영상 팝업·플로팅은 MediaViewer를 쓴다. 입력·편집 모달은 Dialog다.
+플레이어를 새로 만드는 것이 아니라 보여주는 방식을 제공한다. 제어된 open·onOpenChange를
+쓰며 기본 mode는 popup, floating의 기본 placement는 bottom-end다.
+
+### 22.1 popup과 floating의 책임
+
+popup은 기존 Dialog를 그대로 조립한다. DialogContent의 size 기본값 default는 기존
+36rem을 유지하고, wide만 뷰포트 양쪽 16px를 남기는 최대 폭을 쓴다. 높이는 기존
+100dvh 제한을 유지한다. 제목은 한 줄 말줄임과 title로 전체값을 보존하며 닫기를 가리지 않는다.
+MediaViewer에 별도 트리거 API가 없으므로 열리기 직전 포커스를 기록해 Dialog의
+onCloseAutoFocus에서 돌려준다. Escape·포커스 트랩·바깥 클릭은 Dialog가 담당한다.
+
+floating은 popover="manual"의 top layer를 사용하고 새 z-index를 만들지 않는다.
+position:fixed와 논리 방향 start/end로 네 모서리를 고른다. 바깥 inert·포커스 트랩이
+없으며 처음 열 때 포커스를 빼앗지 않는다. 닫기 버튼은 항상 제공한다. Escape는 패널
+내부에서 처리되지 않은 키만 닫기로 연결하고 preventDefault·stopPropagation을 쓰지 않는다.
+바깥 입력의 Escape는 페이지가 계속 소유하며 전체화면 영상의 Escape도 가로채지 않는다.
+패널 안에 포커스가 있을 때 닫으면 열었던 곳으로 돌아가고 바깥 작업 중이면 그대로 둔다.
+등장은 기존 dur-normal의 투명도 전환이며 reduced-motion에서는 지속시간이 정확히 0이다.
+
+이미지 확대·이동(pan/zoom)과 플로팅 창 끌어서 옮기기(drag)는 **현재 범위 아님**이다.
+
+### 22.2 미디어·로딩·실패
+
+이미지 alt는 판별 유니온에서 필수다. object-fit:contain으로 종횡비를 보존한다.
+width·height가 양의 유한수이면 그 비율로 자리를 예약하며, 치수를 모르는 이미지와
+동영상은 16:9 상자를 사용한다. 실제 파일 비율이 달라도 상자를 바꾸지 않고 여백 안에
+맞추므로 로딩 전후 레이아웃이 흔들리지 않는다. 뷰포트 높이에서 가장자리·패딩·헤더·
+간격·경계·PiP 한 줄을 빼서 상자의 폭도 제한한다. 작은 뷰포트의 나머지 내용은 내부 스크롤이다.
+로딩은 기존 Skeleton, 실패는 기존 ErrorState의 아이콘·문장·색으로 알린다.
+소스·유형을 교체하거나 닫으면 이전 미디어 상태를 폐기하고 동영상은 멈춘다.
+
+동영상은 네이티브 controls를 쓴다. 자막·탐색·전체화면의 접근성을 다시 구현하는
+유지보수 비용을 피하기 위해 커스텀 컨트롤은 만들지 않는다. preload="metadata"로
+전체 파일 사전 다운로드를 피하고 autoplay는 제공하지 않는다. poster를 권장하며
+captions는 kind="captions"·srcLang·label인 track으로 넣는다.
+
+### 22.3 화면 속 화면
+
+document.pictureInPictureEnabled와 video.requestPictureInPicture를 탐지하고
+disablePictureInPicture를 존중한다. 이 금지를 앱에서 설정할 수 있도록 영상 데이터에
+동명의 선택 속성을 추가해 실제 video에도 전달한다. 금지된 영상과 이미지에는 PiP 버튼이 없다.
+준비된 영상에서 실제 클릭으로 requestPictureInPicture를 즉시 호출한다. 비동기 준비를
+먼저 기다려 사용자 활성화를 잃지 않는다. enter/leavepictureinpicture 이벤트로 상태를
+동기화하여 브라우저 자체 닫기에도 대응한다. 접근명은 “화면 속 화면으로 보기”와
+“화면 속 화면 끄기”이며 활성 영상은 document.exitPictureInPicture()로 해제한다.
+거절되면 기존 ErrorState로 재생 후 재시도를 안내한다. 뷰어가 닫힐 때도 PiP를 해제한다.
+
+### 22.4 사전 실측과 검증 책임
+
+사용자가 제공한 실측은 manual popover의 표시·스크롤 고정·바깥 inert=false·바깥 입력
+포커스=true, PiP 기능 존재, 제스처 없는 요청의 NotAllowedError와 실제 클릭의 성공이다.
+이번 작업에서는 브라우저를 실행하지 않아 새 실측값이나 기존 측정과의 차이를 주장하지 않는다.
+
+스토리는 외부 영상 파일 대신 캔버스 captureStream의 실제 스트림을 연결한다. 컴포넌트와
+연결 코드는 자동 재생하지 않고 스토리 play가 명시적으로 재생한다. 로딩 스토리는 스트림
+연결을 사용자가 시작할 때까지 기다려 실제 로딩 상태와 예약 높이를 재현한다.
+media-viewer-render-verify.mjs를 run-all에 등록하고 기존 하네스는 수정하지 않는다.
+바깥 입력·inert·스크롤 고정·실제 CDP 클릭 PiP 진입/해제·금지 버튼 DOM 부재·wide와
+기본 실측 폭·Escape 포커스 복귀·controls/autoplay/preload·alt·로드 전후 높이·reduce
+시간 0·콘솔 오류를 검사한다. 기존 브라우저 429건(상세 Dialog 36건 포함)과 신규 하네스
+실행은 사용자의 pnpm qa에 맡긴다. pnpm verify는 단위 검사를 포함해 별도로 실행한다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

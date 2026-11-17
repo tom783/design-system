@@ -27,6 +27,8 @@
     box-shadow: var(--shadow-overlay);
     overflow-wrap: anywhere;
   }
+  /* 기본 36rem은 유지한다. 미디어 확대만 뷰포트 가장자리 16px를 남긴다 (§22). */
+  .ds-dialog-content[data-size="wide"] { max-width: calc(100vw - var(--space-32)); }
   /* 확인창은 부모보다 양쪽 64px씩 좁혀 중첩된 층을 읽게 한다 (§16.4).
      작은 화면에서도 양쪽 8px씩 부모가 남도록 기존 가장자리 여백에 16px를 더한다. */
   .ds-dialog-content[data-slot="alert-dialog-content"] {

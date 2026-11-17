@@ -108,7 +108,7 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
   assert.equal((await c.request('resources/read', {})).error.code, -32602);
   assert.equal((await c.request('unknown')).error.code, -32601);
 });
-test('R23: get_component 8개와 list_components 99개가 고정 기준선과 완전히 동일하다', async (t) => {
+test('R23 기존 응답 기준선을 보존하고 R24 MediaViewer 하나만 목록에 추가한다', async (t) => {
   const c = await client(t);
   const checkBaseline = (response, expected) => {
     assert.equal(response.error, undefined);
@@ -123,7 +123,11 @@ test('R23: get_component 8개와 list_components 99개가 고정 기준선과 �
     if (name === '__list') continue;
     checkBaseline(await call(c, 'get_component', { name }), expected);
   }
-  checkBaseline(await call(c, 'list_components', {}), { components: baseline.__list });
+  // 기존 99개의 값·순서·text 직렬화 기준선은 바꾸지 않는다. 신규 독립 항목만 앞에 추가한다.
+  checkBaseline(await call(c, 'list_components', {}), { components: [{
+    name: 'MediaViewer', kind: 'component', purpose: '이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',
+    import: "import { MediaViewer } from '@s2life/ui';",
+  }, ...baseline.__list] });
   // 부품 조회가 보관 형태에 부모 필드나 기본값을 써 넣지 않았는지도 확인한다.
   const resource = (await c.request('resources/read', { uri: 'design://components' })).result.contents[0];
   assert.deepEqual(JSON.parse(resource.text), { derived: manifest.derived, components: manifest.components });

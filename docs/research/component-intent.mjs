@@ -28,6 +28,7 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('MediaViewer','media','이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',['이미지 크게 보기','영상 보면서 작업','이미지나 영상을 확대해서 볼 때'],['커스텀 플레이어·자동 재생을 만들지 마라','pan·zoom·끌어서 옮기기는 현재 범위가 아니다'],'22','popup은 DialogContent wide, floating은 manual popover로 바깥 입력·스크롤을 유지한다. 닫기 버튼과 패널 안 Escape를 제공한다. 이미지는 alt 필수·종횡비 보존, 로딩 Skeleton과 오류 ErrorState는 같은 예약 상자를 쓴다. 동영상은 controls·preload=metadata·자막 track을 쓰며 poster를 권장한다. PiP는 기능 탐지·disablePictureInPicture를 존중하고 실제 클릭으로 열고 해제한다.',['media','open','onOpenChange','mode','placement','title'],['media-viewer','media-viewer-stage','media-viewer-image','media-viewer-video','media-viewer-pip','media-viewer-close'],['Dialog','Thumbnail','Skeleton','ErrorState'],['이미지 확대','라이트박스','사진 크게','동영상 재생','영상 팝업','떠 있는 창','화면 속 화면','PiP','이미지 크게 보기','영상 보면서 작업']),
   entry('Collapsible','disclosure','고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.',['고급 설정 접기','패널을 접고 펼칠 때'],['긴 글의 줄 제한에는 ClampText를 쓴다','아코디언으로 쓰지 마라'],'21','트리거 라벨은 앱이 준다. ARIA·data-state는 Radix가 소유한다. 높이는 Radix 변수로 전환하며 reduce에서는 0이다. 닫으면 자식이 제거되므로 입력값 보존은 Content forceMount를 쓴다.',['open','defaultOpen','onOpenChange','disabled'],['collapsible'],['ClampText'],['접기','펼치기','아코디언 아님','고급 설정','고급 설정 접기']),
   part('CollapsibleTrigger','Collapsible','항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.',['asChild'],['collapsible-trigger']),
   part('CollapsibleContent','Collapsible','접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.',['forceMount'],['collapsible-content']),
@@ -47,7 +48,7 @@ const intents = [
   part("BreadcrumbEllipsis", "Breadcrumb", "접힌 경로 수를 읽을 수 있는 생략 표시다.", ["count"], ["breadcrumb-ellipsis"]),
   entry("Dialog","overlay","입력·편집·선택 모달을 여는 루트다.",["되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"],["삭제 확인에는 AlertDialog를 사용한다"],"16","제목 → 설명 → 내용 → 푸터 순서이며 초기 포커스는 첫 포커스 가능 요소다. 파괴적 버튼을 첫 요소로 두지 않는다. 저장하지 않은 변경이 있을 때 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Escape를 무반응으로 삼키지 않는다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",["open", "onOpenChange"],[],["DialogContent", "AlertDialog"],["모달", "모달 띄우기", "다이얼로그", "팝업", "편집"]),
   part("DialogTrigger", "Dialog", "입력 창을 여는 트리거다.", ["asChild"], ["dialog-trigger"]),
-  part("DialogContent", "Dialog", "입력 창의 포털과 닫기 보호다.", ["dismissible", "onDismissAttempt", "onEscapeKeyDown", "onPointerDownOutside", "onInteractOutside"], ["dialog-content", "dialog-overlay"]),
+  part("DialogContent", "Dialog", "입력 창의 포털과 닫기 보호다.", ["size", "dismissible", "onDismissAttempt", "onEscapeKeyDown", "onPointerDownOutside", "onInteractOutside"], ["dialog-content", "dialog-overlay"]),
   part("DialogHeader", "Dialog", "입력 창 제목·설명 그룹이다.", [], ["dialog-header"]),
   part("DialogTitle", "Dialog", "입력 창의 필수 제목이다.", [], ["dialog-title"]),
   part("DialogDescription", "Dialog", "입력 창의 필수 설명이다.", [], ["dialog-description"]),

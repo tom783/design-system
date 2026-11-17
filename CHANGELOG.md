@@ -10,6 +10,8 @@
 
 ## 0.3.0 — 미게시
 
+- R24: 이미지·동영상을 확대 팝업 또는 비모달 플로팅으로 표시하는 MediaViewer를 추가했다. DialogContent의 기본 36rem을 유지한 wide 변형, 네이티브 동영상 컨트롤·자막·PiP, 종횡비를 예약하는 로딩·오류 상태와 브라우저 하네스를 제공한다.
+
 - R22: 항상 보이는 트리거의 Collapsible과 넘칠 때만 더보기를 제공하는 ClampText를 추가했다. 폭·내용·폰트 변화 재측정, 입력값 forceMount 보존, 모션 줄이기와 접고 펴기 하네스를 제공한다.
 
 - R21: 요약 트리거·체크 목록의 MultiSelect와 Combobox multiple 태그 선택을 추가했다. 칩은 2줄 상한·24px 해제 타깃·roving tabindex·두 번 Backspace를 지원한다. 다중 선택 하네스를 등록했다.

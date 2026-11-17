@@ -1,0 +1,54 @@
+@layer components {
+  .ds-media-viewer-popup > [data-slot="media-viewer"] { display: grid; gap: var(--space-24); min-width: 0; }
+  .ds-media-viewer-popup {
+    /* 가장자리·패딩·헤더·간격·경계·PiP 한 줄을 뺀 높이로 미디어 폭도 제한한다. */
+    --media-viewer-height: max(0px, calc(100dvh - var(--space-32) - 2 * var(--space-24) - 2 * var(--control-h-sm) - var(--space-24) - var(--space-8) - 2 * var(--border-width)));
+  }
+  .ds-media-viewer-popup [data-slot="dialog-header"] { min-height: var(--control-h-sm); align-content: center; }
+  .ds-media-viewer-popup [data-slot="dialog-title"], .ds-media-viewer-header h2 {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .ds-media-viewer-floating {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    /* 100vw 는 **스크롤바를 포함**한다. position:fixed 의 기준(ICB)은 제외하므로
+       100vw 로 재면 좁은 화면에서 좌우 여백이 어긋난다 — 실측 360px 에서 오른쪽 16 /
+       왼쪽 1px. 퍼센트는 ICB 기준이라 양쪽이 같아진다. */
+    width: min(24rem, calc(100% - var(--space-32)));
+    max-height: calc(100dvh - var(--space-32));
+    padding: var(--space-16);
+    border: var(--border-width) solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-overlay);
+    overflow: auto;
+    --media-viewer-height: max(0px, calc(100dvh - var(--space-32) - 2 * var(--space-16) - 2 * var(--control-h-sm) - var(--space-12) - var(--space-8) - 2 * var(--border-width)));
+  }
+  .ds-media-viewer-floating:popover-open { display: grid; gap: var(--space-12); animation: ds-media-viewer-enter var(--dur-normal) var(--ease-decelerate); }
+  .ds-media-viewer-floating[data-placement^="bottom"] { bottom: var(--space-16); }
+  .ds-media-viewer-floating[data-placement^="top"] { top: var(--space-16); }
+  .ds-media-viewer-floating[data-placement$="end"] { inset-inline-end: var(--space-16); }
+  .ds-media-viewer-floating[data-placement$="start"] { inset-inline-start: var(--space-16); }
+  .ds-media-viewer-header { display: flex; align-items: center; gap: var(--space-8); min-width: 0; }
+  .ds-media-viewer-header h2 { flex: 1; font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 600; }
+  .ds-media-viewer-header button { flex-shrink: 0; }
+  .ds-media-viewer-body { display: grid; justify-items: center; gap: var(--space-8); min-width: 0; }
+  .ds-media-viewer-stage {
+    position: relative;
+    width: min(100%, calc(var(--media-viewer-height) * var(--media-viewer-ratio)));
+    aspect-ratio: var(--media-viewer-ratio);
+    overflow: hidden;
+  }
+  .ds-media-viewer-stage > :is(img, video, .loading-skeleton, .state) { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ds-media-viewer-stage > :is(img, video) { object-fit: contain; }
+  .ds-media-viewer-stage > .loading-skeleton { pointer-events: none; }
+  .ds-media-viewer-stage[data-state="loading"] > img { visibility: hidden; }
+  .ds-media-viewer-stage > .state { min-block-size: 0; overflow: auto; justify-content: safe center; }
+  .ds-media-viewer-pip-error { min-block-size: 0; }
+  @keyframes ds-media-viewer-enter { from { opacity: 0; } to { opacity: 1; } }
+  /* reduced-motion 은 styles.css 의 전역 규칙(.01ms !important)이 덮는다. 여기서 0s 로
+     다시 쓰면 전역에 밀려 아무 일도 하지 않는다(실측: 1e-05s). 0 이 아니라 .01ms 인 것은
+     animationend·transitionend 가 계속 발화하게 하려는 의도다. */
+}

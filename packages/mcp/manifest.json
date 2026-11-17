@@ -4087,6 +4087,97 @@
   ],
   "components": [
     {
+      "name": "MediaViewer",
+      "category": "media",
+      "purpose": "이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.",
+      "useWhen": [
+        "이미지 크게 보기",
+        "영상 보면서 작업",
+        "이미지나 영상을 확대해서 볼 때"
+      ],
+      "dont": [
+        "커스텀 플레이어·자동 재생을 만들지 마라",
+        "pan·zoom·끌어서 옮기기는 현재 범위가 아니다"
+      ],
+      "rules": [
+        {
+          "text": "popup은 DialogContent wide, floating은 manual popover로 바깥 입력·스크롤을 유지한다. 닫기 버튼과 패널 안 Escape를 제공한다. 이미지는 alt 필수·종횡비 보존, 로딩 Skeleton과 오류 ErrorState는 같은 예약 상자를 쓴다. 동영상은 controls·preload=metadata·자막 track을 쓰며 poster를 권장한다. PiP는 기능 탐지·disablePictureInPicture를 존중하고 실제 클릭으로 열고 해제한다.",
+          "source": "DESIGN.md 22"
+        }
+      ],
+      "related": [
+        "Dialog",
+        "Thumbnail",
+        "Skeleton",
+        "ErrorState"
+      ],
+      "keywords": [
+        "이미지 확대",
+        "라이트박스",
+        "사진 크게",
+        "동영상 재생",
+        "영상 팝업",
+        "떠 있는 창",
+        "화면 속 화면",
+        "PiP",
+        "이미지 크게 보기",
+        "영상 보면서 작업"
+      ],
+      "source": "components/media-viewer/media-viewer.tsx",
+      "props": [
+        {
+          "name": "media",
+          "type": "Media",
+          "required": true
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": true
+        },
+        {
+          "name": "mode",
+          "type": "\"floating\" | \"popup\"",
+          "doc": "popup은 모달 확대, floating은 페이지를 계속 사용하는 구석 창이다."
+        },
+        {
+          "name": "placement",
+          "type": "\"bottom-end\" | \"bottom-start\" | \"top-end\" | \"top-start\""
+        },
+        {
+          "name": "title",
+          "type": "string"
+        }
+      ],
+      "extends": [],
+      "slots": [
+        "button",
+        "dialog-close-icon",
+        "dialog-content",
+        "dialog-header",
+        "dialog-overlay",
+        "dialog-title",
+        "error-state",
+        "media-viewer",
+        "media-viewer-body",
+        "media-viewer-close",
+        "media-viewer-header",
+        "media-viewer-image",
+        "media-viewer-pip",
+        "media-viewer-stage",
+        "media-viewer-video",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
+      ]
+    },
+    {
       "name": "Collapsible",
       "category": "disclosure",
       "purpose": "고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.",
@@ -4698,6 +4789,11 @@
       "purpose": "입력 창의 포털과 닫기 보호다.",
       "source": "components/dialog/dialog.tsx",
       "props": [
+        {
+          "name": "size",
+          "type": "\"default\" | \"wide\"",
+          "doc": "default는 기존 36rem, wide는 미디어처럼 뷰포트 폭이 필요한 내용에 쓴다."
+        },
         {
           "name": "dismissible",
           "type": "boolean",

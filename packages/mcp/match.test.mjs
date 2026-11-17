@@ -45,6 +45,8 @@ test('대소문자·공백 차이를 흡수하고 입력을 변경하지 않는�
 
 // 사용자 표현을 그대로 유지해 키워드 데이터가 실제 선택 질문을 지원하는지 검증한다.
 const routingCases = [
+  ['이미지 크게 보기', 'MediaViewer'],
+  ['영상 보면서 작업', 'MediaViewer'],
   ['버튼에 한 줄 설명을 붙이고 싶다', 'Tooltip'],
   ['처음 온 사용자에게 기능 흐름을 단계별로 안내하고 싶다', 'Tour'],
   ['새 기능을 한 번만 알리고 싶다', 'Hint'],
@@ -120,4 +122,8 @@ for (const [query, expected] of [
   ['긴 설명 더보기', 'ClampText'], ['고급 설정 접기', 'Collapsible'],
 ]) test(`접고 펴기 라우팅 1위: ${query} → ${expected}`, () => {
   assert.equal(matchComponents(query, components)[0]?.name, expected);
+});
+
+for (const query of ['이미지 크게 보기', '영상 보면서 작업']) test(`미디어 라우팅 1위: ${query} → MediaViewer`, () => {
+  assert.equal(matchComponents(query, components)[0]?.name, 'MediaViewer');
 });
