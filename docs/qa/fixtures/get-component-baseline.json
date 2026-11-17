@@ -1,0 +1,1361 @@
+{
+  "ClampText": {
+    "name": "ClampText",
+    "category": "disclosure",
+    "purpose": "긴 글을 N줄로 자르고 넘칠 때만 더보기·간략히를 제공한다.",
+    "useWhen": [
+      "상품 설명·비고 등 긴 설명 더보기"
+    ],
+    "dont": [
+      "넘치지 않을 때 버튼을 렌더하지 마라",
+      "전역과 다른 줄바꿈 규칙을 넣지 마라"
+    ],
+    "rules": [
+      {
+        "text": "기본 2줄. ResizeObserver와 MutationObserver(childList·characterData·subtree), fonts.ready로 재측정한다. 펼친 상태도 접힌 치수로 판정한다. 전체 글은 DOM에 남아 복사할 수 있다. 버튼은 글 id로 controls·describedby를 연결하고 제어·비제어를 지원한다. 전환은 즉시 적용한다.",
+        "source": "DESIGN.md 21"
+      }
+    ],
+    "related": [
+      "Collapsible"
+    ],
+    "keywords": [
+      "더보기",
+      "간략히",
+      "말줄임",
+      "긴 글",
+      "긴 설명 더보기"
+    ],
+    "kind": "component",
+    "source": "packages/ui/src/components/clamp-text/clamp-text.tsx",
+    "props": [
+      {
+        "name": "lines",
+        "type": "number | undefined",
+        "required": false,
+        "doc": "접었을 때 보여줄 줄 수. 기본 2."
+      },
+      {
+        "name": "expanded",
+        "type": "boolean | undefined",
+        "required": false,
+        "doc": "제어하려면 주고, 아니면 스스로 관리한다."
+      },
+      {
+        "name": "onExpandedChange",
+        "type": "((expanded: boolean) => void) | undefined",
+        "required": false
+      },
+      {
+        "name": "moreLabel",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "lessLabel",
+        "type": "string | undefined",
+        "required": false
+      }
+    ],
+    "extends": [
+      "React.ComponentProps<'div'>"
+    ],
+    "slots": [
+      "clamp-text",
+      "clamp-text-content",
+      "clamp-text-trigger"
+    ],
+    "import": "import { ClampText } from '@s2life/ui';"
+  },
+  "DataTable": {
+    "name": "DataTable",
+    "category": "table",
+    "purpose": "정렬·선택·가상화가 가능한 데이터 표다.",
+    "useWhen": [
+      "많은 레코드를 열로 비교할 때"
+    ],
+    "dont": [
+      "금액을 가변폭 숫자로 쓰지 마라"
+    ],
+    "rules": [
+      {
+        "text": "값은 최소 너비·말줄임·전체값 보존을 함께 쓴다. @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다. TanStack 직접 설치는 필요 없다.",
+        "source": "DESIGN.md 4"
+      }
+    ],
+    "related": [
+      "Peek",
+      "Checkbox",
+      "StatusChip"
+    ],
+    "keywords": [
+      "표",
+      "테이블",
+      "행",
+      "정렬",
+      "목록",
+      "레코드",
+      "여러 건 선택",
+      "다중 선택",
+      "일괄 선택",
+      "주문 목록"
+    ],
+    "kind": "component",
+    "source": "packages/ui/src/components/data-table/data-table.tsx",
+    "props": [
+      {
+        "name": "data",
+        "type": "T[]",
+        "required": true
+      },
+      {
+        "name": "totalCount",
+        "type": "number | undefined",
+        "required": false,
+        "doc": "서버 전체 건수. 생략하면 로드된 data.length를 전체로 간주한다."
+      },
+      {
+        "name": "columns",
+        "type": "DataTableColumns<T>",
+        "required": true
+      },
+      {
+        "name": "getRowId",
+        "type": "(row: T) => string",
+        "required": true
+      },
+      {
+        "name": "selectionMode",
+        "type": "SelectionMode | undefined",
+        "required": false
+      },
+      {
+        "name": "selectedIds",
+        "type": "string[] | undefined",
+        "required": false
+      },
+      {
+        "name": "onSelectedIdsChange",
+        "type": "((ids: string[]) => void) | undefined",
+        "required": false
+      },
+      {
+        "name": "pinnedStart",
+        "type": "string[] | undefined",
+        "required": false
+      },
+      {
+        "name": "pinnedEnd",
+        "type": "string[] | undefined",
+        "required": false
+      },
+      {
+        "name": "revisitedRowId",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "onRowClick",
+        "type": "((row: T) => void) | undefined",
+        "required": false
+      },
+      {
+        "name": "density",
+        "type": "\"comfortable\" | \"compact\" | \"default\" | undefined",
+        "required": false
+      },
+      {
+        "name": "state",
+        "type": "\"empty\" | \"error\" | \"idle\" | \"loading\" | undefined",
+        "required": false
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "errorMessage",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "emptyAction",
+        "type": "{ label: string; onClick: () => void; } | undefined",
+        "required": false
+      },
+      {
+        "name": "onRetry",
+        "type": "(() => void) | undefined",
+        "required": false
+      },
+      {
+        "name": "exportFileName",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "exportValue",
+        "type": "Record<string, (row: T) => string> | undefined",
+        "required": false,
+        "doc": "셀 표시와 원본 값을 분리한다. 금액은 쉼표 없는 문자열을 반환한다."
+      },
+      {
+        "name": "align",
+        "type": "Record<string, \"center\" | \"end\" | \"start\"> | undefined",
+        "required": false,
+        "doc": "컬럼별 정렬. 지정하지 않은 컬럼은 데이터로 추론한다(숫자면 'end')."
+      },
+      {
+        "name": "caption",
+        "type": "string | undefined",
+        "required": false,
+        "doc": "생략 시에도 caption을 제공하지만, 실제 업무 대상과 범위를 설명하는 문장을 권장한다."
+      },
+      {
+        "name": "className",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "virtualize",
+        "type": "number | boolean | undefined",
+        "required": false,
+        "doc": "행 수가 임계값을 넘으면 가상화한다. true는 항상 켬, false는 끔. 기본 100."
+      },
+      {
+        "name": "hasMore",
+        "type": "boolean | undefined",
+        "required": false,
+        "doc": "더 불러올 데이터가 남았는지 명시한다."
+      },
+      {
+        "name": "onLoadMore",
+        "type": "(() => void) | undefined",
+        "required": false,
+        "doc": "같은 로드 길이에서는 한 번만 호출한다."
+      },
+      {
+        "name": "loadingMore",
+        "type": "boolean | undefined",
+        "required": false,
+        "doc": "전체 로딩과 달리 기존 행 아래에 로딩 표시를 덧붙인다."
+      }
+    ],
+    "extends": [
+      "UseDataTableOptions<T>"
+    ],
+    "slots": [
+      "button",
+      "data-table",
+      "data-table-body",
+      "data-table-cell",
+      "data-table-end",
+      "data-table-head",
+      "data-table-header",
+      "data-table-loading-more",
+      "data-table-row",
+      "data-table-scroll",
+      "data-table-skeleton-row",
+      "data-table-sort",
+      "data-table-spacer",
+      "data-table-table",
+      "data-table-toolbar",
+      "empty-state",
+      "error-state",
+      "skeleton",
+      "state-description",
+      "state-graphic",
+      "state-title"
+    ],
+    "import": "import { DataTable } from '@s2life/ui';"
+  },
+  "Combobox": {
+    "name": "Combobox",
+    "category": "form",
+    "purpose": "많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.",
+    "useWhen": [
+      "20개를 넘는 후보에서 타이핑으로 찾을 때",
+      "초성으로 찾기",
+      "검색해서 여러 개 고르기"
+    ],
+    "dont": [
+      "조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지",
+      "가상 스크롤은 제공하지 않는다"
+    ],
+    "rules": [
+      {
+        "text": "shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 단일 모드 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.",
+        "source": "DESIGN.md 18"
+      },
+      {
+        "text": "multiple은 string[] 값과 콜백을 쓰며 검색 입력 앞에 28px 태그를 둔다. 24px 해제 버튼은 라벨 선택 해제로 읽고 칩 묶음은 roving tabindex 하나·좌우 이동·Delete/Backspace 제거 후 이웃 포커스를 쓴다. 빈 입력 Backspace는 첫 회 강조·두 번째 제거, 다른 키는 강조 해제다. 조합 중 강조·삭제하지 않는다. 칩 영역은 2줄·58px 내부 스크롤로 320px 툴바의 컨트롤 높이를 38→68px에 제한한다. 선택해도 목록을 닫거나 다음 칸으로 이동하지 않는다. 검색 없이 고르기만 하면 MultiSelect다.",
+        "source": "DESIGN.md 20"
+      },
+      {
+        "text": "단일 선택은 FormFlow 안 Enter로 열고 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+        "source": "DESIGN.md 19"
+      }
+    ],
+    "related": [
+      "Select",
+      "MultiSelect",
+      "Field"
+    ],
+    "keywords": [
+      "콤보박스",
+      "자동완성",
+      "검색 선택",
+      "많은 옵션",
+      "초성 검색",
+      "목록에서 찾기",
+      "타이핑으로 찾기",
+      "초성으로 찾기",
+      "많은 옵션에서 검색해 선택",
+      "검색해서 여러 개 고르기",
+      "태그 선택"
+    ],
+    "kind": "component",
+    "source": "packages/ui/src/components/combobox/combobox.tsx",
+    "props": [
+      {
+        "name": "multiple",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "value",
+        "type": "string | string[] | undefined",
+        "required": false
+      },
+      {
+        "name": "onValueChange",
+        "type": "((value: string) => void) | ((value: string[]) => void) | undefined",
+        "required": false
+      },
+      {
+        "name": "ref",
+        "type": "RefObject<HTMLButtonElement | null> | RefObject<HTMLInputElement | null> | ((instance: HTMLButtonElement | null) => void | (() => VoidOrUndefinedOnly)) | ((instance: HTMLInputElement | null) => void | (() => VoidOrUndefinedOnly)) | null | undefined",
+        "required": false
+      },
+      {
+        "name": "options",
+        "type": "ComboboxOption[]",
+        "required": true
+      },
+      {
+        "name": "placeholder",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "searchPlaceholder",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "emptyText",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "filter",
+        "type": "((query: string, option: ComboboxOption) => boolean) | undefined",
+        "required": false
+      },
+      {
+        "name": "disabled",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "invalid",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "required",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "maxHeight",
+        "type": "string | number | undefined",
+        "required": false
+      }
+    ],
+    "extends": [
+      "Pick<React.ComponentPropsWithRef<'button'>,\n  'id' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'>"
+    ],
+    "slots": [
+      "combobox",
+      "combobox-chip",
+      "combobox-chip-area",
+      "combobox-chip-remove",
+      "combobox-chips",
+      "combobox-content",
+      "combobox-empty",
+      "combobox-input",
+      "combobox-list",
+      "combobox-multiple",
+      "combobox-multiple-control",
+      "combobox-option",
+      "combobox-trigger",
+      "combobox-value"
+    ],
+    "import": "import { Combobox } from '@s2life/ui';"
+  },
+  "SelectTrigger": {
+    "name": "SelectTrigger",
+    "partOf": "Select",
+    "purpose": "선택 필터를 여는 38px 버튼",
+    "kind": "component",
+    "source": "packages/ui/src/components/select/select.tsx",
+    "props": [],
+    "extends": [
+      "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>"
+    ],
+    "slots": [
+      "select-icon",
+      "select-trigger"
+    ],
+    "import": "import { SelectTrigger } from '@s2life/ui';",
+    "useWhen": [
+      "20개 이하의 상태·정렬 옵션을 선택할 때"
+    ],
+    "dont": [
+      "20개 초과는 Combobox를 사용한다"
+    ],
+    "rules": [
+      {
+        "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
+        "source": "DESIGN.md 11.4"
+      }
+    ],
+    "category": "form",
+    "inheritedFrom": "Select"
+  },
+  "RadioGroupItem": {
+    "name": "RadioGroupItem",
+    "partOf": "RadioGroup",
+    "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
+    "kind": "component",
+    "source": "packages/ui/src/components/radio-group/radio-group.tsx",
+    "props": [],
+    "extends": [
+      "React.ComponentProps<typeof Primitive.Item>"
+    ],
+    "slots": [
+      "radio-group-indicator",
+      "radio-group-item"
+    ],
+    "import": "import { RadioGroupItem } from '@s2life/ui';",
+    "useWhen": [
+      "여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때"
+    ],
+    "dont": [
+      "화살표에 포커스만 이동하는 모드를 넣지 마라",
+      "레이블 없이 점만 클릭하게 하지 마라"
+    ],
+    "rules": [
+      {
+        "text": "Radix 기본 화살표는 포커스와 선택을 함께 옮기고 끝에서 순환한다. 점과 테두리 변화로 선택을 표시하고 Label htmlFor로 각 항목을 연결한다.",
+        "source": "DESIGN.md 17"
+      },
+      {
+        "text": "RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+        "source": "DESIGN.md 19"
+      }
+    ],
+    "category": "form",
+    "inheritedFrom": "RadioGroup"
+  },
+  "MultiSelect": {
+    "name": "MultiSelect",
+    "category": "form",
+    "purpose": "요약 트리거와 체크 목록으로 여러 사업장을 고른다.",
+    "useWhen": [
+      "여러 사업장 고르기",
+      "검색 없이 여러 개 선택할 때"
+    ],
+    "dont": [
+      "검색은 Combobox multiple을 쓴다",
+      "고를 때 닫거나 data-form-control=advance를 붙이지 마라"
+    ],
+    "rules": [
+      {
+        "text": "트리거 높이는 control-h-md로 고정하고 요약을 말줄임·title로 보존한다. 목록은 listbox·aria-multiselectable, option·aria-selected와 체크 아이콘을 쓴다. 화살표·Home/End는 aria-activedescendant를 옮기고 Space/Enter는 토글한다. Escape로 닫고 트리거로 복귀한다. 전체 해제와 선택 개수를 제공한다.",
+        "source": "DESIGN.md 20"
+      }
+    ],
+    "related": [
+      "Select",
+      "Combobox",
+      "Field"
+    ],
+    "keywords": [
+      "다중 선택",
+      "여러 개 선택",
+      "복수 선택",
+      "태그 선택",
+      "체크 목록",
+      "여러 사업장 고르기"
+    ],
+    "kind": "component",
+    "source": "packages/ui/src/components/multi-select/multi-select.tsx",
+    "props": [
+      {
+        "name": "options",
+        "type": "MultiSelectOption[]",
+        "required": true
+      },
+      {
+        "name": "value",
+        "type": "string[] | undefined",
+        "required": false
+      },
+      {
+        "name": "onValueChange",
+        "type": "((value: string[]) => void) | undefined",
+        "required": false
+      },
+      {
+        "name": "placeholder",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "summary",
+        "type": "((selected: { value: string; label: string; }[]) => string) | undefined",
+        "required": false,
+        "doc": "요약 문구를 앱이 바꾼다. 기본은 \"{첫 라벨} 외 {n-1}개\"다."
+      },
+      {
+        "name": "clearLabel",
+        "type": "string | undefined",
+        "required": false
+      },
+      {
+        "name": "disabled",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "invalid",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "required",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "maxHeight",
+        "type": "string | number | undefined",
+        "required": false
+      }
+    ],
+    "extends": [
+      "Pick<React.ComponentPropsWithRef<'button'>,\n  'id' | 'ref' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'>"
+    ],
+    "slots": [
+      "multi-select-content",
+      "multi-select-footer",
+      "multi-select-list",
+      "multi-select-option",
+      "multi-select-trigger",
+      "multi-select-value"
+    ],
+    "import": "import { MultiSelect } from '@s2life/ui';"
+  },
+  "Button": {
+    "name": "Button",
+    "category": "action",
+    "purpose": "명시적인 사용자 동작을 실행한다.",
+    "useWhen": [
+      "저장·취소·삭제 버튼이 필요할 때"
+    ],
+    "dont": [
+      "primary를 여러 개 쓰지 마라",
+      "아이콘 전용 버튼의 aria-label을 빼지 마라"
+    ],
+    "rules": [
+      {
+        "text": "danger는 되돌릴 수 없는 작업에만 쓴다. asChild는 단일 링크에 스타일을 합치며 양쪽 아이콘도 링크 안에 보존한다.",
+        "source": "DESIGN.md 6"
+      }
+    ],
+    "related": [
+      "Input"
+    ],
+    "keywords": [
+      "버튼",
+      "저장",
+      "삭제",
+      "액션"
+    ],
+    "kind": "component",
+    "source": "packages/ui/src/components/button.tsx",
+    "props": [
+      {
+        "name": "asChild",
+        "type": "boolean | undefined",
+        "required": false,
+        "doc": "단일 자식 링크 등에 스타일·이벤트·ref를 합친다."
+      },
+      {
+        "name": "leadingIcon",
+        "type": "ReactNode",
+        "required": false,
+        "doc": "라벨 왼쪽 아이콘. 동작을 설명하는 것만 쓴다."
+      },
+      {
+        "name": "trailingIcon",
+        "type": "ReactNode",
+        "required": false,
+        "doc": "라벨 오른쪽 아이콘. 방향·열림 상태 표시에만 쓴다."
+      },
+      {
+        "name": "variant",
+        "type": "\"danger\" | \"ghost\" | \"primary\" | \"secondary\" | null | undefined",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "\"lg\" | \"md\" | \"sm\" | null | undefined",
+        "required": false
+      }
+    ],
+    "extends": [
+      "React.ButtonHTMLAttributes<HTMLButtonElement>",
+      "VariantProps<typeof buttonVariants>"
+    ],
+    "slots": [
+      "button"
+    ],
+    "import": "import { Button } from '@s2life/ui';"
+  },
+  "FormFlow": {
+    "name": "FormFlow",
+    "category": "form",
+    "purpose": "반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.",
+    "useWhen": [
+      "반복 입력에서 마우스 이동을 줄일 때"
+    ],
+    "dont": [
+      "조합 중 Enter로 이동하지 마라",
+      "textarea Enter를 가로채지 마라"
+    ],
+    "rules": [
+      {
+        "text": "Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 단일 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. MultiSelect·multiple은 선택 뒤 머문다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
+        "source": "DESIGN.md 19"
+      }
+    ],
+    "related": [
+      "Field",
+      "Input"
+    ],
+    "keywords": [
+      "연속 입력",
+      "반복 입력",
+      "Enter",
+      "폼 이동",
+      "다음 입력칸",
+      "키보드 이동",
+      "다음 칸",
+      "이전 칸"
+    ],
+    "kind": "component",
+    "source": "packages/ui/src/components/form/form-flow.tsx",
+    "props": [
+      {
+        "name": "onSubmit",
+        "type": "((event: FormEvent<HTMLFormElement>) => void | boolean | Promise<void | boolean>) | undefined",
+        "required": false,
+        "doc": "false 반환 또는 preventDefault는 실패다. 비동기 저장은 완료될 때 resolve한다."
+      },
+      {
+        "name": "restartOnSubmit",
+        "type": "boolean | undefined",
+        "required": false
+      },
+      {
+        "name": "onSubmitError",
+        "type": "((error: unknown) => void) | undefined",
+        "required": false
+      }
+    ],
+    "extends": [
+      "Omit<React.ComponentPropsWithRef<'form'>, 'onSubmit'>",
+      "FormFlowOptions"
+    ],
+    "slots": [
+      "form-flow"
+    ],
+    "import": "import { FormFlow } from '@s2life/ui';"
+  },
+  "__list": [
+    {
+      "name": "Collapsible",
+      "kind": "component",
+      "purpose": "고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.",
+      "import": "import { Collapsible } from '@s2life/ui';"
+    },
+    {
+      "name": "CollapsibleTrigger",
+      "kind": "component",
+      "purpose": "항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.",
+      "import": "import { CollapsibleTrigger } from '@s2life/ui';",
+      "partOf": "Collapsible"
+    },
+    {
+      "name": "CollapsibleContent",
+      "kind": "component",
+      "purpose": "접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.",
+      "import": "import { CollapsibleContent } from '@s2life/ui';",
+      "partOf": "Collapsible"
+    },
+    {
+      "name": "ClampText",
+      "kind": "component",
+      "purpose": "긴 글을 N줄로 자르고 넘칠 때만 더보기·간략히를 제공한다.",
+      "import": "import { ClampText } from '@s2life/ui';"
+    },
+    {
+      "name": "Combobox",
+      "kind": "component",
+      "purpose": "많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.",
+      "import": "import { Combobox } from '@s2life/ui';"
+    },
+    {
+      "name": "MultiSelect",
+      "kind": "component",
+      "purpose": "요약 트리거와 체크 목록으로 여러 사업장을 고른다.",
+      "import": "import { MultiSelect } from '@s2life/ui';"
+    },
+    {
+      "name": "Tabs",
+      "kind": "component",
+      "purpose": "상세 정보를 탭으로 나누기 위한 루트다.",
+      "import": "import { Tabs } from '@s2life/ui';"
+    },
+    {
+      "name": "TabsList",
+      "kind": "component",
+      "purpose": "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.",
+      "import": "import { TabsList } from '@s2life/ui';",
+      "partOf": "Tabs"
+    },
+    {
+      "name": "TabsTrigger",
+      "kind": "component",
+      "purpose": "패널을 선택하는 탭 버튼이다.",
+      "import": "import { TabsTrigger } from '@s2life/ui';",
+      "partOf": "Tabs"
+    },
+    {
+      "name": "TabsContent",
+      "kind": "component",
+      "purpose": "선택한 상세 패널을 표시한다.",
+      "import": "import { TabsContent } from '@s2life/ui';",
+      "partOf": "Tabs"
+    },
+    {
+      "name": "Breadcrumb",
+      "kind": "component",
+      "purpose": "목록으로 돌아가는 경로를 빵부스러기로 표현한다.",
+      "import": "import { Breadcrumb } from '@s2life/ui';"
+    },
+    {
+      "name": "BreadcrumbList",
+      "kind": "component",
+      "purpose": "경로 항목의 순서 목록이다.",
+      "import": "import { BreadcrumbList } from '@s2life/ui';",
+      "partOf": "Breadcrumb"
+    },
+    {
+      "name": "BreadcrumbItem",
+      "kind": "component",
+      "purpose": "경로의 개별 항목이다.",
+      "import": "import { BreadcrumbItem } from '@s2life/ui';",
+      "partOf": "Breadcrumb"
+    },
+    {
+      "name": "BreadcrumbLink",
+      "kind": "component",
+      "purpose": "라우터를 지정하지 않는 상위 경로 링크다.",
+      "import": "import { BreadcrumbLink } from '@s2life/ui';",
+      "partOf": "Breadcrumb"
+    },
+    {
+      "name": "BreadcrumbPage",
+      "kind": "component",
+      "purpose": "링크가 아닌 현재 경로 항목이다.",
+      "import": "import { BreadcrumbPage } from '@s2life/ui';",
+      "partOf": "Breadcrumb"
+    },
+    {
+      "name": "BreadcrumbSeparator",
+      "kind": "component",
+      "purpose": "보조기기가 읽지 않는 경로 구분자다.",
+      "import": "import { BreadcrumbSeparator } from '@s2life/ui';",
+      "partOf": "Breadcrumb"
+    },
+    {
+      "name": "BreadcrumbEllipsis",
+      "kind": "component",
+      "purpose": "접힌 경로 수를 읽을 수 있는 생략 표시다.",
+      "import": "import { BreadcrumbEllipsis } from '@s2life/ui';",
+      "partOf": "Breadcrumb"
+    },
+    {
+      "name": "Dialog",
+      "kind": "component",
+      "purpose": "입력·편집·선택 모달을 여는 루트다.",
+      "import": "import { Dialog } from '@s2life/ui';"
+    },
+    {
+      "name": "DialogTrigger",
+      "kind": "component",
+      "purpose": "입력 창을 여는 트리거다.",
+      "import": "import { DialogTrigger } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "DialogContent",
+      "kind": "component",
+      "purpose": "입력 창의 포털과 닫기 보호다.",
+      "import": "import { DialogContent } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "DialogHeader",
+      "kind": "component",
+      "purpose": "입력 창 제목·설명 그룹이다.",
+      "import": "import { DialogHeader } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "DialogTitle",
+      "kind": "component",
+      "purpose": "입력 창의 필수 제목이다.",
+      "import": "import { DialogTitle } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "DialogDescription",
+      "kind": "component",
+      "purpose": "입력 창의 필수 설명이다.",
+      "import": "import { DialogDescription } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "DialogFooter",
+      "kind": "component",
+      "purpose": "입력 창 하단의 액션 그룹이다.",
+      "import": "import { DialogFooter } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "DialogClose",
+      "kind": "component",
+      "purpose": "닫기 보호 중에도 동작하는 명시적 닫기다.",
+      "import": "import { DialogClose } from '@s2life/ui';",
+      "partOf": "Dialog"
+    },
+    {
+      "name": "AlertDialog",
+      "kind": "component",
+      "purpose": "삭제 확인 등 되돌릴 수 없는 선택을 요구하는 확인창이다.",
+      "import": "import { AlertDialog } from '@s2life/ui';"
+    },
+    {
+      "name": "AlertDialogTrigger",
+      "kind": "component",
+      "purpose": "확인 창을 여는 트리거다.",
+      "import": "import { AlertDialogTrigger } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogContent",
+      "kind": "component",
+      "purpose": "파괴적 선택 확인의 포털이다.",
+      "import": "import { AlertDialogContent } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogHeader",
+      "kind": "component",
+      "purpose": "확인 제목·설명 그룹이다.",
+      "import": "import { AlertDialogHeader } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogTitle",
+      "kind": "component",
+      "purpose": "확인 창의 필수 제목이다.",
+      "import": "import { AlertDialogTitle } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogDescription",
+      "kind": "component",
+      "purpose": "되돌릴 수 없는 결과의 설명이다.",
+      "import": "import { AlertDialogDescription } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogFooter",
+      "kind": "component",
+      "purpose": "확인·취소 액션 그룹이다.",
+      "import": "import { AlertDialogFooter } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogAction",
+      "kind": "component",
+      "purpose": "확정 동작과 기존 danger 변형이다.",
+      "import": "import { AlertDialogAction } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "AlertDialogCancel",
+      "kind": "component",
+      "purpose": "초기 포커스를 받는 필수 취소 버튼이다.",
+      "import": "import { AlertDialogCancel } from '@s2life/ui';",
+      "partOf": "AlertDialog"
+    },
+    {
+      "name": "Select",
+      "kind": "component",
+      "purpose": "상태·정렬 필터의 단일 선택 루트",
+      "import": "import { Select } from '@s2life/ui';"
+    },
+    {
+      "name": "SelectTrigger",
+      "kind": "component",
+      "purpose": "선택 필터를 여는 38px 버튼",
+      "import": "import { SelectTrigger } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectValue",
+      "kind": "component",
+      "purpose": "선택값 또는 플레이스홀더",
+      "import": "import { SelectValue } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectContent",
+      "kind": "component",
+      "purpose": "포털의 선택 목록",
+      "import": "import { SelectContent } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectGroup",
+      "kind": "component",
+      "purpose": "선택 항목 그룹",
+      "import": "import { SelectGroup } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectLabel",
+      "kind": "component",
+      "purpose": "선택 그룹 레이블",
+      "import": "import { SelectLabel } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectItem",
+      "kind": "component",
+      "purpose": "단일 선택 옵션",
+      "import": "import { SelectItem } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectSeparator",
+      "kind": "component",
+      "purpose": "선택 그룹 구분선",
+      "import": "import { SelectSeparator } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectScrollUpButton",
+      "kind": "component",
+      "purpose": "목록 위로 스크롤",
+      "import": "import { SelectScrollUpButton } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "SelectScrollDownButton",
+      "kind": "component",
+      "purpose": "목록 아래로 스크롤",
+      "import": "import { SelectScrollDownButton } from '@s2life/ui';",
+      "partOf": "Select"
+    },
+    {
+      "name": "DropdownMenu",
+      "kind": "component",
+      "purpose": "행 액션 메뉴 루트",
+      "import": "import { DropdownMenu } from '@s2life/ui';"
+    },
+    {
+      "name": "DropdownMenuTrigger",
+      "kind": "component",
+      "purpose": "행 액션 열기",
+      "import": "import { DropdownMenuTrigger } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuContent",
+      "kind": "component",
+      "purpose": "포털 액션 목록",
+      "import": "import { DropdownMenuContent } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuItem",
+      "kind": "component",
+      "purpose": "액션 실행 항목",
+      "import": "import { DropdownMenuItem } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuCheckboxItem",
+      "kind": "component",
+      "purpose": "체크형 메뉴 항목",
+      "import": "import { DropdownMenuCheckboxItem } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuRadioItem",
+      "kind": "component",
+      "purpose": "라디오형 메뉴 항목",
+      "import": "import { DropdownMenuRadioItem } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuLabel",
+      "kind": "component",
+      "purpose": "메뉴 그룹 이름",
+      "import": "import { DropdownMenuLabel } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuSeparator",
+      "kind": "component",
+      "purpose": "메뉴 구분선",
+      "import": "import { DropdownMenuSeparator } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuShortcut",
+      "kind": "component",
+      "purpose": "메뉴 단축키 표시",
+      "import": "import { DropdownMenuShortcut } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuGroup",
+      "kind": "component",
+      "purpose": "메뉴 항목 그룹",
+      "import": "import { DropdownMenuGroup } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuPortal",
+      "kind": "component",
+      "purpose": "메뉴 포털",
+      "import": "import { DropdownMenuPortal } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuSub",
+      "kind": "component",
+      "purpose": "하위 메뉴 루트",
+      "import": "import { DropdownMenuSub } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuSubContent",
+      "kind": "component",
+      "purpose": "하위 메뉴 목록",
+      "import": "import { DropdownMenuSubContent } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuSubTrigger",
+      "kind": "component",
+      "purpose": "하위 메뉴 열기",
+      "import": "import { DropdownMenuSubTrigger } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "DropdownMenuRadioGroup",
+      "kind": "component",
+      "purpose": "라디오 메뉴 그룹",
+      "import": "import { DropdownMenuRadioGroup } from '@s2life/ui';",
+      "partOf": "DropdownMenu"
+    },
+    {
+      "name": "Toaster",
+      "kind": "component",
+      "purpose": "저장·오류 알림을 표시한다.",
+      "import": "import { Toaster } from '@s2life/ui';"
+    },
+    {
+      "name": "DatePicker",
+      "kind": "component",
+      "purpose": "한국어 단일 날짜·기간 입력과 빠른 선택을 제공한다.",
+      "import": "import { DatePicker } from '@s2life/ui';"
+    },
+    {
+      "name": "Button",
+      "kind": "component",
+      "purpose": "명시적인 사용자 동작을 실행한다.",
+      "import": "import { Button } from '@s2life/ui';"
+    },
+    {
+      "name": "Input",
+      "kind": "component",
+      "purpose": "단일 값·비밀번호·검색어를 입력한다.",
+      "import": "import { Input } from '@s2life/ui';"
+    },
+    {
+      "name": "Textarea",
+      "kind": "component",
+      "purpose": "여러 줄 메모와 긴 글을 입력한다.",
+      "import": "import { Textarea } from '@s2life/ui';"
+    },
+    {
+      "name": "RadioGroup",
+      "kind": "component",
+      "purpose": "여러 선택지 중 하나만 선택한다.",
+      "import": "import { RadioGroup } from '@s2life/ui';"
+    },
+    {
+      "name": "RadioGroupItem",
+      "kind": "component",
+      "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
+      "import": "import { RadioGroupItem } from '@s2life/ui';",
+      "partOf": "RadioGroup"
+    },
+    {
+      "name": "Switch",
+      "kind": "component",
+      "purpose": "켜기 끄기 설정을 즉시 적용한다.",
+      "import": "import { Switch } from '@s2life/ui';"
+    },
+    {
+      "name": "Label",
+      "kind": "component",
+      "purpose": "컨트롤 옆의 레이블로 입력 이름을 연결한다.",
+      "import": "import { Label } from '@s2life/ui';"
+    },
+    {
+      "name": "StatusChip",
+      "kind": "component",
+      "purpose": "레코드의 상태를 라벨과 실루엣으로 표시한다.",
+      "import": "import { StatusChip } from '@s2life/ui';"
+    },
+    {
+      "name": "Card",
+      "kind": "component",
+      "purpose": "정보 묶음의 평면 컨테이너",
+      "import": "import { Card } from '@s2life/ui';"
+    },
+    {
+      "name": "CardHeader",
+      "kind": "component",
+      "purpose": "카드의 제목과 보조 동작 영역",
+      "import": "import { CardHeader } from '@s2life/ui';",
+      "partOf": "Card"
+    },
+    {
+      "name": "CardTitle",
+      "kind": "component",
+      "purpose": "카드의 제목",
+      "import": "import { CardTitle } from '@s2life/ui';",
+      "partOf": "Card"
+    },
+    {
+      "name": "CardBody",
+      "kind": "component",
+      "purpose": "카드의 본문 영역",
+      "import": "import { CardBody } from '@s2life/ui';",
+      "partOf": "Card"
+    },
+    {
+      "name": "CardFooter",
+      "kind": "component",
+      "purpose": "카드의 하단 보조 정보 영역",
+      "import": "import { CardFooter } from '@s2life/ui';",
+      "partOf": "Card"
+    },
+    {
+      "name": "Checkbox",
+      "kind": "component",
+      "purpose": "네이티브 체크박스로 선택·혼합 상태를 표시한다.",
+      "import": "import { Checkbox } from '@s2life/ui';"
+    },
+    {
+      "name": "DataTable",
+      "kind": "component",
+      "purpose": "정렬·선택·가상화가 가능한 데이터 표다.",
+      "import": "import { DataTable } from '@s2life/ui';"
+    },
+    {
+      "name": "SELECTION_COLUMN_ID",
+      "kind": "constant",
+      "purpose": "DataTable 선택 열의 식별자 상수다.",
+      "import": "import { SELECTION_COLUMN_ID } from '@s2life/ui';"
+    },
+    {
+      "name": "ChartFrame",
+      "kind": "component",
+      "purpose": "차트의 제목·범례·상태·폭 측정을 제공한다.",
+      "import": "import { ChartFrame } from '@s2life/ui';"
+    },
+    {
+      "name": "TrendBand",
+      "kind": "component",
+      "purpose": "시간 추세와 상하 범위를 보여준다.",
+      "import": "import { TrendBand } from '@s2life/ui';"
+    },
+    {
+      "name": "BulletRow",
+      "kind": "component",
+      "purpose": "목표 대비 실적을 행으로 비교한다.",
+      "import": "import { BulletRow } from '@s2life/ui';"
+    },
+    {
+      "name": "CompositionArea",
+      "kind": "component",
+      "purpose": "시간별 구성비를 누적 면적으로 보여준다.",
+      "import": "import { CompositionArea } from '@s2life/ui';"
+    },
+    {
+      "name": "EmptyState",
+      "kind": "component",
+      "purpose": "표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.",
+      "import": "import { EmptyState } from '@s2life/ui';"
+    },
+    {
+      "name": "ErrorState",
+      "kind": "component",
+      "purpose": "불러오기 실패와 재시도 경로를 제공한다.",
+      "import": "import { ErrorState } from '@s2life/ui';"
+    },
+    {
+      "name": "Avatar",
+      "kind": "component",
+      "purpose": "사진이나 이니셜로 사람을 식별한다.",
+      "import": "import { Avatar } from '@s2life/ui';"
+    },
+    {
+      "name": "Thumbnail",
+      "kind": "component",
+      "purpose": "이미지 공간을 예약하고 실패를 대체한다.",
+      "import": "import { Thumbnail } from '@s2life/ui';"
+    },
+    {
+      "name": "Skeleton",
+      "kind": "component",
+      "purpose": "알려진 콘텐츠 형태의 자리 표시자다.",
+      "import": "import { Skeleton } from '@s2life/ui';"
+    },
+    {
+      "name": "SkeletonText",
+      "kind": "component",
+      "purpose": "문단 형태의 로딩 자리 표시자다.",
+      "import": "import { SkeletonText } from '@s2life/ui';"
+    },
+    {
+      "name": "CardSkeleton",
+      "kind": "component",
+      "purpose": "카드 형태의 로딩 자리 표시자다.",
+      "import": "import { CardSkeleton } from '@s2life/ui';"
+    },
+    {
+      "name": "ListSkeleton",
+      "kind": "component",
+      "purpose": "목록 형태의 로딩 자리 표시자다.",
+      "import": "import { ListSkeleton } from '@s2life/ui';"
+    },
+    {
+      "name": "FormSkeleton",
+      "kind": "component",
+      "purpose": "폼 형태의 로딩 자리 표시자다.",
+      "import": "import { FormSkeleton } from '@s2life/ui';"
+    },
+    {
+      "name": "ChartSkeleton",
+      "kind": "component",
+      "purpose": "차트 형태의 로딩 자리 표시자다.",
+      "import": "import { ChartSkeleton } from '@s2life/ui';"
+    },
+    {
+      "name": "ProgressTrack",
+      "kind": "component",
+      "purpose": "진행률과 예상 시간을 표시한다.",
+      "import": "import { ProgressTrack } from '@s2life/ui';"
+    },
+    {
+      "name": "TaskProgress",
+      "kind": "component",
+      "purpose": "드문 장기 작업의 단계와 진행을 표시한다.",
+      "import": "import { TaskProgress } from '@s2life/ui';"
+    },
+    {
+      "name": "Tooltip",
+      "kind": "component",
+      "purpose": "컨트롤의 뜻을 한 줄로 설명한다.",
+      "import": "import { Tooltip } from '@s2life/ui';"
+    },
+    {
+      "name": "Hint",
+      "kind": "component",
+      "purpose": "새 기능·놓치기 쉬운 UI를 한 번 알린다.",
+      "import": "import { Hint } from '@s2life/ui';"
+    },
+    {
+      "name": "Tour",
+      "kind": "component",
+      "purpose": "사용자가 요청한 UI 흐름을 단계로 안내한다.",
+      "import": "import { Tour } from '@s2life/ui';"
+    },
+    {
+      "name": "Field",
+      "kind": "component",
+      "purpose": "레이블·설명·오류와 입력 접근성을 연결한다.",
+      "import": "import { Field } from '@s2life/ui';"
+    },
+    {
+      "name": "FormFlow",
+      "kind": "component",
+      "purpose": "반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.",
+      "import": "import { FormFlow } from '@s2life/ui';"
+    },
+    {
+      "name": "Peek",
+      "kind": "component",
+      "purpose": "레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.",
+      "import": "import { Peek } from '@s2life/ui';"
+    }
+  ]
+}
