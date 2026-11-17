@@ -5,7 +5,7 @@ import { matchComponents } from './match.mjs';
 const { components } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
 
 test('정확한 이름은 독립 컴포넌트가 1위이며 부품은 선택 후보에서 제외', () => {
-  for (const c of components.filter((c) => c.kind === 'component' && !c.partOf)) assert.equal(matchComponents(c.name, components)[0].name, c.name);
+  for (const c of components.filter((c) => (c.kind ?? 'component') === 'component' && !c.partOf)) assert.equal(matchComponents(c.name, components)[0].name, c.name);
   for (const c of components.filter((c) => c.partOf)) assert.ok(!matchComponents(c.name, components, components.length).some((candidate) => candidate.name === c.name));
 });
 test('가족 선택 질문에 부품이 끼지 않고 CardSkeleton은 독립 후보로 남는다', () => {

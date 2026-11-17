@@ -1,10 +1,12 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve, relative } from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { API, SymbolFlags, SignatureKind } from 'typescript/unstable/sync';
 import * as ast from 'typescript/unstable/ast';
 import { checkBoundaries } from '../../scripts/check-boundaries.mjs';
 import intents, { principles } from './component-intent.mjs';
+import { restoreComponent } from '../../packages/mcp/catalog.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const read = (path) => readFile(resolve(root, path), 'utf8');
@@ -200,6 +202,40 @@ export function assertSizeBudget(catalog, manifest) {
   if (sizes.some(([, bytes, limit]) => bytes > limit)) throw new Error('MCP 크기 예산 초과');
 }
 
+export function compactCatalog(catalog) {
+  const optionalTypeSuffix = ' | undefined';
+  const derived = {
+    importTemplate: "import { NAME } from '@s2life/ui';",
+    sourceRoot: 'packages/ui/src/',
+    kindDefault: 'component',
+    requiredDefault: false,
+    optionalTypeSuffix,
+    // ReactNode처럼 이미 undefined를 포함하는 별칭은 검사기도 접미사를 붙이지 않는다.
+    // 예외 이름을 하드코딩하지 않고 실제 타입 표기에서 한 번만 모은다.
+    optionalTypeSuffixExceptions: [...new Set(catalog.flatMap(component => component.props
+      .filter(prop => !prop.required && !prop.type.endsWith(optionalTypeSuffix)).map(prop => prop.type)))],
+    description: 'import는 importTemplate의 NAME을 name으로 치환한다. source는 sourceRoot + 항목의 source다. kind 생략은 kindDefault, props[].required 생략은 requiredDefault다. 선택 prop의 type에는 optionalTypeSuffix를 붙이되 optionalTypeSuffixExceptions의 타입은 이미 undefined를 포함하므로 그대로 쓴다. get_component와 list_components는 복원된 값을 응답한다.',
+  };
+  const components = catalog.map(({ import: _import, ...component }) => {
+    if (!component.source.startsWith(derived.sourceRoot)) throw new Error(`MCP sourceRoot 밖의 소스: ${component.source}`);
+    if (component.kind === derived.kindDefault) delete component.kind;
+    return {
+      ...component,
+      source: component.source.slice(derived.sourceRoot.length),
+      props: component.props.map(({ name, required, type, ...details }) => ({
+        name,
+        type: !required && type.endsWith(optionalTypeSuffix) ? type.slice(0, -optionalTypeSuffix.length) : type,
+        ...(required ? { required: true } : {}),
+        ...details,
+      })),
+    };
+  });
+  // 새로운 타입 별칭이나 import 예외가 생겨도 조용히 응답을 바꾸지 않고 생성 단계에서 막는다.
+  if (!isDeepStrictEqual(components.map(component => restoreComponent(component, derived)), catalog))
+    throw new Error('MCP 파생 필드 복원 불일치');
+  return { derived, components };
+}
+
 export async function build() {
   await checkBoundaries();
   const data = JSON.parse(await read('docs/research/tokens.json'));
@@ -228,9 +264,11 @@ export async function build() {
     if (api.name === 'Button') api.props = api.props.filter((p) => p.name !== 'iconOnly');
     return { ...intent, ...api, import: `import { ${intent.name} } from '@s2life/ui';` };
   });
-  const manifest = { schemaVersion: 1, tokens, components: catalog, principles };
+  const resource = compactCatalog(catalog);
+  const manifest = { schemaVersion: 1, derived: resource.derived, tokens, components: resource.components, principles };
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
-  assertSizeBudget(catalog, manifest);
+  // 리소스 소비자도 스스로 복원할 수 있어야 하므로 derived 전송량까지 예산에 포함한다.
+  assertSizeBudget(resource, manifest);
   await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
   console.error(`MCP 검증 7종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }

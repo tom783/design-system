@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { extractComponents, normalizeTokens, validate, assertSizeBudget } from '../../docs/research/mcp-build.mjs';
+import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog } from '../../docs/research/mcp-build.mjs';
+import { restoreComponent } from './catalog.mjs';
 import intents, { principles } from '../../docs/research/component-intent.mjs';
 const data = JSON.parse(await readFile(new URL('../../docs/research/tokens.json', import.meta.url), 'utf8'));
 const design = await readFile(new URL('../../DESIGN.md', import.meta.url), 'utf8');
@@ -52,10 +53,33 @@ test('7: 부모·부품의 양방향 관계와 단일 보관을 검증', () => {
 test('부품은 고유 API만 보관하고 목적·부모 목록을 보존', async () => {
   const { components: catalog } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   for (const part of catalog.filter((c) => c.partOf)) {
-    assert.deepEqual(Object.keys(part).sort(), ['name', 'kind', 'partOf', 'purpose', 'props', 'extends', 'slots', 'import', 'source'].sort());
+    assert.deepEqual(Object.keys(part).sort(), ['name', 'partOf', 'purpose', 'props', 'extends', 'slots', 'source'].sort());
     assert.equal(part.purpose, intents.find((c) => c.name === part.name).purpose);
     assert.ok(catalog.find((c) => c.name === part.partOf).parts.includes(part.name));
   }
+});
+test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 추출 원본과 동일하다', async () => {
+  const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+  const full = intents.map(({ props: _props, slots: _slots, ...intent }) => {
+    const { propNames: _propNames, ...api } = components.find(component => component.name === intent.name);
+    if (api.name === 'Button') api.props = api.props.filter(prop => prop.name !== 'iconOnly');
+    return { ...intent, ...api, import: `import { ${intent.name} } from '@s2life/ui';` };
+  });
+  const before = structuredClone(full);
+  const compact = compactCatalog(full);
+  assert.deepEqual(full, before, '추출 결과를 변경하지 않는다');
+  assert.deepEqual(compact, { derived: manifest.derived, components: manifest.components });
+  assert.deepEqual(compact.components.map(component => restoreComponent(component, compact.derived)), full);
+  for (const component of compact.components) {
+    assert.ok(!Object.hasOwn(component, 'import'));
+    assert.ok(!Object.hasOwn(component, 'kind') || component.kind !== 'component');
+    assert.ok(!component.source.startsWith(compact.derived.sourceRoot));
+    for (const prop of component.props) {
+      assert.ok(!Object.hasOwn(prop, 'required') || prop.required === true);
+      if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
+    }
+  }
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 70_000);
 });
 test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 결과와 동일', async () => {
   const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));

@@ -9,6 +9,7 @@
   "files": [
     "server.mjs",
     "manifest.json",
+    "catalog.mjs",
     "match.mjs"
   ],
   "engines": {

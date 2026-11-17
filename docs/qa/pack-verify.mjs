@@ -27,7 +27,7 @@ for (const [i, name] of ['tokens', 'ui', 'mcp'].entries()) {
   const tarball = join(packDir, `s2life-${name}-${packages[i].version}.tgz`);
   const listing = execFileSync('tar', ['-tzf', tarball], { encoding: 'utf8' });
   assert(!/\.test\.|\.stories\.|package\/src\//.test(listing), `${name}: 테스트·원본 소스는 배포에서 제외`);
-  if (name === 'mcp') assert(listing.includes('package/match.mjs') && listing.includes('package/manifest.json'));
+  if (name === 'mcp') assert(['match.mjs', 'catalog.mjs', 'manifest.json'].every(file => listing.includes(`package/${file}`)));
   tarballs.push(tarball);
 }
 const rootPkg = await json(join(root, 'package.json'));

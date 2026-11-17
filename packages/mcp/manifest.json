@@ -1,5 +1,16 @@
 {
   "schemaVersion": 1,
+  "derived": {
+    "importTemplate": "import { NAME } from '@s2life/ui';",
+    "sourceRoot": "packages/ui/src/",
+    "kindDefault": "component",
+    "requiredDefault": false,
+    "optionalTypeSuffix": " | undefined",
+    "optionalTypeSuffixExceptions": [
+      "ReactNode"
+    ],
+    "description": "import는 importTemplate의 NAME을 name으로 치환한다. source는 sourceRoot + 항목의 source다. kind 생략은 kindDefault, props[].required 생략은 requiredDefault다. 선택 prop의 type에는 optionalTypeSuffix를 붙이되 optionalTypeSuffixExceptions의 타입은 이미 undefined를 포함하므로 그대로 쓴다. get_component와 list_components는 복원된 값을 응답한다."
+  },
   "tokens": [
     {
       "name": "color-brand-50",
@@ -4107,46 +4118,40 @@
         "CollapsibleTrigger",
         "CollapsibleContent"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/collapsible/collapsible.tsx",
+      "source": "components/collapsible/collapsible.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
       "slots": [
         "collapsible"
-      ],
-      "import": "import { Collapsible } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CollapsibleTrigger",
       "partOf": "Collapsible",
       "purpose": "항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/collapsible/collapsible.tsx",
+      "source": "components/collapsible/collapsible.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
       "slots": [
         "collapsible-trigger"
-      ],
-      "import": "import { CollapsibleTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CollapsibleContent",
       "partOf": "Collapsible",
       "purpose": "접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/collapsible/collapsible.tsx",
+      "source": "components/collapsible/collapsible.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Content>"
       ],
       "slots": [
         "collapsible-content"
-      ],
-      "import": "import { CollapsibleContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "ClampText",
@@ -4175,35 +4180,29 @@
         "긴 글",
         "긴 설명 더보기"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/clamp-text/clamp-text.tsx",
+      "source": "components/clamp-text/clamp-text.tsx",
       "props": [
         {
           "name": "lines",
-          "type": "number | undefined",
-          "required": false,
+          "type": "number",
           "doc": "접었을 때 보여줄 줄 수. 기본 2."
         },
         {
           "name": "expanded",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "제어하려면 주고, 아니면 스스로 관리한다."
         },
         {
           "name": "onExpandedChange",
-          "type": "((expanded: boolean) => void) | undefined",
-          "required": false
+          "type": "((expanded: boolean) => void)"
         },
         {
           "name": "moreLabel",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "lessLabel",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [
@@ -4213,8 +4212,7 @@
         "clamp-text",
         "clamp-text-content",
         "clamp-text-trigger"
-      ],
-      "import": "import { ClampText } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Combobox",
@@ -4265,28 +4263,23 @@
         "검색해서 여러 개 고르기",
         "태그 선택"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/combobox/combobox.tsx",
+      "source": "components/combobox/combobox.tsx",
       "props": [
         {
           "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "value",
-          "type": "string | string[] | undefined",
-          "required": false
+          "type": "string | string[]"
         },
         {
           "name": "onValueChange",
-          "type": "((value: string) => void) | ((value: string[]) => void) | undefined",
-          "required": false
+          "type": "((value: string) => void) | ((value: string[]) => void)"
         },
         {
           "name": "ref",
-          "type": "RefObject<HTMLButtonElement | null> | RefObject<HTMLInputElement | null> | ((instance: HTMLButtonElement | null) => void | (() => VoidOrUndefinedOnly)) | ((instance: HTMLInputElement | null) => void | (() => VoidOrUndefinedOnly)) | null | undefined",
-          "required": false
+          "type": "RefObject<HTMLButtonElement | null> | RefObject<HTMLInputElement | null> | ((instance: HTMLButtonElement | null) => void | (() => VoidOrUndefinedOnly)) | ((instance: HTMLInputElement | null) => void | (() => VoidOrUndefinedOnly)) | null"
         },
         {
           "name": "options",
@@ -4295,43 +4288,35 @@
         },
         {
           "name": "placeholder",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "searchPlaceholder",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "emptyText",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "filter",
-          "type": "((query: string, option: ComboboxOption) => boolean) | undefined",
-          "required": false
+          "type": "((query: string, option: ComboboxOption) => boolean)"
         },
         {
           "name": "disabled",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "invalid",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "required",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "maxHeight",
-          "type": "string | number | undefined",
-          "required": false
+          "type": "string | number"
         }
       ],
       "extends": [
@@ -4352,8 +4337,7 @@
         "combobox-option",
         "combobox-trigger",
         "combobox-value"
-      ],
-      "import": "import { Combobox } from '@s2life/ui';"
+      ]
     },
     {
       "name": "MultiSelect",
@@ -4386,8 +4370,7 @@
         "체크 목록",
         "여러 사업장 고르기"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/multi-select/multi-select.tsx",
+      "source": "components/multi-select/multi-select.tsx",
       "props": [
         {
           "name": "options",
@@ -4396,49 +4379,40 @@
         },
         {
           "name": "value",
-          "type": "string[] | undefined",
-          "required": false
+          "type": "string[]"
         },
         {
           "name": "onValueChange",
-          "type": "((value: string[]) => void) | undefined",
-          "required": false
+          "type": "((value: string[]) => void)"
         },
         {
           "name": "placeholder",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "summary",
-          "type": "((selected: { value: string; label: string; }[]) => string) | undefined",
-          "required": false,
+          "type": "((selected: { value: string; label: string; }[]) => string)",
           "doc": "요약 문구를 앱이 바꾼다. 기본은 \"{첫 라벨} 외 {n-1}개\"다."
         },
         {
           "name": "clearLabel",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "disabled",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "invalid",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "required",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "maxHeight",
-          "type": "string | number | undefined",
-          "required": false
+          "type": "string | number"
         }
       ],
       "extends": [
@@ -4451,8 +4425,7 @@
         "multi-select-option",
         "multi-select-trigger",
         "multi-select-value"
-      ],
-      "import": "import { MultiSelect } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Tabs",
@@ -4485,61 +4458,53 @@
         "TabsTrigger",
         "TabsContent"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "source": "components/tabs/tabs.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
       "slots": [
         "tabs"
-      ],
-      "import": "import { Tabs } from '@s2life/ui';"
+      ]
     },
     {
       "name": "TabsList",
       "partOf": "Tabs",
       "purpose": "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "source": "components/tabs/tabs.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.List>"
       ],
       "slots": [
         "tabs-list"
-      ],
-      "import": "import { TabsList } from '@s2life/ui';"
+      ]
     },
     {
       "name": "TabsTrigger",
       "partOf": "Tabs",
       "purpose": "패널을 선택하는 탭 버튼이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "source": "components/tabs/tabs.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
       "slots": [
         "tabs-trigger"
-      ],
-      "import": "import { TabsTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "TabsContent",
       "partOf": "Tabs",
       "purpose": "선택한 상세 패널을 표시한다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/tabs/tabs.tsx",
+      "source": "components/tabs/tabs.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Content>"
       ],
       "slots": [
         "tabs-content"
-      ],
-      "import": "import { TabsContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Breadcrumb",
@@ -4575,58 +4540,50 @@
         "BreadcrumbSeparator",
         "BreadcrumbEllipsis"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'nav'>"
       ],
       "slots": [
         "breadcrumb"
-      ],
-      "import": "import { Breadcrumb } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BreadcrumbList",
       "partOf": "Breadcrumb",
       "purpose": "경로 항목의 순서 목록이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'ol'>"
       ],
       "slots": [
         "breadcrumb-list"
-      ],
-      "import": "import { BreadcrumbList } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BreadcrumbItem",
       "partOf": "Breadcrumb",
       "purpose": "경로의 개별 항목이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'li'>"
       ],
       "slots": [
         "breadcrumb-item"
-      ],
-      "import": "import { BreadcrumbItem } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BreadcrumbLink",
       "partOf": "Breadcrumb",
       "purpose": "라우터를 지정하지 않는 상위 경로 링크다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [
         {
           "name": "asChild",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [
@@ -4634,45 +4591,39 @@
       ],
       "slots": [
         "breadcrumb-link"
-      ],
-      "import": "import { BreadcrumbLink } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BreadcrumbPage",
       "partOf": "Breadcrumb",
       "purpose": "링크가 아닌 현재 경로 항목이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'span'>"
       ],
       "slots": [
         "breadcrumb-page"
-      ],
-      "import": "import { BreadcrumbPage } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BreadcrumbSeparator",
       "partOf": "Breadcrumb",
       "purpose": "보조기기가 읽지 않는 경로 구분자다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'li'>"
       ],
       "slots": [
         "breadcrumb-separator"
-      ],
-      "import": "import { BreadcrumbSeparator } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BreadcrumbEllipsis",
       "partOf": "Breadcrumb",
       "purpose": "접힌 경로 수를 읽을 수 있는 생략 표시다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/breadcrumb/breadcrumb.tsx",
+      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [
         {
           "name": "count",
@@ -4685,8 +4636,7 @@
       ],
       "slots": [
         "breadcrumb-ellipsis"
-      ],
-      "import": "import { BreadcrumbEllipsis } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Dialog",
@@ -4724,51 +4674,43 @@
         "DialogFooter",
         "DialogClose"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [],
-      "slots": [],
-      "import": "import { Dialog } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "DialogTrigger",
       "partOf": "Dialog",
       "purpose": "입력 창을 여는 트리거다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
       "slots": [
         "dialog-trigger"
-      ],
-      "import": "import { DialogTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DialogContent",
       "partOf": "Dialog",
       "purpose": "입력 창의 포털과 닫기 보호다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [
         {
           "name": "dismissible",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "false면 바깥 클릭·Escape로 닫히지 않는다. 명시적 닫기 버튼은 계속 동작한다."
         },
         {
           "name": "onDismissAttempt",
-          "type": "(() => void) | undefined",
-          "required": false,
+          "type": "(() => void)",
           "doc": "dismissible=false일 때 닫으려는 시도를 알린다. 앱에서 확인 AlertDialog를 연다."
         },
         {
           "name": "showClose",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "우상단 닫기 버튼. 끄면 앱이 직접 출구를 제공해야 한다."
         }
       ],
@@ -4779,83 +4721,72 @@
         "dialog-close-icon",
         "dialog-content",
         "dialog-overlay"
-      ],
-      "import": "import { DialogContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DialogHeader",
       "partOf": "Dialog",
       "purpose": "입력 창 제목·설명 그룹이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
       "slots": [
         "dialog-header"
-      ],
-      "import": "import { DialogHeader } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DialogTitle",
       "partOf": "Dialog",
       "purpose": "입력 창의 필수 제목이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Title>"
       ],
       "slots": [
         "dialog-title"
-      ],
-      "import": "import { DialogTitle } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DialogDescription",
       "partOf": "Dialog",
       "purpose": "입력 창의 필수 설명이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Description>"
       ],
       "slots": [
         "dialog-description"
-      ],
-      "import": "import { DialogDescription } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DialogFooter",
       "partOf": "Dialog",
       "purpose": "입력 창 하단의 액션 그룹이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
       "slots": [
         "dialog-footer"
-      ],
-      "import": "import { DialogFooter } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DialogClose",
       "partOf": "Dialog",
       "purpose": "닫기 보호 중에도 동작하는 명시적 닫기다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/dialog.tsx",
+      "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Close>"
       ],
       "slots": [
         "dialog-close"
-      ],
-      "import": "import { DialogClose } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialog",
@@ -4895,34 +4826,29 @@
         "AlertDialogAction",
         "AlertDialogCancel"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [],
-      "slots": [],
-      "import": "import { AlertDialog } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "AlertDialogTrigger",
       "partOf": "AlertDialog",
       "purpose": "확인 창을 여는 트리거다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
       "slots": [
         "alert-dialog-trigger"
-      ],
-      "import": "import { AlertDialogTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogContent",
       "partOf": "AlertDialog",
       "purpose": "파괴적 선택 확인의 포털이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Content>"
@@ -4930,80 +4856,69 @@
       "slots": [
         "alert-dialog-content",
         "alert-dialog-overlay"
-      ],
-      "import": "import { AlertDialogContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogHeader",
       "partOf": "AlertDialog",
       "purpose": "확인 제목·설명 그룹이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
       "slots": [
         "alert-dialog-header"
-      ],
-      "import": "import { AlertDialogHeader } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogTitle",
       "partOf": "AlertDialog",
       "purpose": "확인 창의 필수 제목이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Title>"
       ],
       "slots": [
         "alert-dialog-title"
-      ],
-      "import": "import { AlertDialogTitle } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogDescription",
       "partOf": "AlertDialog",
       "purpose": "되돌릴 수 없는 결과의 설명이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Description>"
       ],
       "slots": [
         "alert-dialog-description"
-      ],
-      "import": "import { AlertDialogDescription } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogFooter",
       "partOf": "AlertDialog",
       "purpose": "확인·취소 액션 그룹이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
       "slots": [
         "alert-dialog-footer"
-      ],
-      "import": "import { AlertDialogFooter } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogAction",
       "partOf": "AlertDialog",
       "purpose": "확정 동작과 기존 danger 변형이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [
         {
           "name": "variant",
-          "type": "\"danger\" | \"ghost\" | \"primary\" | \"secondary\" | null | undefined",
-          "required": false
+          "type": "\"danger\" | \"ghost\" | \"primary\" | \"secondary\" | null"
         }
       ],
       "extends": [
@@ -5012,23 +4927,20 @@
       ],
       "slots": [
         "alert-dialog-action"
-      ],
-      "import": "import { AlertDialogAction } from '@s2life/ui';"
+      ]
     },
     {
       "name": "AlertDialogCancel",
       "partOf": "AlertDialog",
       "purpose": "초기 포커스를 받는 필수 취소 버튼이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/dialog/alert-dialog.tsx",
+      "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Cancel>"
       ],
       "slots": [
         "alert-dialog-cancel"
-      ],
-      "import": "import { AlertDialogCancel } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Select",
@@ -5068,22 +4980,19 @@
         "SelectScrollUpButton",
         "SelectScrollDownButton"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Root>",
         "Pick<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>, 'id' | 'aria-describedby' | 'aria-invalid' | 'aria-label' | 'aria-labelledby'>"
       ],
-      "slots": [],
-      "import": "import { Select } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "SelectTrigger",
       "partOf": "Select",
       "purpose": "선택 필터를 여는 38px 버튼",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>"
@@ -5091,30 +5000,26 @@
       "slots": [
         "select-icon",
         "select-trigger"
-      ],
-      "import": "import { SelectTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectValue",
       "partOf": "Select",
       "purpose": "선택값 또는 플레이스홀더",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Value>"
       ],
       "slots": [
         "select-value"
-      ],
-      "import": "import { SelectValue } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectContent",
       "partOf": "Select",
       "purpose": "포털의 선택 목록",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>"
@@ -5124,98 +5029,85 @@
         "select-scroll-down-button",
         "select-scroll-up-button",
         "select-viewport"
-      ],
-      "import": "import { SelectContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectGroup",
       "partOf": "Select",
       "purpose": "선택 항목 그룹",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Group>"
       ],
       "slots": [
         "select-group"
-      ],
-      "import": "import { SelectGroup } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectLabel",
       "partOf": "Select",
       "purpose": "선택 그룹 레이블",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>"
       ],
       "slots": [
         "select-label"
-      ],
-      "import": "import { SelectLabel } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectItem",
       "partOf": "Select",
       "purpose": "단일 선택 옵션",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>"
       ],
       "slots": [
         "select-item"
-      ],
-      "import": "import { SelectItem } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectSeparator",
       "partOf": "Select",
       "purpose": "선택 그룹 구분선",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>"
       ],
       "slots": [
         "select-separator"
-      ],
-      "import": "import { SelectSeparator } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectScrollUpButton",
       "partOf": "Select",
       "purpose": "목록 위로 스크롤",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>"
       ],
       "slots": [
         "select-scroll-up-button"
-      ],
-      "import": "import { SelectScrollUpButton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SelectScrollDownButton",
       "partOf": "Select",
       "purpose": "목록 아래로 스크롤",
-      "kind": "component",
-      "source": "packages/ui/src/components/select/select.tsx",
+      "source": "components/select/select.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>"
       ],
       "slots": [
         "select-scroll-down-button"
-      ],
-      "import": "import { SelectScrollDownButton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenu",
@@ -5256,59 +5148,50 @@
         "DropdownMenuSubTrigger",
         "DropdownMenuRadioGroup"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [],
-      "slots": [],
-      "import": "import { DropdownMenu } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "DropdownMenuTrigger",
       "partOf": "DropdownMenu",
       "purpose": "행 액션 열기",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>"
       ],
       "slots": [
         "dropdown-menu-trigger"
-      ],
-      "import": "import { DropdownMenuTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuContent",
       "partOf": "DropdownMenu",
       "purpose": "포털 액션 목록",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>"
       ],
       "slots": [
         "dropdown-menu-content"
-      ],
-      "import": "import { DropdownMenuContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuItem",
       "partOf": "DropdownMenu",
       "purpose": "액션 실행 항목",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
           "name": "inset",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "destructive",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [
@@ -5317,50 +5200,43 @@
       "slots": [
         "dropdown-menu-destructive-icon",
         "dropdown-menu-item"
-      ],
-      "import": "import { DropdownMenuItem } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuCheckboxItem",
       "partOf": "DropdownMenu",
       "purpose": "체크형 메뉴 항목",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>"
       ],
       "slots": [
         "dropdown-menu-checkbox-item"
-      ],
-      "import": "import { DropdownMenuCheckboxItem } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuRadioItem",
       "partOf": "DropdownMenu",
       "purpose": "라디오형 메뉴 항목",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>"
       ],
       "slots": [
         "dropdown-menu-radio-item"
-      ],
-      "import": "import { DropdownMenuRadioItem } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuLabel",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 그룹 이름",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
           "name": "inset",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [
@@ -5368,102 +5244,87 @@
       ],
       "slots": [
         "dropdown-menu-label"
-      ],
-      "import": "import { DropdownMenuLabel } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuSeparator",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 구분선",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>"
       ],
       "slots": [
         "dropdown-menu-separator"
-      ],
-      "import": "import { DropdownMenuSeparator } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuShortcut",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 단축키 표시",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLSpanElement>"
       ],
       "slots": [
         "dropdown-menu-shortcut"
-      ],
-      "import": "import { DropdownMenuShortcut } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuGroup",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 항목 그룹",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof DropdownMenuPrimitive.Group>"
       ],
       "slots": [
         "dropdown-menu-group"
-      ],
-      "import": "import { DropdownMenuGroup } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuPortal",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 포털",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [],
-      "slots": [],
-      "import": "import { DropdownMenuPortal } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "DropdownMenuSub",
       "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 루트",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [],
-      "slots": [],
-      "import": "import { DropdownMenuSub } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "DropdownMenuSubContent",
       "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 목록",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>"
       ],
       "slots": [
         "dropdown-menu-sub-content"
-      ],
-      "import": "import { DropdownMenuSubContent } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuSubTrigger",
       "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 열기",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
           "name": "inset",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [
@@ -5471,23 +5332,20 @@
       ],
       "slots": [
         "dropdown-menu-sub-trigger"
-      ],
-      "import": "import { DropdownMenuSubTrigger } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DropdownMenuRadioGroup",
       "partOf": "DropdownMenu",
       "purpose": "라디오 메뉴 그룹",
-      "kind": "component",
-      "source": "packages/ui/src/components/dropdown-menu/dropdown-menu.tsx",
+      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>"
       ],
       "slots": [
         "dropdown-menu-radio-group"
-      ],
-      "import": "import { DropdownMenuRadioGroup } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Toaster",
@@ -5512,16 +5370,14 @@
         "토스트",
         "저장 알림"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/toast/toast.tsx",
+      "source": "components/toast/toast.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Sonner>"
       ],
       "slots": [
         "toaster"
-      ],
-      "import": "import { Toaster } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DatePicker",
@@ -5547,40 +5403,33 @@
         "기간 필터",
         "달력"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/date-picker/date-picker.tsx",
+      "source": "components/date-picker/date-picker.tsx",
       "props": [
         {
           "name": "invalid",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "numeric",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "숫자·금액 입력. 고정폭 숫자와 우측 정렬을 적용한다."
         },
         {
           "name": "defaultMonth",
-          "type": "Date | undefined",
-          "required": false
+          "type": "Date"
         },
         {
           "name": "today",
-          "type": "Date | undefined",
-          "required": false,
+          "type": "Date",
           "doc": "빠른 선택의 기준일. 기본은 운영자의 로컬 오늘이며 스토리에서는 고정할 수 있다."
         },
         {
           "name": "mode",
-          "type": "\"range\" | \"single\" | undefined",
-          "required": false
+          "type": "\"range\" | \"single\""
         },
         {
           "name": "value",
-          "type": "Date | DateRange | undefined",
-          "required": false
+          "type": "Date | DateRange"
         },
         {
           "name": "onChange",
@@ -5601,8 +5450,7 @@
         "input-action",
         "input-control",
         "popover-content"
-      ],
-      "import": "import { DatePicker } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Button",
@@ -5630,36 +5478,30 @@
         "삭제",
         "액션"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/button.tsx",
+      "source": "components/button.tsx",
       "props": [
         {
           "name": "asChild",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "단일 자식 링크 등에 스타일·이벤트·ref를 합친다."
         },
         {
           "name": "leadingIcon",
           "type": "ReactNode",
-          "required": false,
           "doc": "라벨 왼쪽 아이콘. 동작을 설명하는 것만 쓴다."
         },
         {
           "name": "trailingIcon",
           "type": "ReactNode",
-          "required": false,
           "doc": "라벨 오른쪽 아이콘. 방향·열림 상태 표시에만 쓴다."
         },
         {
           "name": "variant",
-          "type": "\"danger\" | \"ghost\" | \"primary\" | \"secondary\" | null | undefined",
-          "required": false
+          "type": "\"danger\" | \"ghost\" | \"primary\" | \"secondary\" | null"
         },
         {
           "name": "size",
-          "type": "\"lg\" | \"md\" | \"sm\" | null | undefined",
-          "required": false
+          "type": "\"lg\" | \"md\" | \"sm\" | null"
         }
       ],
       "extends": [
@@ -5668,8 +5510,7 @@
       ],
       "slots": [
         "button"
-      ],
-      "import": "import { Button } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Input",
@@ -5708,18 +5549,15 @@
         "수량",
         "금액 입력"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/input.tsx",
+      "source": "components/input.tsx",
       "props": [
         {
           "name": "invalid",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "numeric",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "숫자·금액 입력. 고정폭 숫자와 우측 정렬을 적용한다."
         }
       ],
@@ -5730,8 +5568,7 @@
         "input",
         "input-action",
         "input-control"
-      ],
-      "import": "import { Input } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Textarea",
@@ -5761,23 +5598,19 @@
         "비고",
         "긴 글"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/textarea/textarea.tsx",
+      "source": "components/textarea/textarea.tsx",
       "props": [
         {
           "name": "invalid",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "autoGrow",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "maxHeight",
-          "type": "MaxHeight<string | number> | undefined",
-          "required": false,
+          "type": "MaxHeight<string | number>",
           "doc": "자동 높이 상한. 기본 240px는 본문 약 10줄이며 이후에는 칸 안에서 스크롤한다."
         }
       ],
@@ -5786,8 +5619,7 @@
       ],
       "slots": [
         "textarea"
-      ],
-      "import": "import { Textarea } from '@s2life/ui';"
+      ]
     },
     {
       "name": "RadioGroup",
@@ -5826,23 +5658,20 @@
       "parts": [
         "RadioGroupItem"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/radio-group/radio-group.tsx",
+      "source": "components/radio-group/radio-group.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
       "slots": [
         "radio-group"
-      ],
-      "import": "import { RadioGroup } from '@s2life/ui';"
+      ]
     },
     {
       "name": "RadioGroupItem",
       "partOf": "RadioGroup",
       "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
-      "kind": "component",
-      "source": "packages/ui/src/components/radio-group/radio-group.tsx",
+      "source": "components/radio-group/radio-group.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Item>"
@@ -5850,8 +5679,7 @@
       "slots": [
         "radio-group-indicator",
         "radio-group-item"
-      ],
-      "import": "import { RadioGroupItem } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Switch",
@@ -5888,8 +5716,7 @@
         "켜기 끄기",
         "즉시 적용"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/switch/switch.tsx",
+      "source": "components/switch/switch.tsx",
       "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
@@ -5897,8 +5724,7 @@
       "slots": [
         "switch",
         "switch-thumb"
-      ],
-      "import": "import { Switch } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Label",
@@ -5926,13 +5752,11 @@
         "레이블",
         "입력 이름"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/label/label.tsx",
+      "source": "components/label/label.tsx",
       "props": [
         {
           "name": "required",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [
@@ -5941,8 +5765,7 @@
       "slots": [
         "label",
         "label-required"
-      ],
-      "import": "import { Label } from '@s2life/ui';"
+      ]
     },
     {
       "name": "StatusChip",
@@ -5972,25 +5795,21 @@
         "배송 상태",
         "상태 표시"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/status-chip.tsx",
+      "source": "components/status-chip.tsx",
       "props": [
         {
           "name": "icon",
           "type": "ReactNode",
-          "required": false,
           "doc": "톤 기본 아이콘을 다른 것으로 바꿀 때만 쓴다."
         },
         {
           "name": "hideIcon",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "아이콘을 숨긴다. 같은 열의 모든 셀이 이미 상태 열임이 명확하고\n라벨 텍스트만으로 충분할 때에 한해 쓴다. 색만 남는 상태가 되므로 기본값은 false."
         },
         {
           "name": "tone",
-          "type": "\"danger\" | \"info\" | \"neutral\" | \"success\" | \"warning\" | null | undefined",
-          "required": false
+          "type": "\"danger\" | \"info\" | \"neutral\" | \"success\" | \"warning\" | null"
         }
       ],
       "extends": [
@@ -5999,8 +5818,7 @@
       ],
       "slots": [
         "status-chip"
-      ],
-      "import": "import { StatusChip } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Card",
@@ -6033,76 +5851,66 @@
         "CardBody",
         "CardFooter"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/card.tsx",
+      "source": "components/card.tsx",
       "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
       "slots": [
         "card"
-      ],
-      "import": "import { Card } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CardHeader",
       "partOf": "Card",
       "purpose": "카드의 제목과 보조 동작 영역",
-      "kind": "component",
-      "source": "packages/ui/src/components/card.tsx",
+      "source": "components/card.tsx",
       "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
       "slots": [
         "card-header"
-      ],
-      "import": "import { CardHeader } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CardTitle",
       "partOf": "Card",
       "purpose": "카드의 제목",
-      "kind": "component",
-      "source": "packages/ui/src/components/card.tsx",
+      "source": "components/card.tsx",
       "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLHeadingElement>"
       ],
       "slots": [
         "card-title"
-      ],
-      "import": "import { CardTitle } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CardBody",
       "partOf": "Card",
       "purpose": "카드의 본문 영역",
-      "kind": "component",
-      "source": "packages/ui/src/components/card.tsx",
+      "source": "components/card.tsx",
       "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
       "slots": [
         "card-body"
-      ],
-      "import": "import { CardBody } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CardFooter",
       "partOf": "Card",
       "purpose": "카드의 하단 보조 정보 영역",
-      "kind": "component",
-      "source": "packages/ui/src/components/card.tsx",
+      "source": "components/card.tsx",
       "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
       "slots": [
         "card-footer"
-      ],
-      "import": "import { CardFooter } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Checkbox",
@@ -6129,13 +5937,11 @@
         "선택",
         "혼합"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/checkbox.tsx",
+      "source": "components/checkbox.tsx",
       "props": [
         {
           "name": "indeterminate",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [
@@ -6144,8 +5950,7 @@
       "slots": [
         "checkbox",
         "checkbox-control"
-      ],
-      "import": "import { Checkbox } from '@s2life/ui';"
+      ]
     },
     {
       "name": "DataTable",
@@ -6180,8 +5985,7 @@
         "일괄 선택",
         "주문 목록"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/data-table/data-table.tsx",
+      "source": "components/data-table/data-table.tsx",
       "props": [
         {
           "name": "data",
@@ -6190,8 +5994,7 @@
         },
         {
           "name": "totalCount",
-          "type": "number | undefined",
-          "required": false,
+          "type": "number",
           "doc": "서버 전체 건수. 생략하면 로드된 data.length를 전체로 간주한다."
         },
         {
@@ -6206,119 +6009,97 @@
         },
         {
           "name": "selectionMode",
-          "type": "SelectionMode | undefined",
-          "required": false
+          "type": "SelectionMode"
         },
         {
           "name": "selectedIds",
-          "type": "string[] | undefined",
-          "required": false
+          "type": "string[]"
         },
         {
           "name": "onSelectedIdsChange",
-          "type": "((ids: string[]) => void) | undefined",
-          "required": false
+          "type": "((ids: string[]) => void)"
         },
         {
           "name": "pinnedStart",
-          "type": "string[] | undefined",
-          "required": false
+          "type": "string[]"
         },
         {
           "name": "pinnedEnd",
-          "type": "string[] | undefined",
-          "required": false
+          "type": "string[]"
         },
         {
           "name": "revisitedRowId",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "onRowClick",
-          "type": "((row: T) => void) | undefined",
-          "required": false
+          "type": "((row: T) => void)"
         },
         {
           "name": "density",
-          "type": "\"comfortable\" | \"compact\" | \"default\" | undefined",
-          "required": false
+          "type": "\"comfortable\" | \"compact\" | \"default\""
         },
         {
           "name": "state",
-          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\" | undefined",
-          "required": false
+          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\""
         },
         {
           "name": "emptyMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "errorMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "emptyAction",
-          "type": "{ label: string; onClick: () => void; } | undefined",
-          "required": false
+          "type": "{ label: string; onClick: () => void; }"
         },
         {
           "name": "onRetry",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         },
         {
           "name": "exportFileName",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "exportValue",
-          "type": "Record<string, (row: T) => string> | undefined",
-          "required": false,
+          "type": "Record<string, (row: T) => string>",
           "doc": "셀 표시와 원본 값을 분리한다. 금액은 쉼표 없는 문자열을 반환한다."
         },
         {
           "name": "align",
-          "type": "Record<string, \"center\" | \"end\" | \"start\"> | undefined",
-          "required": false,
+          "type": "Record<string, \"center\" | \"end\" | \"start\">",
           "doc": "컬럼별 정렬. 지정하지 않은 컬럼은 데이터로 추론한다(숫자면 'end')."
         },
         {
           "name": "caption",
-          "type": "string | undefined",
-          "required": false,
+          "type": "string",
           "doc": "생략 시에도 caption을 제공하지만, 실제 업무 대상과 범위를 설명하는 문장을 권장한다."
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "virtualize",
-          "type": "number | boolean | undefined",
-          "required": false,
+          "type": "number | boolean",
           "doc": "행 수가 임계값을 넘으면 가상화한다. true는 항상 켬, false는 끔. 기본 100."
         },
         {
           "name": "hasMore",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "더 불러올 데이터가 남았는지 명시한다."
         },
         {
           "name": "onLoadMore",
-          "type": "(() => void) | undefined",
-          "required": false,
+          "type": "(() => void)",
           "doc": "같은 로드 길이에서는 한 번만 호출한다."
         },
         {
           "name": "loadingMore",
-          "type": "boolean | undefined",
-          "required": false,
+          "type": "boolean",
           "doc": "전체 로딩과 달리 기존 행 아래에 로딩 표시를 덧붙인다."
         }
       ],
@@ -6347,8 +6128,7 @@
         "state-description",
         "state-graphic",
         "state-title"
-      ],
-      "import": "import { DataTable } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SELECTION_COLUMN_ID",
@@ -6373,11 +6153,10 @@
         "선택 열 식별자"
       ],
       "kind": "constant",
-      "source": "packages/ui/src/components/data-table/selection-column.tsx",
+      "source": "components/data-table/selection-column.tsx",
       "props": [],
       "extends": [],
-      "slots": [],
-      "import": "import { SELECTION_COLUMN_ID } from '@s2life/ui';"
+      "slots": []
     },
     {
       "name": "ChartFrame",
@@ -6404,13 +6183,11 @@
         "차트 프레임",
         "범례"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/chart/chart-frame.tsx",
+      "source": "components/chart/chart-frame.tsx",
       "props": [
         {
           "name": "title",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "summary",
@@ -6419,63 +6196,51 @@
         },
         {
           "name": "legend",
-          "type": "ChartLegendItem[] | undefined",
-          "required": false
+          "type": "ChartLegendItem[]"
         },
         {
           "name": "empty",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "state",
-          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\" | undefined",
-          "required": false
+          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\""
         },
         {
           "name": "emptyMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "errorMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "onRetry",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         },
         {
           "name": "height",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "skeletonVariant",
-          "type": "\"bullet\" | \"plot\" | undefined",
-          "required": false
+          "type": "\"bullet\" | \"plot\""
         },
         {
           "name": "skeletonRows",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "loadingLabel",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "skeleton",
-          "type": "ReactNode",
-          "required": false
+          "type": "ReactNode"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "children",
@@ -6503,8 +6268,7 @@
         "state-description",
         "state-graphic",
         "state-title"
-      ],
-      "import": "import { ChartFrame } from '@s2life/ui';"
+      ]
     },
     {
       "name": "TrendBand",
@@ -6535,8 +6299,7 @@
         "상하한",
         "편차"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/chart/trend-band.tsx",
+      "source": "components/chart/trend-band.tsx",
       "props": [
         {
           "name": "data",
@@ -6555,30 +6318,25 @@
         },
         {
           "name": "yLow",
-          "type": "((d: T) => number) | undefined",
-          "required": false,
+          "type": "((d: T) => number)",
           "doc": "두 경계가 모두 있을 때만 분포 밴드를 그린다."
         },
         {
           "name": "yHigh",
-          "type": "((d: T) => number) | undefined",
-          "required": false
+          "type": "((d: T) => number)"
         },
         {
           "name": "yDomain",
-          "type": "\"auto\" | \"zero\" | [number, number] | undefined",
-          "required": false,
+          "type": "\"auto\" | \"zero\" | [number, number]",
           "doc": "y축 기준. 'auto'(기본) = 데이터 범위로 프레이밍, 'zero' = 0 포함, 또는 직접 지정"
         },
         {
           "name": "height",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "valueFormat",
-          "type": "((value: number) => string) | undefined",
-          "required": false
+          "type": "((value: number) => string)"
         },
         {
           "name": "summary",
@@ -6588,33 +6346,27 @@
         },
         {
           "name": "title",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "state",
-          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\" | undefined",
-          "required": false
+          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\""
         },
         {
           "name": "emptyMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "errorMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "onRetry",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         }
       ],
       "extends": [
@@ -6644,8 +6396,7 @@
         "trend-band-line",
         "trend-band-point",
         "trend-band-value"
-      ],
-      "import": "import { TrendBand } from '@s2life/ui';"
+      ]
     },
     {
       "name": "BulletRow",
@@ -6675,8 +6426,7 @@
         "목표 대비",
         "실적 비교"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/chart/bullet-row.tsx",
+      "source": "components/chart/bullet-row.tsx",
       "props": [
         {
           "name": "metrics",
@@ -6690,39 +6440,32 @@
         },
         {
           "name": "title",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "skeletonRows",
-          "type": "number | undefined",
-          "required": false,
+          "type": "number",
           "doc": "앱이 지표 개수를 알면 넘겨라. 실제 개수와 안 맞으면 로딩이 끝날 때 화면이 밀린다. 기본 3."
         },
         {
           "name": "state",
-          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\" | undefined",
-          "required": false
+          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\""
         },
         {
           "name": "emptyMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "errorMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "onRetry",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         }
       ],
       "extends": [
@@ -6756,8 +6499,7 @@
         "state-description",
         "state-graphic",
         "state-title"
-      ],
-      "import": "import { BulletRow } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CompositionArea",
@@ -6788,8 +6530,7 @@
         "비율 변화",
         "시간별 구성"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/chart/composition-area.tsx",
+      "source": "components/chart/composition-area.tsx",
       "props": [
         {
           "name": "data",
@@ -6809,8 +6550,7 @@
         },
         {
           "name": "height",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "summary",
@@ -6819,33 +6559,27 @@
         },
         {
           "name": "title",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "state",
-          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\" | undefined",
-          "required": false
+          "type": "\"empty\" | \"error\" | \"idle\" | \"loading\""
         },
         {
           "name": "emptyMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "errorMessage",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "onRetry",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         }
       ],
       "extends": [
@@ -6875,8 +6609,7 @@
         "state-description",
         "state-graphic",
         "state-title"
-      ],
-      "import": "import { CompositionArea } from '@s2life/ui';"
+      ]
     },
     {
       "name": "EmptyState",
@@ -6903,8 +6636,7 @@
         "데이터 없음",
         "필터 초기화"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/state/empty-state.tsx",
+      "source": "components/state/empty-state.tsx",
       "props": [
         {
           "name": "title",
@@ -6913,23 +6645,19 @@
         },
         {
           "name": "description",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "graphic",
-          "type": "ReactNode",
-          "required": false
+          "type": "ReactNode"
         },
         {
           "name": "action",
-          "type": "{ label: string; onClick: () => void; } | undefined",
-          "required": false
+          "type": "{ label: string; onClick: () => void; }"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -6939,8 +6667,7 @@
         "state-description",
         "state-graphic",
         "state-title"
-      ],
-      "import": "import { EmptyState } from '@s2life/ui';"
+      ]
     },
     {
       "name": "ErrorState",
@@ -6966,8 +6693,7 @@
         "재시도",
         "데이터 오류"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/state/empty-state.tsx",
+      "source": "components/state/empty-state.tsx",
       "props": [
         {
           "name": "title",
@@ -6976,23 +6702,19 @@
         },
         {
           "name": "description",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "graphic",
-          "type": "ReactNode",
-          "required": false
+          "type": "ReactNode"
         },
         {
           "name": "onRetry",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7002,8 +6724,7 @@
         "state-description",
         "state-graphic",
         "state-title"
-      ],
-      "import": "import { ErrorState } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Avatar",
@@ -7029,8 +6750,7 @@
         "이니셜",
         "사용자 사진"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/avatar/avatar.tsx",
+      "source": "components/avatar/avatar.tsx",
       "props": [
         {
           "name": "name",
@@ -7039,23 +6759,19 @@
         },
         {
           "name": "src",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "size",
-          "type": "\"lg\" | \"md\" | \"sm\" | undefined",
-          "required": false
+          "type": "\"lg\" | \"md\" | \"sm\""
         },
         {
           "name": "decorative",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7063,8 +6779,7 @@
         "avatar",
         "avatar-fallback",
         "avatar-image"
-      ],
-      "import": "import { Avatar } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Thumbnail",
@@ -7091,13 +6806,11 @@
         "상품 사진",
         "이미지 실패"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/thumbnail/thumbnail.tsx",
+      "source": "components/thumbnail/thumbnail.tsx",
       "props": [
         {
           "name": "src",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "alt",
@@ -7106,13 +6819,11 @@
         },
         {
           "name": "ratio",
-          "type": "AspectRatio | undefined",
-          "required": false
+          "type": "AspectRatio"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7121,8 +6832,7 @@
         "thumbnail",
         "thumbnail-fallback",
         "thumbnail-image"
-      ],
-      "import": "import { Thumbnail } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Skeleton",
@@ -7154,46 +6864,38 @@
         "콘텐츠 대기",
         "로딩 중"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/skeleton.tsx",
+      "source": "components/loading/skeleton.tsx",
       "props": [
         {
           "name": "variant",
-          "type": "\"block\" | \"circle\" | \"text\" | undefined",
-          "required": false,
+          "type": "\"block\" | \"circle\" | \"text\"",
           "doc": "text는 행간 대신 글자 높이(0.65em)를 칠한다."
         },
         {
           "name": "width",
-          "type": "string | number | undefined",
-          "required": false
+          "type": "string | number"
         },
         {
           "name": "height",
-          "type": "string | number | undefined",
-          "required": false
+          "type": "string | number"
         },
         {
           "name": "textStyle",
-          "type": "SkeletonTextStyle | undefined",
-          "required": false
+          "type": "SkeletonTextStyle"
         },
         {
           "name": "animation",
-          "type": "\"none\" | \"pulse\" | \"shimmer\" | undefined",
-          "required": false
+          "type": "\"none\" | \"pulse\" | \"shimmer\""
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
       "slots": [
         "skeleton"
-      ],
-      "import": "import { Skeleton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "SkeletonText",
@@ -7218,28 +6920,23 @@
         "문단 로딩",
         "텍스트 스켈레톤"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/skeleton.tsx",
+      "source": "components/loading/skeleton.tsx",
       "props": [
         {
           "name": "lines",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "textStyle",
-          "type": "SkeletonTextStyle | undefined",
-          "required": false
+          "type": "SkeletonTextStyle"
         },
         {
           "name": "lastLineWidth",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7247,8 +6944,7 @@
         "skeleton",
         "skeleton-text",
         "skeleton-text-line"
-      ],
-      "import": "import { SkeletonText } from '@s2life/ui';"
+      ]
     },
     {
       "name": "CardSkeleton",
@@ -7276,18 +6972,15 @@
         "카드 불러오는 중",
         "카드 불러오기"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/skeleton-patterns.tsx",
+      "source": "components/loading/skeleton-patterns.tsx",
       "props": [
         {
           "name": "label",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7300,8 +6993,7 @@
         "skeleton",
         "skeleton-text",
         "skeleton-text-line"
-      ],
-      "import": "import { CardSkeleton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "ListSkeleton",
@@ -7329,23 +7021,19 @@
         "목록 불러오는 중",
         "목록 불러오기"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/skeleton-patterns.tsx",
+      "source": "components/loading/skeleton-patterns.tsx",
       "props": [
         {
           "name": "rows",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "label",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [
@@ -7355,8 +7043,7 @@
         "list-skeleton",
         "list-skeleton-row",
         "skeleton"
-      ],
-      "import": "import { ListSkeleton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "FormSkeleton",
@@ -7384,23 +7071,19 @@
         "폼 불러오는 중",
         "폼 불러오기"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/skeleton-patterns.tsx",
+      "source": "components/loading/skeleton-patterns.tsx",
       "props": [
         {
           "name": "fields",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "label",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [
@@ -7412,8 +7095,7 @@
         "skeleton",
         "skeleton-text",
         "skeleton-text-line"
-      ],
-      "import": "import { FormSkeleton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "ChartSkeleton",
@@ -7441,38 +7123,31 @@
         "차트 불러오는 중",
         "차트 불러오기"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/skeleton-patterns.tsx",
+      "source": "components/loading/skeleton-patterns.tsx",
       "props": [
         {
           "name": "height",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "legend",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "variant",
-          "type": "\"bullet\" | \"plot\" | undefined",
-          "required": false
+          "type": "\"bullet\" | \"plot\""
         },
         {
           "name": "rows",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "label",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [
@@ -7484,8 +7159,7 @@
         "chart-skeleton-bullets",
         "chart-skeleton-plot",
         "skeleton"
-      ],
-      "import": "import { ChartSkeleton } from '@s2life/ui';"
+      ]
     },
     {
       "name": "ProgressTrack",
@@ -7514,13 +7188,11 @@
         "예상 시간",
         "진행 바"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/progress-track.tsx",
+      "source": "components/loading/progress-track.tsx",
       "props": [
         {
           "name": "value",
-          "type": "number | undefined",
-          "required": false,
+          "type": "number",
           "doc": "0~1. 생략하면 불확정 진행률."
         },
         {
@@ -7530,13 +7202,11 @@
         },
         {
           "name": "etaSeconds",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7546,8 +7216,7 @@
         "progress-fill",
         "progress-percent",
         "progress-track"
-      ],
-      "import": "import { ProgressTrack } from '@s2life/ui';"
+      ]
     },
     {
       "name": "TaskProgress",
@@ -7579,8 +7248,7 @@
         "작업 단계",
         "백그라운드 작업"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/loading/task-progress.tsx",
+      "source": "components/loading/task-progress.tsx",
       "props": [
         {
           "name": "title",
@@ -7589,28 +7257,23 @@
         },
         {
           "name": "value",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "steps",
-          "type": "{ label: string; done: boolean; }[] | undefined",
-          "required": false
+          "type": "{ label: string; done: boolean; }[]"
         },
         {
           "name": "etaSeconds",
-          "type": "number | undefined",
-          "required": false
+          "type": "number"
         },
         {
           "name": "onDismiss",
-          "type": "(() => void) | undefined",
-          "required": false
+          "type": "(() => void)"
         },
         {
           "name": "className",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         }
       ],
       "extends": [],
@@ -7626,8 +7289,7 @@
         "task-progress",
         "task-step",
         "task-steps"
-      ],
-      "import": "import { TaskProgress } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Tooltip",
@@ -7658,8 +7320,7 @@
         "컨트롤 설명",
         "UI 설명"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/guide/tooltip.tsx",
+      "source": "components/guide/tooltip.tsx",
       "props": [
         {
           "name": "children",
@@ -7674,16 +7335,14 @@
         },
         {
           "name": "disabled",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         }
       ],
       "extends": [],
       "slots": [
         "guide-bubble",
         "guide-tooltip"
-      ],
-      "import": "import { Tooltip } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Hint",
@@ -7712,8 +7371,7 @@
         "한 번",
         "맥락형 안내"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/guide/hint.tsx",
+      "source": "components/guide/hint.tsx",
       "props": [
         {
           "name": "children",
@@ -7732,8 +7390,7 @@
         },
         {
           "name": "body",
-          "type": "string | undefined",
-          "required": false
+          "type": "string"
         },
         {
           "name": "onDismiss",
@@ -7742,8 +7399,7 @@
         },
         {
           "name": "action",
-          "type": "{ label: string; onClick: () => void; } | undefined",
-          "required": false
+          "type": "{ label: string; onClick: () => void; }"
         }
       ],
       "extends": [],
@@ -7751,8 +7407,7 @@
         "button",
         "guide-bubble",
         "guide-hint"
-      ],
-      "import": "import { Hint } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Tour",
@@ -7789,8 +7444,7 @@
         "둘러보기",
         "시작 안내"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/guide/tour.tsx",
+      "source": "components/guide/tour.tsx",
       "props": [
         {
           "name": "steps",
@@ -7830,8 +7484,7 @@
         "button",
         "guide-bubble",
         "guide-hint"
-      ],
-      "import": "import { Tour } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Field",
@@ -7863,8 +7516,7 @@
         "오류 문구",
         "유효성 검사"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/form/field.tsx",
+      "source": "components/form/field.tsx",
       "props": [
         {
           "name": "label",
@@ -7873,18 +7525,15 @@
         },
         {
           "name": "description",
-          "type": "ReactNode",
-          "required": false
+          "type": "ReactNode"
         },
         {
           "name": "error",
-          "type": "ReactNode",
-          "required": false
+          "type": "ReactNode"
         },
         {
           "name": "required",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "children",
@@ -7901,8 +7550,7 @@
         "field-error",
         "field-label",
         "field-required"
-      ],
-      "import": "import { Field } from '@s2life/ui';"
+      ]
     },
     {
       "name": "FormFlow",
@@ -7939,24 +7587,20 @@
         "다음 칸",
         "이전 칸"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/form/form-flow.tsx",
+      "source": "components/form/form-flow.tsx",
       "props": [
         {
           "name": "onSubmit",
-          "type": "((event: FormEvent<HTMLFormElement>) => void | boolean | Promise<void | boolean>) | undefined",
-          "required": false,
+          "type": "((event: FormEvent<HTMLFormElement>) => void | boolean | Promise<void | boolean>)",
           "doc": "false 반환 또는 preventDefault는 실패다. 비동기 저장은 완료될 때 resolve한다."
         },
         {
           "name": "restartOnSubmit",
-          "type": "boolean | undefined",
-          "required": false
+          "type": "boolean"
         },
         {
           "name": "onSubmitError",
-          "type": "((error: unknown) => void) | undefined",
-          "required": false
+          "type": "((error: unknown) => void)"
         }
       ],
       "extends": [
@@ -7965,8 +7609,7 @@
       ],
       "slots": [
         "form-flow"
-      ],
-      "import": "import { FormFlow } from '@s2life/ui';"
+      ]
     },
     {
       "name": "Peek",
@@ -7999,8 +7642,7 @@
         "행 상세",
         "레코드 내용"
       ],
-      "kind": "component",
-      "source": "packages/ui/src/components/peek/peek.tsx",
+      "source": "components/peek/peek.tsx",
       "props": [
         {
           "name": "children",
@@ -8029,8 +7671,7 @@
         },
         {
           "name": "action",
-          "type": "{ label: string; onClick: () => void; } | undefined",
-          "required": false,
+          "type": "{ label: string; onClick: () => void; }",
           "doc": "요약에서 상세로 이동하는 단일 읽기 액션."
         }
       ],
@@ -8041,8 +7682,7 @@
         "peek",
         "peek-item",
         "peek-items"
-      ],
-      "import": "import { Peek } from '@s2life/ui';"
+      ]
     }
   ],
   "principles": [

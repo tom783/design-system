@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolveIntent } from '../../packages/ui/docs/_intent-data.ts';
 
 const entry = (name, extra = {}) => ({ name, purpose: `${name}의 목적`, source: `${name}.tsx`, ...extra });
@@ -42,9 +42,14 @@ test('다섯 MDX 페이지의 모든 Intent 이름·부모·관련 이름을 실
     .matchAll(/<Intent name="([^"]+)"\s*\/>/g)].map(match => match[1]));
   assert.ok(names.length >= 10, 'Intent 호출이 없어 검사가 공회전하면 안 된다');
   for (const name of names) {
-    const resolved = resolveIntent(manifest.components, name);
+    const resolved = resolveIntent(manifest.components, name, manifest.derived.sourceRoot);
     assert.ok(resolved.component.purpose);
-    for (const component of [resolved.component, ...resolved.parents, ...resolved.related]) assert.ok(component.source);
+    for (const component of [resolved.component, ...resolved.parents, ...resolved.related]) {
+      const stored = manifest.components.find(entry => entry.name === component.name);
+      assert.equal(component.source, manifest.derived.sourceRoot + stored.source);
+      assert.ok(component.source.startsWith('packages/ui/src/'));
+      assert.ok(existsSync(new URL(`../../${component.source}`, import.meta.url)), `${component.name} 소스 링크가 실제 파일을 가리킨다`);
+    }
   }
   assert.ok(resolveIntent(manifest.components, 'SelectTrigger').parents.some(parent => parent.name === 'Select'));
   assert.ok(resolveIntent(manifest.components, 'DialogContent').parents.some(parent => parent.name === 'Dialog'));

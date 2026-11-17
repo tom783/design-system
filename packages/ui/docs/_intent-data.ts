@@ -10,11 +10,11 @@ export interface ComponentIntent {
 }
 
 /** 참조가 사라져도 문서가 정상처럼 보이지 않도록 렌더 전에 중단한다. */
-export function resolveIntent(components: readonly ComponentIntent[], name: string) {
+export function resolveIntent(components: readonly ComponentIntent[], name: string, sourceRoot = '') {
   const find = (target: string): ComponentIntent => {
     const entry = components.find(component => component.name === target);
     if (!entry) throw new Error(`문서 Intent: 매니페스트에 '${target}' 컴포넌트가 없습니다.`);
-    return entry;
+    return { ...entry, source: sourceRoot + entry.source };
   };
   const lineage: ComponentIntent[] = [];
   const seen = new Set<string>();

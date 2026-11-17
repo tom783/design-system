@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { matchComponents } from './match.mjs';
+import { restoreComponent } from './catalog.mjs';
 
 const { version } = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
 
@@ -55,13 +56,17 @@ function callTool(manifest, params) {
       const tokens = manifest.tokens.filter((t) => (!args.category || t.category === args.category.trim().toLowerCase()) && `${t.name} ${t.purpose} ${t.tailwind.join(' ')}`.toLowerCase().includes(query));
       return tokens.length ? structured({ tokens }) : missing('일치하는 토큰이 없습니다. category를 생략하거나 search_tokens의 query를 짧게 해보세요.');
     }
-    case 'list_components': return structured({ components: manifest.components.map(({ name, kind, purpose, import: statement, partOf }) => ({ name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) })) });
+    case 'list_components': return structured({ components: manifest.components.map((entry) => {
+      const { name, kind, purpose, import: statement, partOf } = restoreComponent(entry, manifest.derived);
+      return { name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) };
+    }) });
     case 'get_component': {
-      const component = manifest.components.find((c) => c.name.toLowerCase() === args.name.trim().toLowerCase());
-      if (!component) return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
+      const entry = manifest.components.find((c) => c.name.toLowerCase() === args.name.trim().toLowerCase());
+      if (!entry) return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
+      const component = restoreComponent(entry, manifest.derived);
       if (!component.partOf) return structured(component);
       const parent = manifest.components.find((c) => c.name === component.partOf);
-      // 보관 형태는 바꾸지 않는다. 한 항목을 읽을 때만 부모의 공통 의도를 완성한다.
+      // 기본값 복원과 부모 의도 합치기는 응답에서만 한다. 보관 항목은 변경하지 않는다.
       const { useWhen, dont, rules, category } = parent;
       return structured({ ...component, useWhen, dont, rules, category, inheritedFrom: parent.name });
     }
@@ -85,7 +90,7 @@ function dispatch(manifest, method, params) {
       if (!isObject(params) || typeof params.uri !== 'string') invalid('resources/read에는 uri가 필요합니다.');
       const resource = resources.find((r) => r.uri === params.uri);
       if (!resource) throw new RpcError(-32002, `없는 리소스: ${params.uri}`);
-      const value = params.uri === 'design://tokens' ? manifest.tokens : params.uri === 'design://components' ? manifest.components
+      const value = params.uri === 'design://tokens' ? manifest.tokens : params.uri === 'design://components' ? { derived: manifest.derived, components: manifest.components }
         : manifest.principles.map((p) => `- **${p.topic}** ${p.text} (${p.source})`).join('\n');
       return { contents: [{ uri: resource.uri, mimeType: resource.mimeType, text: typeof value === 'string' ? value : JSON.stringify(value) }] };
     }

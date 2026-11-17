@@ -149,9 +149,9 @@ const t = async (name, args) => {
   const rr = await call('resources/read', { uri: 'design://components' });
   const kb = Buffer.byteLength(rr.result.contents[0].text) / 1024;
   check('components 카탈로그가 80KB 이하', kb <= 80, kb.toFixed(0) + 'KB');
-  const catalog = JSON.parse(rr.result.contents[0].text);
+  const { derived, components: catalog } = JSON.parse(rr.result.contents[0].text);
   const part = catalog.find((c) => c.name === 'SelectTrigger');
-  check('리소스는 조회 후에도 상속을 합치지 않은 보관 형태다', part.partOf === 'Select' && ['useWhen', 'dont', 'rules', 'category', 'related', 'keywords', 'inheritedFrom'].every((key) => !Object.hasOwn(part, key)));
+  check('리소스는 복원 규칙과 상속을 합치지 않은 보관 형태다', derived.sourceRoot === 'packages/ui/src/' && derived.kindDefault === 'component' && part.partOf === 'Select' && ['useWhen', 'dont', 'rules', 'category', 'related', 'keywords', 'inheritedFrom', 'import', 'kind'].every((key) => !Object.hasOwn(part, key)));
 }
 {
   const bad = await call('tools/call', { name: '없는도구', arguments: {} });

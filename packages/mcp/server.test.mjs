@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { once } from 'node:events';
+import { readFile } from 'node:fs/promises';
+
+const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+const baseline = JSON.parse(await readFile(new URL('../../docs/qa/fixtures/get-component-baseline.json', import.meta.url), 'utf8'));
 
 // 실제 파이프의 모든 줄을 기록한다. 응답만 선별하면 console.log 오염을 놓치므로 파싱 실패도 보관한다.
 async function client(t) {
@@ -94,11 +98,35 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
   for (const resource of resources) {
     const result = (await c.request('resources/read', { uri: resource.uri })).result.contents[0];
     assert.equal(result.uri, resource.uri); assert.equal(result.mimeType, resource.mimeType); assert.ok(result.text.length);
-    if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
+    if (result.uri === 'design://components') {
+      const catalog = JSON.parse(result.text);
+      assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
+      assert.ok(Buffer.byteLength(result.text) < 70_000, '복원 규칙까지 포함한 전송량을 잰다');
+    } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
   assert.equal((await c.request('resources/read', {})).error.code, -32602);
   assert.equal((await c.request('unknown')).error.code, -32601);
+});
+test('R23: get_component 8개와 list_components 99개가 고정 기준선과 완전히 동일하다', async (t) => {
+  const c = await client(t);
+  const checkBaseline = (response, expected) => {
+    assert.equal(response.error, undefined);
+    assert.deepEqual(response.result, {
+      content: [{ type: 'text', text: JSON.stringify(expected) }],
+      structuredContent: expected,
+    }, '구조화 결과와 text의 키 순서·문자열도 기준선 그대로다');
+  };
+  assert.equal(Object.keys(baseline).length, 9);
+  assert.equal(baseline.__list.length, 99);
+  for (const [name, expected] of Object.entries(baseline)) {
+    if (name === '__list') continue;
+    checkBaseline(await call(c, 'get_component', { name }), expected);
+  }
+  checkBaseline(await call(c, 'list_components', {}), { components: baseline.__list });
+  // 부품 조회가 보관 형태에 부모 필드나 기본값을 써 넣지 않았는지도 확인한다.
+  const resource = (await c.request('resources/read', { uri: 'design://components' })).result.contents[0];
+  assert.deepEqual(JSON.parse(resource.text), { derived: manifest.derived, components: manifest.components });
 });
 test('깨진 JSON 후 생존·이후 정상 처리·stdout 오염 없음', async (t) => {
   const c = await client(t);

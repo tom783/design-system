@@ -35,6 +35,20 @@ claude mcp add s2life -- npx -y @s2life/mcp
 
 `which_component`는 순수 문자열 매칭이다. NFKC·소문자·공백 제거 후 전체 이름 일치 +2000, 설명 안 이름 포함 +1000, 키워드 +20(한 글자는 +4), 설명 단어의 useWhen 일치 +5, purpose 일치 +2를 합산한다. 동점은 이름순이며 기본 5개(최대 10개)를 반환한다. 단어별 의미 추론·동의어 추론은 하지 않는다. 점수 근거·useWhen·dont를 같이 주므로 호출자가 후보를 비교한다. 무매칭은 `isError: true`와 `list_components` 안내로 반환한다.
 
+`manifest.json`은 파생 필드를 항목마다 반복하지 않고 최상위 `derived`에 복원 규칙을 보관한다.
+`importTemplate`의 `NAME`은 항목 이름이고, 전체 소스 경로는 `sourceRoot + source`다.
+생략한 `kind`는 `kindDefault`, 생략한 prop의 `required`는 `requiredDefault`다.
+선택 prop의 타입에는 `optionalTypeSuffix`를 붙인다. `optionalTypeSuffixExceptions`는
+이미 undefined를 포함해 검사기가 접미사를 생략한 타입 별칭 목록이며 실제 추출 결과에서 생성한다.
+`derived.description`에도 이 규칙이 있어 매니페스트만 읽어도 복원할 수 있다.
+
+`design://components`는 `{ derived, components }` 형태로 이 규칙과 압축된 항목을 함께 보낸다.
+크기 예산 80,000바이트는 이 객체 전체의 compact UTF-8 JSON을 잰다(전체 매니페스트는 160,000바이트).
+`get_component`·`list_components`는 `catalog.mjs`로 기본값·경로·import·타입 표기를 복원해
+이전 응답을 유지한다. 부품의 부모 의도 합치기는 기존과 동일하며 저장 항목은 변경하지 않는다.
+생성기는 모든 항목을 복원해 원본과 깊은 비교하고, 단위 테스트는 고정 기준선의 상세 8개·목록 99개를
+실제 stdio 응답과 비교한다. 기준선은 `docs/qa/fixtures/get-component-baseline.json`이다.
+
 검증 명령:
 
 ```sh
