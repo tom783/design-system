@@ -4087,6 +4087,93 @@
   ],
   "components": [
     {
+      "name": "Carousel",
+      "category": "media",
+      "purpose": "배너·콘텐츠 슬라이드를 네이티브 가로 스크롤과 scroll-snap으로 넘긴다.",
+      "useWhen": [
+        "배너 슬라이드",
+        "콘텐츠를 한 장씩 가로로 넘길 때"
+      ],
+      "dont": [
+        "Swiper·Embla·transform 이동·기본 순환을 추가하지 마라",
+        "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "트랙은 이름 있는 캐러셀 group과 tabindex=0, 슬라이드는 순번·전체 개수의 group이다. 현재값은 IntersectionObserver threshold=0.6으로만 읽는다. 이전·다음은 한 폭 scrollBy하며 처음·끝에서 비활성이다. 점은 scrollTo·aria-current와 크기 차이를 쓴다. autoplay는 정지 버튼을 항상 동반한다. 버튼·호버·내부 포커스·reduce·document.hidden·사용자 직접 넘김에서 멈춘다. 호버·포커스·숨김은 해제 후 재개하지만 직접 넘김은 영구 종료한다. 자동 넘김은 aria-live=off, 직접 넘김 뒤 polite로 순번을 알린다. reduce는 시작하지 않고 변경을 구독하며 컴포넌트 CSS에서 scroll-behavior:auto를 지정한다.",
+          "source": "DESIGN.md 23"
+        }
+      ],
+      "related": [
+        "MediaViewer"
+      ],
+      "keywords": [
+        "캐러셀",
+        "배너",
+        "슬라이드",
+        "슬라이더",
+        "자동 넘김",
+        "가로 스크롤",
+        "배너 슬라이드"
+      ],
+      "parts": [
+        "CarouselSlide"
+      ],
+      "source": "components/carousel/carousel.tsx",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "doc": "캐러셀 그룹의 이름. 예: 출고 안내 배너."
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "required": true
+        },
+        {
+          "name": "autoplay",
+          "type": "number",
+          "doc": "자동 넘김 간격(ms). 지정하면 정지 버튼도 항상 함께 제공한다."
+        },
+        {
+          "name": "showArrows",
+          "type": "boolean"
+        },
+        {
+          "name": "showDots",
+          "type": "boolean"
+        }
+      ],
+      "extends": [],
+      "slots": [
+        "carousel",
+        "carousel-announcement",
+        "carousel-controls",
+        "carousel-dot",
+        "carousel-dots",
+        "carousel-next",
+        "carousel-pause",
+        "carousel-previous",
+        "carousel-stopped",
+        "carousel-track"
+      ]
+    },
+    {
+      "name": "CarouselSlide",
+      "partOf": "Carousel",
+      "purpose": "슬라이드 부품. 직접 자식으로 배치하며 순번·전체 개수는 부모가 제공한다. 자체 Tab 정지점은 추가하지 않으며 내부 링크는 네이티브 Tab 경로에 남는다.",
+      "source": "components/carousel/carousel.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "carousel-slide"
+      ]
+    },
+    {
       "name": "MediaViewer",
       "category": "media",
       "purpose": "이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.",

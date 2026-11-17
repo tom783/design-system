@@ -108,7 +108,7 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
   assert.equal((await c.request('resources/read', {})).error.code, -32602);
   assert.equal((await c.request('unknown')).error.code, -32601);
 });
-test('R23 기존 응답 기준선을 보존하고 R24 MediaViewer 하나만 목록에 추가한다', async (t) => {
+test('R23 응답 기준선을 보존하고 R24 MediaViewer·R25 Carousel 가족만 목록에 추가한다', async (t) => {
   const c = await client(t);
   const checkBaseline = (response, expected) => {
     assert.equal(response.error, undefined);
@@ -123,8 +123,14 @@ test('R23 기존 응답 기준선을 보존하고 R24 MediaViewer 하나만 목�
     if (name === '__list') continue;
     checkBaseline(await call(c, 'get_component', { name }), expected);
   }
-  // 기존 99개의 값·순서·text 직렬화 기준선은 바꾸지 않는다. 신규 독립 항목만 앞에 추가한다.
+  // 기존 99개의 값·순서·text 직렬화 기준선은 바꾸지 않는다. 신규 가족만 앞에 추가한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
+    name: 'Carousel', kind: 'component', purpose: '배너·콘텐츠 슬라이드를 네이티브 가로 스크롤과 scroll-snap으로 넘긴다.',
+    import: "import { Carousel } from '@s2life/ui';",
+  }, {
+    name: 'CarouselSlide', kind: 'component', purpose: '슬라이드 부품. 직접 자식으로 배치하며 순번·전체 개수는 부모가 제공한다. 자체 Tab 정지점은 추가하지 않으며 내부 링크는 네이티브 Tab 경로에 남는다.',
+    import: "import { CarouselSlide } from '@s2life/ui';", partOf: 'Carousel',
+  }, {
     name: 'MediaViewer', kind: 'component', purpose: '이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',
     import: "import { MediaViewer } from '@s2life/ui';",
   }, ...baseline.__list] });

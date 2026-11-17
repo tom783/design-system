@@ -1937,6 +1937,77 @@ media-viewer-render-verify.mjs를 run-all에 등록하고 기존 하네스는 �
 
 ---
 
+## 23. 배너·콘텐츠 넘김 — Carousel (R25)
+
+### 23.1 네이티브 스크롤을 쓰는 이유
+
+필요한 기능은 배너 슬라이딩이다. 사용자가 제공한 사전 측정에서 현재 패키지는
+85.7KB였고 Swiper 추가 비용은 그에 맞먹었다. 이 수치는 이번 작업에서 다시 측정한
+값이 아니다. Swiper·Embla 등 캐러셀 의존성은 추가하지 않는다.
+
+더 중요한 차이는 접근성이다. transform으로 슬라이드를 화면 밖으로 밀고 aria-hidden을
+동기화하는 대신, flex·overflow-x:auto·scroll-snap-type:x mandatory인 실제 스크롤
+컨테이너를 쓴다. 스크린리더 탐색·키보드·터치 관성을 브라우저가 처리한다.
+트랙은 role=group·aria-roledescription=캐러셀·필수 label·tabindex=0이다.
+CarouselSlide를 직접 자식으로 두며 각 부품은 role=group·슬라이드 설명·“n번째, 총 total개”를
+받는다. 부품 자체는 Tab 정지점을 만들지 않고 내부 링크·버튼은 네이티브 경로에 남긴다.
+
+슬라이드는 flex:0 0 100%·scroll-snap-align:start·scroll-snap-stop:always다.
+이전/다음은 ±clientWidth만큼 scrollBy하고 처음/끝에서 비활성이다. 순환하지 않는다.
+점은 각 위치로 scrollTo하며 현재 점에 aria-current=true와 두 배 너비·채움을 함께 쓴다.
+현재 인덱스는 트랙을 root로 하는 IntersectionObserver threshold=0.6만 읽는다.
+스크롤 이벤트는 사용자 조작의 판별에만 사용하며 인덱스를 계산하지 않는다.
+
+### 23.2 자동재생과 정지는 하나의 API다
+
+autoplay(ms)를 지정하면 정지 버튼이 항상 함께 렌더된다. 이를 끄는 prop은 없다.
+WCAG 2.2.2의 5초 넘게 자동으로 움직이는 콘텐츠 정지 요구를 배포 시점의 선택으로
+남기면 정지 수단이 빠지기 쉽기 때문이다. 0·음수·비유한 간격은 재생하지 않으며 버튼도 남는다.
+슬라이드가 하나이거나 마지막에 도달해도 재생하지 않는다.
+
+| 멈추는 조건 | 처리와 재개 |
+|---|---|
+| 일시정지 버튼 | paused 상태를 토글한다. 명시적 시작으로만 해제한다 |
+| 포인터 호버 | 루트 mouseenter에서 타이머 취소, mouseleave 후 새 간격으로 재개 |
+| 내부 포커스 | focus capture에서 취소, 그룹 전체를 떠나는 blur 후 재개 |
+| prefers-reduced-motion:reduce | 초기 확인 전에도 재생하지 않는다. matchMedia 변경을 구독한다 |
+| document.hidden | visibilitychange에서 취소하고 다시 보일 때 새 간격으로 재개 |
+| 사용자 직접 조작 | 영구 종료 latch를 걸고 타이머를 즉시 취소한다 |
+
+직접 조작은 이전/다음·점·트랙 스크롤 키·가로 휠·트랙 내부 pointerdown/click·자동 이동 외
+scroll이다. 배너 안 링크·확대 버튼을 누르는 의도도 존중해 영구 종료한다. 자동 scrollBy는
+별도 ref로 표시하고 scrollend에서 해제하므로 자체 스크롤을 사용자 조작으로 오인하지 않는다.
+영구 종료 상태와 동기 ref는 해당 Carousel 인스턴스가 유지되는 동안 해제하는 경로가 없다.
+호버·포커스·가시성·모션 설정·autoplay prop이 바뀌어도 다시 켜지지 않는다.
+
+정지 버튼의 aria-pressed는 명시적 정지 선택과 재생 불가 상태를 나타내고, 일시적 호버·포커스는
+그 선택을 바꾸지 않는다. 접근명은 “자동 넘김 멈춤”/“자동 넘김 시작”이다. 직접 조작 뒤에는
+버튼을 남긴 채 비활성으로 만들고 자동 넘김 종료 이유를 문장으로 표시한다.
+자동 진행과 일시정지 중 트랙은 aria-live=off이며, 직접 넘김 뒤에만 polite가 된다.
+트랙 안의 숨긴 안내 문장이 “total개 중 n번째”로 갱신되어 자동 진행마다 낭독하지 않는다.
+
+### 23.3 reduced-motion은 스크롤에도 명시한다
+
+사용자 사전 실측에서 reduce 중에도 computed scrollBehavior=smooth였고 30ms에 12px,
+600ms에 408px로 이동했다(no-preference는 11px→408px). 전역 animation·transition 시간
+규칙은 스크롤에 적용되지 않기 때문이다. Carousel CSS의 미디어쿼리에서 트랙만
+scroll-behavior:auto로 바꾼다. 직접 키보드·터치·버튼 조작에도 적용되며 전역은 바꾸지 않는다.
+새 토큰·z-index·transform 이동은 추가하지 않는다.
+
+### 23.4 사전 측정과 검증 책임
+
+제공된 사전 측정은 408px 트랙에서 ArrowRight 두 번으로 0→2, 한 폭 scrollBy=408px,
+트랙 Tab 정지점 하나와 IntersectionObserver 0.6의 현재값 판정이다. 이번 작업에서는
+브라우저를 실행하지 않으므로 이 측정과 다른 결과가 나왔다는 주장을 하지 않는다.
+
+carousel-render-verify.mjs를 run-all에 등록한다. 한 칸씩 키보드 스냅·버튼 경계·점 이동·
+슬라이드와 내부 링크의 실제 Tab 경로·reduce computed auto·자동 진행·여섯 정지 조건·
+영구 종료·live 영역·MediaViewer 조합·콘솔 오류를 검사한다. 타이머 진행과 정지는 조건 대기로
+확인한다. 기존 브라우저 457건 하네스는 수정하지 않고 사용자의 pnpm qa에서 함께 실행한다.
+이번 작업은 새 하네스 작성과 pnpm verify(단위 포함) 실행까지 수행한다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

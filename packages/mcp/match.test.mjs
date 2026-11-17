@@ -127,3 +127,7 @@ for (const [query, expected] of [
 for (const query of ['이미지 크게 보기', '영상 보면서 작업']) test(`미디어 라우팅 1위: ${query} → MediaViewer`, () => {
   assert.equal(matchComponents(query, components)[0]?.name, 'MediaViewer');
 });
+
+test('배너 슬라이드 라우팅 1위: Carousel', () => {
+  assert.equal(matchComponents('배너 슬라이드', components)[0]?.name, 'Carousel');
+});

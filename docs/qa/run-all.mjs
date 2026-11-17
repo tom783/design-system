@@ -49,6 +49,7 @@ const HARNESSES = [
   ['multi-select-render-verify.mjs', '다중 선택·태그·키보드·IME'],
   ['collapse-render-verify.mjs', '접고 펴기·글 넘침·내용 변화'],
   ['media-viewer-render-verify.mjs', '미디어 팝업·플로팅·화면 속 화면'],
+  ['carousel-render-verify.mjs', '캐러셀·네이티브 스냅·자동 넘김 정지'],
   ['input-render-verify.mjs', '입력 타입·Textarea·Radio·Switch'],
   ['peek-render-verify.mjs', 'Peek·다녀온 행'],
   ['mcp-client-verify.mjs', 'MCP 서버'],

@@ -1,0 +1,61 @@
+@layer components {
+  .ds-carousel { min-width: 0; }
+  .ds-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    min-width: 0;
+    /* 자식 포커스 링이 스크롤 경계에 잘리지 않도록 슬라이드 안쪽에 여유를 둔다. */
+    border: var(--border-width) solid var(--border-default);
+    border-radius: var(--radius-md);
+  }
+  .ds-carousel-slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+    /* 빠른 키 입력도 중간 스냅 지점을 건너뛰지 않게 한다. */
+    scroll-snap-stop: always;
+    padding: var(--space-8);
+  }
+  .ds-carousel-controls, .ds-carousel-dots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+  }
+  .ds-carousel-controls { margin-top: var(--space-8); }
+  .ds-carousel-control, .ds-carousel-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--control-h-sm);
+    min-height: var(--control-h-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+  }
+  .ds-carousel-control { border: var(--border-width) solid var(--border-input); background: var(--bg-surface); }
+  .ds-carousel-control svg { width: var(--space-16); height: var(--space-16); }
+  .ds-carousel-control:hover, .ds-carousel-dot:hover { background: var(--bg-hover); }
+  .ds-carousel-control:disabled { color: var(--text-disabled); cursor: not-allowed; background: var(--bg-surface); }
+  .ds-carousel-dot > span {
+    width: var(--space-8);
+    height: var(--space-8);
+    border: 2px solid var(--border-input);
+    border-radius: var(--radius-full);
+  }
+  .ds-carousel-dot[aria-current="true"] > span {
+    /* 현재 점은 채움과 두 배 너비를 함께 사용한다. 흑백에서도 구별된다 (§2.4). */
+    width: var(--space-16);
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+  }
+  .ds-carousel-stopped { margin-top: var(--space-8); color: var(--text-secondary); font-size: var(--text-caption); }
+  @media (prefers-reduced-motion: reduce) {
+    /* 전역 animation/transition 규칙은 네이티브 스크롤에 적용되지 않는다. */
+    .ds-carousel-track { scroll-behavior: auto; }
+  }
+}

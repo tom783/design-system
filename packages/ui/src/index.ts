@@ -52,3 +52,4 @@ export * from './components/multi-select';
 export * from './components/collapsible';
 export * from './components/clamp-text';
 export * from './components/media-viewer';
+export * from './components/carousel';
