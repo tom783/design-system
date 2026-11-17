@@ -10,6 +10,8 @@
 
 ## 0.3.0 — 미게시
 
+- R22: 항상 보이는 트리거의 Collapsible과 넘칠 때만 더보기를 제공하는 ClampText를 추가했다. 폭·내용·폰트 변화 재측정, 입력값 forceMount 보존, 모션 줄이기와 접고 펴기 하네스를 제공한다.
+
 - R21: 요약 트리거·체크 목록의 MultiSelect와 Combobox multiple 태그 선택을 추가했다. 칩은 2줄 상한·24px 해제 타깃·roving tabindex·두 번 Backspace를 지원한다. 다중 선택 하네스를 등록했다.
 
 - R20: 매니페스트에서 의도·부모 규칙을 렌더하는 Storybook 한국어 사용 문서 5개와 이름 해소 단위 검사·문서 렌더 하네스를 추가했다.

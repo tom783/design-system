@@ -18,3 +18,5 @@
 @import "./components/label/label.css";
 @import "./components/combobox/combobox.css";
 @import "./components/multi-select/multi-select.css";
+@import "./components/collapsible/collapsible.css";
+@import "./components/clamp-text/clamp-text.css";

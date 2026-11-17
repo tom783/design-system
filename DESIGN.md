@@ -1835,6 +1835,41 @@ aria-selected는 실제 선택, data-selected와 aria-activedescendant는 활성
 
 ---
 
+## 21. 접고 펴기 — Collapsible · ClampText (R22)
+
+임의 패널·고급 설정은 Collapsible, 상품 설명·비고 등 긴 글의 줄 제한은 ClampText다.
+Collapsible의 트리거는 항상 보이고 라벨은 앱이 제공한다. 아코디언을 대신하지 않는다.
+Radix의 aria-expanded·aria-controls·data-state를 유지하고 높이 전환은
+--radix-collapsible-content-height와 기존 dur-normal·ease-standard를 쓴다.
+닫으면 Radix가 자식을 DOM에서 제거하므로 비제어 입력값과 자식 상태가 사라진다.
+보존하려면 `<CollapsibleContent forceMount>`를 쓴다. 닫힌 높이는 0·visibility:hidden으로
+입력과 DOM을 유지하면서 보조기기와 키보드에서는 제외한다. 안쪽 여백은 자식에 준다.
+
+ClampText는 기본 2줄이며 lines로 바꾼다. expanded·onExpandedChange는 제어 모드,
+생략하면 내부 상태다. moreLabel·lessLabel 기본값은 더보기·간략히다.
+잘못된 lines는 유한한 양의 정수로 보정하고 비유한 값은 기본 2로 처리한다.
+-webkit-box·vertical·line-clamp·overflow:hidden으로 시각만 자르므로 전체 글은 DOM에
+남고 복사할 수 있다. 상호작용 없는 글에 사용한다. 자식 링크·입력을 접는 용도는 Collapsible다.
+넘치지 않으면 버튼 자체를 렌더하지 않는다. 각 버튼의 aria-controls·aria-describedby는
+useId로 만든 해당 글 id를 가리켜 같은 화면의 여러 더보기를 구별한다.
+
+판정은 scrollHeight > clientHeight다. ResizeObserver는 폭 변화, MutationObserver의
+childList·characterData·subtree는 고정 높이에서 내용만 변하는 경우를 맡는다.
+두 관찰자와 document.fonts.ready가 같은 측정 함수를 호출한다. 펼친 동안에도 같은 글
+요소를 동기적으로 접어 재고 페인트 전에 복원해, 폭이 늘거나 글이 짧아진 경우를 놓치지 않는다.
+별도 복제 글을 만들지 않는다. 관찰자는 해제하고 늦게 끝난 fonts.ready는 해제 후 무시한다.
+ClampText의 줄 제한 변경은 즉시 적용하며 두 컴포넌트 모두 reduce에서 전환·애니메이션
+시간을 정확히 0으로 한다 (§5 전역 .01ms 규칙보다 우선한다). 새 토큰·z-index는 없다.
+
+열린 질문: 전역 word-break. 이번 라운드에서는 전역과 ClampText 모두 기존 줄바꿈을 유지한다.
+
+collapse-render-verify.mjs는 짧은 글의 버튼 DOM 부재, 긴 글, 240→640px 폭 변화,
+같은 폭·높이에서 내용만 길어짐, 접힘·펼침·복사 가능한 전체 DOM, 개별 ARIA 연결,
+forceMount 입력 보존·기본 제거, reduce 시간 0과 콘솔 오류를 검사한다.
+이번 작업은 하네스 작성까지만 수행한다. 기존 브라우저 404건의 실행은 사용자의 pnpm qa에 맡긴다.
+
+---
+
 ## 부록 · 명령어
 
 ```bash

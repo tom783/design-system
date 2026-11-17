@@ -4076,6 +4076,147 @@
   ],
   "components": [
     {
+      "name": "Collapsible",
+      "category": "disclosure",
+      "purpose": "고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.",
+      "useWhen": [
+        "고급 설정 접기",
+        "패널을 접고 펼칠 때"
+      ],
+      "dont": [
+        "긴 글의 줄 제한에는 ClampText를 쓴다",
+        "아코디언으로 쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "트리거 라벨은 앱이 준다. ARIA·data-state는 Radix가 소유한다. 높이는 Radix 변수로 전환하며 reduce에서는 0이다. 닫으면 자식이 제거되므로 입력값 보존은 Content forceMount를 쓴다.",
+          "source": "DESIGN.md 21"
+        }
+      ],
+      "related": [
+        "ClampText"
+      ],
+      "keywords": [
+        "접기",
+        "펼치기",
+        "아코디언 아님",
+        "고급 설정",
+        "고급 설정 접기"
+      ],
+      "parts": [
+        "CollapsibleTrigger",
+        "CollapsibleContent"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/collapsible/collapsible.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Root>"
+      ],
+      "slots": [
+        "collapsible"
+      ],
+      "import": "import { Collapsible } from '@s2life/ui';"
+    },
+    {
+      "name": "CollapsibleTrigger",
+      "partOf": "Collapsible",
+      "purpose": "항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.",
+      "kind": "component",
+      "source": "packages/ui/src/components/collapsible/collapsible.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Trigger>"
+      ],
+      "slots": [
+        "collapsible-trigger"
+      ],
+      "import": "import { CollapsibleTrigger } from '@s2life/ui';"
+    },
+    {
+      "name": "CollapsibleContent",
+      "partOf": "Collapsible",
+      "purpose": "접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.",
+      "kind": "component",
+      "source": "packages/ui/src/components/collapsible/collapsible.tsx",
+      "props": [],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Content>"
+      ],
+      "slots": [
+        "collapsible-content"
+      ],
+      "import": "import { CollapsibleContent } from '@s2life/ui';"
+    },
+    {
+      "name": "ClampText",
+      "category": "disclosure",
+      "purpose": "긴 글을 N줄로 자르고 넘칠 때만 더보기·간략히를 제공한다.",
+      "useWhen": [
+        "상품 설명·비고 등 긴 설명 더보기"
+      ],
+      "dont": [
+        "넘치지 않을 때 버튼을 렌더하지 마라",
+        "전역과 다른 줄바꿈 규칙을 넣지 마라"
+      ],
+      "rules": [
+        {
+          "text": "기본 2줄. ResizeObserver와 MutationObserver(childList·characterData·subtree), fonts.ready로 재측정한다. 펼친 상태도 접힌 치수로 판정한다. 전체 글은 DOM에 남아 복사할 수 있다. 버튼은 글 id로 controls·describedby를 연결하고 제어·비제어를 지원한다. 전환은 즉시 적용한다.",
+          "source": "DESIGN.md 21"
+        }
+      ],
+      "related": [
+        "Collapsible"
+      ],
+      "keywords": [
+        "더보기",
+        "간략히",
+        "말줄임",
+        "긴 글",
+        "긴 설명 더보기"
+      ],
+      "kind": "component",
+      "source": "packages/ui/src/components/clamp-text/clamp-text.tsx",
+      "props": [
+        {
+          "name": "lines",
+          "type": "number | undefined",
+          "required": false,
+          "doc": "접었을 때 보여줄 줄 수. 기본 2."
+        },
+        {
+          "name": "expanded",
+          "type": "boolean | undefined",
+          "required": false,
+          "doc": "제어하려면 주고, 아니면 스스로 관리한다."
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "((expanded: boolean) => void) | undefined",
+          "required": false
+        },
+        {
+          "name": "moreLabel",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "lessLabel",
+          "type": "string | undefined",
+          "required": false
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "clamp-text",
+        "clamp-text-content",
+        "clamp-text-trigger"
+      ],
+      "import": "import { ClampText } from '@s2life/ui';"
+    },
+    {
       "name": "Combobox",
       "category": "form",
       "purpose": "많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.",

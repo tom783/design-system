@@ -49,3 +49,5 @@ export * from './components/switch';
 export * from './components/label';
 export * from './components/combobox';
 export * from './components/multi-select';
+export * from './components/collapsible';
+export * from './components/clamp-text';

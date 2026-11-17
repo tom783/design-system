@@ -1,0 +1,39 @@
+@layer components {
+  .ds-collapsible-trigger {
+    min-height: var(--control-h-sm);
+    padding: var(--space-4) var(--space-8);
+    color: var(--text-link);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .ds-collapsible-trigger:hover { background: var(--bg-hover); }
+  .ds-collapsible-trigger:disabled { color: var(--text-disabled); cursor: not-allowed; }
+  .ds-collapsible-content { overflow: hidden; }
+  .ds-collapsible-content[data-state="open"] {
+    animation: ds-collapsible-open var(--dur-normal) var(--ease-standard);
+  }
+  /* forceMount도 닫힌 입력을 보이거나 포커스받게 하지 않는다. 값과 DOM은 보존한다. */
+  .ds-collapsible-content[data-state="closed"] {
+    height: 0;
+    visibility: hidden;
+    animation: ds-collapsible-close var(--dur-normal) var(--ease-standard);
+  }
+  @keyframes ds-collapsible-open {
+    from { height: 0; }
+    to { height: var(--radix-collapsible-content-height); }
+  }
+  @keyframes ds-collapsible-close {
+    from { height: var(--radix-collapsible-content-height); visibility: visible; }
+    to { height: 0; visibility: hidden; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ds-collapsible-content { animation: none; transition: none; }
+  }
+}
+
+/* 전역 base의 !important .01ms보다 구체적인 같은 레이어 규칙으로 정확히 0을 보장한다. */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    .ds-collapsible-content { animation-duration: 0s !important; transition-duration: 0s !important; }
+  }
+}

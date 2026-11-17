@@ -1,0 +1,30 @@
+@layer components {
+  .ds-clamp-text { min-width: 0; }
+  .ds-clamp-text-content[data-expanded="false"] {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .ds-clamp-text-content[data-expanded="true"] { -webkit-line-clamp: unset !important; }
+  .ds-clamp-text-trigger {
+    min-height: var(--control-h-sm);
+    margin-top: var(--space-4);
+    padding: var(--space-4) var(--space-8);
+    color: var(--text-link);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .ds-clamp-text-trigger:hover { background: var(--bg-hover); }
+  /* 줄 제한은 즉시 바꾼다. 높이 보간으로 관찰·복사 영역이 흔들리지 않게 한다. */
+  .ds-clamp-text-content, .ds-clamp-text-trigger { animation: none; transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .ds-clamp-text-content, .ds-clamp-text-trigger { animation: none; transition: none; }
+  }
+}
+
+/* 전역 base의 !important .01ms보다 구체적인 같은 레이어 규칙으로 정확히 0을 보장한다. */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    .ds-clamp-text-content, .ds-clamp-text-trigger { animation-duration: 0s !important; transition-duration: 0s !important; }
+  }
+}
