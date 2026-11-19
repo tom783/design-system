@@ -19,6 +19,16 @@
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     -webkit-font-smoothing: antialiased;
+    /* 한국어는 어절 중간에서 끊으면 읽기 어렵다 — 실측 280px 에서
+       "…성남 지점 출 / 고가 지연되고…" 처럼 "출고가" 가 쪼개졌다.
+       keep-all 만 쓰면 긴 어절이 가로로 넘치므로 overflow-wrap 이 함께 필요하다.
+       break-word 가 아니라 anywhere 인 이유는 **내재 크기** 때문이다 — 실측에서
+       긴 어절의 min-content 가 break-word 는 392px, anywhere 는 16px 였다.
+       392px 를 요구하면 표 열이 망가진다(§4 "값에 고정 너비를 주지 않는다").
+       덤으로 긴 URL 이 좁은 칸에서 넘치던 것도 함께 해결된다. */
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+
   }
   /* 숫자가 열로 정렬되는 모든 곳에서 고정폭 숫자를 쓴다.
      금액 자릿수가 흔들리면 비교가 불가능해진다. */
