@@ -10,21 +10,59 @@
 
 ## 0.3.0 — 미게시
 
-- R25: scroll-snap 기반 Carousel·CarouselSlide를 추가했다. 화살표·점·키보드 탐색과 처음·끝 비활성, 자동재생의 필수 정지 버튼·여섯 정지 조건·직접 조작 후 영구 종료를 제공한다. 컴포넌트 범위의 reduced-motion 스크롤 처리와 MediaViewer 조합 스토리·검증 하네스를 포함한다.
+도그푸딩으로 공개 API 간극을 메우고, 사람이 읽을 사용 문서를 만들고,
+요청받은 UI 요소 네 가지를 더했다. 공개 export 94개 → **102개**.
 
-- R24: 이미지·동영상을 확대 팝업 또는 비모달 플로팅으로 표시하는 MediaViewer를 추가했다. DialogContent의 기본 36rem을 유지한 wide 변형, 네이티브 동영상 컨트롤·자막·PiP, 종횡비를 예약하는 로딩·오류 상태와 브라우저 하네스를 제공한다.
+### 추가
 
-- R22: 항상 보이는 트리거의 Collapsible과 넘칠 때만 더보기를 제공하는 ClampText를 추가했다. 폭·내용·폰트 변화 재측정, 입력값 forceMount 보존, 모션 줄이기와 접고 펴기 하네스를 제공한다.
+- **MultiSelect** — 요약 트리거 + 체크 목록. 트리거 높이가 선택 수와 무관하게 일정하다.
+  Radix Select 는 `value: string | undefined` 라 다중 선택을 못 해서 새로 지었고,
+  메뉴가 아니라 `listbox` + `aria-multiselectable` 이다.
+- **Combobox `multiple`** — 태그를 컨트롤 안에. 칩 영역은 2줄까지만 늘고
+  그 뒤로는 안에서 스크롤한다(실측 38 → 68px 에서 고정). 제거 타깃 24px,
+  칩 묶음은 Tab 정지점 하나, 빈 입력 Backspace 는 두 번이다.
+- **Collapsible** — 트리거가 항상 보이는 접기. 입력을 담으면 `forceMount` 를 쓴다.
+- **ClampText** — 글을 N줄로 자르고 **넘칠 때만** 더보기를 보여준다.
+- **MediaViewer** — 이미지·동영상을 확대 팝업 또는 **비모달 플로팅**으로.
+  동영상은 네이티브 컨트롤·자막에 Picture-in-Picture 를 더했다. 플레이어를 만들지 않는다.
+- **Carousel** · **CarouselSlide** — scroll-snap 기반. Swiper 를 쓰지 않는다.
+  자동재생은 **정지 버튼과 한 몸**이고, 호버·포커스·reduced-motion·숨겨진 탭에서
+  멈추며, 사용자가 직접 넘기면 **다시 켜지지 않는다**.
+- `createDataTableColumnHelper<T>()` 와 `RowData`·`CellContext`·`HeaderContext` 공개.
+- `Button` 의 `asChild`. `DialogContent` 의 `size="wide"`.
+- Storybook **사용 문서 5개**(시작하기·컴포넌트 고르기·표·폼·토큰).
+  규칙을 손으로 베끼지 않고 매니페스트에서 렌더하므로 어긋날 수 없다.
 
-- R21: 요약 트리거·체크 목록의 MultiSelect와 Combobox multiple 태그 선택을 추가했다. 칩은 2줄 상한·24px 해제 타깃·roving tabindex·두 번 Backspace를 지원한다. 다중 선택 하네스를 등록했다.
+### 고침
 
-- R20: 매니페스트에서 의도·부모 규칙을 렌더하는 Storybook 한국어 사용 문서 5개와 이름 해소 단위 검사·문서 렌더 하네스를 추가했다.
-- G1: feature가 적용된 `createDataTableColumnHelper<T>()`와 필요한 `RowData`·`CellContext`·`HeaderContext` 타입을 공개한다. TanStack은 일반 의존성을 유지한다.
-- G2: `DataTableColumns<T>`를 유지하고 `unknown` 값 경계로 주석 시 셀 추론이 `any`로 넓어지는 문제를 고쳤다.
-- G3: `Button asChild`로 링크를 지원한다. 양쪽 아이콘·말줄임 라벨을 링크 안에 보존하며 `buttonVariants`도 유지한다.
-- G4: AlertDialog는 기존 간격 토큰으로 부모보다 좁게 표시한다. 중첩 폭 실측 회귀 검사를 추가했다.
-- G5: Select의 `w-full` 기본값을 유지하고 툴바 필터 폭 지정 스토리·문서를 추가했다.
-- 배포 리허설에 TanStack 직접 의존성 없는 격리 설치와 strict 소비자 타입 픽스처를 추가했다.
+- **DataTable 을 clean install 로 쓸 수 없었다.** 컬럼을 만들 헬퍼를 내보내지 않아
+  `@tanstack/react-table` 을 직접 설치해야 했고, 그건 npm 평탄화 덕에 우연히 해소된
+  것이라 pnpm 엄격 모드에서는 깨졌다.
+- **`DataTableColumns<T>` 로 주석하면 셀 추론이 `any` 로 넓어졌다.** 주석하라고
+  내보낸 타입인데 쓰면 더 나빠졌다.
+- 중첩 확인창이 부모 다이얼로그를 반으로 잘랐다 — §16.3 이 권장한 패턴이었다.
+  확인창을 좁혔다(부모 576px · 확인창 448px).
+- MediaViewer 플로팅 폭이 `100vw` 기준이라 스크롤바 때문에 좌우가 어긋났다.
+- `scroll-behavior: smooth` 가 reduced-motion 을 존중하지 않는 것을 컴포넌트에서 덮었다.
+- `resolveHeadlessShell` 이 GUI 번들 거부보다 존재 확인을 먼저 해, 그 규칙을 지키는
+  테스트가 macOS 에서만 통과했다.
+
+### 바뀐 동작
+
+- **한국어 줄바꿈이 어절 단위가 됐다**(`word-break: keep-all` + `overflow-wrap: anywhere`).
+  모든 화면의 줄바꿈 위치가 바뀐다. 긴 URL 이 좁은 칸에서 넘치던 것도 함께 고쳐졌다.
+- `pnpm verify` 가 단위 테스트를 포함한다.
+
+### MCP
+
+- 파생 가능한 것을 저장하지 않는다 — `import`·`source` 접두사·`kind` 기본값·
+  `required: false`·타입의 `| undefined`. `components` 77,804 → 64,011 바이트.
+  **응답은 한 글자도 달라지지 않는다**(기준선 깊은 비교로 보장).
+- `which_component` 후보에서 복합 부품을 제외했다.
+
+### 검증
+
+단위 **253건** · 브라우저 **486건** · 하네스 19개.
 
 ## 0.2.0 — 2026-11-16
 
