@@ -37,6 +37,10 @@ await save(join(consumer, 'package.json'), {
     ['react', rootPkg.dependencies.react], ['react-dom', rootPkg.dependencies['react-dom']],
   ])),
   devDependencies: Object.fromEntries(['vite', 'typescript', '@types/react', '@types/react-dom'].map((name) => [name, rootPkg.devDependencies[name]])),
+  // ui 가 의존하는 @s2life/tokens 는 소비자의 직접 의존과 **따로** 해소된다.
+  // 격리 설치에서는 레지스트리를 보므로 아직 게시되지 않은 버전(배포 준비 중)에서
+  // 리허설이 깨진다 — 정작 가장 필요한 순간이다. 트리 전체를 로컬 tarball 로 묶는다.
+  pnpm: { overrides: Object.fromEntries(packages.map((pkg, i) => [pkg.name, `file:${tarballs[i]}`])) },
 });
 await copyFile(new URL('./pack-consumer/main.tsx', import.meta.url), join(consumer, 'main.tsx'));
 await copyFile(new URL('./pack-consumer/public-api.tsx', import.meta.url), join(consumer, 'public-api.tsx'));
