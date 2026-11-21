@@ -1,7 +1,7 @@
 // 파서가 알 수 없는 선택 의도만 소유한다. 이름·props·slots·출처는 mcp-build가 소스와 대조한다.
 const rule = (text, section) => ({ text, source: `DESIGN.md ${section}` });
 const entry = (name, category, purpose, useWhen, dont, section, text, props, slots, related, keywords) => ({
-  name, category, purpose, useWhen, dont, rules: [rule(text, section)], props, slots, related, keywords,
+  name, category, purpose, useWhen, dont, rules: (Array.isArray(text) ? text : [text]).map(item => typeof item === 'string' ? rule(item, section) : item), props, slots, related, keywords,
 });
 // 부품 관계는 이름이 아니라 각 선언의 부모 인자로 정한다. 로딩 프리셋은 독립 항목이다.
 const part = (name, partOf, purpose, props, slots) => ({ name, partOf, purpose, props, slots });
@@ -28,125 +28,226 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
-  entry('Carousel','media','배너·콘텐츠 슬라이드를 네이티브 가로 스크롤과 scroll-snap으로 넘긴다.',['배너 슬라이드','콘텐츠를 한 장씩 가로로 넘길 때'],['Swiper·Embla·transform 이동·기본 순환을 추가하지 마라','자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라'],'23','트랙은 이름 있는 캐러셀 group과 tabindex=0, 슬라이드는 순번·전체 개수의 group이다. 현재값은 IntersectionObserver threshold=0.6으로만 읽는다. 이전·다음은 한 폭 scrollBy하며 처음·끝에서 비활성이다. 점은 scrollTo·aria-current와 크기 차이를 쓴다. autoplay는 정지 버튼을 항상 동반한다. 버튼·호버·내부 포커스·reduce·document.hidden·사용자 직접 넘김에서 멈춘다. 호버·포커스·숨김은 해제 후 재개하지만 직접 넘김은 영구 종료한다. 자동 넘김은 aria-live=off, 직접 넘김 뒤 polite로 순번을 알린다. reduce는 시작하지 않고 변경을 구독하며 컴포넌트 CSS에서 scroll-behavior:auto를 지정한다.',['label','children','autoplay','showArrows','showDots'],['carousel','carousel-track','carousel-controls','carousel-previous','carousel-next','carousel-dots','carousel-dot','carousel-pause','carousel-announcement','carousel-stopped'],['MediaViewer'],['캐러셀','배너','슬라이드','슬라이더','자동 넘김','가로 스크롤','배너 슬라이드']),
-  part('CarouselSlide','Carousel','슬라이드 부품. 직접 자식으로 배치하며 순번·전체 개수는 부모가 제공한다. 자체 Tab 정지점은 추가하지 않으며 내부 링크는 네이티브 Tab 경로에 남는다.',[],['carousel-slide']),
-  entry('MediaViewer','media','이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',['이미지 크게 보기','영상 보면서 작업','이미지나 영상을 확대해서 볼 때'],['커스텀 플레이어·자동 재생을 만들지 마라','pan·zoom·끌어서 옮기기는 현재 범위가 아니다'],'22','popup은 DialogContent wide, floating은 manual popover로 바깥 입력·스크롤을 유지한다. 닫기 버튼과 패널 안 Escape를 제공한다. 이미지는 alt 필수·종횡비 보존, 로딩 Skeleton과 오류 ErrorState는 같은 예약 상자를 쓴다. 동영상은 controls·preload=metadata·자막 track을 쓰며 poster를 권장한다. PiP는 기능 탐지·disablePictureInPicture를 존중하고 실제 클릭으로 열고 해제한다.',['media','open','onOpenChange','mode','placement','title'],['media-viewer','media-viewer-stage','media-viewer-image','media-viewer-video','media-viewer-pip','media-viewer-close'],['Dialog','Thumbnail','Skeleton','ErrorState'],['이미지 확대','라이트박스','사진 크게','동영상 재생','영상 팝업','떠 있는 창','화면 속 화면','PiP','이미지 크게 보기','영상 보면서 작업']),
-  entry('Collapsible','disclosure','고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.',['고급 설정 접기','패널을 접고 펼칠 때'],['긴 글의 줄 제한에는 ClampText를 쓴다','아코디언으로 쓰지 마라'],'21','트리거 라벨은 앱이 준다. ARIA·data-state는 Radix가 소유한다. 높이는 Radix 변수로 전환하며 reduce에서는 0이다. 닫으면 자식이 제거되므로 입력값 보존은 Content forceMount를 쓴다.',['open','defaultOpen','onOpenChange','disabled'],['collapsible'],['ClampText'],['접기','펼치기','아코디언 아님','고급 설정','고급 설정 접기']),
-  part('CollapsibleTrigger','Collapsible','항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.',['asChild'],['collapsible-trigger']),
-  part('CollapsibleContent','Collapsible','접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.',['forceMount'],['collapsible-content']),
-  entry('ClampText','disclosure','긴 글을 N줄로 자르고 넘칠 때만 더보기·간략히를 제공한다.',['상품 설명·비고 등 긴 설명 더보기'],['넘치지 않을 때 버튼을 렌더하지 마라','전역과 다른 줄바꿈 규칙을 넣지 마라','DataTable 셀에 쓰지 마라. 셀이 말줄임과 전체 값 title 을 이미 제공한다'],'21','기본 2줄. ResizeObserver와 MutationObserver(childList·characterData·subtree), fonts.ready로 재측정한다. 펼친 상태도 접힌 치수로 판정한다. 전체 글은 DOM에 남아 복사할 수 있다. 버튼은 글 id로 controls·describedby를 연결하고 제어·비제어를 지원한다. 전환은 즉시 적용한다.',['lines','expanded','onExpandedChange','moreLabel','lessLabel'],['clamp-text','clamp-text-content','clamp-text-trigger'],['Collapsible'],['더보기','간략히','말줄임','긴 글','긴 설명 더보기']),
-  entry('Combobox','form','많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.',['20개를 넘는 후보에서 타이핑으로 찾을 때','초성으로 찾기','검색해서 여러 개 고르기'],['조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지','가상 스크롤은 제공하지 않는다'],'18','shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 단일 모드 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.',['multiple','options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','MultiSelect','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택','검색해서 여러 개 고르기','태그 선택']),
-  entry('MultiSelect','form','요약 트리거와 체크 목록으로 여러 사업장을 고른다.',['여러 사업장 고르기','검색 없이 여러 개 선택할 때'],['검색은 Combobox multiple을 쓴다','고를 때 닫거나 data-form-control=advance를 붙이지 마라'],'20','트리거 높이는 control-h-md로 고정하고 요약을 말줄임·title로 보존한다. 목록은 listbox·aria-multiselectable, option·aria-selected와 체크 아이콘을 쓴다. 화살표·Home/End는 aria-activedescendant를 옮기고 Space/Enter는 토글한다. Escape로 닫고 트리거로 복귀한다. 전체 해제와 선택 개수를 제공한다.',['options','value','onValueChange','placeholder','summary','clearLabel','disabled','invalid','required','maxHeight'],['multi-select-trigger','multi-select-list','multi-select-option','multi-select-footer'],['Select','Combobox','Field'],['다중 선택','여러 개 선택','복수 선택','태그 선택','체크 목록','여러 사업장 고르기']),
-  entry("Tabs","navigation","상세 정보를 탭으로 나누기 위한 루트다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라"],"16","automatic 기본값을 유지하고 서버 패널은 manual을 명시한다. 가로 스크롤과 선택 탭 끌어오기, reduced-motion을 지원한다. 줄바꿈하거나 스크롤바를 숨기지 않는다. 선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도 outline이다. 패널의 aria-labelledby와 tabindex를 유지한다.",["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent"],["탭", "탭으로 나누기", "분류별 패널"]),
+  entry('Carousel','media',"배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",['배너 슬라이드','콘텐츠를 한 장씩 가로로 넘길 때'],["Swiper·Embla 같은 캐러셀 라이브러리를 함께 쓰지 마라", "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"],'23',[
+    rule("슬라이드는 CarouselSlide로 감싼다.", "23.1"),
+    rule("양 끝에서는 멈춘다. 앱이 순환 이동을 덧붙이지 않는다.", "23.1"),
+    rule("autoplay의 정지 버튼은 내장되어 있다. 따로 만들지 않는다.", "23.2"),
+    rule("사용자가 직접 넘기거나 슬라이드 안을 누르면 자동재생이 종료된다. 앱이 재시작하지 않는다.", "23.2"),
+    rule("호버·내부 포커스·숨겨진 탭의 일시 정지는 내장되어 있다. 별도 타이머를 만들지 않는다.", "23.2"),
+    rule("동작 줄이기 설정이 끈 자동재생·부드러운 넘김을 앱이 다시 켜지 않는다.", "23.3")
+  ],['label','children','autoplay','showArrows','showDots'],['carousel','carousel-track','carousel-controls','carousel-previous','carousel-next','carousel-dots','carousel-dot','carousel-pause','carousel-announcement','carousel-stopped'],['MediaViewer'],['캐러셀','배너','슬라이드','슬라이더','자동 넘김','가로 스크롤','배너 슬라이드']),
+  part('CarouselSlide','Carousel','캐러셀 안의 콘텐츠 한 장을 표시한다.',[],['carousel-slide']),
+  entry('MediaViewer','media','이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',['이미지 크게 보기','영상 보면서 작업','이미지나 영상을 확대해서 볼 때'],["영상 재생 컨트롤을 따로 만들거나 자동 재생을 붙이지 마라", "pan·zoom·끌어서 옮기기가 필요하면 다른 도구를 쓴다"],'22',[
+    rule("영상을 보며 바깥 화면에서 작업해야 하면 mode=floating을 쓴다.", "22.1"),
+    rule("닫기 버튼·패널 안 Escape 닫기를 중복 구현하지 않는다.", "22.1"),
+    rule("이미지에는 내용을 설명하는 alt를 준다.", "22.2"),
+    rule("영상에 poster·captions를 제공하고 내장 재생 컨트롤을 쓴다.", "22.2"),
+    rule("PiP를 금지할 영상에는 disablePictureInPicture를 준다.", "22.3")
+  ],['media','open','onOpenChange','mode','placement','title'],['media-viewer','media-viewer-stage','media-viewer-image','media-viewer-video','media-viewer-pip','media-viewer-close'],['Dialog','Thumbnail','Skeleton','ErrorState'],['이미지 확대','라이트박스','사진 크게','동영상 재생','영상 팝업','떠 있는 창','화면 속 화면','PiP','이미지 크게 보기','영상 보면서 작업']),
+  entry('Collapsible','disclosure',"고급 설정 같은 내용을 항상 보이는 버튼으로 접고 펼친다.",['고급 설정 접기','패널을 접고 펼칠 때'],['긴 글의 줄 제한에는 ClampText를 쓴다','아코디언으로 쓰지 마라'],'21',[
+    "트리거 라벨은 앱이 제공한다.",
+    "닫힌 입력값·자식 상태를 보존하려면 CollapsibleContent에 forceMount를 준다."
+  ],['open','defaultOpen','onOpenChange','disabled'],['collapsible'],['ClampText'],['접기','펼치기','아코디언 아님','고급 설정','고급 설정 접기']),
+  part('CollapsibleTrigger','Collapsible',"항상 보이는 버튼으로 내용을 접고 펼친다.",['asChild'],['collapsible-trigger']),
+  part('CollapsibleContent','Collapsible',"접고 펼칠 내용을 담는다.",['forceMount'],['collapsible-content']),
+  entry('ClampText','disclosure','긴 글을 N줄로 자르고 넘칠 때만 더보기·간략히를 제공한다.',['상품 설명·비고 등 긴 설명 더보기'],["링크·입력 등 조작할 요소를 접을 때는 Collapsible을 쓴다", "DataTable 셀에 쓰지 마라. 셀이 말줄임과 전체 값 title 을 이미 제공한다"],'21',[
+    "넘칠 때만 생기는 더보기 버튼을 중복 구현하지 않는다.",
+    "전체 글은 DOM에 남아 복사된다. 복사용 글을 따로 만들지 않는다.",
+    "펼침을 제어하려면 expanded·onExpandedChange를 함께 준다."
+  ],['lines','expanded','onExpandedChange','moreLabel','lessLabel'],['clamp-text','clamp-text-content','clamp-text-trigger'],['Collapsible'],['더보기','간략히','말줄임','긴 글','긴 설명 더보기']),
+  entry('Combobox','form','많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.',['20개를 넘는 후보에서 타이핑으로 찾을 때','초성으로 찾기','검색해서 여러 개 고르기'],["한글 조합 중 값을 바꾸거나 선택·포커스 이동을 추가하지 마라", "가상 스크롤이 필요하면 다른 도구를 쓴다"],'18',[
+    rule("기본 초성·자모 검색을 바꾸려면 filter를 준다.", "18.2"),
+    rule("조합 중 결과 없음은 내장 처리된다. 앱이 빈 결과를 따로 표시하지 않는다.", "18.2"),
+    rule("500개 초과 후보는 앱 서버에서 거른다.", "18.1"),
+    rule("multiple에는 value와 onValueChange로 string[]을 주고받는다.", "20.2"),
+    rule("태그는 2줄 뒤 내부 스크롤한다. 앱이 선택 수마다 높이를 늘리지 않는다.", "20.2"),
+    rule("빈 입력 Backspace는 두 번 눌러 태그를 지운다. 앱이 즉시 삭제를 덧붙이지 않는다.", "20.2"),
+    rule("multiple은 선택 뒤에도 머문다. 앱이 닫거나 다음 칸으로 보내지 않는다.", "20.2"),
+    rule("검색 없이 여러 개를 고를 때는 MultiSelect를 쓴다.", "20.1"),
+    rule("FormFlow 안 단일 선택은 고르면 다음 칸으로 간다. 별도 포커스 이동을 붙이지 않는다.", "11.5"),
+    rule("트리거에 data-form-control=advance를 붙이지 않는다.", "11.5"),
+    rule("폼 밖 선택·Escape는 트리거로 돌아간다. 포커스를 다시 옮기지 않는다.", "11.5")
+  ],['multiple','options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','MultiSelect','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택','검색해서 여러 개 고르기','태그 선택']),
+  entry('MultiSelect','form',"요약 트리거와 체크 목록으로 여러 값을 고른다.",['여러 사업장 고르기','검색 없이 여러 개 선택할 때'],['검색은 Combobox multiple을 쓴다','고를 때 닫거나 data-form-control=advance를 붙이지 마라'],'20',[
+    rule("선택 수가 늘어도 트리거 높이는 같다. 태그가 필요하면 Combobox multiple을 쓴다.", "20.1"),
+    rule("선택 뒤에도 머문다. 앱이 닫거나 다음 입력으로 보내지 않는다.", "20.1"),
+    rule("전체 해제·선택 개수를 중복 구현하지 않는다.", "20.1")
+  ],['options','value','onValueChange','placeholder','summary','clearLabel','disabled','invalid','required','maxHeight'],['multi-select-trigger','multi-select-list','multi-select-option','multi-select-footer'],['Select','Combobox','Field'],['다중 선택','여러 개 선택','복수 선택','태그 선택','체크 목록','여러 사업장 고르기']),
+  entry("Tabs","navigation","상세 정보를 탭별 패널로 나눠 보여준다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라"],"16",[
+    rule("서버 데이터를 조회하는 패널에는 activationMode=manual을 준다.", "16.1"),
+    rule("넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.", "16.1")
+  ],["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent"],["탭", "탭으로 나누기", "분류별 패널"]),
   part("TabsList", "Tabs", "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.", ["aria-label"], ["tabs-list"]),
   part("TabsTrigger", "Tabs", "패널을 선택하는 탭 버튼이다.", ["value", "disabled"], ["tabs-trigger"]),
   part("TabsContent", "Tabs", "선택한 상세 패널을 표시한다.", ["value"], ["tabs-content"]),
-  entry("Breadcrumb","navigation","목록으로 돌아가는 경로를 빵부스러기로 표현한다.",["상세에서 상위 목록과 뒤로 가는 경로가 필요할 때"],["컴포넌트에 라우팅이나 복원 로직을 넣지 마라"],"16","nav와 ol로 표현한다. 마지막은 aria-current page, separator는 presentation·aria-hidden이다. 긴 경로는 첫 항목·생략·마지막 두 항목이며 생략 수를 알린다. 앱이 consume으로 필터·스크롤·재방문 행을 복원한다.",["aria-label"],["breadcrumb"],["BreadcrumbList", "BreadcrumbPage"],["경로", "빵부스러기", "뒤로", "목록으로 돌아가는 경로"]),
+  entry("Breadcrumb","navigation","목록으로 돌아가는 경로를 빵부스러기로 표현한다.",["상세에서 상위 목록과 뒤로 가는 경로가 필요할 때"],["필터·스크롤 복원이 자동으로 된다고 가정하지 마라"],"16",[
+    rule("마지막 항목에는 링크 대신 BreadcrumbPage를 쓴다.", "16.2"),
+    rule("긴 경로는 첫 항목·BreadcrumbEllipsis·마지막 둘로 조립한다.", "16.2"),
+    rule("앱이 consume으로 기록을 읽고 필터·스크롤·재방문 행을 복원한다.", "16.2")
+  ],["aria-label"],["breadcrumb"],["BreadcrumbList", "BreadcrumbPage"],["경로", "빵부스러기", "뒤로", "목록으로 돌아가는 경로"]),
   part("BreadcrumbList", "Breadcrumb", "경로 항목의 순서 목록이다.", [], ["breadcrumb-list"]),
   part("BreadcrumbItem", "Breadcrumb", "경로의 개별 항목이다.", [], ["breadcrumb-item"]),
   part("BreadcrumbLink", "Breadcrumb", "라우터를 지정하지 않는 상위 경로 링크다.", ["asChild", "href"], ["breadcrumb-link"]),
   part("BreadcrumbPage", "Breadcrumb", "링크가 아닌 현재 경로 항목이다.", ["aria-current"], ["breadcrumb-page"]),
   part("BreadcrumbSeparator", "Breadcrumb", "보조기기가 읽지 않는 경로 구분자다.", [], ["breadcrumb-separator"]),
   part("BreadcrumbEllipsis", "Breadcrumb", "접힌 경로 수를 읽을 수 있는 생략 표시다.", ["count"], ["breadcrumb-ellipsis"]),
-  entry("Dialog","overlay","입력·편집·선택 모달을 여는 루트다.",["되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"],["삭제 확인에는 AlertDialog를 사용한다"],"16","제목 → 설명 → 내용 → 푸터 순서이며 초기 포커스는 첫 포커스 가능 요소다. 파괴적 버튼을 첫 요소로 두지 않는다. 저장하지 않은 변경이 있을 때 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Escape를 무반응으로 삼키지 않는다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",["open", "onOpenChange"],[],["DialogContent", "AlertDialog"],["모달", "모달 띄우기", "다이얼로그", "팝업", "편집"]),
+  entry("Dialog","overlay","입력·편집·선택을 모달로 제공한다.",["되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"],["삭제 확인에는 AlertDialog를 사용한다"],"16",[
+    rule("DialogTitle·DialogDescription → 내용 → 푸터 순서로 배치한다.", "16.3"),
+    rule("설명이 없으면 Content에 aria-describedby={undefined}를 준다.", "16.3"),
+    rule("첫 요소로 포커스가 가므로 파괴적 버튼을 맨 앞에 두지 않는다.", "16.3"),
+    rule("저장하지 않은 변경에는 dismissible=false·onDismissAttempt로 확인 AlertDialog를 연다. Escape도 확인을 거친다.", "16.3")
+  ],["open", "onOpenChange"],[],["DialogContent", "AlertDialog"],["모달", "모달 띄우기", "다이얼로그", "팝업", "편집"]),
   part("DialogTrigger", "Dialog", "입력 창을 여는 트리거다.", ["asChild"], ["dialog-trigger"]),
-  part("DialogContent", "Dialog", "입력 창의 포털과 닫기 보호다.", ["size", "dismissible", "onDismissAttempt", "onEscapeKeyDown", "onPointerDownOutside", "onInteractOutside"], ["dialog-content", "dialog-overlay"]),
+  part("DialogContent", "Dialog", "입력 창의 내용과 닫기 보호를 제공한다.", ["size", "dismissible", "onDismissAttempt", "onEscapeKeyDown", "onPointerDownOutside", "onInteractOutside"], ["dialog-content", "dialog-overlay"]),
   part("DialogHeader", "Dialog", "입력 창 제목·설명 그룹이다.", [], ["dialog-header"]),
   part("DialogTitle", "Dialog", "입력 창의 필수 제목이다.", [], ["dialog-title"]),
   part("DialogDescription", "Dialog", "입력 창의 필수 설명이다.", [], ["dialog-description"]),
   part("DialogFooter", "Dialog", "입력 창 하단의 액션 그룹이다.", [], ["dialog-footer"]),
-  part("DialogClose", "Dialog", "닫기 보호 중에도 동작하는 명시적 닫기다.", ["asChild"], ["dialog-close"]),
-  entry("AlertDialog","overlay","삭제 확인 등 되돌릴 수 없는 선택을 요구하는 확인창이다.",["영구 삭제·작성 취소 확인이 필요할 때"],["폼을 넣지 마라. 입력은 Dialog다", "Cancel을 생략하지 마라"],"16","Cancel 초기 포커스, 바깥 클릭 유지, Escape 닫기는 Radix 기본값을 유지한다. danger 액션은 기존 Button 토큰을 재사용한다.",["open", "onOpenChange"],[],["AlertDialogContent", "AlertDialogCancel", "Dialog"],["확인창", "삭제 확인", "되돌릴 수 없", "취소 확인"]),
+  part("DialogClose", "Dialog", "입력 창을 닫는 버튼을 제공한다.", ["asChild"], ["dialog-close"]),
+  entry("AlertDialog","overlay","삭제 확인 등 되돌릴 수 없는 선택을 요구하는 확인창이다.",["영구 삭제·작성 취소 확인이 필요할 때"],["폼을 넣지 마라. 입력은 Dialog다", "Cancel을 생략하지 마라"],"16",[
+    rule("Cancel이 초기 포커스를 받는다. 앱이 파괴적 액션으로 옮기지 않는다.", "16.4"),
+    rule("바깥 클릭은 유지, Escape는 닫기다. 앱이 덮어쓰지 않는다.", "16.4")
+  ],["open", "onOpenChange"],[],["AlertDialogContent", "AlertDialogCancel", "Dialog"],["확인창", "삭제 확인", "되돌릴 수 없", "취소 확인"]),
   part("AlertDialogTrigger", "AlertDialog", "확인 창을 여는 트리거다.", ["asChild"], ["alert-dialog-trigger"]),
-  part("AlertDialogContent", "AlertDialog", "파괴적 선택 확인의 포털이다.", [], ["alert-dialog-content", "alert-dialog-overlay"]),
+  part("AlertDialogContent", "AlertDialog", "되돌릴 수 없는 선택을 확인하는 내용을 표시한다.", [], ["alert-dialog-content", "alert-dialog-overlay"]),
   part("AlertDialogHeader", "AlertDialog", "확인 제목·설명 그룹이다.", [], ["alert-dialog-header"]),
   part("AlertDialogTitle", "AlertDialog", "확인 창의 필수 제목이다.", [], ["alert-dialog-title"]),
   part("AlertDialogDescription", "AlertDialog", "되돌릴 수 없는 결과의 설명이다.", [], ["alert-dialog-description"]),
   part("AlertDialogFooter", "AlertDialog", "확인·취소 액션 그룹이다.", [], ["alert-dialog-footer"]),
-  part("AlertDialogAction", "AlertDialog", "확정 동작과 기존 danger 변형이다.", ["variant"], ["alert-dialog-action"]),
+  part("AlertDialogAction", "AlertDialog", "확인한 작업을 실행하고 확인창을 닫는다.", ["variant"], ["alert-dialog-action"]),
   part("AlertDialogCancel", "AlertDialog", "초기 포커스를 받는 필수 취소 버튼이다.", [], ["alert-dialog-cancel"]),
   ...[
-    ['Select', '상태·정렬 필터의 단일 선택 루트', [], null],
-    ['SelectTrigger', '선택 필터를 여는 38px 버튼', ['select-trigger'], 'Select'],
-    ['SelectValue', '선택값 또는 플레이스홀더', ['select-value'], 'Select'],
-    ['SelectContent', '포털의 선택 목록', ['select-content'], 'Select'],
-    ['SelectGroup', '선택 항목 그룹', ['select-group'], 'Select'],
-    ['SelectLabel', '선택 그룹 레이블', ['select-label'], 'Select'],
-    ['SelectItem', '단일 선택 옵션', ['select-item'], 'Select'],
-    ['SelectSeparator', '선택 그룹 구분선', ['select-separator'], 'Select'],
-    ['SelectScrollUpButton', '목록 위로 스크롤', ['select-scroll-up-button'], 'Select'],
-    ['SelectScrollDownButton', '목록 아래로 스크롤', ['select-scroll-down-button'], 'Select'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
+    ['Select', '상태·정렬 필터에서 하나를 고른다.', [], null],
+    ['SelectTrigger', "선택 목록을 연다.", ['select-trigger'], 'Select'],
+    ['SelectValue', "선택값이나 플레이스홀더를 표시한다.", ['select-value'], 'Select'],
+    ['SelectContent', '선택할 옵션 목록을 표시한다.', ['select-content'], 'Select'],
+    ['SelectGroup', "관련 선택 항목을 묶는다.", ['select-group'], 'Select'],
+    ['SelectLabel', "선택 그룹의 이름을 표시한다.", ['select-label'], 'Select'],
+    ['SelectItem', "선택 옵션 하나를 표시한다.", ['select-item'], 'Select'],
+    ['SelectSeparator', "선택 그룹을 구분한다.", ['select-separator'], 'Select'],
+    ['SelectScrollUpButton', "선택 목록을 위로 넘긴다.", ['select-scroll-up-button'], 'Select'],
+    ['SelectScrollDownButton', "선택 목록을 아래로 넘긴다.", ['select-scroll-down-button'], 'Select'],
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다.', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
   ...[
-    ['DropdownMenu', '행 액션 메뉴 루트', [], null],
-    ['DropdownMenuTrigger', '행 액션 열기', ['dropdown-menu-trigger'], 'DropdownMenu'],
-    ['DropdownMenuContent', '포털 액션 목록', ['dropdown-menu-content'], 'DropdownMenu'],
-    ['DropdownMenuItem', '액션 실행 항목', ['dropdown-menu-item'], 'DropdownMenu'],
-    ['DropdownMenuCheckboxItem', '체크형 메뉴 항목', ['dropdown-menu-checkbox-item'], 'DropdownMenu'],
-    ['DropdownMenuRadioItem', '라디오형 메뉴 항목', ['dropdown-menu-radio-item'], 'DropdownMenu'],
-    ['DropdownMenuLabel', '메뉴 그룹 이름', ['dropdown-menu-label'], 'DropdownMenu'],
-    ['DropdownMenuSeparator', '메뉴 구분선', ['dropdown-menu-separator'], 'DropdownMenu'],
-    ['DropdownMenuShortcut', '메뉴 단축키 표시', ['dropdown-menu-shortcut'], 'DropdownMenu'],
-    ['DropdownMenuGroup', '메뉴 항목 그룹', [], 'DropdownMenu'],
-    ['DropdownMenuPortal', '메뉴 포털', [], 'DropdownMenu'],
-    ['DropdownMenuSub', '하위 메뉴 루트', [], 'DropdownMenu'],
-    ['DropdownMenuSubContent', '하위 메뉴 목록', ['dropdown-menu-sub-content'], 'DropdownMenu'],
-    ['DropdownMenuSubTrigger', '하위 메뉴 열기', ['dropdown-menu-sub-trigger'], 'DropdownMenu'],
-    ['DropdownMenuRadioGroup', '라디오 메뉴 그룹', [], 'DropdownMenu'],
+    ['DropdownMenu', "행에서 실행할 액션을 메뉴로 제공한다.", [], null],
+    ['DropdownMenuTrigger', "행 액션 메뉴를 연다.", ['dropdown-menu-trigger'], 'DropdownMenu'],
+    ['DropdownMenuContent', '실행할 액션 목록을 표시한다.', ['dropdown-menu-content'], 'DropdownMenu'],
+    ['DropdownMenuItem', "메뉴 액션 하나를 실행한다.", ['dropdown-menu-item'], 'DropdownMenu'],
+    ['DropdownMenuCheckboxItem', "메뉴에서 켜고 끌 항목을 표시한다.", ['dropdown-menu-checkbox-item'], 'DropdownMenu'],
+    ['DropdownMenuRadioItem', "메뉴에서 하나만 고를 항목을 표시한다.", ['dropdown-menu-radio-item'], 'DropdownMenu'],
+    ['DropdownMenuLabel', "메뉴 그룹 이름을 표시한다.", ['dropdown-menu-label'], 'DropdownMenu'],
+    ['DropdownMenuSeparator', "메뉴 그룹을 구분한다.", ['dropdown-menu-separator'], 'DropdownMenu'],
+    ['DropdownMenuShortcut', "메뉴의 단축키를 표시한다.", ['dropdown-menu-shortcut'], 'DropdownMenu'],
+    ['DropdownMenuGroup', "관련 메뉴 항목을 묶는다.", [], 'DropdownMenu'],
+    ['DropdownMenuPortal', '메뉴를 다른 화면 요소 위에 표시한다.', [], 'DropdownMenu'],
+    ['DropdownMenuSub', "하위 메뉴를 제공한다.", [], 'DropdownMenu'],
+    ['DropdownMenuSubContent', "하위 메뉴 목록을 표시한다.", ['dropdown-menu-sub-content'], 'DropdownMenu'],
+    ['DropdownMenuSubTrigger', "하위 메뉴를 연다.", ['dropdown-menu-sub-trigger'], 'DropdownMenu'],
+    ['DropdownMenuRadioGroup', "메뉴에서 하나만 고를 항목을 묶는다.", [], 'DropdownMenu'],
   ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', 'destructive 항목에는 삭제 아이콘을 함께 표시한다.', [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션'])),
-  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5', '명시적 테마와 OS 설정을 구독하고 오류는 닫기까지 유지한다.', [], ['toaster'], ['Button'], ['토스트', '저장 알림']),
-  entry('DatePicker', 'form', '한국어 단일 날짜·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1', '초안과 확정값을 분리하고 blur 또는 Enter에서 검증한다.', ['mode', 'value', 'onChange', 'today', 'defaultMonth'], ['date-picker', 'date-picker-error', 'date-picker-presets'], ['Field'], ['날짜', '기간 필터', '달력']),
+  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼을 누를 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림']),
+  entry('DatePicker', 'form', '한국어 단일 날짜·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1',[
+    "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다."
+  ], ['mode', 'value', 'onChange', 'today', 'defaultMonth'], ['date-picker', 'date-picker-error', 'date-picker-presets'], ['Field'], ['날짜', '기간 필터', '달력']),
 
-  entry('Button','action','명시적인 사용자 동작을 실행한다.',['저장·취소·삭제 버튼이 필요할 때'],['primary를 여러 개 쓰지 마라','아이콘 전용 버튼의 aria-label을 빼지 마라'],'6','danger는 되돌릴 수 없는 작업에만 쓴다. asChild는 단일 링크에 스타일을 합치며 양쪽 아이콘도 링크 안에 보존한다.',['variant','size','iconOnly','asChild','leadingIcon','trailingIcon'],['button'],['Input'],['버튼','저장','삭제','액션']),
-  entry('Input','form','단일 값·비밀번호·검색어를 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['금액·수량에 type=number를 쓰지 마라','네이티브 검증 메시지에 의존하지 마라','오류를 색만으로 표시하지 마라'],'17','금액·수량은 type=text inputMode=numeric과 numeric 고정폭 숫자를 쓴다. number는 휠 시 blur로 값 변경을 피하고 페이지 스크롤을 보존한다. password는 보기 토글, search는 자체 지우기와 입력 포커스 복귀를 제공한다. date는 UTC·치수·영어 검증 때문에 비권장이다. border-field 경계선과 Field의 한국어 오류를 쓴다.',['invalid','numeric','type','inputMode'],['input','input-control','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
-  entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],['IME 조합 중 높이 변경을 막지 마라','autoGrow가 꺼진 입력의 resize를 막지 마라'],'17','rows 기본 3. autoGrow는 scrollHeight로 높이를 계산하고 maxHeight(기본 240px)에서 스크롤한다. FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다.',['rows','autoGrow','maxHeight','invalid'],['textarea'],['Field','FormFlow','Input'],['여러 줄','메모','비고','긴 글']),
-  entry('RadioGroup','form','여러 선택지 중 하나만 선택한다.',['여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때'],['화살표에 포커스만 이동하는 모드를 넣지 마라','레이블 없이 점만 클릭하게 하지 마라'],'17','Radix 기본 화살표는 포커스와 선택을 함께 옮기고 끝에서 순환한다. 점과 테두리 변화로 선택을 표시하고 Label htmlFor로 각 항목을 연결한다.',['value','defaultValue','onValueChange','disabled'],['radio-group'],['RadioGroupItem','Label'],['라디오','하나만 선택','택일']),
-  part('RadioGroupItem','RadioGroup','하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.',['value','disabled'],['radio-group-item','radio-group-indicator']),
-  entry('Switch','form','켜기 끄기 설정을 즉시 적용한다.',['알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때'],['주문 저장 대기 값에 Switch를 쓰지 마라','제출할 때 함께 적용하는 값은 Checkbox를 써라'],'17','Radix button type=button role=switch aria-checked와 Space 토글을 유지한다. 손잡이 위치를 1차 신호로 삼고 Label로 연결한다.',['checked','defaultChecked','onCheckedChange','disabled'],['switch','switch-thumb'],['Label','Checkbox'],['스위치','토글','켜기 끄기','즉시 적용']),
-  entry('Label','form','컨트롤 옆의 레이블로 입력 이름을 연결한다.',['Field를 쓰지 않는 Switch·Checkbox·Radio 옆에 입력 이름이 필요할 때'],['Field를 Label로 재구현하지 마라'],'17','htmlFor로 컨트롤과 연결하여 레이블 클릭도 동작하게 한다. 필수 표시는 role=img aria-label=필수 입력이다. Field는 레이블·설명·입력·오류를 세로로 묶는 역할을 유지한다.',['htmlFor','required'],['label','label-required'],['Field','Switch','Checkbox','RadioGroup'],['레이블','입력 이름']),
+  entry('Button','action','명시적인 사용자 동작을 실행한다.',['저장·취소·삭제 버튼이 필요할 때'],['primary를 여러 개 쓰지 마라','아이콘 전용 버튼의 aria-label을 빼지 마라'],'6',[
+    "variant=danger는 되돌릴 수 없는 작업에만 쓴다.",
+    "링크를 버튼처럼 표시하려면 asChild 안에 링크 하나를 넣는다."
+  ],['variant','size','iconOnly','asChild','leadingIcon','trailingIcon'],['button'],['Input'],['버튼','저장','삭제','액션']),
+  entry('Input','form','단일 값·비밀번호·검색어를 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['금액·수량에 type=number를 쓰지 마라','네이티브 검증 메시지에 의존하지 마라','오류를 색만으로 표시하지 마라'],'17',[
+    rule("금액·수량은 type=text inputMode=numeric에 Input의 numeric 속성(고정폭 숫자)을 함께 쓴다.", "17.1"),
+    rule("number의 휠 값 변경은 컴포넌트가 막는다. 페이지 스크롤까지 막지 않는다.", "17.1"),
+    rule("password 보기·search 지우기 버튼은 내장되어 있다. 중복 구현하지 않는다.", "17.1"),
+    rule("날짜 입력은 DatePicker를 우선 쓴다. type=date가 꼭 필요하면 value 문자열로 다룬다.", "17.1"),
+    rule("검증은 앱이 수행하고 Field로 한국어 오류를 표시한다.", "17.1")
+  ],['invalid','numeric','type','inputMode'],['input','input-control','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
+  entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],["자동 높이가 필요하면 autoGrow를 쓰고 직접 높이를 계산하지 않는다", "autoGrow가 꺼진 입력의 크기 조절을 막지 마라"],'17',[
+    rule("autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.", "17.2"),
+    rule("FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.", "17.2")
+  ],['rows','autoGrow','maxHeight','invalid'],['textarea'],['Field','FormFlow','Input'],['여러 줄','메모','비고','긴 글']),
+  entry('RadioGroup','form','여러 선택지 중 하나만 선택한다.',['여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때'],["각 선택지에 연결된 레이블을 생략하지 마라"],'17',[
+    rule("각 RadioGroupItem의 id에 Label htmlFor를 연결한다.", "17.3"),
+    rule("화살표는 포커스와 선택을 함께 옮긴다. 앱이 포커스만 옮기도록 바꾸지 않는다.", "17.3"),
+    rule("FormFlow 안 Enter는 다음 칸으로 간다. 별도 이동 처리를 붙이지 않는다.", "11.5")
+  ],['value','defaultValue','onValueChange','disabled'],['radio-group'],['RadioGroupItem','Label'],['라디오','하나만 선택','택일']),
+  part('RadioGroupItem','RadioGroup',"라디오 선택지 하나를 표시한다.",['value','disabled'],['radio-group-item','radio-group-indicator']),
+  entry('Switch','form','켜기 끄기 설정을 즉시 적용한다.',['알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때'],['주문 저장 대기 값에 Switch를 쓰지 마라','제출할 때 함께 적용하는 값은 Checkbox를 써라'],'17',[
+    rule("Switch의 id에 Label htmlFor를 연결한다.", "17.4"),
+    rule("FormFlow 안 Enter는 이동, Space는 토글이다. 앱이 Enter 토글을 붙이지 않는다.", "11.5")
+  ],['checked','defaultChecked','onCheckedChange','disabled'],['switch','switch-thumb'],['Label','Checkbox'],['스위치','토글','켜기 끄기','즉시 적용']),
+  entry('Label','form','컨트롤 옆의 레이블로 입력 이름을 연결한다.',['Field를 쓰지 않는 Switch·Checkbox·Radio 옆에 입력 이름이 필요할 때'],['Field를 Label로 재구현하지 마라'],'17',[
+    rule("htmlFor에 컨트롤 id를 준다.", "17.5"),
+    rule("필수 표시와 별개로 컨트롤에도 required를 준다.", "17.5")
+  ],['htmlFor','required'],['label','label-required'],['Field','Switch','Checkbox','RadioGroup'],['레이블','입력 이름']),
   entry('StatusChip','status','레코드의 상태를 라벨과 실루엣으로 표시한다.',['완료·경고·오류 상태를 표시할 때'],['같은 원형 점의 색만 바꾸지 마라'],'2.3','아이콘 모양과 텍스트로 상태를 구분한다.',['tone','icon','hideIcon'],['status-chip'],['DataTable'],['상태','완료','경고','칩','주문 상태','배송 상태','상태 표시']),
   ...[
-    ['Card','정보 묶음의 평면 컨테이너','card',null],['CardHeader','카드의 제목과 보조 동작 영역','card-header','Card'],
-    ['CardTitle','카드의 제목','card-title','Card'],['CardBody','카드의 본문 영역','card-body','Card'],['CardFooter','카드의 하단 보조 정보 영역','card-footer','Card'],
-  ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,[`${purpose}이 필요할 때`],['평면 카드에 그림자를 넣지 마라'],'5','경계선과 여백으로 구조를 만든다.',['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
-  entry('Checkbox','form','네이티브 체크박스로 선택·혼합 상태를 표시한다.',['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17','폼 제출 때 함께 적용하는 약관 동의·목록 선택에 쓴다. 포커스 표시와 비색상 신호를 유지한다.',['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),
-  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라'],'4','값은 최소 너비·말줄임·전체값 보존을 함께 쓴다. @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다. TanStack 직접 설치는 필요 없다.',['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
-  entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6','소스를 직접 소유하며 공개 export를 사용한다.',[],[],['DataTable'],['선택 열 식별자']),
-  entry('ChartFrame','chart','차트의 제목·범례·상태·폭 측정을 제공한다.',['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6','loading·empty·error 상태를 구분한다.',['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),
-  entry('TrendBand','chart','시간 추세와 상하 범위를 보여준다.',['시계열 추세와 밴드를 비교할 때'],['텍스트 요약을 빼지 마라'],'7.5.3','SVG에 의미 토큰과 직접 라벨을 쓴다.',['data','x','y','yLow','yHigh','summary'],['trend-band'],['ChartFrame'],['추세','추이','시계열','밴드','선 그래프','변동 범위','상하한','편차']),
-  entry('BulletRow','chart','목표 대비 실적을 행으로 비교한다.',['KPI 목표 달성도를 비교할 때'],['달성 여부를 색만으로 표현하지 마라'],'7.5.3','직접 라벨과 텍스트 요약을 제공한다.',['metrics','summary','skeletonRows'],['bullet-row'],['ChartFrame'],['실적','목표','KPI','불릿','달성률','목표 대비','실적 비교']),
-  entry('CompositionArea','chart','시간별 구성비를 누적 면적으로 보여준다.',['구성 비중 변화를 비교할 때'],['텍스트 라벨을 생략하지 마라'],'7.5.3','색 외에 직접 라벨을 제공한다.',['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','구성 비율','비중','누적','면적','점유율','비율 변화','시간별 구성']),
-  entry('EmptyState','state','표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.',['필터 결과가 비었을 때'],['실패를 빈 상태로 표시하지 마라'],'7.5.6','status 역할로 사실을 전달한다.',['title','description','graphic','action'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화']),
-  entry('ErrorState','state','불러오기 실패와 재시도 경로를 제공한다.',['데이터 요청이 실패했을 때'],['빈 상태와 합치지 마라'],'7.5.6','alert와 아이콘·문구·틴트로 오류를 구분한다.',['title','description','graphic','onRetry'],['error-state'],['EmptyState'],['불러오기 실패','재시도','데이터 오류']),
-  entry('Avatar','media','사진이나 이니셜로 사람을 식별한다.',['사용자 이름과 사진을 표시할 때'],['상태색 팔레트로 사람을 구분하지 마라'],'2.4','의미 토큰을 사용하고 전체 이름을 접근성 이름으로 보존한다.',['name','src','size','decorative'],['avatar'],['Thumbnail'],['아바타','이니셜','사용자 사진']),
-  entry('Thumbnail','media','이미지 공간을 예약하고 실패를 대체한다.',['상품·미디어 이미지를 표시할 때'],['빈 src로 이미지 요청을 보내지 마라'],'9.2','실제 콘텐츠와 로딩 치수를 맞춘다.',['src','alt','ratio'],['thumbnail'],['Skeleton','Avatar'],['썸네일','상품 사진','이미지 실패']),
+    ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
+    ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
+  ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5','경계선과 여백으로 구조를 만든다.',['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
+  entry('Checkbox','form',"선택·해제·일부 선택 상태를 표시한다.",['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17',[
+    "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다."
+  ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),
+  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라'],'4',[
+    "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
+    "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
+    "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다."
+  ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
+  entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6',[],[],[],['DataTable'],['선택 열 식별자']),
+  entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
+    "state로 loading·empty·error를 구분해 준다."
+  ],['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),
+  entry('TrendBand','chart','시간 추세와 상하 범위를 보여준다.',['시계열 추세와 밴드를 비교할 때'],['텍스트 요약을 빼지 마라'],'7.5.3',[
+    "summary는 추세 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다."
+  ],['data','x','y','yLow','yHigh','summary'],['trend-band'],['ChartFrame'],['추세','추이','시계열','밴드','선 그래프','변동 범위','상하한','편차']),
+  entry('BulletRow','chart','목표 대비 실적을 행으로 비교한다.',['KPI 목표 달성도를 비교할 때'],['달성 여부를 색만으로 표현하지 마라'],'7.5.3',[
+    rule("summary는 실적 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.", "7.5.3"),
+    rule("skeletonRows를 실제 지표 수와 맞춰 로딩 전후 높이를 유지한다.", "7.5.6")
+  ],['metrics','summary','skeletonRows'],['bullet-row'],['ChartFrame'],['실적','목표','KPI','불릿','달성률','목표 대비','실적 비교']),
+  entry('CompositionArea','chart','시간별 구성비를 누적 면적으로 보여준다.',['구성 비중 변화를 비교할 때'],['텍스트 라벨을 생략하지 마라'],'7.5.3',[
+    "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다."
+  ],['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','구성 비율','비중','누적','면적','점유율','비율 변화','시간별 구성']),
+  entry('EmptyState','state','표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.',['필터 결과가 비었을 때'],['실패를 빈 상태로 표시하지 마라'],'7.5.6',[
+    "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다."
+  ],['title','description','graphic','action'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화']),
+  entry('ErrorState','state','불러오기 실패와 재시도 경로를 제공한다.',['데이터 요청이 실패했을 때'],['빈 상태와 합치지 마라'],'7.5.6',[
+    "다시 요청할 수 있는 오류에는 onRetry를 연결한다."
+  ],['title','description','graphic','onRetry'],['error-state'],['EmptyState'],['불러오기 실패','재시도','데이터 오류']),
+  entry('Avatar','media','사진이나 이니셜로 사람을 식별한다.',['사용자 이름과 사진을 표시할 때'],['상태색 팔레트로 사람을 구분하지 마라'],'2.4',[
+    rule("name에는 이니셜 대신 보조기기가 읽을 전체 이름을 준다.", "14.4")
+  ],['name','src','size','decorative'],['avatar'],['Thumbnail'],['아바타','이니셜','사용자 사진']),
+  entry('Thumbnail','media','이미지 공간을 예약하고 실패를 대체한다.',['상품·미디어 이미지를 표시할 때'],['빈 src로 이미지 요청을 보내지 마라'],'9.2',[
+    "ratio를 실제 이미지 비율과 맞춰 자리를 예약한다."
+  ],['src','alt','ratio'],['thumbnail'],['Skeleton','Avatar'],['썸네일','상품 사진','이미지 실패']),
   entry('Skeleton','loading','알려진 콘텐츠 형태의 자리 표시자다.',['콘텐츠 모양을 미리 알 때'],['형태를 모르면 쓰지 마라'],'9.2','실제 콘텐츠와 같은 치수를 쓴다.',['variant','width','height','animation','textStyle'],['skeleton'],['SkeletonText','ProgressTrack'],['스켈레톤','자리 표시','로딩','불러오는','불러오기','데이터 대기','콘텐츠 대기','로딩 중']),
-  entry('SkeletonText','loading','문단 형태의 로딩 자리 표시자다.',['여러 줄 텍스트를 기다릴 때'],['모든 줄을 같은 길이로 채우지 마라'],'9.2','글자 높이 0.65em와 짧은 마지막 줄을 쓴다.',['lines','textStyle','lastLineWidth'],['skeleton-text'],['Skeleton'],['문단 로딩','텍스트 스켈레톤']),
+  entry('SkeletonText','loading','문단 형태의 로딩 자리 표시자다.',['여러 줄 텍스트를 기다릴 때'],["문단 모양을 바꿀 때 마지막 줄까지 같은 길이로 채우지 마라"],'9.2',[
+    "textStyle은 실제 본문에 맞춘다."
+  ],['lines','textStyle','lastLineWidth'],['skeleton-text'],['Skeleton'],['문단 로딩','텍스트 스켈레톤']),
   ...[
-    ['CardSkeleton','카드','card-skeleton',['label']],['ListSkeleton','목록','list-skeleton',['rows','label']],
-    ['FormSkeleton','폼','form-skeleton',['fields','label']],['ChartSkeleton','차트','chart-skeleton',['height','legend','variant','rows']],
-  ].map(([name,label,slot,props]) => entry(name,'loading',`${label} 형태의 로딩 자리 표시자다.`,[`${label}의 콘텐츠 배치와 치수를 알 때`],['실제 콘텐츠와 다른 치수로 쓰지 마라'],'9.2','실제 컴포넌트와 토큰을 공유한다.',props,[slot],['Skeleton'],[label,`${label} 로딩`,`${label} 스켈레톤`,`${label} 불러오는 중`,`${label} 불러오기`])),
-  entry('ProgressTrack','loading','진행률과 예상 시간을 표시한다.',['긴 작업의 진행 정도를 알릴 때'],['모르는 진행률을 지어내지 마라'],'9.1','긴 대기는 진행률과 대략적 시간을 제공한다.',['value','label','etaSeconds'],['progress-track'],['TaskProgress'],['진행률','진행 표시','대기','남은 시간','예상 시간','진행 바']),
-  entry('TaskProgress','loading','드문 장기 작업의 단계와 진행을 표시한다.',['대량 내보내기·일괄 작업을 기다릴 때'],['자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라'],'9.3','모션 예산은 빈도와 대기시간으로 정한다.',['title','value','steps','etaSeconds','onDismiss'],['task-progress'],['ProgressTrack'],['대량','일괄','장기 작업','내보내기','오래 걸리는','진행 상황','진행률','작업 단계','백그라운드 작업']),
-  entry('Tooltip','guide','컨트롤의 뜻을 한 줄로 설명한다.',['호버·키보드 포커스로 UI 의미를 확인할 때'],['데이터 요약이나 액션을 넣지 마라','여러 문장을 넣지 마라'],'10.4','포커스를 가져가지 않고 aria-describedby로 연결한다.',['children','content','disabled'],['guide-tooltip'],['Hint','Tour','Peek'],['툴팁','호버','한 줄','컨트롤 설명','UI 설명']),
+    ['CardSkeleton','카드','card-skeleton',['label'],'조절값이 없다. 완료 후 모양이 카드 한 장이 아니면 Skeleton으로 직접 구성한다.'],
+    ['ListSkeleton','목록','list-skeleton',['rows','label'],'rows를 첫 화면에 실제로 보일 행 수와 맞춘다.'],
+    ['FormSkeleton','폼','form-skeleton',['fields','label'],'fields를 실제 입력 칸 수와 맞춘다.'],
+    ['ChartSkeleton','차트','chart-skeleton',['height','legend','variant','rows'],'height·variant·legend를 완료 후 차트와 맞춘다.'],
+  ].map(([name,label,slot,props,presetRule]) => entry(name,'loading',`${label} 형태의 로딩 자리 표시자다.`,[`${label}의 콘텐츠 배치와 치수를 알 때`],['실제 콘텐츠와 다른 치수로 쓰지 마라'],'9.2',presetRule,props,[slot],['Skeleton'],[label,`${label} 로딩`,`${label} 스켈레톤`,`${label} 불러오는 중`,`${label} 불러오기`])),
+  entry('ProgressTrack','loading','진행률과 예상 시간을 표시한다.',['긴 작업의 진행 정도를 알릴 때'],['모르는 진행률을 지어내지 마라'],'9.1',['value와 etaSeconds로 진행률과 남은 시간을 함께 알린다.'],['value','label','etaSeconds'],['progress-track'],['TaskProgress'],['진행률','진행 표시','대기','남은 시간','예상 시간','진행 바']),
+  entry('TaskProgress','loading','드문 장기 작업의 단계와 진행을 표시한다.',['대량 내보내기·일괄 작업을 기다릴 때'],['자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라'],'9.3',[],['title','value','steps','etaSeconds','onDismiss'],['task-progress'],['ProgressTrack'],['대량','일괄','장기 작업','내보내기','오래 걸리는','진행 상황','진행률','작업 단계','백그라운드 작업']),
+  entry('Tooltip','guide','컨트롤의 뜻을 한 줄로 설명한다.',['호버·키보드 포커스로 UI 의미를 확인할 때'],['데이터 요약이나 액션을 넣지 마라','여러 문장을 넣지 마라'],'10.4',[
+    "Tooltip 안으로 포커스를 옮기지 않는다. 컨트롤에 그대로 둔다."
+  ],['children','content','disabled'],['guide-tooltip'],['Hint','Tour','Peek'],['툴팁','호버','한 줄','컨트롤 설명','UI 설명']),
   entry('Hint','guide','새 기능·놓치기 쉬운 UI를 한 번 알린다.',['새 기능을 2~3줄과 액션으로 알릴 때'],['레코드 요약용으로 쓰지 마라'],'10.2','닫은 안내를 반복하지 않도록 앱이 기억한다.',['children','open','title','body','onDismiss','action'],['guide-hint'],['Tooltip','Tour','Peek'],['힌트','새 기능','한 번','맥락형 안내']),
   entry('Tour','guide','사용자가 요청한 UI 흐름을 단계로 안내한다.',['사용자가 전체 흐름 학습을 요청할 때'],['자동 실행하지 마라','닫기·Escape를 막지 마라'],'10.1','최대 3단계이며 항상 건너뛸 수 있다.',['steps','active','next','previous','skip'],['guide-hint'],['Tooltip','Hint','Peek'],['투어','온보딩','단계','단계별','단계별 안내','사용법','흐름 학습','기능 흐름','처음 온 사용자','둘러보기','시작 안내']),
-  entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],['필드 값을 소유하게 하지 마라'],'11.4','레이블 → 설명 → 입력 → 오류 순서를 지킨다.',['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사']),
-  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5','Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 단일 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. MultiSelect·multiple은 선택 뒤 머문다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.',['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
-  entry('Peek','overlay','레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.',['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제 액션을 넣지 마라'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
+  entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],["Field가 입력값을 관리한다고 가정하지 마라"],'11.4',[
+    "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다."
+  ],['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사']),
+  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5',[
+    "Enter는 Tab 순서로 이동한다. 별도 입력 순서를 만들지 않는다.",
+    "단일 행 Shift+Enter를 제출로 바꾸지 않는다. 이전 칸 이동이다.",
+    "자체 컨트롤의 포커스 요소에 data-form-control=advance로 Enter 이동을 지정한다.",
+    "마지막 일반 입력의 Enter 제출은 data-form-control=advance 없이 유지한다.",
+    "실제 액션 버튼에는 이동 표식을 붙이지 않는다. Enter 실행을 보존한다.",
+    "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다."
+  ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
+  entry('Peek','overlay',"레코드를 열지 않고 핵심 내용을 요약해 보여준다.",['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제 액션을 넣지 마라'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
-
-intents.find(item => item.name === 'Combobox').rules.push(rule('multiple은 string[] 값과 콜백을 쓰며 검색 입력 앞에 28px 태그를 둔다. 24px 해제 버튼은 라벨 선택 해제로 읽고 칩 묶음은 roving tabindex 하나·좌우 이동·Delete/Backspace 제거 후 이웃 포커스를 쓴다. 빈 입력 Backspace는 첫 회 강조·두 번째 제거, 다른 키는 강조 해제다. 조합 중 강조·삭제하지 않는다. 칩 영역은 2줄·58px 내부 스크롤로 320px 툴바의 컨트롤 높이를 38→68px에 제한한다. 선택해도 목록을 닫거나 다음 칸으로 이동하지 않는다. 검색 없이 고르기만 하면 MultiSelect다.', '20'));
-
-// 부품의 공통 규칙은 부모에만 보관한다 (MCP 7번 게이트). RadioGroupItem 계약도 부모에서 제공한다.
-for (const [name, text] of [
-  ['Combobox', '단일 선택은 FormFlow 안 Enter로 열고 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.'],
-  ['Switch', 'data-form-control=advance로 FormFlow 안 Enter는 토글하지 않고 다음 칸으로 간다. Space 토글과 FormFlow 밖 Enter는 그대로다.'],
-  ['RadioGroup', 'RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.'],
-]) intents.find(item => item.name === name).rules.push(rule(text, '11.5'));
-for (const name of ['FormFlow', 'Combobox', 'Switch', 'RadioGroup']) {
-  intents.find(item => item.name === name).rules.push(rule('Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.', '19'));
-}
 
 for (const parent of intents) {
   const parts = intents.filter((item) => item.partOf === parent.name).map((item) => item.name);

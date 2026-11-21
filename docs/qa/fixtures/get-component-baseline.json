@@ -7,12 +7,20 @@
       "상품 설명·비고 등 긴 설명 더보기"
     ],
     "dont": [
-      "넘치지 않을 때 버튼을 렌더하지 마라",
-      "전역과 다른 줄바꿈 규칙을 넣지 마라"
+      "링크·입력 등 조작할 요소를 접을 때는 Collapsible을 쓴다",
+      "DataTable 셀에 쓰지 마라. 셀이 말줄임과 전체 값 title 을 이미 제공한다"
     ],
     "rules": [
       {
-        "text": "기본 2줄. ResizeObserver와 MutationObserver(childList·characterData·subtree), fonts.ready로 재측정한다. 펼친 상태도 접힌 치수로 판정한다. 전체 글은 DOM에 남아 복사할 수 있다. 버튼은 글 id로 controls·describedby를 연결하고 제어·비제어를 지원한다. 전환은 즉시 적용한다.",
+        "text": "넘칠 때만 생기는 더보기 버튼을 중복 구현하지 않는다.",
+        "source": "DESIGN.md 21"
+      },
+      {
+        "text": "전체 글은 DOM에 남아 복사된다. 복사용 글을 따로 만들지 않는다.",
+        "source": "DESIGN.md 21"
+      },
+      {
+        "text": "펼침을 제어하려면 expanded·onExpandedChange를 함께 준다.",
         "source": "DESIGN.md 21"
       }
     ],
@@ -75,11 +83,20 @@
       "많은 레코드를 열로 비교할 때"
     ],
     "dont": [
-      "금액을 가변폭 숫자로 쓰지 마라"
+      "금액을 가변폭 숫자로 쓰지 마라",
+      "긴 글 열을 ClampText 로 감싸지 마라"
     ],
     "rules": [
       {
-        "text": "값은 최소 너비·말줄임·전체값 보존을 함께 쓴다. @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다. TanStack 직접 설치는 필요 없다.",
+        "text": "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
+        "source": "DESIGN.md 4"
+      },
+      {
+        "text": "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
+        "source": "DESIGN.md 4"
+      },
+      {
+        "text": "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
         "source": "DESIGN.md 4"
       }
     ],
@@ -280,25 +297,53 @@
       "검색해서 여러 개 고르기"
     ],
     "dont": [
-      "조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지",
-      "가상 스크롤은 제공하지 않는다"
+      "한글 조합 중 값을 바꾸거나 선택·포커스 이동을 추가하지 마라",
+      "가상 스크롤이 필요하면 다른 도구를 쓴다"
     ],
     "rules": [
       {
-        "text": "shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 단일 모드 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.",
-        "source": "DESIGN.md 18"
+        "text": "기본 초성·자모 검색을 바꾸려면 filter를 준다.",
+        "source": "DESIGN.md 18.2"
       },
       {
-        "text": "multiple은 string[] 값과 콜백을 쓰며 검색 입력 앞에 28px 태그를 둔다. 24px 해제 버튼은 라벨 선택 해제로 읽고 칩 묶음은 roving tabindex 하나·좌우 이동·Delete/Backspace 제거 후 이웃 포커스를 쓴다. 빈 입력 Backspace는 첫 회 강조·두 번째 제거, 다른 키는 강조 해제다. 조합 중 강조·삭제하지 않는다. 칩 영역은 2줄·58px 내부 스크롤로 320px 툴바의 컨트롤 높이를 38→68px에 제한한다. 선택해도 목록을 닫거나 다음 칸으로 이동하지 않는다. 검색 없이 고르기만 하면 MultiSelect다.",
-        "source": "DESIGN.md 20"
+        "text": "조합 중 결과 없음은 내장 처리된다. 앱이 빈 결과를 따로 표시하지 않는다.",
+        "source": "DESIGN.md 18.2"
       },
       {
-        "text": "단일 선택은 FormFlow 안 Enter로 열고 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.",
+        "text": "500개 초과 후보는 앱 서버에서 거른다.",
+        "source": "DESIGN.md 18.1"
+      },
+      {
+        "text": "multiple에는 value와 onValueChange로 string[]을 주고받는다.",
+        "source": "DESIGN.md 20.2"
+      },
+      {
+        "text": "태그는 2줄 뒤 내부 스크롤한다. 앱이 선택 수마다 높이를 늘리지 않는다.",
+        "source": "DESIGN.md 20.2"
+      },
+      {
+        "text": "빈 입력 Backspace는 두 번 눌러 태그를 지운다. 앱이 즉시 삭제를 덧붙이지 않는다.",
+        "source": "DESIGN.md 20.2"
+      },
+      {
+        "text": "multiple은 선택 뒤에도 머문다. 앱이 닫거나 다음 칸으로 보내지 않는다.",
+        "source": "DESIGN.md 20.2"
+      },
+      {
+        "text": "검색 없이 여러 개를 고를 때는 MultiSelect를 쓴다.",
+        "source": "DESIGN.md 20.1"
+      },
+      {
+        "text": "FormFlow 안 단일 선택은 고르면 다음 칸으로 간다. 별도 포커스 이동을 붙이지 않는다.",
         "source": "DESIGN.md 11.5"
       },
       {
-        "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-        "source": "DESIGN.md 19"
+        "text": "트리거에 data-form-control=advance를 붙이지 않는다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "폼 밖 선택·Escape는 트리거로 돌아간다. 포커스를 다시 옮기지 않는다.",
+        "source": "DESIGN.md 11.5"
       }
     ],
     "related": [
@@ -412,7 +457,7 @@
   "SelectTrigger": {
     "name": "SelectTrigger",
     "partOf": "Select",
-    "purpose": "선택 필터를 여는 38px 버튼",
+    "purpose": "선택 목록을 연다.",
     "kind": "component",
     "source": "packages/ui/src/components/select/select.tsx",
     "props": [],
@@ -432,7 +477,7 @@
     ],
     "rules": [
       {
-        "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
+        "text": "Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다.",
         "source": "DESIGN.md 11.4"
       }
     ],
@@ -442,7 +487,7 @@
   "RadioGroupItem": {
     "name": "RadioGroupItem",
     "partOf": "RadioGroup",
-    "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
+    "purpose": "라디오 선택지 하나를 표시한다.",
     "kind": "component",
     "source": "packages/ui/src/components/radio-group/radio-group.tsx",
     "props": [],
@@ -458,21 +503,20 @@
       "여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때"
     ],
     "dont": [
-      "화살표에 포커스만 이동하는 모드를 넣지 마라",
-      "레이블 없이 점만 클릭하게 하지 마라"
+      "각 선택지에 연결된 레이블을 생략하지 마라"
     ],
     "rules": [
       {
-        "text": "Radix 기본 화살표는 포커스와 선택을 함께 옮기고 끝에서 순환한다. 점과 테두리 변화로 선택을 표시하고 Label htmlFor로 각 항목을 연결한다.",
-        "source": "DESIGN.md 17"
+        "text": "각 RadioGroupItem의 id에 Label htmlFor를 연결한다.",
+        "source": "DESIGN.md 17.3"
       },
       {
-        "text": "RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.",
+        "text": "화살표는 포커스와 선택을 함께 옮긴다. 앱이 포커스만 옮기도록 바꾸지 않는다.",
+        "source": "DESIGN.md 17.3"
+      },
+      {
+        "text": "FormFlow 안 Enter는 다음 칸으로 간다. 별도 이동 처리를 붙이지 않는다.",
         "source": "DESIGN.md 11.5"
-      },
-      {
-        "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-        "source": "DESIGN.md 19"
       }
     ],
     "category": "form",
@@ -481,7 +525,7 @@
   "MultiSelect": {
     "name": "MultiSelect",
     "category": "form",
-    "purpose": "요약 트리거와 체크 목록으로 여러 사업장을 고른다.",
+    "purpose": "요약 트리거와 체크 목록으로 여러 값을 고른다.",
     "useWhen": [
       "여러 사업장 고르기",
       "검색 없이 여러 개 선택할 때"
@@ -492,8 +536,16 @@
     ],
     "rules": [
       {
-        "text": "트리거 높이는 control-h-md로 고정하고 요약을 말줄임·title로 보존한다. 목록은 listbox·aria-multiselectable, option·aria-selected와 체크 아이콘을 쓴다. 화살표·Home/End는 aria-activedescendant를 옮기고 Space/Enter는 토글한다. Escape로 닫고 트리거로 복귀한다. 전체 해제와 선택 개수를 제공한다.",
-        "source": "DESIGN.md 20"
+        "text": "선택 수가 늘어도 트리거 높이는 같다. 태그가 필요하면 Combobox multiple을 쓴다.",
+        "source": "DESIGN.md 20.1"
+      },
+      {
+        "text": "선택 뒤에도 머문다. 앱이 닫거나 다음 입력으로 보내지 않는다.",
+        "source": "DESIGN.md 20.1"
+      },
+      {
+        "text": "전체 해제·선택 개수를 중복 구현하지 않는다.",
+        "source": "DESIGN.md 20.1"
       }
     ],
     "related": [
@@ -590,7 +642,11 @@
     ],
     "rules": [
       {
-        "text": "danger는 되돌릴 수 없는 작업에만 쓴다. asChild는 단일 링크에 스타일을 합치며 양쪽 아이콘도 링크 안에 보존한다.",
+        "text": "variant=danger는 되돌릴 수 없는 작업에만 쓴다.",
+        "source": "DESIGN.md 6"
+      },
+      {
+        "text": "링크를 버튼처럼 표시하려면 asChild 안에 링크 하나를 넣는다.",
         "source": "DESIGN.md 6"
       }
     ],
@@ -657,12 +713,28 @@
     ],
     "rules": [
       {
-        "text": "Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 단일 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. MultiSelect·multiple은 선택 뒤 머문다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.",
+        "text": "Enter는 Tab 순서로 이동한다. 별도 입력 순서를 만들지 않는다.",
         "source": "DESIGN.md 11.5"
       },
       {
-        "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-        "source": "DESIGN.md 19"
+        "text": "단일 행 Shift+Enter를 제출로 바꾸지 않는다. 이전 칸 이동이다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "자체 컨트롤의 포커스 요소에 data-form-control=advance로 Enter 이동을 지정한다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "마지막 일반 입력의 Enter 제출은 data-form-control=advance 없이 유지한다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "실제 액션 버튼에는 이동 표식을 붙이지 않는다. Enter 실행을 보존한다.",
+        "source": "DESIGN.md 11.5"
+      },
+      {
+        "text": "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
+        "source": "DESIGN.md 11.5"
       }
     ],
     "related": [
@@ -712,20 +784,20 @@
     {
       "name": "Collapsible",
       "kind": "component",
-      "purpose": "고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.",
+      "purpose": "고급 설정 같은 내용을 항상 보이는 버튼으로 접고 펼친다.",
       "import": "import { Collapsible } from '@s2life/ui';"
     },
     {
       "name": "CollapsibleTrigger",
       "kind": "component",
-      "purpose": "항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.",
+      "purpose": "항상 보이는 버튼으로 내용을 접고 펼친다.",
       "import": "import { CollapsibleTrigger } from '@s2life/ui';",
       "partOf": "Collapsible"
     },
     {
       "name": "CollapsibleContent",
       "kind": "component",
-      "purpose": "접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.",
+      "purpose": "접고 펼칠 내용을 담는다.",
       "import": "import { CollapsibleContent } from '@s2life/ui';",
       "partOf": "Collapsible"
     },
@@ -744,13 +816,13 @@
     {
       "name": "MultiSelect",
       "kind": "component",
-      "purpose": "요약 트리거와 체크 목록으로 여러 사업장을 고른다.",
+      "purpose": "요약 트리거와 체크 목록으로 여러 값을 고른다.",
       "import": "import { MultiSelect } from '@s2life/ui';"
     },
     {
       "name": "Tabs",
       "kind": "component",
-      "purpose": "상세 정보를 탭으로 나누기 위한 루트다.",
+      "purpose": "상세 정보를 탭별 패널로 나눠 보여준다.",
       "import": "import { Tabs } from '@s2life/ui';"
     },
     {
@@ -825,7 +897,7 @@
     {
       "name": "Dialog",
       "kind": "component",
-      "purpose": "입력·편집·선택 모달을 여는 루트다.",
+      "purpose": "입력·편집·선택을 모달로 제공한다.",
       "import": "import { Dialog } from '@s2life/ui';"
     },
     {
@@ -838,7 +910,7 @@
     {
       "name": "DialogContent",
       "kind": "component",
-      "purpose": "입력 창의 포털과 닫기 보호다.",
+      "purpose": "입력 창의 내용과 닫기 보호를 제공한다.",
       "import": "import { DialogContent } from '@s2life/ui';",
       "partOf": "Dialog"
     },
@@ -873,7 +945,7 @@
     {
       "name": "DialogClose",
       "kind": "component",
-      "purpose": "닫기 보호 중에도 동작하는 명시적 닫기다.",
+      "purpose": "입력 창을 닫는 버튼을 제공한다.",
       "import": "import { DialogClose } from '@s2life/ui';",
       "partOf": "Dialog"
     },
@@ -893,7 +965,7 @@
     {
       "name": "AlertDialogContent",
       "kind": "component",
-      "purpose": "파괴적 선택 확인의 포털이다.",
+      "purpose": "되돌릴 수 없는 선택을 확인하는 내용을 표시한다.",
       "import": "import { AlertDialogContent } from '@s2life/ui';",
       "partOf": "AlertDialog"
     },
@@ -928,7 +1000,7 @@
     {
       "name": "AlertDialogAction",
       "kind": "component",
-      "purpose": "확정 동작과 기존 danger 변형이다.",
+      "purpose": "확인한 작업을 실행하고 확인창을 닫는다.",
       "import": "import { AlertDialogAction } from '@s2life/ui';",
       "partOf": "AlertDialog"
     },
@@ -942,173 +1014,173 @@
     {
       "name": "Select",
       "kind": "component",
-      "purpose": "상태·정렬 필터의 단일 선택 루트",
+      "purpose": "상태·정렬 필터에서 하나를 고른다.",
       "import": "import { Select } from '@s2life/ui';"
     },
     {
       "name": "SelectTrigger",
       "kind": "component",
-      "purpose": "선택 필터를 여는 38px 버튼",
+      "purpose": "선택 목록을 연다.",
       "import": "import { SelectTrigger } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectValue",
       "kind": "component",
-      "purpose": "선택값 또는 플레이스홀더",
+      "purpose": "선택값이나 플레이스홀더를 표시한다.",
       "import": "import { SelectValue } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectContent",
       "kind": "component",
-      "purpose": "포털의 선택 목록",
+      "purpose": "선택할 옵션 목록을 표시한다.",
       "import": "import { SelectContent } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectGroup",
       "kind": "component",
-      "purpose": "선택 항목 그룹",
+      "purpose": "관련 선택 항목을 묶는다.",
       "import": "import { SelectGroup } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectLabel",
       "kind": "component",
-      "purpose": "선택 그룹 레이블",
+      "purpose": "선택 그룹의 이름을 표시한다.",
       "import": "import { SelectLabel } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectItem",
       "kind": "component",
-      "purpose": "단일 선택 옵션",
+      "purpose": "선택 옵션 하나를 표시한다.",
       "import": "import { SelectItem } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectSeparator",
       "kind": "component",
-      "purpose": "선택 그룹 구분선",
+      "purpose": "선택 그룹을 구분한다.",
       "import": "import { SelectSeparator } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectScrollUpButton",
       "kind": "component",
-      "purpose": "목록 위로 스크롤",
+      "purpose": "선택 목록을 위로 넘긴다.",
       "import": "import { SelectScrollUpButton } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "SelectScrollDownButton",
       "kind": "component",
-      "purpose": "목록 아래로 스크롤",
+      "purpose": "선택 목록을 아래로 넘긴다.",
       "import": "import { SelectScrollDownButton } from '@s2life/ui';",
       "partOf": "Select"
     },
     {
       "name": "DropdownMenu",
       "kind": "component",
-      "purpose": "행 액션 메뉴 루트",
+      "purpose": "행에서 실행할 액션을 메뉴로 제공한다.",
       "import": "import { DropdownMenu } from '@s2life/ui';"
     },
     {
       "name": "DropdownMenuTrigger",
       "kind": "component",
-      "purpose": "행 액션 열기",
+      "purpose": "행 액션 메뉴를 연다.",
       "import": "import { DropdownMenuTrigger } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuContent",
       "kind": "component",
-      "purpose": "포털 액션 목록",
+      "purpose": "실행할 액션 목록을 표시한다.",
       "import": "import { DropdownMenuContent } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuItem",
       "kind": "component",
-      "purpose": "액션 실행 항목",
+      "purpose": "메뉴 액션 하나를 실행한다.",
       "import": "import { DropdownMenuItem } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuCheckboxItem",
       "kind": "component",
-      "purpose": "체크형 메뉴 항목",
+      "purpose": "메뉴에서 켜고 끌 항목을 표시한다.",
       "import": "import { DropdownMenuCheckboxItem } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuRadioItem",
       "kind": "component",
-      "purpose": "라디오형 메뉴 항목",
+      "purpose": "메뉴에서 하나만 고를 항목을 표시한다.",
       "import": "import { DropdownMenuRadioItem } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuLabel",
       "kind": "component",
-      "purpose": "메뉴 그룹 이름",
+      "purpose": "메뉴 그룹 이름을 표시한다.",
       "import": "import { DropdownMenuLabel } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuSeparator",
       "kind": "component",
-      "purpose": "메뉴 구분선",
+      "purpose": "메뉴 그룹을 구분한다.",
       "import": "import { DropdownMenuSeparator } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuShortcut",
       "kind": "component",
-      "purpose": "메뉴 단축키 표시",
+      "purpose": "메뉴의 단축키를 표시한다.",
       "import": "import { DropdownMenuShortcut } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuGroup",
       "kind": "component",
-      "purpose": "메뉴 항목 그룹",
+      "purpose": "관련 메뉴 항목을 묶는다.",
       "import": "import { DropdownMenuGroup } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuPortal",
       "kind": "component",
-      "purpose": "메뉴 포털",
+      "purpose": "메뉴를 다른 화면 요소 위에 표시한다.",
       "import": "import { DropdownMenuPortal } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuSub",
       "kind": "component",
-      "purpose": "하위 메뉴 루트",
+      "purpose": "하위 메뉴를 제공한다.",
       "import": "import { DropdownMenuSub } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuSubContent",
       "kind": "component",
-      "purpose": "하위 메뉴 목록",
+      "purpose": "하위 메뉴 목록을 표시한다.",
       "import": "import { DropdownMenuSubContent } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuSubTrigger",
       "kind": "component",
-      "purpose": "하위 메뉴 열기",
+      "purpose": "하위 메뉴를 연다.",
       "import": "import { DropdownMenuSubTrigger } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
     {
       "name": "DropdownMenuRadioGroup",
       "kind": "component",
-      "purpose": "라디오 메뉴 그룹",
+      "purpose": "메뉴에서 하나만 고를 항목을 묶는다.",
       "import": "import { DropdownMenuRadioGroup } from '@s2life/ui';",
       "partOf": "DropdownMenu"
     },
@@ -1151,7 +1223,7 @@
     {
       "name": "RadioGroupItem",
       "kind": "component",
-      "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
+      "purpose": "라디오 선택지 하나를 표시한다.",
       "import": "import { RadioGroupItem } from '@s2life/ui';",
       "partOf": "RadioGroup"
     },
@@ -1176,41 +1248,41 @@
     {
       "name": "Card",
       "kind": "component",
-      "purpose": "정보 묶음의 평면 컨테이너",
+      "purpose": "관련 정보를 평면 카드로 묶는다.",
       "import": "import { Card } from '@s2life/ui';"
     },
     {
       "name": "CardHeader",
       "kind": "component",
-      "purpose": "카드의 제목과 보조 동작 영역",
+      "purpose": "카드 제목과 보조 동작을 배치한다.",
       "import": "import { CardHeader } from '@s2life/ui';",
       "partOf": "Card"
     },
     {
       "name": "CardTitle",
       "kind": "component",
-      "purpose": "카드의 제목",
+      "purpose": "카드 제목을 표시한다.",
       "import": "import { CardTitle } from '@s2life/ui';",
       "partOf": "Card"
     },
     {
       "name": "CardBody",
       "kind": "component",
-      "purpose": "카드의 본문 영역",
+      "purpose": "카드 본문을 담는다.",
       "import": "import { CardBody } from '@s2life/ui';",
       "partOf": "Card"
     },
     {
       "name": "CardFooter",
       "kind": "component",
-      "purpose": "카드의 하단 보조 정보 영역",
+      "purpose": "카드 하단의 보조 정보를 담는다.",
       "import": "import { CardFooter } from '@s2life/ui';",
       "partOf": "Card"
     },
     {
       "name": "Checkbox",
       "kind": "component",
-      "purpose": "네이티브 체크박스로 선택·혼합 상태를 표시한다.",
+      "purpose": "선택·해제·일부 선택 상태를 표시한다.",
       "import": "import { Checkbox } from '@s2life/ui';"
     },
     {
@@ -1228,7 +1300,7 @@
     {
       "name": "ChartFrame",
       "kind": "component",
-      "purpose": "차트의 제목·범례·상태·폭 측정을 제공한다.",
+      "purpose": "차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",
       "import": "import { ChartFrame } from '@s2life/ui';"
     },
     {
@@ -1354,7 +1426,7 @@
     {
       "name": "Peek",
       "kind": "component",
-      "purpose": "레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.",
+      "purpose": "레코드를 열지 않고 핵심 내용을 요약해 보여준다.",
       "import": "import { Peek } from '@s2life/ui';"
     }
   ]

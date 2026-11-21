@@ -50,6 +50,12 @@ test('7: 부모·부품의 양방향 관계와 단일 보관을 검증', () => {
   expectGate(7, (f) => { f.intents.find((c) => c.name === 'SelectTrigger').partOf = 'CardBody'; });
   expectGate(7, (f) => { f.intents.find((c) => c.name === 'SelectTrigger').rules = []; });
 });
+test('8: 소비자 지침의 구현 메모·장문·복제를 생성 단계에서 차단', () => {
+  expectGate(8, f => { f.intents[0].purpose = 'Observer 구현'; });
+  expectGate(8, f => { f.intents[0].rules[0].text = '가'.repeat(121); });
+  expectGate(8, f => { f.intents[1].purpose = 'Radix 부품'; });
+  expectGate(8, f => { f.intents.find(c => c.name === 'Hint').rules[0].text = f.intents[0].rules[0].text; });
+});
 test('부품은 고유 API만 보관하고 목적·부모 목록을 보존', async () => {
   const { components: catalog } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   for (const part of catalog.filter((c) => c.partOf)) {

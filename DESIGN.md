@@ -166,6 +166,10 @@ action-danger-bg   →  danger-700  L 50.3%   ← 600이 아니라 700
 여기서 비색상 신호를 전달하는 것은 **라벨 텍스트와 아이콘 모양** 둘이다.
 Storybook `StatusChip / 흑백 출력 검증` 스토리에서 색을 제거한 상태로 확인할 수 있다.
 
+행 액션의 DropdownMenuContent는 포털의 목록으로 표시한다. DropdownMenuPortal은
+그 레이어를 배치하는 부품이다. destructive 항목은 삭제 아이콘을 함께 표시하여 색만으로
+파괴적 동작을 구분하지 않는다.
+
 **링크는 브랜드 레드를 쓰지 않는다.** `info-700 #0A66AF`를 쓴다.
 데이터 표 안의 빨간 글자는 "음수·에러"로 읽히기 때문이다. 이 분리로 링크와
 에러 텍스트의 거리가 ΔE 30.4까지 벌어졌다 — 브랜드 레드였다면 5.7이었다.
@@ -237,6 +241,9 @@ Storybook `StatusChip / 흑백 출력 검증` 스토리에서 색을 제거한 �
 
 다크는 **반전이 아니라 재매핑**이다. 중립은 단계 방향을 뒤집고, 의미색은
 틴트를 어둡게 · 글자를 밝게 다시 지정한다.
+
+Toaster도 명시적 테마와 OS 설정 변경을 구독해 알림 테마를 맞춘다. 오류 알림은
+자동으로 지우지 않고 사용자가 닫을 때까지 유지한다.
 
 ---
 
@@ -420,6 +427,10 @@ shadcn/ui 방식으로 **소스를 직접 소유**한다(복사해 와서 우리
 5. **값이 들어가는 자리는 고정 너비를 주지 않는다.** 최소 너비 + 말줄임 + 전체값 보존.
 6. **아이콘 전용 버튼은 `aria-label` 필수.**
 
+Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·trailingIcon을 모두
+그 링크 안에 보존한다. 앱은 공개 export를 사용한다. SELECTION_COLUMN_ID도
+내부 문자열을 복사하는 대신 공개된 선택 열 식별자를 가져다 쓴다.
+
 ---
 
 ## 7. 자동 검증 게이트
@@ -554,7 +565,11 @@ const effectiveState = state === 'idle' && empty ? 'empty' : state;
 **실패를 "데이터 없음"으로 보여주면 안 된다.** "오늘 주문이 없다"와
 "주문을 불러오지 못했다"는 사용자가 할 행동이 다르다 — 전자는 사실이고
 후자는 새로고침해야 한다. 오류는 `role="alert"` · 틴트 배경 · 아이콘으로
-비어있음과 **눈으로도 구별**되게 한다.
+비어있음과 **눈으로도 구별**되게 한다. EmptyState는 `role="status"`로
+빈 사실을 전달한다(§14.2).
+
+ChartFrame은 플롯 컨테이너의 폭을 측정해 자식 차트에 전달한다. 화면 코드가
+같은 폭 측정기를 별도로 소유하지 않는다.
 
 로딩 중에도 **제목과 범례는 진짜를 그대로 보여준다.** 둘 다 props 지
 데이터가 아니다. 바뀌는 것은 플롯 영역뿐이라 완료될 때 레이아웃이 흔들리지 않는다
@@ -824,6 +839,9 @@ compositionstart → input(ㅎ) → input(하) → input(한) → input(한) →
 가드는 `nativeEvent.isComposing` 또는 `composition*` 이벤트 중 **한 가지만** 쓴다.
 섞으면 어느 쪽이 참인지 알 수 없게 된다.
 
+DatePicker도 입력 중 초안과 확정값을 분리한다. 조합 중에는 파싱하지 않고
+blur 또는 Enter에서 검증해 확정값을 알린다.
+
 참고로 **순수 제어 입력(변형 없이 `value`/`onChange`)은 한글이 멀쩡하다** —
 "한글입력"이 그대로 들어간다. 제어 입력 자체를 피할 이유는 없다.
 문제는 **값을 되쓰거나 포커스를 옮길 때**다.
@@ -866,6 +884,10 @@ shouldValidate({ trigger, hasErrored, isComposing })
 눈으로 보는 순서와 읽어주는 순서가 다른 것은 의도다.
 
 SelectTrigger의 기본 `w-full`은 Field용이다. 툴바 필터에서는 `className="w-auto min-w-40"`처럼 폭을 지정한다 (Select / 툴바 필터 스토리).
+
+Select의 Field 연결(id·설명·오류·필수 여부)은 실제 SelectTrigger에 전달한다.
+열기·선택의 Enter 처리는 내부 Radix가 소유한다. 앱과 래퍼가 별도로 가로채지 않는다.
+트리거의 기본 높이는 `--control-h-md`(38px)이며 SelectContent는 포털의 선택 목록이다(§16.5).
 
 ### 11.5 Enter 로 다음 칸 — 옵트인
 
@@ -1026,6 +1048,7 @@ playwright 대신 CDP 를 직접 쓰고, 차트 라이브러리 대신 visx 프�
 | `related` 가 실재하는 이름이다 | 삭제된 컴포넌트 참조 |
 | 토큰 이름이 `tokens.json` 과 일치 | 토큰 이름 변경 |
 | `partOf`와 부모의 `parts`가 양방향으로 일치한다 | 없는 부모·부품, 잘못된 소속·순환·중복 참조 |
+| 소비자 지침에 구현 금지어가 없고 규칙당 120자 이하이며 컴포넌트 사이 복제가 없다 | 구현 메모·장문·복붙 재유입(R28) |
 
 ### 13.3 카탈로그 크기는 예산이다
 
@@ -1500,6 +1523,8 @@ AlertDialogAction의 danger 변형은 기존 Button의 danger 액션 토큰을 �
 
 ### 16.5 레이어와 알림 — 사전 실측을 설계 근거로 유지한다
 
+DialogContent·AlertDialogContent는 내용과 오버레이를 포털에 렌더한다.
+
 순수 Radix + CDP 사전 측정에서 Dialog는 첫 입력에 포커스를 주고, Escape·바깥 클릭은
 preventDefault로 막히며 명시적 닫기는 계속 동작했다. 바깥 콘텐츠는 aria-hidden true다.
 Dialog 안 Select는 포털로 위에 표시됐다. native popover는 z-index auto여도 Dialog의
@@ -1531,6 +1556,7 @@ browser.mjs를 통해 스토리 play 완료와 실제 키보드·포커스·닫�
 기존 Input을 확장한다. text(기본)·number·search·password·email·tel·url·date를
 그대로 전달한다. **금액·수량은 `type="text" inputMode="numeric" numeric`**을 쓴다.
 `numeric`은 기존 `.tabular`와 우측 정렬이다. 값의 쉼표나 한글 조합을 변형하지 않는다.
+입력 경계선은 `border-field` 의미 토큰을 쓴다(§2.4).
 
 사전 브라우저 실측에서 number는 `1,000`을 조용히 `1000`으로 바꾸고 validity도 true였다.
 `1e5`는 통과하여 valueAsNumber=100000, `--5`는 빈 문자열·invalid가 됐다.
@@ -1601,6 +1627,9 @@ Checkbox는 **폼의 일부이며 제출할 때 함께 적용**한다(약관 동
 **폼 안에 Switch를 넣지 않는다.** 즉시 적용인지 제출 대기인지 모호해진다.
 Radix의 button type=button·role=switch·aria-checked와 Space 토글을 유지한다.
 켜짐/꺼짐은 손잡이 위치가 1차 신호이고 색이 보조한다. 비활성·Label 연결도 유지한다.
+
+Checkbox는 네이티브 체크박스를 사용한다. 포커스 표시를 유지하고 체크·빼기 아이콘으로
+선택·혼합 상태를 구분하여 색 단독 신호를 피한다.
 
 ### 17.5 Label과 Field — 자리와 책임이 다르다
 

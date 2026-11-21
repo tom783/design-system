@@ -7,6 +7,7 @@ import * as ast from 'typescript/unstable/ast';
 import { checkBoundaries } from '../../scripts/check-boundaries.mjs';
 import intents, { principles } from './component-intent.mjs';
 import { restoreComponent } from '../../packages/mcp/catalog.mjs';
+import { checkConsumerGuidance } from './consumer-guidance.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const read = (path) => readFile(resolve(root, path), 'utf8');
@@ -145,7 +146,7 @@ export function normalizeTokens(data) {
 }
 
 export function validate({ components, intents, sections, tokens, expectedNames, principles, bridgeTargets = [] }) {
-  const errors = [];
+  const errors = checkConsumerGuidance(intents).map(error => `[8 guidance] ${JSON.stringify(error)}`);
   const names = new Set(intents.map((item) => item.name));
   const sourceNames = new Set(components.map((item) => item.name));
   const tokenNames = new Set(tokens.map((item) => item.name));
@@ -270,7 +271,7 @@ export async function build() {
   // 리소스 소비자도 스스로 복원할 수 있어야 하므로 derived 전송량까지 예산에 포함한다.
   assertSizeBudget(resource, manifest);
   await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
-  console.error(`MCP 검증 7종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
+  console.error(`MCP 검증 8종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   build().catch((error) => { console.error(error.message); process.exitCode = 1; });

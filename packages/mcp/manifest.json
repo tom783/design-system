@@ -4089,19 +4089,39 @@
     {
       "name": "Carousel",
       "category": "media",
-      "purpose": "배너·콘텐츠 슬라이드를 네이티브 가로 스크롤과 scroll-snap으로 넘긴다.",
+      "purpose": "배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",
       "useWhen": [
         "배너 슬라이드",
         "콘텐츠를 한 장씩 가로로 넘길 때"
       ],
       "dont": [
-        "Swiper·Embla·transform 이동·기본 순환을 추가하지 마라",
+        "Swiper·Embla 같은 캐러셀 라이브러리를 함께 쓰지 마라",
         "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"
       ],
       "rules": [
         {
-          "text": "트랙은 이름 있는 캐러셀 group과 tabindex=0, 슬라이드는 순번·전체 개수의 group이다. 현재값은 IntersectionObserver threshold=0.6으로만 읽는다. 이전·다음은 한 폭 scrollBy하며 처음·끝에서 비활성이다. 점은 scrollTo·aria-current와 크기 차이를 쓴다. autoplay는 정지 버튼을 항상 동반한다. 버튼·호버·내부 포커스·reduce·document.hidden·사용자 직접 넘김에서 멈춘다. 호버·포커스·숨김은 해제 후 재개하지만 직접 넘김은 영구 종료한다. 자동 넘김은 aria-live=off, 직접 넘김 뒤 polite로 순번을 알린다. reduce는 시작하지 않고 변경을 구독하며 컴포넌트 CSS에서 scroll-behavior:auto를 지정한다.",
-          "source": "DESIGN.md 23"
+          "text": "슬라이드는 CarouselSlide로 감싼다.",
+          "source": "DESIGN.md 23.1"
+        },
+        {
+          "text": "양 끝에서는 멈춘다. 앱이 순환 이동을 덧붙이지 않는다.",
+          "source": "DESIGN.md 23.1"
+        },
+        {
+          "text": "autoplay의 정지 버튼은 내장되어 있다. 따로 만들지 않는다.",
+          "source": "DESIGN.md 23.2"
+        },
+        {
+          "text": "사용자가 직접 넘기거나 슬라이드 안을 누르면 자동재생이 종료된다. 앱이 재시작하지 않는다.",
+          "source": "DESIGN.md 23.2"
+        },
+        {
+          "text": "호버·내부 포커스·숨겨진 탭의 일시 정지는 내장되어 있다. 별도 타이머를 만들지 않는다.",
+          "source": "DESIGN.md 23.2"
+        },
+        {
+          "text": "동작 줄이기 설정이 끈 자동재생·부드러운 넘김을 앱이 다시 켜지 않는다.",
+          "source": "DESIGN.md 23.3"
         }
       ],
       "related": [
@@ -4168,7 +4188,7 @@
     {
       "name": "CarouselSlide",
       "partOf": "Carousel",
-      "purpose": "슬라이드 부품. 직접 자식으로 배치하며 순번·전체 개수는 부모가 제공한다. 자체 Tab 정지점은 추가하지 않으며 내부 링크는 네이티브 Tab 경로에 남는다.",
+      "purpose": "캐러셀 안의 콘텐츠 한 장을 표시한다.",
       "source": "components/carousel/carousel.tsx",
       "props": [],
       "extends": [
@@ -4188,13 +4208,29 @@
         "이미지나 영상을 확대해서 볼 때"
       ],
       "dont": [
-        "커스텀 플레이어·자동 재생을 만들지 마라",
-        "pan·zoom·끌어서 옮기기는 현재 범위가 아니다"
+        "영상 재생 컨트롤을 따로 만들거나 자동 재생을 붙이지 마라",
+        "pan·zoom·끌어서 옮기기가 필요하면 다른 도구를 쓴다"
       ],
       "rules": [
         {
-          "text": "popup은 DialogContent wide, floating은 manual popover로 바깥 입력·스크롤을 유지한다. 닫기 버튼과 패널 안 Escape를 제공한다. 이미지는 alt 필수·종횡비 보존, 로딩 Skeleton과 오류 ErrorState는 같은 예약 상자를 쓴다. 동영상은 controls·preload=metadata·자막 track을 쓰며 poster를 권장한다. PiP는 기능 탐지·disablePictureInPicture를 존중하고 실제 클릭으로 열고 해제한다.",
-          "source": "DESIGN.md 22"
+          "text": "영상을 보며 바깥 화면에서 작업해야 하면 mode=floating을 쓴다.",
+          "source": "DESIGN.md 22.1"
+        },
+        {
+          "text": "닫기 버튼·패널 안 Escape 닫기를 중복 구현하지 않는다.",
+          "source": "DESIGN.md 22.1"
+        },
+        {
+          "text": "이미지에는 내용을 설명하는 alt를 준다.",
+          "source": "DESIGN.md 22.2"
+        },
+        {
+          "text": "영상에 poster·captions를 제공하고 내장 재생 컨트롤을 쓴다.",
+          "source": "DESIGN.md 22.2"
+        },
+        {
+          "text": "PiP를 금지할 영상에는 disablePictureInPicture를 준다.",
+          "source": "DESIGN.md 22.3"
         }
       ],
       "related": [
@@ -4272,7 +4308,7 @@
     {
       "name": "Collapsible",
       "category": "disclosure",
-      "purpose": "고급 설정 같은 임의 내용을 접고 펼친다. 트리거는 항상 보인다.",
+      "purpose": "고급 설정 같은 내용을 항상 보이는 버튼으로 접고 펼친다.",
       "useWhen": [
         "고급 설정 접기",
         "패널을 접고 펼칠 때"
@@ -4283,7 +4319,11 @@
       ],
       "rules": [
         {
-          "text": "트리거 라벨은 앱이 준다. ARIA·data-state는 Radix가 소유한다. 높이는 Radix 변수로 전환하며 reduce에서는 0이다. 닫으면 자식이 제거되므로 입력값 보존은 Content forceMount를 쓴다.",
+          "text": "트리거 라벨은 앱이 제공한다.",
+          "source": "DESIGN.md 21"
+        },
+        {
+          "text": "닫힌 입력값·자식 상태를 보존하려면 CollapsibleContent에 forceMount를 준다.",
           "source": "DESIGN.md 21"
         }
       ],
@@ -4313,7 +4353,7 @@
     {
       "name": "CollapsibleTrigger",
       "partOf": "Collapsible",
-      "purpose": "항상 보이는 접고 펴기 버튼. 라벨은 앱이 제공한다.",
+      "purpose": "항상 보이는 버튼으로 내용을 접고 펼친다.",
       "source": "components/collapsible/collapsible.tsx",
       "props": [],
       "extends": [
@@ -4326,7 +4366,7 @@
     {
       "name": "CollapsibleContent",
       "partOf": "Collapsible",
-      "purpose": "접을 내용. forceMount는 닫힌 자식과 입력값을 유지한다.",
+      "purpose": "접고 펼칠 내용을 담는다.",
       "source": "components/collapsible/collapsible.tsx",
       "props": [],
       "extends": [
@@ -4344,13 +4384,20 @@
         "상품 설명·비고 등 긴 설명 더보기"
       ],
       "dont": [
-        "넘치지 않을 때 버튼을 렌더하지 마라",
-        "전역과 다른 줄바꿈 규칙을 넣지 마라",
+        "링크·입력 등 조작할 요소를 접을 때는 Collapsible을 쓴다",
         "DataTable 셀에 쓰지 마라. 셀이 말줄임과 전체 값 title 을 이미 제공한다"
       ],
       "rules": [
         {
-          "text": "기본 2줄. ResizeObserver와 MutationObserver(childList·characterData·subtree), fonts.ready로 재측정한다. 펼친 상태도 접힌 치수로 판정한다. 전체 글은 DOM에 남아 복사할 수 있다. 버튼은 글 id로 controls·describedby를 연결하고 제어·비제어를 지원한다. 전환은 즉시 적용한다.",
+          "text": "넘칠 때만 생기는 더보기 버튼을 중복 구현하지 않는다.",
+          "source": "DESIGN.md 21"
+        },
+        {
+          "text": "전체 글은 DOM에 남아 복사된다. 복사용 글을 따로 만들지 않는다.",
+          "source": "DESIGN.md 21"
+        },
+        {
+          "text": "펼침을 제어하려면 expanded·onExpandedChange를 함께 준다.",
           "source": "DESIGN.md 21"
         }
       ],
@@ -4408,25 +4455,53 @@
         "검색해서 여러 개 고르기"
       ],
       "dont": [
-        "조합 중 결과 없음·Enter 선택·화살표 이동·Escape 닫기 금지",
-        "가상 스크롤은 제공하지 않는다"
+        "한글 조합 중 값을 바꾸거나 선택·포커스 이동을 추가하지 마라",
+        "가상 스크롤이 필요하면 다른 도구를 쓴다"
       ],
       "rules": [
         {
-          "text": "shouldFilter=false로 자체 한글 필터를 쓴다. NFC·공백·대소문자 정규화, 초성·자모 매칭을 지원하고 filter로 교체한다. 조합 중 0개면 직전의 비어 있지 않은 결과를 유지한다. 단일 모드 활성은 cmdk aria-selected·aria-activedescendant, 고른 값은 체크 표시로 구분한다. 500개 초과의 서버 필터링은 앱 책임이다.",
-          "source": "DESIGN.md 18"
+          "text": "기본 초성·자모 검색을 바꾸려면 filter를 준다.",
+          "source": "DESIGN.md 18.2"
         },
         {
-          "text": "multiple은 string[] 값과 콜백을 쓰며 검색 입력 앞에 28px 태그를 둔다. 24px 해제 버튼은 라벨 선택 해제로 읽고 칩 묶음은 roving tabindex 하나·좌우 이동·Delete/Backspace 제거 후 이웃 포커스를 쓴다. 빈 입력 Backspace는 첫 회 강조·두 번째 제거, 다른 키는 강조 해제다. 조합 중 강조·삭제하지 않는다. 칩 영역은 2줄·58px 내부 스크롤로 320px 툴바의 컨트롤 높이를 38→68px에 제한한다. 선택해도 목록을 닫거나 다음 칸으로 이동하지 않는다. 검색 없이 고르기만 하면 MultiSelect다.",
-          "source": "DESIGN.md 20"
+          "text": "조합 중 결과 없음은 내장 처리된다. 앱이 빈 결과를 따로 표시하지 않는다.",
+          "source": "DESIGN.md 18.2"
         },
         {
-          "text": "단일 선택은 FormFlow 안 Enter로 열고 조합 종료 후 선택·닫힘 시 공용 focusNextFormStop으로 다음 Tab 정지점에 간다. 트리거에 data-form-control=advance를 붙이지 않는다. 폼 밖 선택·Escape는 트리거로 복귀한다.",
+          "text": "500개 초과 후보는 앱 서버에서 거른다.",
+          "source": "DESIGN.md 18.1"
+        },
+        {
+          "text": "multiple에는 value와 onValueChange로 string[]을 주고받는다.",
+          "source": "DESIGN.md 20.2"
+        },
+        {
+          "text": "태그는 2줄 뒤 내부 스크롤한다. 앱이 선택 수마다 높이를 늘리지 않는다.",
+          "source": "DESIGN.md 20.2"
+        },
+        {
+          "text": "빈 입력 Backspace는 두 번 눌러 태그를 지운다. 앱이 즉시 삭제를 덧붙이지 않는다.",
+          "source": "DESIGN.md 20.2"
+        },
+        {
+          "text": "multiple은 선택 뒤에도 머문다. 앱이 닫거나 다음 칸으로 보내지 않는다.",
+          "source": "DESIGN.md 20.2"
+        },
+        {
+          "text": "검색 없이 여러 개를 고를 때는 MultiSelect를 쓴다.",
+          "source": "DESIGN.md 20.1"
+        },
+        {
+          "text": "FormFlow 안 단일 선택은 고르면 다음 칸으로 간다. 별도 포커스 이동을 붙이지 않는다.",
           "source": "DESIGN.md 11.5"
         },
         {
-          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-          "source": "DESIGN.md 19"
+          "text": "트리거에 data-form-control=advance를 붙이지 않는다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "폼 밖 선택·Escape는 트리거로 돌아간다. 포커스를 다시 옮기지 않는다.",
+          "source": "DESIGN.md 11.5"
         }
       ],
       "related": [
@@ -4526,7 +4601,7 @@
     {
       "name": "MultiSelect",
       "category": "form",
-      "purpose": "요약 트리거와 체크 목록으로 여러 사업장을 고른다.",
+      "purpose": "요약 트리거와 체크 목록으로 여러 값을 고른다.",
       "useWhen": [
         "여러 사업장 고르기",
         "검색 없이 여러 개 선택할 때"
@@ -4537,8 +4612,16 @@
       ],
       "rules": [
         {
-          "text": "트리거 높이는 control-h-md로 고정하고 요약을 말줄임·title로 보존한다. 목록은 listbox·aria-multiselectable, option·aria-selected와 체크 아이콘을 쓴다. 화살표·Home/End는 aria-activedescendant를 옮기고 Space/Enter는 토글한다. Escape로 닫고 트리거로 복귀한다. 전체 해제와 선택 개수를 제공한다.",
-          "source": "DESIGN.md 20"
+          "text": "선택 수가 늘어도 트리거 높이는 같다. 태그가 필요하면 Combobox multiple을 쓴다.",
+          "source": "DESIGN.md 20.1"
+        },
+        {
+          "text": "선택 뒤에도 머문다. 앱이 닫거나 다음 입력으로 보내지 않는다.",
+          "source": "DESIGN.md 20.1"
+        },
+        {
+          "text": "전체 해제·선택 개수를 중복 구현하지 않는다.",
+          "source": "DESIGN.md 20.1"
         }
       ],
       "related": [
@@ -4614,7 +4697,7 @@
     {
       "name": "Tabs",
       "category": "navigation",
-      "purpose": "상세 정보를 탭으로 나누기 위한 루트다.",
+      "purpose": "상세 정보를 탭별 패널로 나눠 보여준다.",
       "useWhen": [
         "상세 화면을 분류별 패널로 나눌 때"
       ],
@@ -4623,8 +4706,12 @@
       ],
       "rules": [
         {
-          "text": "automatic 기본값을 유지하고 서버 패널은 manual을 명시한다. 가로 스크롤과 선택 탭 끌어오기, reduced-motion을 지원한다. 줄바꿈하거나 스크롤바를 숨기지 않는다. 선택은 브랜드 2px 밑줄과 굵기, 포커스는 별도 outline이다. 패널의 aria-labelledby와 tabindex를 유지한다.",
-          "source": "DESIGN.md 16"
+          "text": "서버 데이터를 조회하는 패널에는 activationMode=manual을 준다.",
+          "source": "DESIGN.md 16.1"
+        },
+        {
+          "text": "넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.",
+          "source": "DESIGN.md 16.1"
         }
       ],
       "related": [
@@ -4698,12 +4785,20 @@
         "상세에서 상위 목록과 뒤로 가는 경로가 필요할 때"
       ],
       "dont": [
-        "컴포넌트에 라우팅이나 복원 로직을 넣지 마라"
+        "필터·스크롤 복원이 자동으로 된다고 가정하지 마라"
       ],
       "rules": [
         {
-          "text": "nav와 ol로 표현한다. 마지막은 aria-current page, separator는 presentation·aria-hidden이다. 긴 경로는 첫 항목·생략·마지막 두 항목이며 생략 수를 알린다. 앱이 consume으로 필터·스크롤·재방문 행을 복원한다.",
-          "source": "DESIGN.md 16"
+          "text": "마지막 항목에는 링크 대신 BreadcrumbPage를 쓴다.",
+          "source": "DESIGN.md 16.2"
+        },
+        {
+          "text": "긴 경로는 첫 항목·BreadcrumbEllipsis·마지막 둘로 조립한다.",
+          "source": "DESIGN.md 16.2"
+        },
+        {
+          "text": "앱이 consume으로 기록을 읽고 필터·스크롤·재방문 행을 복원한다.",
+          "source": "DESIGN.md 16.2"
         }
       ],
       "related": [
@@ -4825,7 +4920,7 @@
     {
       "name": "Dialog",
       "category": "overlay",
-      "purpose": "입력·편집·선택 모달을 여는 루트다.",
+      "purpose": "입력·편집·선택을 모달로 제공한다.",
       "useWhen": [
         "되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"
       ],
@@ -4834,8 +4929,20 @@
       ],
       "rules": [
         {
-          "text": "제목 → 설명 → 내용 → 푸터 순서이며 초기 포커스는 첫 포커스 가능 요소다. 파괴적 버튼을 첫 요소로 두지 않는다. 저장하지 않은 변경이 있을 때 dismissible=false와 onDismissAttempt 확인 AlertDialog를 쓴다. Escape를 무반응으로 삼키지 않는다. Title·Description 필수, 설명이 없으면 aria-describedby undefined다.",
-          "source": "DESIGN.md 16"
+          "text": "DialogTitle·DialogDescription → 내용 → 푸터 순서로 배치한다.",
+          "source": "DESIGN.md 16.3"
+        },
+        {
+          "text": "설명이 없으면 Content에 aria-describedby={undefined}를 준다.",
+          "source": "DESIGN.md 16.3"
+        },
+        {
+          "text": "첫 요소로 포커스가 가므로 파괴적 버튼을 맨 앞에 두지 않는다.",
+          "source": "DESIGN.md 16.3"
+        },
+        {
+          "text": "저장하지 않은 변경에는 dismissible=false·onDismissAttempt로 확인 AlertDialog를 연다. Escape도 확인을 거친다.",
+          "source": "DESIGN.md 16.3"
         }
       ],
       "related": [
@@ -4879,7 +4986,7 @@
     {
       "name": "DialogContent",
       "partOf": "Dialog",
-      "purpose": "입력 창의 포털과 닫기 보호다.",
+      "purpose": "입력 창의 내용과 닫기 보호를 제공한다.",
       "source": "components/dialog/dialog.tsx",
       "props": [
         {
@@ -4967,7 +5074,7 @@
     {
       "name": "DialogClose",
       "partOf": "Dialog",
-      "purpose": "닫기 보호 중에도 동작하는 명시적 닫기다.",
+      "purpose": "입력 창을 닫는 버튼을 제공한다.",
       "source": "components/dialog/dialog.tsx",
       "props": [],
       "extends": [
@@ -4990,8 +5097,12 @@
       ],
       "rules": [
         {
-          "text": "Cancel 초기 포커스, 바깥 클릭 유지, Escape 닫기는 Radix 기본값을 유지한다. danger 액션은 기존 Button 토큰을 재사용한다.",
-          "source": "DESIGN.md 16"
+          "text": "Cancel이 초기 포커스를 받는다. 앱이 파괴적 액션으로 옮기지 않는다.",
+          "source": "DESIGN.md 16.4"
+        },
+        {
+          "text": "바깥 클릭은 유지, Escape는 닫기다. 앱이 덮어쓰지 않는다.",
+          "source": "DESIGN.md 16.4"
         }
       ],
       "related": [
@@ -5036,7 +5147,7 @@
     {
       "name": "AlertDialogContent",
       "partOf": "AlertDialog",
-      "purpose": "파괴적 선택 확인의 포털이다.",
+      "purpose": "되돌릴 수 없는 선택을 확인하는 내용을 표시한다.",
       "source": "components/dialog/alert-dialog.tsx",
       "props": [],
       "extends": [
@@ -5102,7 +5213,7 @@
     {
       "name": "AlertDialogAction",
       "partOf": "AlertDialog",
-      "purpose": "확정 동작과 기존 danger 변형이다.",
+      "purpose": "확인한 작업을 실행하고 확인창을 닫는다.",
       "source": "components/dialog/alert-dialog.tsx",
       "props": [
         {
@@ -5134,7 +5245,7 @@
     {
       "name": "Select",
       "category": "form",
-      "purpose": "상태·정렬 필터의 단일 선택 루트",
+      "purpose": "상태·정렬 필터에서 하나를 고른다.",
       "useWhen": [
         "20개 이하의 상태·정렬 옵션을 선택할 때"
       ],
@@ -5143,7 +5254,7 @@
       ],
       "rules": [
         {
-          "text": "Field 배선은 실제 트리거로 전달하고 Enter는 Radix에 맡긴다.",
+          "text": "Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다.",
           "source": "DESIGN.md 11.4"
         }
       ],
@@ -5180,7 +5291,7 @@
     {
       "name": "SelectTrigger",
       "partOf": "Select",
-      "purpose": "선택 필터를 여는 38px 버튼",
+      "purpose": "선택 목록을 연다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5194,7 +5305,7 @@
     {
       "name": "SelectValue",
       "partOf": "Select",
-      "purpose": "선택값 또는 플레이스홀더",
+      "purpose": "선택값이나 플레이스홀더를 표시한다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5207,7 +5318,7 @@
     {
       "name": "SelectContent",
       "partOf": "Select",
-      "purpose": "포털의 선택 목록",
+      "purpose": "선택할 옵션 목록을 표시한다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5223,7 +5334,7 @@
     {
       "name": "SelectGroup",
       "partOf": "Select",
-      "purpose": "선택 항목 그룹",
+      "purpose": "관련 선택 항목을 묶는다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5236,7 +5347,7 @@
     {
       "name": "SelectLabel",
       "partOf": "Select",
-      "purpose": "선택 그룹 레이블",
+      "purpose": "선택 그룹의 이름을 표시한다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5249,7 +5360,7 @@
     {
       "name": "SelectItem",
       "partOf": "Select",
-      "purpose": "단일 선택 옵션",
+      "purpose": "선택 옵션 하나를 표시한다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5262,7 +5373,7 @@
     {
       "name": "SelectSeparator",
       "partOf": "Select",
-      "purpose": "선택 그룹 구분선",
+      "purpose": "선택 그룹을 구분한다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5275,7 +5386,7 @@
     {
       "name": "SelectScrollUpButton",
       "partOf": "Select",
-      "purpose": "목록 위로 스크롤",
+      "purpose": "선택 목록을 위로 넘긴다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5288,7 +5399,7 @@
     {
       "name": "SelectScrollDownButton",
       "partOf": "Select",
-      "purpose": "목록 아래로 스크롤",
+      "purpose": "선택 목록을 아래로 넘긴다.",
       "source": "components/select/select.tsx",
       "props": [],
       "extends": [
@@ -5301,7 +5412,7 @@
     {
       "name": "DropdownMenu",
       "category": "action",
-      "purpose": "행 액션 메뉴 루트",
+      "purpose": "행에서 실행할 액션을 메뉴로 제공한다.",
       "useWhen": [
         "표의 행에서 액션을 실행할 때"
       ],
@@ -5345,7 +5456,7 @@
     {
       "name": "DropdownMenuTrigger",
       "partOf": "DropdownMenu",
-      "purpose": "행 액션 열기",
+      "purpose": "행 액션 메뉴를 연다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5358,7 +5469,7 @@
     {
       "name": "DropdownMenuContent",
       "partOf": "DropdownMenu",
-      "purpose": "포털 액션 목록",
+      "purpose": "실행할 액션 목록을 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5371,7 +5482,7 @@
     {
       "name": "DropdownMenuItem",
       "partOf": "DropdownMenu",
-      "purpose": "액션 실행 항목",
+      "purpose": "메뉴 액션 하나를 실행한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
@@ -5394,7 +5505,7 @@
     {
       "name": "DropdownMenuCheckboxItem",
       "partOf": "DropdownMenu",
-      "purpose": "체크형 메뉴 항목",
+      "purpose": "메뉴에서 켜고 끌 항목을 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5407,7 +5518,7 @@
     {
       "name": "DropdownMenuRadioItem",
       "partOf": "DropdownMenu",
-      "purpose": "라디오형 메뉴 항목",
+      "purpose": "메뉴에서 하나만 고를 항목을 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5420,7 +5531,7 @@
     {
       "name": "DropdownMenuLabel",
       "partOf": "DropdownMenu",
-      "purpose": "메뉴 그룹 이름",
+      "purpose": "메뉴 그룹 이름을 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
@@ -5438,7 +5549,7 @@
     {
       "name": "DropdownMenuSeparator",
       "partOf": "DropdownMenu",
-      "purpose": "메뉴 구분선",
+      "purpose": "메뉴 그룹을 구분한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5451,7 +5562,7 @@
     {
       "name": "DropdownMenuShortcut",
       "partOf": "DropdownMenu",
-      "purpose": "메뉴 단축키 표시",
+      "purpose": "메뉴의 단축키를 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5464,7 +5575,7 @@
     {
       "name": "DropdownMenuGroup",
       "partOf": "DropdownMenu",
-      "purpose": "메뉴 항목 그룹",
+      "purpose": "관련 메뉴 항목을 묶는다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5477,7 +5588,7 @@
     {
       "name": "DropdownMenuPortal",
       "partOf": "DropdownMenu",
-      "purpose": "메뉴 포털",
+      "purpose": "메뉴를 다른 화면 요소 위에 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [],
@@ -5486,7 +5597,7 @@
     {
       "name": "DropdownMenuSub",
       "partOf": "DropdownMenu",
-      "purpose": "하위 메뉴 루트",
+      "purpose": "하위 메뉴를 제공한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [],
@@ -5495,7 +5606,7 @@
     {
       "name": "DropdownMenuSubContent",
       "partOf": "DropdownMenu",
-      "purpose": "하위 메뉴 목록",
+      "purpose": "하위 메뉴 목록을 표시한다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5508,7 +5619,7 @@
     {
       "name": "DropdownMenuSubTrigger",
       "partOf": "DropdownMenu",
-      "purpose": "하위 메뉴 열기",
+      "purpose": "하위 메뉴를 연다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
@@ -5526,7 +5637,7 @@
     {
       "name": "DropdownMenuRadioGroup",
       "partOf": "DropdownMenu",
-      "purpose": "라디오 메뉴 그룹",
+      "purpose": "메뉴에서 하나만 고를 항목을 묶는다.",
       "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [],
       "extends": [
@@ -5548,7 +5659,7 @@
       ],
       "rules": [
         {
-          "text": "명시적 테마와 OS 설정을 구독하고 오류는 닫기까지 유지한다.",
+          "text": "toast.error는 닫기 버튼을 누를 때까지 남는다. duration을 줘도 바뀌지 않는다.",
           "source": "DESIGN.md 2.5"
         }
       ],
@@ -5580,7 +5691,7 @@
       ],
       "rules": [
         {
-          "text": "초안과 확정값을 분리하고 blur 또는 Enter에서 검증한다.",
+          "text": "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
           "source": "DESIGN.md 11.1"
         }
       ],
@@ -5654,7 +5765,11 @@
       ],
       "rules": [
         {
-          "text": "danger는 되돌릴 수 없는 작업에만 쓴다. asChild는 단일 링크에 스타일을 합치며 양쪽 아이콘도 링크 안에 보존한다.",
+          "text": "variant=danger는 되돌릴 수 없는 작업에만 쓴다.",
+          "source": "DESIGN.md 6"
+        },
+        {
+          "text": "링크를 버튼처럼 표시하려면 asChild 안에 링크 하나를 넣는다.",
           "source": "DESIGN.md 6"
         }
       ],
@@ -5715,8 +5830,24 @@
       ],
       "rules": [
         {
-          "text": "금액·수량은 type=text inputMode=numeric과 numeric 고정폭 숫자를 쓴다. number는 휠 시 blur로 값 변경을 피하고 페이지 스크롤을 보존한다. password는 보기 토글, search는 자체 지우기와 입력 포커스 복귀를 제공한다. date는 UTC·치수·영어 검증 때문에 비권장이다. border-field 경계선과 Field의 한국어 오류를 쓴다.",
-          "source": "DESIGN.md 17"
+          "text": "금액·수량은 type=text inputMode=numeric에 Input의 numeric 속성(고정폭 숫자)을 함께 쓴다.",
+          "source": "DESIGN.md 17.1"
+        },
+        {
+          "text": "number의 휠 값 변경은 컴포넌트가 막는다. 페이지 스크롤까지 막지 않는다.",
+          "source": "DESIGN.md 17.1"
+        },
+        {
+          "text": "password 보기·search 지우기 버튼은 내장되어 있다. 중복 구현하지 않는다.",
+          "source": "DESIGN.md 17.1"
+        },
+        {
+          "text": "날짜 입력은 DatePicker를 우선 쓴다. type=date가 꼭 필요하면 value 문자열로 다룬다.",
+          "source": "DESIGN.md 17.1"
+        },
+        {
+          "text": "검증은 앱이 수행하고 Field로 한국어 오류를 표시한다.",
+          "source": "DESIGN.md 17.1"
         }
       ],
       "related": [
@@ -5767,13 +5898,17 @@
         "메모·비고를 여러 줄로 작성할 때"
       ],
       "dont": [
-        "IME 조합 중 높이 변경을 막지 마라",
-        "autoGrow가 꺼진 입력의 resize를 막지 마라"
+        "자동 높이가 필요하면 autoGrow를 쓰고 직접 높이를 계산하지 않는다",
+        "autoGrow가 꺼진 입력의 크기 조절을 막지 마라"
       ],
       "rules": [
         {
-          "text": "rows 기본 3. autoGrow는 scrollHeight로 높이를 계산하고 maxHeight(기본 240px)에서 스크롤한다. FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다.",
-          "source": "DESIGN.md 17"
+          "text": "autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.",
+          "source": "DESIGN.md 17.2"
+        },
+        {
+          "text": "FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.",
+          "source": "DESIGN.md 17.2"
         }
       ],
       "related": [
@@ -5818,21 +5953,20 @@
         "여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때"
       ],
       "dont": [
-        "화살표에 포커스만 이동하는 모드를 넣지 마라",
-        "레이블 없이 점만 클릭하게 하지 마라"
+        "각 선택지에 연결된 레이블을 생략하지 마라"
       ],
       "rules": [
         {
-          "text": "Radix 기본 화살표는 포커스와 선택을 함께 옮기고 끝에서 순환한다. 점과 테두리 변화로 선택을 표시하고 Label htmlFor로 각 항목을 연결한다.",
-          "source": "DESIGN.md 17"
+          "text": "각 RadioGroupItem의 id에 Label htmlFor를 연결한다.",
+          "source": "DESIGN.md 17.3"
         },
         {
-          "text": "RadioGroupItem에 data-form-control=advance를 둔다. FormFlow 안 Enter는 다음 칸, 화살표는 선택·포커스를 옮긴다. 그룹 루트의 Tab 정지점을 바꾸지 않는다.",
+          "text": "화살표는 포커스와 선택을 함께 옮긴다. 앱이 포커스만 옮기도록 바꾸지 않는다.",
+          "source": "DESIGN.md 17.3"
+        },
+        {
+          "text": "FormFlow 안 Enter는 다음 칸으로 간다. 별도 이동 처리를 붙이지 않는다.",
           "source": "DESIGN.md 11.5"
-        },
-        {
-          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-          "source": "DESIGN.md 19"
         }
       ],
       "related": [
@@ -5859,7 +5993,7 @@
     {
       "name": "RadioGroupItem",
       "partOf": "RadioGroup",
-      "purpose": "하나의 라디오 선택지와 선택 점이다. FormFlow 안 Enter는 다음 칸, 화살표는 선택이다.",
+      "purpose": "라디오 선택지 하나를 표시한다.",
       "source": "components/radio-group/radio-group.tsx",
       "props": [],
       "extends": [
@@ -5883,16 +6017,12 @@
       ],
       "rules": [
         {
-          "text": "Radix button type=button role=switch aria-checked와 Space 토글을 유지한다. 손잡이 위치를 1차 신호로 삼고 Label로 연결한다.",
-          "source": "DESIGN.md 17"
+          "text": "Switch의 id에 Label htmlFor를 연결한다.",
+          "source": "DESIGN.md 17.4"
         },
         {
-          "text": "data-form-control=advance로 FormFlow 안 Enter는 토글하지 않고 다음 칸으로 간다. Space 토글과 FormFlow 밖 Enter는 그대로다.",
+          "text": "FormFlow 안 Enter는 이동, Space는 토글이다. 앱이 Enter 토글을 붙이지 않는다.",
           "source": "DESIGN.md 11.5"
-        },
-        {
-          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-          "source": "DESIGN.md 19"
         }
       ],
       "related": [
@@ -5927,8 +6057,12 @@
       ],
       "rules": [
         {
-          "text": "htmlFor로 컨트롤과 연결하여 레이블 클릭도 동작하게 한다. 필수 표시는 role=img aria-label=필수 입력이다. Field는 레이블·설명·입력·오류를 세로로 묶는 역할을 유지한다.",
-          "source": "DESIGN.md 17"
+          "text": "htmlFor에 컨트롤 id를 준다.",
+          "source": "DESIGN.md 17.5"
+        },
+        {
+          "text": "필수 표시와 별개로 컨트롤에도 required를 준다.",
+          "source": "DESIGN.md 17.5"
         }
       ],
       "related": [
@@ -6012,9 +6146,9 @@
     {
       "name": "Card",
       "category": "layout",
-      "purpose": "정보 묶음의 평면 컨테이너",
+      "purpose": "관련 정보를 평면 카드로 묶는다.",
       "useWhen": [
-        "정보 묶음의 평면 컨테이너이 필요할 때"
+        "관련 정보를 카드로 묶을 때"
       ],
       "dont": [
         "평면 카드에 그림자를 넣지 마라"
@@ -6052,7 +6186,7 @@
     {
       "name": "CardHeader",
       "partOf": "Card",
-      "purpose": "카드의 제목과 보조 동작 영역",
+      "purpose": "카드 제목과 보조 동작을 배치한다.",
       "source": "components/card.tsx",
       "props": [],
       "extends": [
@@ -6065,7 +6199,7 @@
     {
       "name": "CardTitle",
       "partOf": "Card",
-      "purpose": "카드의 제목",
+      "purpose": "카드 제목을 표시한다.",
       "source": "components/card.tsx",
       "props": [],
       "extends": [
@@ -6078,7 +6212,7 @@
     {
       "name": "CardBody",
       "partOf": "Card",
-      "purpose": "카드의 본문 영역",
+      "purpose": "카드 본문을 담는다.",
       "source": "components/card.tsx",
       "props": [],
       "extends": [
@@ -6091,7 +6225,7 @@
     {
       "name": "CardFooter",
       "partOf": "Card",
-      "purpose": "카드의 하단 보조 정보 영역",
+      "purpose": "카드 하단의 보조 정보를 담는다.",
       "source": "components/card.tsx",
       "props": [],
       "extends": [
@@ -6104,7 +6238,7 @@
     {
       "name": "Checkbox",
       "category": "form",
-      "purpose": "네이티브 체크박스로 선택·혼합 상태를 표시한다.",
+      "purpose": "선택·해제·일부 선택 상태를 표시한다.",
       "useWhen": [
         "행 선택이나 복수 선택이 필요할 때"
       ],
@@ -6114,7 +6248,7 @@
       ],
       "rules": [
         {
-          "text": "폼 제출 때 함께 적용하는 약관 동의·목록 선택에 쓴다. 포커스 표시와 비색상 신호를 유지한다.",
+          "text": "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다.",
           "source": "DESIGN.md 17"
         }
       ],
@@ -6154,7 +6288,15 @@
       ],
       "rules": [
         {
-          "text": "값은 최소 너비·말줄임·전체값 보존을 함께 쓴다. @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다. TanStack 직접 설치는 필요 없다.",
+          "text": "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
+          "source": "DESIGN.md 4"
+        },
+        {
+          "text": "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
+          "source": "DESIGN.md 4"
+        },
+        {
+          "text": "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
           "source": "DESIGN.md 4"
         }
       ],
@@ -6330,12 +6472,7 @@
       "dont": [
         "React 컴포넌트로 렌더링하지 마라"
       ],
-      "rules": [
-        {
-          "text": "소스를 직접 소유하며 공개 export를 사용한다.",
-          "source": "DESIGN.md 6"
-        }
-      ],
+      "rules": [],
       "related": [
         "DataTable"
       ],
@@ -6351,7 +6488,7 @@
     {
       "name": "ChartFrame",
       "category": "chart",
-      "purpose": "차트의 제목·범례·상태·폭 측정을 제공한다.",
+      "purpose": "차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",
       "useWhen": [
         "차트 공통 외곽과 상태가 필요할 때"
       ],
@@ -6360,7 +6497,7 @@
       ],
       "rules": [
         {
-          "text": "loading·empty·error 상태를 구분한다.",
+          "text": "state로 loading·empty·error를 구분해 준다.",
           "source": "DESIGN.md 7.5.6"
         }
       ],
@@ -6472,7 +6609,7 @@
       ],
       "rules": [
         {
-          "text": "SVG에 의미 토큰과 직접 라벨을 쓴다.",
+          "text": "summary는 추세 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
           "source": "DESIGN.md 7.5.3"
         }
       ],
@@ -6600,8 +6737,12 @@
       ],
       "rules": [
         {
-          "text": "직접 라벨과 텍스트 요약을 제공한다.",
+          "text": "summary는 실적 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
           "source": "DESIGN.md 7.5.3"
+        },
+        {
+          "text": "skeletonRows를 실제 지표 수와 맞춰 로딩 전후 높이를 유지한다.",
+          "source": "DESIGN.md 7.5.6"
         }
       ],
       "related": [
@@ -6703,7 +6844,7 @@
       ],
       "rules": [
         {
-          "text": "색 외에 직접 라벨을 제공한다.",
+          "text": "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
           "source": "DESIGN.md 7.5.3"
         }
       ],
@@ -6813,7 +6954,7 @@
       ],
       "rules": [
         {
-          "text": "status 역할로 사실을 전달한다.",
+          "text": "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다.",
           "source": "DESIGN.md 7.5.6"
         }
       ],
@@ -6871,7 +7012,7 @@
       ],
       "rules": [
         {
-          "text": "alert와 아이콘·문구·틴트로 오류를 구분한다.",
+          "text": "다시 요청할 수 있는 오류에는 onRetry를 연결한다.",
           "source": "DESIGN.md 7.5.6"
         }
       ],
@@ -6928,8 +7069,8 @@
       ],
       "rules": [
         {
-          "text": "의미 토큰을 사용하고 전체 이름을 접근성 이름으로 보존한다.",
-          "source": "DESIGN.md 2.4"
+          "text": "name에는 이니셜 대신 보조기기가 읽을 전체 이름을 준다.",
+          "source": "DESIGN.md 14.4"
         }
       ],
       "related": [
@@ -6983,7 +7124,7 @@
       ],
       "rules": [
         {
-          "text": "실제 콘텐츠와 로딩 치수를 맞춘다.",
+          "text": "ratio를 실제 이미지 비율과 맞춰 자리를 예약한다.",
           "source": "DESIGN.md 9.2"
         }
       ],
@@ -7095,11 +7236,11 @@
         "여러 줄 텍스트를 기다릴 때"
       ],
       "dont": [
-        "모든 줄을 같은 길이로 채우지 마라"
+        "문단 모양을 바꿀 때 마지막 줄까지 같은 길이로 채우지 마라"
       ],
       "rules": [
         {
-          "text": "글자 높이 0.65em와 짧은 마지막 줄을 쓴다.",
+          "text": "textStyle은 실제 본문에 맞춘다.",
           "source": "DESIGN.md 9.2"
         }
       ],
@@ -7148,7 +7289,7 @@
       ],
       "rules": [
         {
-          "text": "실제 컴포넌트와 토큰을 공유한다.",
+          "text": "조절값이 없다. 완료 후 모양이 카드 한 장이 아니면 Skeleton으로 직접 구성한다.",
           "source": "DESIGN.md 9.2"
         }
       ],
@@ -7197,7 +7338,7 @@
       ],
       "rules": [
         {
-          "text": "실제 컴포넌트와 토큰을 공유한다.",
+          "text": "rows를 첫 화면에 실제로 보일 행 수와 맞춘다.",
           "source": "DESIGN.md 9.2"
         }
       ],
@@ -7247,7 +7388,7 @@
       ],
       "rules": [
         {
-          "text": "실제 컴포넌트와 토큰을 공유한다.",
+          "text": "fields를 실제 입력 칸 수와 맞춘다.",
           "source": "DESIGN.md 9.2"
         }
       ],
@@ -7299,7 +7440,7 @@
       ],
       "rules": [
         {
-          "text": "실제 컴포넌트와 토큰을 공유한다.",
+          "text": "height·variant·legend를 완료 후 차트와 맞춘다.",
           "source": "DESIGN.md 9.2"
         }
       ],
@@ -7363,7 +7504,7 @@
       ],
       "rules": [
         {
-          "text": "긴 대기는 진행률과 대략적 시간을 제공한다.",
+          "text": "value와 etaSeconds로 진행률과 남은 시간을 함께 알린다.",
           "source": "DESIGN.md 9.1"
         }
       ],
@@ -7418,12 +7559,7 @@
       "dont": [
         "자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라"
       ],
-      "rules": [
-        {
-          "text": "모션 예산은 빈도와 대기시간으로 정한다.",
-          "source": "DESIGN.md 9.3"
-        }
-      ],
+      "rules": [],
       "related": [
         "ProgressTrack"
       ],
@@ -7494,7 +7630,7 @@
       ],
       "rules": [
         {
-          "text": "포커스를 가져가지 않고 aria-describedby로 연결한다.",
+          "text": "Tooltip 안으로 포커스를 옮기지 않는다. 컨트롤에 그대로 둔다.",
           "source": "DESIGN.md 10.4"
         }
       ],
@@ -7684,11 +7820,11 @@
         "폼 필드의 설명과 검증 오류를 표시할 때"
       ],
       "dont": [
-        "필드 값을 소유하게 하지 마라"
+        "Field가 입력값을 관리한다고 가정하지 마라"
       ],
       "rules": [
         {
-          "text": "레이블 → 설명 → 입력 → 오류 순서를 지킨다.",
+          "text": "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다.",
           "source": "DESIGN.md 11.4"
         }
       ],
@@ -7755,12 +7891,28 @@
       ],
       "rules": [
         {
-          "text": "Tab 순서를 따르며 단일 행 Shift+Enter는 이전 칸이다. data-form-control=advance는 Enter를 이동으로 계약한다. Switch·RadioGroupItem은 값 변경 없이 이동하고 단일 Combobox는 닫힌 Enter로 열고 선택 후 focusNextFormStop으로 이동한다. MultiSelect·multiple은 선택 뒤 머문다. textarea Enter·Shift+Enter는 줄바꿈이다. 제출·실제 액션 버튼은 네이티브 동작을 유지한다.",
+          "text": "Enter는 Tab 순서로 이동한다. 별도 입력 순서를 만들지 않는다.",
           "source": "DESIGN.md 11.5"
         },
         {
-          "text": "Screens/CreateScreen과 Screens/Flow에서 등록·오류 포커스·저장·목록 복귀를 조립한다. 비고 Enter는 줄바꿈이므로 다음 칸은 Tab으로 이동한다.",
-          "source": "DESIGN.md 19"
+          "text": "단일 행 Shift+Enter를 제출로 바꾸지 않는다. 이전 칸 이동이다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "자체 컨트롤의 포커스 요소에 data-form-control=advance로 Enter 이동을 지정한다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "마지막 일반 입력의 Enter 제출은 data-form-control=advance 없이 유지한다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "실제 액션 버튼에는 이동 표식을 붙이지 않는다. Enter 실행을 보존한다.",
+          "source": "DESIGN.md 11.5"
+        },
+        {
+          "text": "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
+          "source": "DESIGN.md 11.5"
         }
       ],
       "related": [
@@ -7804,7 +7956,7 @@
     {
       "name": "Peek",
       "category": "overlay",
-      "purpose": "레코드 내용을 요약해 보여준다. UI를 가르치지 않는다.",
+      "purpose": "레코드를 열지 않고 핵심 내용을 요약해 보여준다.",
       "useWhen": [
         "표의 행을 열지 않고 내용을 확인할 때"
       ],
