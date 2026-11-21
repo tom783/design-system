@@ -49,16 +49,16 @@ function FilePreview({ file, large = false }: { file: File; large?: boolean }) {
     return () => URL.revokeObjectURL(url);
   }, [file]);
   if (!file.type.startsWith('image/')) return <FileIcon aria-hidden="true" size={24} />;
-  return <Thumbnail src={preview?.file === file ? preview.url : undefined} alt={file.name} ratio={large ? '16/9' : '1/1'} className={large ? 'file-upload-cover' : 'file-upload-thumbnail'} />;
+  return <Thumbnail src={preview?.file === file ? preview.url : undefined} alt={file.name} ratio={large ? '16/9' : '1/1'} className={large ? 'ds-file-upload-cover' : 'ds-file-upload-thumbnail'} />;
 }
 function FileStatus({ item }: { item: FileUploadItem }) {
   const state = item.error ? 'error' : item.status ?? 'ready';
-  return <div data-slot="file-upload-status" className="file-upload-status">
+  return <div data-slot="file-upload-status" className="ds-file-upload-status">
     <StatusChip tone={state === 'error' ? 'danger' : state === 'success' ? 'success' : state === 'uploading' ? 'info' : 'neutral'}>
       {state === 'error' ? '업로드 실패' : state === 'success' ? '업로드 완료' : state === 'uploading' ? '업로드 중' : '전송 대기'}
     </StatusChip>
-    {state === 'uploading' && <ProgressTrack value={item.progress} label={`${item.file.name} 업로드`} />}
-    {state === 'error' && <span data-slot="file-upload-item-error" className="file-upload-error"><CircleAlert aria-hidden="true" size={16} />{item.error || '업로드하지 못했습니다. 파일을 삭제한 뒤 다시 선택하세요.'}</span>}
+    {state === 'uploading' && <ProgressTrack value={item.progress} label={`${item.file.name} 업로드`} className="ds-file-upload-progress" />}
+    {state === 'error' && <span data-slot="file-upload-item-error" className="ds-file-upload-error"><CircleAlert aria-hidden="true" size={16} />{item.error || '업로드하지 못했습니다. 파일을 삭제한 뒤 다시 선택하세요.'}</span>}
   </div>;
 }
 
@@ -102,47 +102,56 @@ export function FileUpload({ value, onValueChange, accept, maxSize, multiple = f
     // 삭제 버튼이 DOM에서 사라져 BODY로 빠지지 않도록 항상 남는 선택 버튼으로 복귀한다.
     trigger.current?.focus({ preventScroll: true });
   };
-  const errorContent = <div data-slot="file-upload-error" className="file-upload-error"><CircleAlert aria-hidden="true" size={16} /><ul>
-    {rejections.map((item, index) => <li key={index}><span title={item.name} className="file-upload-rejected-name">{item.name}</span>: {item.reason}</li>)}
+  const errorContent = <div data-slot="file-upload-error" className="ds-file-upload-error"><CircleAlert aria-hidden="true" size={16} /><ul>
+    {rejections.map((item, index) => <li key={index}><span title={item.name} className="ds-file-upload-rejected-name">{item.name}</span>: {item.reason}</li>)}
   </ul></div>;
-  return <div data-slot="file-upload" className={cn('file-upload', className)} data-disabled={disabled || undefined}>
+  return <div data-slot="file-upload" className={cn('ds-file-upload', className)} data-disabled={disabled || undefined}>
     {/* Field의 htmlFor는 실제 입력을 가리킨다. 키보드는 보이는 네이티브 버튼 한 곳에 둔다. */}
     <input ref={input} id={inputId} data-slot="file-upload-input" type="file" className="sr-only" tabIndex={-1}
       name={name} accept={acceptedTypes} multiple={multiple} disabled={disabled} aria-required={required || undefined} {...accessible}
       onChange={event => { add(Array.from(event.currentTarget.files ?? [])); event.currentTarget.value = ''; }} />
-    <div data-slot="file-upload-dropzone" className="file-upload-dropzone" data-dragging={!disabled && dragging || undefined} aria-disabled={disabled || undefined}
+    <div data-slot="file-upload-dropzone" className="ds-file-upload-dropzone" data-filled={selected ? true : undefined} data-dragging={!disabled && dragging || undefined} aria-disabled={disabled || undefined}
+      onClick={event => {
+        // 자식 버튼의 선택·삭제 동작을 버블링으로 다시 실행하지 않는다. 키보드는 버튼이 맡는다.
+        if (!event.defaultPrevented && !(event.target as Element).closest('button')) choose();
+      }}
       onDragEnter={event => { event.preventDefault(); if (!disabled && Array.from(event.dataTransfer.types).includes('Files')) { dragDepth.current++; setDragging(true); } }}
       onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = disabled ? 'none' : 'copy'; }}
       onDragLeave={event => { event.preventDefault(); if (--dragDepth.current <= 0) { dragDepth.current = 0; setDragging(false); } }}
       onDrop={event => { event.preventDefault(); dragDepth.current = 0; setDragging(false); add(Array.from(event.dataTransfer.files)); }}>
       {selected && <FilePreview file={selected.file} large />}
-      <Button ref={trigger} data-slot="file-upload-trigger" className={selected ? undefined : 'file-upload-pick'} disabled={disabled} {...accessible}
-        aria-labelledby={accessible['aria-labelledby'] ? `${accessible['aria-labelledby']} ${generatedId}-action` : undefined}
-        aria-label={accessible['aria-labelledby'] ? undefined : selected ? `${accessible['aria-label']} 바꾸기` : accessible['aria-label']}
-        aria-required={required || undefined} onClick={choose} leadingIcon={selected ? undefined : <Upload aria-hidden="true" />}>
-        <span id={`${generatedId}-action`}>{selected ? '바꾸기' : label}</span>
-      </Button>
-      {!selected && <span className="file-upload-hint">{dragging && !disabled ? '여기에 파일을 놓으세요' : '파일을 끌어 놓거나 눌러서 선택하세요'}</span>}
-      {selected && <>
-        <span data-slot="file-upload-name" className="file-upload-name" title={selected.file.name}>{selected.file.name}</span>
-        <span className="tabular">{formatFileSize(selected.file.size)}</span>
-        <FileStatus item={selected} />
-        <Button size="sm" variant="ghost" disabled={disabled} aria-label={`${selected.file.name} 삭제`} onClick={() => remove(selected)} leadingIcon={<Trash2 aria-hidden="true" />}>삭제</Button>
-      </>}
+      <div className="ds-file-upload-summary">
+        {selected && <>
+          <span data-slot="file-upload-name" className="ds-file-upload-name" title={selected.file.name}>{selected.file.name}</span>
+          <span data-slot="file-upload-size" className="tabular ds-file-upload-hint">{formatFileSize(selected.file.size)}</span>
+          <FileStatus item={selected} />
+        </>}
+        {/* 선택 버튼의 부모를 유지해 대표 이미지 삭제 뒤에도 포커스가 사라지지 않게 한다. */}
+        <div className="ds-file-upload-actions">
+          <Button ref={trigger} data-slot="file-upload-trigger" className="ds-file-upload-trigger" disabled={disabled} {...accessible}
+            aria-labelledby={accessible['aria-labelledby'] ? `${accessible['aria-labelledby']} ${generatedId}-action` : undefined}
+            aria-label={accessible['aria-labelledby'] ? undefined : selected ? `${accessible['aria-label']} 바꾸기` : accessible['aria-label']}
+            aria-required={required || undefined} onClick={choose} leadingIcon={selected ? undefined : <Upload aria-hidden="true" />}>
+            <span id={`${generatedId}-action`}>{selected ? '바꾸기' : label}</span>
+          </Button>
+          {selected && <Button size="sm" variant="ghost" disabled={disabled} aria-label={`${selected.file.name} 삭제`} onClick={() => remove(selected)} leadingIcon={<Trash2 aria-hidden="true" />}>삭제</Button>}
+        </div>
+        {!selected && <span className="ds-file-upload-hint">{dragging && !disabled ? '여기에 파일을 놓으세요' : '파일을 끌어 놓거나 눌러서 선택하세요'}</span>}
+      </div>
     </div>
-    {!singleImage && value.length > 0 && <ul data-slot="file-upload-list" className="file-upload-list">
-      {value.map(item => <li key={item.id} data-slot="file-upload-item" className="file-upload-item">
+    {!singleImage && value.length > 0 && <ul data-slot="file-upload-list" className="ds-file-upload-list">
+      {value.map(item => <li key={item.id} data-slot="file-upload-item" className="ds-file-upload-item">
         <FilePreview file={item.file} />
-        <div className="file-upload-details">
-          <span data-slot="file-upload-name" className="file-upload-name" title={item.file.name}>{item.file.name}</span>
-          <span data-slot="file-upload-size" className="tabular file-upload-hint">{formatFileSize(item.file.size)}</span>
+        <div className="ds-file-upload-details">
+          <span data-slot="file-upload-name" className="ds-file-upload-name" title={item.file.name}>{item.file.name}</span>
+          <span data-slot="file-upload-size" className="tabular ds-file-upload-hint">{formatFileSize(item.file.size)}</span>
           <FileStatus item={item} />
         </div>
         <Button size="sm" variant="ghost" iconOnly disabled={disabled} aria-label={`${item.file.name} 삭제`} onClick={() => remove(item)} leadingIcon={<Trash2 aria-hidden="true" />} />
       </li>)}
     </ul>}
     {fieldError ? fieldError.container && !fieldError.hasError && rejections.length > 0 && createPortal(errorContent, fieldError.container)
-      : <div data-slot="file-upload-errors" id={ownErrorId} className="file-upload-errors">{rejections.length > 0 && errorContent}</div>}
+      : <div data-slot="file-upload-errors" id={ownErrorId} className="ds-file-upload-errors">{rejections.length > 0 && errorContent}</div>}
     <div data-slot="file-upload-announcement" className="sr-only" role="status" aria-live="polite" aria-atomic="true"><span key={announcement.sequence}>{announcement.text}</span></div>
   </div>;
 }

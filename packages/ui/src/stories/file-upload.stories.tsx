@@ -11,13 +11,44 @@ function Controlled({ initial = [], ...props }: Partial<FileUploadProps> & { ini
   const [value, setValue] = useState(initial);
   return <FileUpload value={value} onValueChange={setValue} {...props} />;
 }
+// 디코딩 가능한 실제 PNG를 로컬에서 만든다. 외부 이미지 요청이나 가짜 바이트에 의존하지 않는다.
+function sampleImage(name: string, color = '#ca7890') {
+  const canvas = document.createElement('canvas');
+  canvas.width = 160;
+  canvas.height = 90;
+  const context = canvas.getContext('2d')!;
+  context.fillStyle = '#f1eeeb';
+  context.fillRect(0, 0, 160, 90);
+  context.fillStyle = color;
+  context.fillRect(48, 14, 64, 62);
+  context.fillStyle = '#ffffff';
+  context.fillRect(60, 36, 40, 18);
+  const bytes = Uint8Array.from(atob(canvas.toDataURL('image/png').split(',')[1]!), character => character.charCodeAt(0));
+  return new File([bytes], name, { type: 'image/png' });
+}
+function FilledFiles() {
+  const [initial] = useState<FileUploadItem[]>(() => [
+    { id: 'complete', file: sampleImage('상품-대표이미지.png'), status: 'success' },
+    { id: 'uploading', file: sampleImage('상품-상세컷.png', '#7397ae'), status: 'uploading', progress: 0.42 },
+    { id: 'failed', file: sampleImage('상품-포장.png', '#a79776'), status: 'error', error: '서버에 연결하지 못했습니다. 파일을 삭제한 뒤 다시 선택하세요.' },
+  ]);
+  return <Field label="상품 이미지" description="JPG·PNG, 파일당 5MB 이하, 최대 3개">
+    <Controlled initial={initial} multiple accept="image/jpeg,image/png" maxSize={5_000_000} maxFiles={3} />
+  </Field>;
+}
+function CoverImage() {
+  const [initial] = useState<FileUploadItem[]>(() => [{ id: 'cover', file: sampleImage('상품-대표이미지.png'), status: 'success' }]);
+  return <Field label="대표 이미지" description="JPG·PNG, 5MB 이하">
+    <Controlled initial={initial} mode="image" accept="image/jpeg,image/png" maxSize={5_000_000} />
+  </Field>;
+}
 function Failure() {
-  const file = new File(['상품 이미지'], '상품-대표이미지.png', { type: 'image/png' });
-  return <Controlled initial={[{ id: 'failed', file, status: 'error', error: '서버에 연결하지 못했습니다. 파일을 삭제한 뒤 다시 선택하세요.' }]} multiple />;
+  const [initial] = useState<FileUploadItem[]>(() => [{ id: 'failed', file: sampleImage('상품-대표이미지.png'), status: 'error', error: '서버에 연결하지 못했습니다. 파일을 삭제한 뒤 다시 선택하세요.' }]);
+  return <Controlled initial={initial} multiple />;
 }
 export const 사용법: Story = { parameters: { docs: { source: { code: primarySource.replace("from '../../src'", "from '@s2life/ui'"), language: 'tsx', type: 'code' } } }, render: () => <FileUploadExample /> };
-export const 여러파일: Story = { render: () => <FileUploadExample /> };
-export const 대표이미지: Story = { render: () => <Field label="대표 이미지" description="JPG·PNG, 5MB 이하"><Controlled mode="image" accept="image/jpeg,image/png" maxSize={5_000_000} /></Field> };
+export const 여러파일: Story = { render: () => <FilledFiles /> };
+export const 대표이미지: Story = { render: () => <CoverImage /> };
 export const 거절: Story = { render: () => <Controlled multiple accept="image/jpeg,image/png" maxSize={5_000_000} maxFiles={3} /> };
 export const 업로드실패: Story = { render: () => <Failure /> };
 export const 비활성: Story = { render: () => <Controlled disabled multiple initial={[{ id: 'disabled', file: new File(['내용'], '일괄등록.xlsx'), status: 'ready' }]} /> };

@@ -92,6 +92,16 @@ try {
       await wait('window.__fileClicks === 4');
     } finally { await cdp('Page.setInterceptFileChooserDialog', { enabled: false }); }
   });
+  await check('대표 이미지 안쪽 바꾸기는 한 번만 열고 삭제는 선택 창을 열지 않는다', async () => {
+    await story('대표이미지');
+    await ev(`window.__fileClicks=0; ${q(slot('input'))}.click=()=>{window.__fileClicks++;}`);
+    await click(slot('trigger'));
+    assert.equal(await ev('window.__fileClicks'), 1);
+    await click('button[aria-label="상품-대표이미지.png 삭제"]');
+    assert.equal(await ev('window.__fileClicks'), 1);
+    assert.equal(await ev(`document.activeElement === ${q(slot('trigger'))}`), true);
+    assert.equal(await ev(`${q(slot('dropzone'))}.hasAttribute('tabindex')`), false);
+  });
   await check('드래그 활성 경계·바탕·중첩 leave·드롭으로 추가', async () => {
     await story('거절');
     const colors = await ev(`(() => { const n=${q(slot('dropzone'))}; const before={border:getComputedStyle(n).borderColor,background:getComputedStyle(n).backgroundColor}; const dt=new DataTransfer(); dt.items.add(new File(['x'],'상품.png',{type:'image/png'})); window.__fileDrag=dt; n.dispatchEvent(new DragEvent('dragenter',{bubbles:true,cancelable:true,dataTransfer:dt})); return before; })()`);
@@ -121,15 +131,16 @@ try {
     assert.deepEqual(await ev(`({live:${q(slot('announcement'))}.getAttribute('aria-live'),atomic:${q(slot('announcement'))}.getAttribute('aria-atomic')})`), {live:'polite',atomic:'true'});
   });
   await check('대표 이미지 선택·바꾸기·삭제·URL 교체/제거 해제', async () => {
-    await story('대표이미지'); await inject([imagePath]);
+    await story('대표이미지'); await wait('window.__fileURLs.created.length === 1');
+    await inject([imagePath]);
     await expectText(slot('trigger'), '바꾸기');
-    await wait('window.__fileURLs.created.length === 1');
+    await wait('window.__fileURLs.created.length === 2 && window.__fileURLs.revoked.length === 1');
     assert.equal(await ev(`${all(slot('list'))}.length`), 0);
     assert.equal(await ev(`getComputedStyle(${q('[data-slot="thumbnail"]')}).aspectRatio`), '16 / 9');
     await inject([longPath]); await expectText(slot('name'), longName);
-    await wait('window.__fileURLs.created.length === 2 && window.__fileURLs.revoked.length === 1');
+    await wait('window.__fileURLs.created.length === 3 && window.__fileURLs.revoked.length === 2');
     await click(`button[aria-label="${longName} 삭제"]`);
-    await wait('window.__fileURLs.revoked.length === 2');
+    await wait('window.__fileURLs.revoked.length === 3');
     assert.deepEqual(await ev('window.__fileURLs.created.slice().sort()'), await ev('window.__fileURLs.revoked.slice().sort()'));
     await expectText(slot('trigger'), '파일 선택');
   });
@@ -143,7 +154,7 @@ try {
     assert.deepEqual(await ev('window.__fileURLs.created.slice().sort()'), await ev('window.__fileURLs.revoked.slice().sort()'));
   });
   await check('앱 진행률 흉내·완료 상태와 실패 항목의 아이콘/문장', async () => {
-    await story('여러파일'); await inject([imagePath]); await count(1);
+    await story('사용법'); await inject([imagePath]); await count(1);
     await wait(`!!${q('[role="progressbar"]')}`);
     const progress = await ev(`${q('[role="progressbar"]')}.getAttribute('aria-valuenow')`);
     assert.ok(Number(progress) >= 0 && Number(progress) <= 100);
@@ -152,11 +163,66 @@ try {
     await expectText(slot('item-error'), '서버에 연결하지 못했습니다');
     assert.equal(await ev(`${q(slot('item-error'))}.querySelectorAll('svg').length`), 1);
   });
+  await check('채운 스토리는 실제 PNG를 표시하고 Primary는 빈 상태를 유지한다', async () => {
+    for (const [name, expected] of [['여러파일', 3], ['대표이미지', 1], ['업로드실패', 1]]) {
+      await story(name);
+      await wait(`${all('[data-slot="thumbnail-image"]')}.length === ${expected} && [...${all('[data-slot="thumbnail-image"]')}].every(img=>img.naturalWidth>0)`);
+      if (name === '여러파일') {
+        for (const text of ['업로드 완료', '업로드 중', '업로드 실패']) await expectText(slot('list'), text);
+      }
+    }
+    await story('사용법'); await count(0);
+    assert.equal(await ev(`${all('[data-slot="thumbnail-image"]')}.length`), 0);
+  });
+  await check('업로드 진행률은 파일명을 한 번만 보여주고 접근성 이름과 퍼센트를 보존한다', async () => {
+    await story('여러파일'); await count(3);
+    const item = `${q('[role="progressbar"]')}.closest('[data-slot="file-upload-item"]')`;
+    assert.equal(await ev(`(() => { const item=${item}, name=item.querySelector('[data-slot="file-upload-name"]').textContent; return item.innerText.split(name).length-1; })()`), 1);
+    await expectText('[data-slot="progress-percent"]', '42%');
+    const { nodes } = await cdp('Accessibility.getFullAXTree');
+    const progress = nodes.find(node => node.role?.value === 'progressbar');
+    assert.ok(progress?.name?.value.includes('상품-상세컷.png'), '실제 접근성 트리의 진행 막대 이름에 파일명이 있어야 한다');
+  });
+  await check('Field 오류 경계는 드롭존만 위험색이며 버튼은 기본 경계색을 유지한다', async () => {
+    for (const theme of ['light', 'dark']) {
+      await story('Field오류', theme);
+      await wait(`document.documentElement.dataset.theme === '${theme}'`);
+      for (const [part, token] of [['dropzone', '--status-danger-fg'], ['trigger', '--border-default']]) {
+        await wait(`(() => { const n=${q(slot(part))}, probe=document.createElement('span'); probe.style.borderColor='var(${token})'; n.append(probe); const same=getComputedStyle(n).borderColor===getComputedStyle(probe).borderColor; probe.remove(); return same; })()`);
+      }
+      assert.equal(await ev(`${q(slot('trigger'))}.getAttribute('aria-invalid')`), 'true');
+    }
+  });
+  await check('대표 미리보기 최대 320px·16:9·버튼 화면 안·420px 세로 배치와 넘침 없음', async () => {
+    try {
+      for (const theme of ['light', 'dark']) for (const width of [900, 420]) {
+        await cdp('Emulation.setDeviceMetricsOverride', { width, height: 640, deviceScaleFactor: 1, mobile: false });
+        await story('대표이미지', theme);
+        await inject([longPath]);
+        await wait(`${q('[data-slot="thumbnail-image"]')}?.naturalWidth > 0`);
+        const layout = await ev(`(() => {
+          const preview=${q('[data-slot="thumbnail"]')}.getBoundingClientRect(), summary=${q('.ds-file-upload-summary')}.getBoundingClientRect();
+          return {width:preview.width,ratio:preview.width/preview.height,overflow:document.documentElement.scrollWidth>innerWidth,
+            beside:summary.left>=preview.right,below:summary.top>=preview.bottom,
+            buttons:[...${all(`${slot('dropzone')} button`)}].map(button=>{const r=button.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;})};
+        })()`);
+        assert.ok(layout.width > 0 && layout.width <= 320);
+        assert.ok(Math.abs(layout.ratio - 16 / 9) < 0.01);
+        assert.equal(layout.overflow, false);
+        assert.deepEqual(layout.buttons, [true, true]);
+        assert.equal(width === 900 ? layout.beside : layout.below, true);
+        await browser.shot(`cover-${theme}-${width}`);
+      }
+    } finally { await cdp('Emulation.clearDeviceMetricsOverride'); }
+  });
   await check('비활성은 선택·드롭·삭제 차단', async () => {
     await story('비활성'); await count(1);
     assert.equal(await ev(`${q(slot('input'))}.disabled && [...${all('button')}].every(n=>n.disabled)`), true);
     await drop([{name:'추가.png',type:'image/png'}]); await count(1);
     await click('button[aria-label="일괄등록.xlsx 삭제"]'); await count(1);
+    await ev(`window.__fileClicks=0; ${q(slot('input'))}.click=()=>{window.__fileClicks++;}`);
+    await click(slot('dropzone')); await click(slot('trigger'));
+    assert.equal(await ev('window.__fileClicks'), 0);
   });
   await check('Field label·설명·오류 ARIA 연결과 오류 자리 공유', async () => {
     await story('Field안');
