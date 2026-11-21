@@ -98,6 +98,14 @@
       {
         "text": "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
         "source": "DESIGN.md 4"
+      },
+      {
+        "text": "필터 등으로 data에서 빠진 행은 선택이 자동 해제된다. 앱은 selectedIds를 그대로 일괄 작업에 쓴다. 로딩·오류 중에는 선택을 유지한다.",
+        "source": "DESIGN.md 4"
+      },
+      {
+        "text": "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다.",
+        "source": "DESIGN.md 4"
       }
     ],
     "related": [

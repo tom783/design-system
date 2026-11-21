@@ -74,6 +74,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const before = process.argv[2] ? await readFile(resolve(process.argv[2]), 'utf8')
     : execFileSync('git', ['show', `HEAD:${fixture}`], { cwd: root, encoding: 'utf8' });
   const result = compareGuidanceBaseline(before, await readFile(resolve(root, fixture), 'utf8'));
-  assert.equal(result.changedDetails.length, 8, '상세 8개 모두 이번 문구 갱신을 반영해야 한다');
-  console.log(`기준선 비교 통과: 상세 ${result.details}개 지침만 변경 · 목록 ${result.listPurposes}개 purpose 변경 · 나머지 ${result.preservedBytes}바이트 동일`);
+  assert.ok(result.changedDetails.length > 0 || result.listPurposes > 0, '실제 지침 변경이 있어야 한다');
+  console.log(`기준선 비교 통과: 상세 ${result.details}개 중 ${result.changedDetails.length}개(${result.changedDetails.join(' · ')}) 지침만 변경 · 목록 ${result.listPurposes}개 purpose 변경 · 나머지 ${result.preservedBytes}바이트 동일`);
 }

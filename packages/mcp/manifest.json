@@ -2142,6 +2142,60 @@
       }
     },
     {
+      "name": "status-neutral-fg",
+      "cssVariable": "--status-neutral-fg",
+      "category": "semantic",
+      "purpose": "중립 상태 글자·아이콘·차트 계열",
+      "light": {
+        "value": "#534C4B",
+        "ref": "neutral-800"
+      },
+      "dark": {
+        "value": "#E1DCDB",
+        "ref": "neutral-200"
+      },
+      "tailwind": [
+        "text-neutral-ink"
+      ],
+      "tailwindAliases": {
+        "color": "neutral-ink",
+        "examples": [
+          "bg-neutral-ink",
+          "text-neutral-ink",
+          "border-neutral-ink",
+          "fill-neutral-ink",
+          "stroke-neutral-ink"
+        ]
+      }
+    },
+    {
+      "name": "status-neutral-bg",
+      "cssVariable": "--status-neutral-bg",
+      "category": "semantic",
+      "purpose": "중립 상태 바탕",
+      "light": {
+        "value": "#EFECEB",
+        "ref": "neutral-100"
+      },
+      "dark": {
+        "value": "#060505",
+        "ref": "#060505"
+      },
+      "tailwind": [
+        "bg-neutral-tint"
+      ],
+      "tailwindAliases": {
+        "color": "neutral-tint",
+        "examples": [
+          "bg-neutral-tint",
+          "text-neutral-tint",
+          "border-neutral-tint",
+          "fill-neutral-tint",
+          "stroke-neutral-tint"
+        ]
+      }
+    },
+    {
       "name": "chart-grid",
       "cssVariable": "--chart-grid",
       "category": "semantic",
@@ -6298,6 +6352,14 @@
         {
           "text": "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
           "source": "DESIGN.md 4"
+        },
+        {
+          "text": "필터 등으로 data에서 빠진 행은 선택이 자동 해제된다. 앱은 selectedIds를 그대로 일괄 작업에 쓴다. 로딩·오류 중에는 선택을 유지한다.",
+          "source": "DESIGN.md 4"
+        },
+        {
+          "text": "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다.",
+          "source": "DESIGN.md 4"
         }
       ],
       "related": [
@@ -6845,6 +6907,10 @@
       "rules": [
         {
           "text": "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
+          "source": "DESIGN.md 7.5.3"
+        },
+        {
+          "text": "계열 색은 --status-{neutral,info,warning,success,danger}-fg를 쓴다. 목록 밖 이름은 그려지지 않고 검게 보인다.",
           "source": "DESIGN.md 7.5.3"
         }
       ],

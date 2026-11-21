@@ -190,7 +190,9 @@ const intents = [
   entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라'],'4',[
     "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
     "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
-    "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다."
+    "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
+    "필터 등으로 data에서 빠진 행은 선택이 자동 해제된다. 앱은 selectedIds를 그대로 일괄 작업에 쓴다. 로딩·오류 중에는 선택을 유지한다.",
+    "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다."
   ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
   entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6',[],[],[],['DataTable'],['선택 열 식별자']),
   entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
@@ -204,7 +206,8 @@ const intents = [
     rule("skeletonRows를 실제 지표 수와 맞춰 로딩 전후 높이를 유지한다.", "7.5.6")
   ],['metrics','summary','skeletonRows'],['bullet-row'],['ChartFrame'],['실적','목표','KPI','불릿','달성률','목표 대비','실적 비교']),
   entry('CompositionArea','chart','시간별 구성비를 누적 면적으로 보여준다.',['구성 비중 변화를 비교할 때'],['텍스트 라벨을 생략하지 마라'],'7.5.3',[
-    "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다."
+    "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
+    "계열 색은 --status-{neutral,info,warning,success,danger}-fg를 쓴다. 목록 밖 이름은 그려지지 않고 검게 보인다."
   ],['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','구성 비율','비중','누적','면적','점유율','비율 변화','시간별 구성']),
   entry('EmptyState','state','표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.',['필터 결과가 비었을 때'],['실패를 빈 상태로 표시하지 마라'],'7.5.6',[
     "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다."

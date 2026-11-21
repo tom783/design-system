@@ -35,6 +35,8 @@
   --color-success-ink               : var(--status-success-fg);
   --color-info-tint                 : var(--status-info-bg);
   --color-info-ink                  : var(--status-info-fg);
+  --color-neutral-tint              : var(--status-neutral-bg);
+  --color-neutral-ink               : var(--status-neutral-fg);
   --color-chart-grid                : var(--chart-grid);
   --color-chart-axis                : var(--chart-axis);
   --color-chart-line                : var(--chart-line);

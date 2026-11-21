@@ -14,6 +14,14 @@
 
 - ui 토큰 하위 경로 `@s2life/ui/tokens.css`·`theme.css`·`tokens.json`. tokens 패키지 원본을 빌드 시 바이트 그대로 복사한다.
 - Carousel 루트 스타일을 확장하는 `className`.
+- 중립 상태 색 토큰 `--status-neutral-fg`·`--status-neutral-bg` (라이트·다크·OS 테마). 차트의 "대기·기타" 계열과
+  StatusChip neutral 이 쓴다 — 칩의 색 값은 그대로다. 계열 색으로 쓸 수 있는 변수가 다섯 개가 됐다.
+
+### 바뀐 동작
+
+- **DataTable: `data` 에서 빠진 행은 선택에서 자동 해제된다.** 필터를 바꿔도 화면에 없는 행이 선택된 채 남아
+  일괄 작업 대상이 되던 문제(도그푸딩 3: 앱 1,250건 / 툴바 0개). 제어형이면 `onSelectedIdsChange(교집합)` 를
+  한 번 부른다. `state` 가 `loading`·`error` 일 때는 유지한다. 행을 덧붙이는 무한 스크롤에는 영향이 없다.
 
 ### 고침
 
@@ -22,6 +30,11 @@
   (도그푸딩 2: 1210/576px, 더보기 0/16). 내용이 `text-wrap-mode: wrap` 과
   `overflow-wrap: anywhere` 를 소유한다. `white-space: normal` 이 아니라서
   `pre-line`·`pre` 로 보존한 사용자 개행은 그대로 남는다.
+- DataTable 헤더 체크박스가 보이는 행 중 선택이 0개인데 "일부 선택"으로 보이던 문제. 현재 행 기준으로 센다.
+- DatePicker 범위 입력이 고른 기간보다 좁아 잘리던 문제 (입력 198px < 값 216px · 플레이스홀더 238px → 264px).
+- DatePicker 가 필터 툴바에서 다른 컨트롤보다 10px 위에 놓이던 문제. 자체 오류 줄을 예약하지 않는다 —
+  Field 안에서는 Field 의 오류 자리를 함께 쓰고(이중 예약 해소), Field 밖에서는 입력 아래에 띄운다.
+  오류 문구가 고치는 법을 말한다: "YYYY-MM-DD 형식으로 입력하세요." · "시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요."
 
 ### 바뀐 지침 (MCP)
 
@@ -31,6 +44,8 @@
   MCP 상세 기준선 8개와 목록의 용도를 갱신하고 R26의 임시 dont 델타를 흡수했다.
 - ClampText: "DataTable 셀에 쓰지 마라" — 셀이 말줄임과 전체 값 `title` 을 이미 제공한다.
 - DataTable: "긴 글 열을 ClampText 로 감싸지 마라".
+- DataTable: 빠진 행의 선택 자동 해제, 화면 라벨이 원본과 다른 열(상태 등)은 `exportValue` 로 CSV 값을 지정.
+- CompositionArea: 계열 색은 `--status-{neutral,info,warning,success,danger}-fg`. 목록 밖 이름은 검게 그려진다.
 
 ### 문서
 

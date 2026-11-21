@@ -27,7 +27,7 @@ const chipVariants = cva(
   {
     variants: {
       tone: {
-        neutral: 'bg-sunken text-fg-muted',
+        neutral: 'bg-neutral-tint text-neutral-ink',
         info: 'bg-info-tint text-info-ink',
         warning: 'bg-warning-tint text-warning-ink',
         success: 'bg-success-tint text-success-ink',

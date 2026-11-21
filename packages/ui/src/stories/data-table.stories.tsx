@@ -49,6 +49,40 @@ const columns = helper.columns([
 ]);
 const getRowId = (row: Order) => row.id;
 
+/** 필터·일시 빈 응답·덧붙이기를 앱 선택 개수와 함께 관찰하는 도그푸딩 재현 화면. */
+function FilterSelectionExample({ controlled = true }: { controlled?: boolean }) {
+  const [filter, setFilter] = React.useState<'이천' | '부산' | '겹침' | '빈 결과'>('이천');
+  const [state, setState] = React.useState<'idle' | 'loading' | 'error'>('idle');
+  const [ids, setIds] = React.useState<string[]>([]);
+  const [changes, setChanges] = React.useState<string[][]>([]);
+  const [extra, setExtra] = React.useState(false);
+  const [revision, setRevision] = React.useState(0);
+  const data = React.useMemo(() => {
+    if (state !== 'idle' || filter === '빈 결과') return [];
+    const start = filter === '이천' ? 0 : filter === '부산' ? 3 : 1;
+    return [...orders.slice(start, start + 3), ...(extra ? orders.slice(9, 10) : [])];
+  }, [filter, state, extra, revision]);
+  return <section data-probe="selection-filter" className="flex min-w-0 flex-col gap-3">
+    <div className="flex flex-wrap gap-2">
+      {(['이천', '부산', '겹침', '빈 결과'] as const).map(value => <Button key={value} data-probe={`filter-${value}`}
+        onClick={() => { setFilter(value); setExtra(false); }}>{value}센터</Button>)}
+      <Button data-probe="loading" onClick={() => setState('loading')}>재조회 중</Button>
+      <Button data-probe="error" onClick={() => setState('error')}>일시 오류</Button>
+      <Button data-probe="ready" onClick={() => setState('idle')}>조회 완료</Button>
+      <Button data-probe="rerender" onClick={() => setRevision(value => value + 1)}>같은 데이터 재렌더</Button>
+      <Button data-probe="append" onClick={() => setExtra(true)}>행 덧붙이기</Button>
+      <Button data-probe="clear-log" onClick={() => setChanges([])}>호출 기록 비우기</Button>
+    </div>
+    <output data-probe="app-selection" data-count={ids.length}>{ids.length}건 일괄 처리</output>
+    <output data-probe="selection-changes">{JSON.stringify(changes)}</output>
+    <DataTable data={data} columns={columns} getRowId={getRowId} selectionMode="multi" state={state}
+      selectedIds={controlled ? ids : undefined}
+      onSelectedIdsChange={next => { setIds(next); setChanges(previous => [...previous, next]); }}
+      exportFileName="필터-선택.csv" hasMore onLoadMore={() => { /* 덧붙이기 버튼으로 응답 시점을 통제한다. */ }}
+      caption="필터 결과에 있는 행만 일괄 처리하는 주문 목록" />
+  </section>;
+}
+
 const meta = {
   tags: ['autodocs'],
   title: 'Components/DataTable',
@@ -60,6 +94,9 @@ const meta = {
 } satisfies Meta<typeof DataTable<Order>>;
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+export const 선택자동해제: Story = { render: () => <React.StrictMode><FilterSelectionExample /></React.StrictMode> };
+export const 선택자동해제_비제어: Story = { render: () => <FilterSelectionExample controlled={false} /> };
 
 export const 기본: Story = {
   parameters: { docs: { description: { story: '장시간 주문을 비교하는 화면이므로 40px 행과 우측 정렬 숫자를 기본으로 사용합니다. 정렬 아이콘은 항상 공간을 차지해 정렬 전환 시 헤더가 움직이지 않습니다.' } } },

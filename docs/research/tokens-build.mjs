@@ -163,6 +163,9 @@ const SEMANTIC = {
     'status-success-fg':  ['success',700, '성공·정상 글자·아이콘'],
     'status-info-bg':     ['info',   50,  '안내 배경'],
     'status-info-fg':     ['info',   700, '안내 글자·아이콘'],
+    // StatusChip neutral의 기존 text-secondary/bg-sunken과 같은 값. 시각 변화 없이 계열에도 쓴다.
+    'status-neutral-fg':  ['neutral',800, '중립 상태 글자·아이콘·차트 계열'],
+    'status-neutral-bg':  ['neutral',100, '중립 상태 바탕'],
     // 차트 — 역할 토큰. 새 색상을 만들지 않고 기존 원시색을 참조한다.
     // 격자·축은 데이터보다 반드시 약해야 한다. 격자가 데이터선보다 진하면
     // 눈이 격자를 먼저 읽는다.
@@ -234,6 +237,8 @@ const SEMANTIC = {
     'status-success-fg':  ['success',400, '성공 글자·아이콘'],
     'status-info-bg':     ['info',   950, '안내 배경'],
     'status-info-fg':     ['info',   400, '안내 글자·아이콘'],
+    'status-neutral-fg':  ['neutral',200, '중립 상태 글자·아이콘·차트 계열'],
+    'status-neutral-bg':  ['#060505',null, '중립 상태 바탕. 기존 bg-sunken과 같은 값'],
     // 차트 (다크) — 격자·축은 밝게 올리고, 목표선은 바탕과 반대로 밝은 쪽으로 간다.
     'chart-grid':         ['neutral', 900, '격자선'],
     'chart-axis':         ['neutral', 600, '축선·눈금 레이블'],
@@ -356,7 +361,7 @@ check('light border-input on surface', contrast(resolveTok(S.light['border-input
 check('light border-focus on surface', contrast(resolveTok(S.light['border-focus']), Lbg), 3.0, 'nontext');
 check('light white on action-primary', contrast('#FFFFFF', resolveTok(S.light['action-primary-bg'])), 4.5, 'text');
 check('light white on action-danger',  contrast('#FFFFFF', resolveTok(S.light['action-danger-bg'])), 4.5, 'text');
-for (const k of ['danger', 'warning', 'success', 'info']) {
+for (const k of ['danger', 'warning', 'success', 'info', 'neutral']) {
   check(`light status-${k} fg on bg`, contrast(resolveTok(S.light[`status-${k}-fg`]), resolveTok(S.light[`status-${k}-bg`])), 4.5, 'text');
   check(`light status-${k} fg on surface`, contrast(resolveTok(S.light[`status-${k}-fg`]), Lbg), 4.5, 'text');
 }
@@ -371,7 +376,7 @@ check('dark border-input on surface', contrast(resolveTok(S.dark['border-input']
 check('dark border-focus on surface', contrast(resolveTok(S.dark['border-focus']), Dbg), 3.0, 'nontext');
 check('dark white on action-primary', contrast('#FFFFFF', resolveTok(S.dark['action-primary-bg'])), 4.5, 'text');
 check('dark white on action-danger',  contrast('#FFFFFF', resolveTok(S.dark['action-danger-bg'])), 4.5, 'text');
-for (const k of ['danger', 'warning', 'success', 'info']) {
+for (const k of ['danger', 'warning', 'success', 'info', 'neutral']) {
   check(`dark status-${k} fg on bg`, contrast(resolveTok(S.dark[`status-${k}-fg`]), resolveTok(S.dark[`status-${k}-bg`])), 4.5, 'text');
   check(`dark status-${k} fg on surface`, contrast(resolveTok(S.dark[`status-${k}-fg`]), Dbg), 4.5, 'text');
 }
@@ -399,6 +404,13 @@ for (const theme of ['light', 'dark']) {
 // 차트 요소 대비. 데이터를 전달하는 그래픽은 비텍스트 3:1 대상이다(WCAG 1.4.11).
 // 격자는 '장식'이므로 제외하고, 데이터·축·목표선만 검사한다.
 for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
+  // 면·선으로 쓰는 다섯 상태 계열은 표면과 캔버스 모두에서 비텍스트 3:1 이상이어야 한다.
+  for (const tone of ['neutral', 'info', 'warning', 'success', 'danger']) {
+    for (const surface of ['bg-surface', 'bg-canvas']) {
+      check(`${theme} status-${tone} 계열 on ${surface}`,
+        contrast(resolveTok(SEMANTIC[theme][`status-${tone}-fg`]), resolveTok(SEMANTIC[theme][surface])), 3.0, 'nontext');
+    }
+  }
   for (const t of ['chart-line', 'chart-target', 'chart-point']) {
     check(`${theme} ${t} on surface`, contrast(resolveTok(SEMANTIC[theme][t]), bg), 3.0, 'nontext');
   }
@@ -648,6 +660,7 @@ const TW_NAME = {
   'status-warning-bg': 'warning-tint', 'status-warning-fg': 'warning-ink',
   'status-success-bg': 'success-tint', 'status-success-fg': 'success-ink',
   'status-info-bg': 'info-tint',       'status-info-fg': 'info-ink',
+  'status-neutral-bg': 'neutral-tint', 'status-neutral-fg': 'neutral-ink',
   // 차트는 SVG 속성(fill/stroke)에 var() 로 직접 쓰는 일이 많아 Tailwind 이름도 둔다
   'chart-grid': 'chart-grid',     'chart-axis': 'chart-axis',
   'chart-line': 'chart-line',     'chart-band': 'chart-band',

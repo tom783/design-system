@@ -42,19 +42,39 @@ export interface UseDataTableOptions<T extends RowData> {
 
 const NO_PINS: string[] = [];
 
-export function useDataTable<T extends RowData>({
+export function useDataTable<T extends RowData>(options: UseDataTableOptions<T>) {
+  return useDataTableState(options, 'idle');
+}
+
+/** DataTable의 기존 state를 전달하는 비공개 경로. 공개 옵션에는 상태 prop을 추가하지 않는다. */
+export function useDataTableState<T extends RowData>({
   data, totalCount, columns, getRowId, selectionMode = 'none', selectedIds, onSelectedIdsChange,
   pinnedStart = NO_PINS, pinnedEnd = NO_PINS,
-}: UseDataTableOptions<T>) {
+}: UseDataTableOptions<T>, state: 'idle' | 'loading' | 'empty' | 'error') {
   const [internalIds, setInternalIds] = React.useState<string[]>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const ids = selectedIds ?? internalIds;
+  const currentRowIds = React.useMemo(() => new Set(data.map(getRowId)), [data, getRowId]);
+  // 재조회 중 빈 data는 확정된 필터 결과가 아니다. empty를 포함한 정상 결과에서만 줄인다.
+  const retainedIds = React.useMemo(() => state === 'loading' || state === 'error'
+    ? ids : ids.filter(id => currentRowIds.has(id)), [ids, currentRowIds, state]);
+  const lastPruned = React.useRef<{ ids: string[]; retained: string[] } | null>(null);
+  React.useLayoutEffect(() => {
+    if (retainedIds.length === ids.length) { lastPruned.current = null; return; }
+    const previous = lastPruned.current;
+    // 제어 부모가 같은 선택을 다시 보내거나 StrictMode가 effect를 재실행해도 같은 요청은 한 번만 알린다.
+    if (previous && previous.ids.length === ids.length && previous.ids.every((id, i) => id === ids[i]) &&
+      previous.retained.length === retainedIds.length && previous.retained.every((id, i) => id === retainedIds[i])) return;
+    lastPruned.current = { ids, retained: retainedIds };
+    if (selectedIds === undefined) setInternalIds(retainedIds);
+    onSelectedIdsChange?.(retainedIds);
+  }, [ids, retainedIds, selectedIds, onSelectedIdsChange]);
   const rowSelection = React.useMemo(() => {
     const selection: RowSelectionState = {};
-    const effectiveIds = selectionMode === 'none' ? [] : selectionMode === 'single' ? ids.slice(0, 1) : ids;
+    const effectiveIds = selectionMode === 'none' ? [] : selectionMode === 'single' ? retainedIds.slice(0, 1) : retainedIds;
     for (const id of effectiveIds) selection[id] = true;
     return selection;
-  }, [ids, selectionMode]);
+  }, [retainedIds, selectionMode]);
 
   const selectionLabel = totalCount !== undefined && totalCount > data.length
     ? `로드된 ${data.length.toLocaleString('ko-KR')}건 선택` : '전체 선택';

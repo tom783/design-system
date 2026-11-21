@@ -11,15 +11,19 @@ export function createSelectionColumn<T extends RowData>(mode: 'single' | 'multi
     id: SELECTION_COLUMN_ID,
     enableSorting: false,
     enableHiding: false,
-    header: ({ table }) => mode === 'multi' ? (
-      <Checkbox
-        aria-label={selectionLabel}
-        checked={table.getIsAllRowsSelected()}
-        indeterminate={!table.getIsAllRowsSelected() && table.getIsSomeRowsSelected()}
-        disabled={table.getRowModel().rows.length === 0}
-        onChange={table.getToggleAllRowsSelectedHandler()}
-      />
-    ) : <span className="sr-only">선택</span>,
+    header: ({ table }) => {
+      const rows = table.getRowModel().rows;
+      const selectedCount = rows.filter(row => row.getIsSelected()).length;
+      return mode === 'multi' ? (
+        <Checkbox
+          aria-label={selectionLabel}
+          checked={rows.length > 0 && selectedCount === rows.length}
+          indeterminate={selectedCount > 0 && selectedCount < rows.length}
+          disabled={rows.length === 0}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+        />
+      ) : <span className="sr-only">선택</span>;
+    },
     cell: ({ row }) => (
       <Checkbox
         aria-label={`${row.id} 선택`}

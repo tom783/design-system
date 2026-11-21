@@ -6,7 +6,7 @@ import { Button } from '../button';
 import { EmptyState, ErrorState, type EmptyStateProps } from '../state';
 import { Skeleton } from '../loading/skeleton';
 import { cn } from '../../lib/cn';
-import { useDataTable, type DataTableFeatures, type UseDataTableOptions } from './use-data-table';
+import { useDataTableState, type DataTableFeatures, type UseDataTableOptions } from './use-data-table';
 import { SELECTION_COLUMN_ID } from './selection-column';
 import { downloadCsv } from './export-csv';
 import { shouldLoadMore } from './should-load-more';
@@ -46,7 +46,7 @@ export function DataTable<T extends RowData>({
   onRetry, emptyAction, exportFileName, exportValue, align, caption = '데이터 목록', className,
   virtualize = 100, hasMore, onLoadMore, loadingMore = false, ...options
 }: DataTableProps<T>) {
-  const table = useDataTable(options);
+  const table = useDataTableState(options, state);
   const rows = table.getRowModel().rows;
   const columns = table.getVisibleLeafColumns();
   const headerGroups = table.getHeaderGroups();

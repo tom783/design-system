@@ -3,12 +3,45 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within, fireEvent, waitFor } from 'storybook/test';
 import { DatePicker, type DateRange } from '../components/date-picker';
 import { formatValue } from '../components/date-picker/date-value';
+import { Field } from '../components/form';
+import { Input } from '../components/input';
+import { Button } from '../components/button';
+import { MultiSelect } from '../components/multi-select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/select';
 const meta = {
   parameters: { manifest: ['DatePicker'], },
   tags: ['autodocs'], title: 'Components/DatePicker' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const today = new Date(2026, 10, 15);
+
+function ToolbarExample() {
+  const [range, setRange] = React.useState<DateRange>();
+  return <section className="flex flex-col gap-8">
+    <div data-probe="date-toolbar" className="flex flex-wrap items-center gap-3">
+      <MultiSelect aria-label="센터" className="w-auto min-w-40" options={[{ value: '이천', label: '이천센터' }, { value: '부산', label: '부산센터' }]} />
+      <Select defaultValue="waiting"><SelectTrigger aria-label="출고 상태" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
+        <SelectContent><SelectItem value="waiting">대기</SelectItem><SelectItem value="shipped">출고 완료</SelectItem></SelectContent></Select>
+      <DatePicker today={today} value={range} onChange={setRange} aria-label="출고 기간" />
+      <Button data-probe="toolbar-button">조회</Button>
+    </div>
+    <output data-probe="range-value">{formatValue(range)}</output>
+    <div data-probe="single-width" className="w-fit"><Demo single /></div>
+  </section>;
+}
+function FieldExample() {
+  const [range, setRange] = React.useState<DateRange>();
+  const [externalError, setExternalError] = React.useState(false);
+  return <section data-probe="date-fields" className="flex w-fit flex-col gap-4">
+    <Field label="출고 기간" description="시작일과 종료일을 순서대로 입력하세요."
+      error={externalError ? '출고 가능한 기간을 선택하세요.' : undefined}>
+      <DatePicker today={today} value={range} onChange={setRange} />
+    </Field>
+    <Field label="담당자"><Input data-probe="after-date-field" /></Field>
+    <Button data-probe="external-error" onClick={() => setExternalError(value => !value)}>업무 오류 전환</Button>
+    <Button data-probe="clear-date" onClick={() => setRange({ from: today, to: today })}>정상 값으로 교체</Button>
+  </section>;
+}
 async function pickDay(date: string) {
   // DayPicker의 td도 data-day를 가진다. 선택 핸들러는 내부 button에만 있으므로
   // 셀을 클릭하면 상태가 바뀌지 않는다. 포털이 마운트된 뒤 실제 조작 대상을 누른다.
@@ -64,3 +97,7 @@ export const 단일날짜: Story = { name: '날짜-단일', render: () => <Demo 
   await expect(within(root).getByRole('textbox', { name: '주문 기간' })).toHaveValue('2026-11-12');
   root.dataset.playComplete = 'true';
 } };
+
+// 검증용 스토리는 맨 뒤에 둔다 — 첫 스토리가 문서의 대표 예시가 된다.
+export const 툴바정렬: Story = { render: () => <ToolbarExample />, play: ({ canvasElement }) => { canvasElement.dataset.playComplete = 'true'; } };
+export const 필드오류공유: Story = { render: () => <FieldExample />, play: ({ canvasElement }) => { canvasElement.dataset.playComplete = 'true'; } };

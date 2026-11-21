@@ -18,6 +18,18 @@ import { DesignLink } from './_page';
 
 화면에도 결론을 보여주려면 앱이 차트 옆이나 아래에 `<p>` 같은 본문을 추가하고, 정상 데이터가 있을 때만 같은 결론 문장을 표시하세요. ChartFrame은 `title`을 `figcaption`으로 표시하고 범례·플롯 높이·로딩·빈 결과·오류를 제공합니다. `summary`를 본문으로 출력하거나 결론을 넣는 별도 슬롯을 제공하지 않습니다. ChartFrame으로 직접 SVG를 조립하는 경우에는 자식 SVG의 `role="img"`와 `aria-label`도 앱이 연결합니다.
 
+## 계열 색
+
+계열 색으로 쓸 수 있는 CSS 변수는 다음 다섯 개입니다. `series[].color`에는 `var(--status-neutral-fg)`처럼 전달하세요. 목록 밖 이름은 그려지지 않고 검게 보이며 범례 색 칸이 빌 수 있습니다.
+
+| 계열 | CSS 변수 |
+|---|---|
+| 중립·대기 | `--status-neutral-fg` |
+| 안내 | `--status-info-fg` |
+| 경고 | `--status-warning-fg` |
+| 성공 | `--status-success-fg` |
+| 오류 | `--status-danger-fg` |
+
 ## 추이와 분포
 
 <Intent name="TrendBand" />

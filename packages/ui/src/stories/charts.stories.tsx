@@ -63,6 +63,12 @@ export const 사용법: Story = {
   render: () => <ChartsExample />,
 };
 
+export const 중립계열: Story = {
+  render: () => <CompositionArea data={composition} x={compositionProps.x}
+    series={[{ key: 'paid', label: '대기', color: 'var(--status-neutral-fg)' }, ...series.slice(1)]}
+    title="중립 색을 사용하는 물류 상태 구성" summary="대기 비중은 30%에서 20%로 줄었습니다." />,
+};
+
 export const 추이밴드: Story = {
   parameters: { docs: { description: { story: '7일 주문 추이와 시간대 편차 밴드를 함께 표시합니다. 밴드 투명도 0.55, 마지막 점과 1,284건 라벨, 결론을 전달하는 접근성 이름을 확인합니다.' } } },
   render: () => <TrendBand {...trendProps} {...bandProps} title="7일 주문과 시간대 편차" />,
