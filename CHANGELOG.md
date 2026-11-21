@@ -41,6 +41,12 @@
   Field 안에서는 Field 의 오류 자리를 함께 쓰고(이중 예약 해소), Field 밖에서는 입력 아래에 띄운다.
   오류 문구가 고치는 법을 말한다: "YYYY-MM-DD 형식으로 입력하세요." · "시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요."
 
+- Tabs 선택 밑줄이 기준선에서 5px 떠 있던 문제. 목록 아래 여백을 없애고 기준선을 안쪽 그림자로 그려 2px 밑줄이
+  기준선 위에 앉는다. 탭의 키보드 포커스 링은 스크롤 영역에서 잘리지 않게 안쪽(`outline-offset` 음수)에 그린다.
+- Field 안의 RadioGroup 에 접근 이름이 없던 문제. Field 레이블이 `<label htmlFor>` 로는 `div` 루트에 연결되지
+  않았다 — 이제 레이블 id 를 `aria-labelledby` 로 넘긴다(소비자의 `aria-label`·`aria-labelledby` 가 우선).
+  라디오 묶음 제목을 Field 로 주면 다른 레이블과 같은 모양이 된다.
+
 ### 바뀐 지침 (MCP)
 
 - `purpose`·`useWhen`·`dont`·`rules`를 화면을 만드는 소비자의 말로 정리했다.
@@ -50,6 +56,10 @@
 - ClampText: "DataTable 셀에 쓰지 마라" — 셀이 말줄임과 전체 값 `title` 을 이미 제공한다.
 - DataTable: "긴 글 열을 ClampText 로 감싸지 마라".
 - DataTable: 빠진 행의 선택 자동 해제, 화면 라벨이 원본과 다른 열(상태 등)은 `exportValue` 로 CSV 값을 지정.
+- 행 액션 트리거는 `Button variant="ghost" size="sm" iconOnly` + `Ellipsis` 아이콘 + 행을 밝히는 `aria-label`.
+  문자 `⋯`·테두리 버튼을 쓰지 않는다. 열 제목은 화면에서 숨긴다.
+- Input: 숫자 입력은 예상 자릿수에 맞춰 폭을 좁힌다 — 넓은 칸 오른쪽 끝의 숫자는 레이블과 멀어진다.
+- RadioGroup: 묶음 제목은 Field 로 준다.
 - CompositionArea: 계열 색은 `--status-{neutral,info,warning,success,danger}-fg`. 목록 밖 이름은 검게 그려진다.
 
 ### 문서

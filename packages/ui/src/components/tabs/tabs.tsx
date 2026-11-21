@@ -17,7 +17,7 @@ export function TabsList({ className, ref, onFocusCapture, ...props }: React.Com
     // 화살표로 탭을 지나갈 때마다 페이지가 튄다. 목록만 가로로 움직인다.
     const bounds = list.getBoundingClientRect(), target = tab.getBoundingClientRect();
     const style = getComputedStyle(list);
-    // 안쪽 여백만큼 더 당긴다. 경계에 딱 붙으면 포커스 링 2px + offset 2px 가 잘린다.
+    // 좌우 여백만큼 더 당겨 탭 가장자리를 보존한다. 포커스 링은 잘리지 않도록 안쪽에 그린다 (§16.1).
     const before = target.left - (bounds.left + (parseFloat(style.paddingLeft) || 0));
     const after = target.right - (bounds.right - (parseFloat(style.paddingRight) || 0));
     const delta = before < 0 ? before : after > 0 ? after : 0;

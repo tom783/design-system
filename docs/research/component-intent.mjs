@@ -144,7 +144,7 @@ const intents = [
     ['DropdownMenuSubContent', "하위 메뉴 목록을 표시한다.", ['dropdown-menu-sub-content'], 'DropdownMenu'],
     ['DropdownMenuSubTrigger', "하위 메뉴를 연다.", ['dropdown-menu-sub-trigger'], 'DropdownMenu'],
     ['DropdownMenuRadioGroup', "메뉴에서 하나만 고를 항목을 묶는다.", [], 'DropdownMenu'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', 'destructive 항목에는 삭제 아이콘을 함께 표시한다.', [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션'])),
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', ['destructive 항목에는 삭제 아이콘을 함께 표시한다.', '행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.'], [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션'])),
   entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼을 누를 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림']),
   entry('DatePicker', 'form', '한국어 단일 날짜·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1',[
     "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다."
@@ -155,20 +155,20 @@ const intents = [
     "링크를 버튼처럼 표시하려면 asChild 안에 링크 하나를 넣는다."
   ],['variant','size','iconOnly','asChild','leadingIcon','trailingIcon'],['button'],['Input'],['버튼','저장','삭제','액션']),
   entry('Input','form','단일 값·비밀번호·검색어를 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['금액·수량에 type=number를 쓰지 마라','네이티브 검증 메시지에 의존하지 마라','오류를 색만으로 표시하지 마라'],'17',[
-    rule("금액·수량은 type=text inputMode=numeric에 Input의 numeric 속성(고정폭 숫자)을 함께 쓴다.", "17.1"),
-    rule("number의 휠 값 변경은 컴포넌트가 막는다. 페이지 스크롤까지 막지 않는다.", "17.1"),
-    rule("password 보기·search 지우기 버튼은 내장되어 있다. 중복 구현하지 않는다.", "17.1"),
-    rule("날짜 입력은 DatePicker를 우선 쓴다. type=date가 꼭 필요하면 value 문자열로 다룬다.", "17.1"),
-    rule("검증은 앱이 수행하고 Field로 한국어 오류를 표시한다.", "17.1")
+    rule("금액·수량: type=text inputMode=numeric, numeric. 예상 자릿수로 폭을 좁혀 우측 숫자와 레이블이 멀어지지 않게 한다.", "17.1"),
+    rule("number 휠 증감은 내장 차단하며 페이지 스크롤은 유지한다.", "17.1"),
+    rule("password 보기·search 지우기는 내장 버튼 사용.", "17.1"),
+    rule("날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.", "17.1"),
+    rule("앱 검증·Field 한국어 오류를 쓴다.", "17.1")
   ],['invalid','numeric','type','inputMode'],['input','input-control','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
   entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],["자동 높이가 필요하면 autoGrow를 쓰고 직접 높이를 계산하지 않는다", "autoGrow가 꺼진 입력의 크기 조절을 막지 마라"],'17',[
     rule("autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.", "17.2"),
     rule("FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.", "17.2")
   ],['rows','autoGrow','maxHeight','invalid'],['textarea'],['Field','FormFlow','Input'],['여러 줄','메모','비고','긴 글']),
   entry('RadioGroup','form','여러 선택지 중 하나만 선택한다.',['여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때'],["각 선택지에 연결된 레이블을 생략하지 마라"],'17',[
-    rule("각 RadioGroupItem의 id에 Label htmlFor를 연결한다.", "17.3"),
-    rule("화살표는 포커스와 선택을 함께 옮긴다. 앱이 포커스만 옮기도록 바꾸지 않는다.", "17.3"),
-    rule("FormFlow 안 Enter는 다음 칸으로 간다. 별도 이동 처리를 붙이지 않는다.", "11.5")
+    rule("묶음 제목: Field label. 항목은 Label htmlFor=RadioGroupItem id로 연결한다. aria-label·aria-labelledby 우선.", "17.3"),
+    rule("화살표로 포커스와 선택을 함께 옮긴다.", "17.3"),
+    rule("FormFlow 안 Enter는 다음 칸으로 이동한다. 별도 처리 금지.", "11.5")
   ],['value','defaultValue','onValueChange','disabled'],['radio-group'],['RadioGroupItem','Label'],['라디오','하나만 선택','택일']),
   part('RadioGroupItem','RadioGroup',"라디오 선택지 하나를 표시한다.",['value','disabled'],['radio-group-item','radio-group-indicator']),
   entry('Switch','form','켜기 끄기 설정을 즉시 적용한다.',['알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때'],['주문 저장 대기 값에 Switch를 쓰지 마라','제출할 때 함께 적용하는 값은 Checkbox를 써라'],'17',[

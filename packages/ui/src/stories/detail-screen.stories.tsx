@@ -119,7 +119,7 @@ function OrderDetail({ order, back, onSave, onDelete }: {
       {/* 패널을 서버에서 조회하는 화면의 예제이므로 화살표만으로 요청하지 않는다. */}
       <Tabs defaultValue="basic" activationMode="manual">
         <TabsList aria-label="주문 상세 분류"><TabsTrigger value="basic">기본정보</TabsTrigger><TabsTrigger value="shipping">배송</TabsTrigger><TabsTrigger value="payment">결제</TabsTrigger><TabsTrigger value="history">이력</TabsTrigger></TabsList>
-        <TabsContent value="basic"><dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 border-y border-line py-4">
+        <TabsContent value="basic"><dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 border-b border-line py-4">
           <dt>수취인</dt><dd>{order.recipient}</dd><dt>주문 금액</dt><dd className="tabular">{order.amount.toLocaleString('ko-KR')}원</dd><dt>배송 방법</dt><dd>{order.delivery === 'normal' ? '일반 배송' : '빠른 배송'}</dd>
         </dl></TabsContent>
         <TabsContent value="shipping"><p>서울특별시 중구 세종대로 110</p><p>택배사 인계 준비 중입니다.</p></TabsContent>

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Ellipsis } from '@s2life/ui/icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within, waitFor } from 'storybook/test';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../components/dropdown-menu';
@@ -10,8 +11,8 @@ const meta = {
   tags: ['autodocs'], title: 'Components/DropdownMenu' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
-function RowMenu({ onDelete, onSave }: { onDelete?: () => void; onSave?: () => void }) {
-  return <DropdownMenu><DropdownMenuTrigger asChild><Button aria-label="주문 액션" size="sm">⋯</Button></DropdownMenuTrigger>
+function RowMenu({ order = '주문 001', onDelete, onSave }: { order?: string; onDelete?: () => void; onSave?: () => void }) {
+  return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="sm" iconOnly aria-label={`${order} 작업`}><Ellipsis aria-hidden="true" /></Button></DropdownMenuTrigger>
     <DropdownMenuContent><DropdownMenuItem onSelect={onSave}>저장</DropdownMenuItem><DropdownMenuItem destructive onSelect={onDelete}>삭제</DropdownMenuItem></DropdownMenuContent></DropdownMenu>;
 }
 function Demo() { const [result, setResult] = React.useState(''); return <><table><tbody><tr><td>주문 001</td><td><RowMenu onSave={() => setResult('저장 완료')} /></td></tr></tbody></table><output>{result}</output></>; }
@@ -26,9 +27,9 @@ export const 파괴적항목: Story = { name: '메뉴-파괴적항목', render: 
 } };
 const rows = Array.from({ length: 500 }, (_, i) => ({ id: String(i), name: `주문 ${i}` }));
 const helper = createColumnHelper<typeof dataTableFeatures, typeof rows[number]>();
-const columns = helper.columns([helper.accessor('name', { header: '주문' }), helper.display({ id: 'actions', header: '액션', cell: () => <RowMenu /> })]);
-export const 가상화_언마운트: Story = { name: '메뉴-가상화-언마운트', render: () => <DataTable data={rows} columns={columns} getRowId={r => r.id} virtualize caption="가상화 행 액션" />, play: async ({ canvasElement: root }) => {
-  const trigger = within(root).getAllByRole('button', { name: '주문 액션' })[0]!;
+const columns = helper.columns([helper.accessor('name', { header: '주문' }), helper.display({ id: 'actions', header: () => <span className="sr-only">작업</span>, cell: ({ row }) => <RowMenu order={row.original.name} /> })]);
+export const 가상화_언마운트: Story = { name: '메뉴-가상화-언마운트', render: () => <DataTable data={rows} columns={columns} getRowId={r => r.id} virtualize caption="가상화 행 작업" />, play: async ({ canvasElement: root }) => {
+  const trigger = within(root).getAllByRole('button', { name: '주문 0 작업' })[0]!;
   trigger.focus(); await userEvent.keyboard('{Enter}'); await expect(within(document.body).getByRole('menu')).toBeInTheDocument();
   const scroll = root.querySelector<HTMLElement>('[data-slot="data-table-scroll"]')!;
   scroll.scrollTop = 12000; scroll.dispatchEvent(new Event('scroll'));

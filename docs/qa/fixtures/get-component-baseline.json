@@ -515,15 +515,15 @@
     ],
     "rules": [
       {
-        "text": "각 RadioGroupItem의 id에 Label htmlFor를 연결한다.",
+        "text": "묶음 제목: Field label. 항목은 Label htmlFor=RadioGroupItem id로 연결한다. aria-label·aria-labelledby 우선.",
         "source": "DESIGN.md 17.3"
       },
       {
-        "text": "화살표는 포커스와 선택을 함께 옮긴다. 앱이 포커스만 옮기도록 바꾸지 않는다.",
+        "text": "화살표로 포커스와 선택을 함께 옮긴다.",
         "source": "DESIGN.md 17.3"
       },
       {
-        "text": "FormFlow 안 Enter는 다음 칸으로 간다. 별도 이동 처리를 붙이지 않는다.",
+        "text": "FormFlow 안 Enter는 다음 칸으로 이동한다. 별도 처리 금지.",
         "source": "DESIGN.md 11.5"
       }
     ],

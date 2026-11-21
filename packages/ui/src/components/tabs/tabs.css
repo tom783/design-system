@@ -6,9 +6,9 @@
     max-width: 100%;
     overflow-x: auto;
     scrollbar-width: thin;
-    /* 안쪽 여백은 전역 2px 링 + 2px offset이 overflow 경계에 잘리지 않게 한다. */
-    padding: var(--space-4);
-    border-bottom: var(--border-width) solid var(--border-default);
+    /* 아래 여백과 레이아웃 경계선을 없애 선택 밑줄이 기준선을 직접 덮게 한다 (§16.1). */
+    padding: var(--space-4) var(--space-4) 0;
+    box-shadow: inset 0 -1px 0 var(--border-default);
     gap: var(--space-4);
   }
   .ds-tabs-trigger {
@@ -23,6 +23,8 @@
     color: var(--text-secondary);
     cursor: pointer;
   }
+  /* 아래 여백이 없는 스크롤 영역에서도 전역 2px 링 전체가 보이도록 안쪽에 그린다. */
+  .ds-tabs-trigger:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
   .ds-tabs-trigger[data-state="active"] {
     /* 선택은 브랜드 밑줄 + 굵기, 포커스는 별도의 전역 outline이다 (§16). */
     border-bottom-color: var(--action-primary-bg);

@@ -5477,6 +5477,10 @@
         {
           "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
           "source": "DESIGN.md 2.3"
+        },
+        {
+          "text": "행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.",
+          "source": "DESIGN.md 2.3"
         }
       ],
       "related": [
@@ -5884,23 +5888,23 @@
       ],
       "rules": [
         {
-          "text": "금액·수량은 type=text inputMode=numeric에 Input의 numeric 속성(고정폭 숫자)을 함께 쓴다.",
+          "text": "금액·수량: type=text inputMode=numeric, numeric. 예상 자릿수로 폭을 좁혀 우측 숫자와 레이블이 멀어지지 않게 한다.",
           "source": "DESIGN.md 17.1"
         },
         {
-          "text": "number의 휠 값 변경은 컴포넌트가 막는다. 페이지 스크롤까지 막지 않는다.",
+          "text": "number 휠 증감은 내장 차단하며 페이지 스크롤은 유지한다.",
           "source": "DESIGN.md 17.1"
         },
         {
-          "text": "password 보기·search 지우기 버튼은 내장되어 있다. 중복 구현하지 않는다.",
+          "text": "password 보기·search 지우기는 내장 버튼 사용.",
           "source": "DESIGN.md 17.1"
         },
         {
-          "text": "날짜 입력은 DatePicker를 우선 쓴다. type=date가 꼭 필요하면 value 문자열로 다룬다.",
+          "text": "날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.",
           "source": "DESIGN.md 17.1"
         },
         {
-          "text": "검증은 앱이 수행하고 Field로 한국어 오류를 표시한다.",
+          "text": "앱 검증·Field 한국어 오류를 쓴다.",
           "source": "DESIGN.md 17.1"
         }
       ],
@@ -6011,15 +6015,15 @@
       ],
       "rules": [
         {
-          "text": "각 RadioGroupItem의 id에 Label htmlFor를 연결한다.",
+          "text": "묶음 제목: Field label. 항목은 Label htmlFor=RadioGroupItem id로 연결한다. aria-label·aria-labelledby 우선.",
           "source": "DESIGN.md 17.3"
         },
         {
-          "text": "화살표는 포커스와 선택을 함께 옮긴다. 앱이 포커스만 옮기도록 바꾸지 않는다.",
+          "text": "화살표로 포커스와 선택을 함께 옮긴다.",
           "source": "DESIGN.md 17.3"
         },
         {
-          "text": "FormFlow 안 Enter는 다음 칸으로 간다. 별도 이동 처리를 붙이지 않는다.",
+          "text": "FormFlow 안 Enter는 다음 칸으로 이동한다. 별도 처리 금지.",
           "source": "DESIGN.md 11.5"
         }
       ],

@@ -166,7 +166,13 @@ action-danger-bg   →  danger-700  L 50.3%   ← 600이 아니라 700
 여기서 비색상 신호를 전달하는 것은 **라벨 텍스트와 아이콘 모양** 둘이다.
 Storybook `StatusChip / 흑백 출력 검증` 스토리에서 색을 제거한 상태로 확인할 수 있다.
 
-행 액션의 DropdownMenuContent는 포털의 목록으로 표시한다. DropdownMenuPortal은
+행 작업 트리거는 `Button variant="ghost" size="sm" iconOnly` 안에
+`@s2life/ui/icons`의 `Ellipsis aria-hidden="true"`를 넣고 `aria-label="{행 식별} 작업"`을 준다.
+문자 `⋯`나 반복되는 테두리 버튼으로 표의 값보다 무겁게 만들지 않는다. 작업 열 제목은
+`<span className="sr-only">작업</span>`으로 접근 이름만 남긴다. 평소 테두리는 투명하고
+아이콘은 행 배경 대비 3:1 이상이며 호버 배경·키보드 포커스 링으로 조작 상태를 드러낸다.
+
+행 작업의 DropdownMenuContent는 포털의 목록으로 표시한다. DropdownMenuPortal은
 그 레이어를 배치하는 부품이다. destructive 항목은 삭제 아이콘을 함께 표시하여 색만으로
 파괴적 동작을 구분하지 않는다.
 
@@ -445,7 +451,7 @@ shadcn/ui 방식으로 **소스를 직접 소유**한다(복사해 와서 우리
 2. **주요 버튼(`primary`)은 화면당 하나.** 둘 이상이면 위계가 사라진다.
    데이터 화면의 대부분 버튼은 `secondary`여야 한다.
 3. **`danger`는 되돌릴 수 없는 작업에만.** 반드시 아이콘이나 명시적 동사와 함께.
-4. **포커스는 전 컴포넌트가 같은 모양.** `:focus-visible`에 전역으로 걸었다.
+4. **포커스는 전 컴포넌트가 같은 2px 링.** `:focus-visible`에 전역으로 걸었다. Tabs는 스크롤 잘림을 피하려 안쪽에 그린다(§16.1).
 5. **값이 들어가는 자리는 고정 너비를 주지 않는다.** 최소 너비 + 말줄임 + 전체값 보존.
 6. **아이콘 전용 버튼은 `aria-label` 필수.**
 
@@ -1486,15 +1492,21 @@ Radix 기본값 `activationMode="automatic"`을 유지한다. ArrowRight는 포�
 선택된 탭은 tabindex 0, 나머지는 -1이다. 패널의 tabindex 0과 aria-labelledby는
 Radix가 제공한다. 선택은 기존 브랜드 강조 토큰 `--action-primary-bg`의 **아래 2px 선과
 600 굵기**로 표시한다. §5의 일반 1px 경계선 규칙에서 선택 표시만 예외다.
-포커스는 별도의 `--border-focus` outline으로 유지한다.
+포커스는 별도의 `--border-focus` outline으로 유지한다. 탭은 전역 2px 두께를 유지하되
+`outline-offset: calc(-1 * var(--focus-width))`(현재 -2px)로 안쪽에 그린다.
+목록 아래 여백을 0으로 줄여도 스크롤 영역 아래에서 링이 잘리지 않게 하기 위해서다.
+목록 기준선은 `border-bottom` 대신 `box-shadow: inset 0 -1px 0 var(--border-default)`로
+그린다. 이는 부유 장식 그림자가 아니라 치수를 차지하지 않는 1px 선(§12.2와 같은 기법)이다.
+선택 트리거의 2px 밑줄이 기준선을 덮고 아래 끝이 일치한다. 상세 패널은 이 선 바로 아래에
+상단 경계선을 중복해서 그리지 않는다.
 
 TabsList는 줄바꿈하지 않고 `overflow-x:auto`와 얇은 스크롤바를 쓴다.
 
 가려진 탭을 끌어올 때 **`scrollIntoView`를 쓰지 않는다.** 스크롤 가능한 조상을 전부
 움직이기 때문에 `block:'nearest'`로도 문서가 세로로 밀렸다 — 실측 `scrollY` 244 → 266.
 탭을 화살표로 지나갈 때마다 페이지가 튄다. 목록의 `scrollTo({left})`로 **가로만**
-움직이고, reduced-motion에서는 `behavior`를 `auto`로 떨어뜨린다. 안쪽 여백만큼 더
-당겨서 포커스 링 2px + offset 2px가 경계에 잘리지 않게 한다.
+움직이고, reduced-motion에서는 `behavior`를 `auto`로 떨어뜨린다. 좌우 4px 여백만큼
+더 당겨 탭 가장자리를 보존한다. 안쪽 포커스 링은 아래·좌우 스크롤 경계 안에 머문다.
 
 그리고 **이 코드가 담당하는 경로는 좁다.** 포커스가 움직이는 클릭·화살표에서는
 브라우저가 포커스된 요소를 알아서 가로로 긁어와 `delta`가 0이 되고 조기 반환한다(실측).
@@ -1629,6 +1641,11 @@ webkit 지우기 UI는 자체 버튼과 겹치지 않도록 숨긴다.
 로컬 날짜로 꺼내면 시간대에 따라 하루가 어긋난다. 검증 문구도 영어다. 날짜 문자열을
 유지하는 DatePicker를 우선 쓰고(§15), 네이티브 타입이 꼭 필요하면 value 문자열만 쓴다.
 
+숫자 입력은 예상 자릿수에 맞춰 Field 폭을 좁힌다. 등록 예제의 수량은 `--field-min-w`(120px)를
+쓴다. 예상 1–6자리에 14px 고정폭 숫자를 쓰며 좌우 24px 여백과 경계 2px를 빼도 94px가
+남아 입력할 공간이 충분하다. 672px 폼 끝의 숫자와 레이블 사이 거리를 줄이는 선택이다.
+Input 기본 `w-full`은 그리드 칸을 채우는 소비자를 위해 유지하고, 긴 값은 기존 가로 스크롤로 보존한다.
+
 ### 17.2 Textarea — 값과 높이를 구분한다
 
 rows 기본값은 3이다. 사전 **네이티브** rows=3 측정은 51px였다. 이 수치를 고정 높이로
@@ -1659,6 +1676,13 @@ Radix 기본 ARIA 라디오 패턴을 그대로 쓴다. 사전 실측 role은 ra
 포커스·선택을 함께 옮겨 끝에서 순환했다. Tabs manual 같은 포커스 전용 모드는 없다.
 RadioGroupItem은 RadioGroup의 부품이다. 선택은 **점 + 이중 테두리 변화**로 표현하여
 색 단독 신호를 피한다. 각 항목에 id와 Label htmlFor를 연결해 레이블도 선택할 수 있게 한다.
+
+묶음 제목도 `<Field label="배송">`으로 준다. Field의 `<label>`에 고유 ID를 부여하고
+비공개 FieldLabelContext로 전달하여 div 루트인 RadioGroup이 `aria-labelledby`로 연결한다.
+소비자가 `aria-label` 또는 `aria-labelledby`를 주면 그 이름이 우선한다. 두 속성을 모두 주면
+ARIA의 기본 우선순위대로 `aria-labelledby`를 쓴다. Field의 `aria-describedby`(오류 → 설명)와
+`aria-invalid`는 기존 자식 전달 경로로 그룹 루트에 붙으며 공개 prop은 추가하지 않는다.
+각 선택지의 Label과 htmlFor 연결은 별도로 유지한다.
 
 ### 17.4 Switch와 Checkbox — 적용 시점을 구분한다
 

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Ellipsis } from '@s2life/ui/icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within } from 'storybook/test';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -26,7 +27,7 @@ function ListScreen() {
     helper.accessor('date', { header: '주문일', cell: cell => <span className="tabular">{cell.getValue().toLocaleDateString('sv-SE')}</span> }),
     helper.accessor('amount', { header: '주문 금액', cell: cell => `${cell.getValue().toLocaleString('ko-KR')}원` }),
     helper.accessor('status', { header: '상태', cell: cell => <StatusChip tone={cell.getValue() === 'done' ? 'success' : 'warning'}>{cell.getValue() === 'done' ? '배송 완료' : '준비 중'}</StatusChip> }),
-    helper.display({ id: 'actions', header: '액션', cell: cell => <DropdownMenu><DropdownMenuTrigger asChild><Button size="sm" aria-label={`${cell.row.original.id} 액션`}>⋯</Button></DropdownMenuTrigger><DropdownMenuContent>
+    helper.display({ id: 'actions', header: () => <span className="sr-only">작업</span>, cell: cell => <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="sm" iconOnly aria-label={`${cell.row.original.id} 작업`}><Ellipsis aria-hidden="true" /></Button></DropdownMenuTrigger><DropdownMenuContent>
       <DropdownMenuItem onSelect={() => toast.success('저장했습니다')}>저장</DropdownMenuItem>
       <DropdownMenuItem destructive onSelect={() => { setOrders(previous => previous.filter(order => order.id !== cell.row.original.id)); toast.success('주문을 삭제했습니다'); }}>삭제</DropdownMenuItem>
     </DropdownMenuContent></DropdownMenu> }),
@@ -48,7 +49,7 @@ export const 목록화면: Story = { render: () => <ListScreen />, play: async (
   await expect(canvas.getByText('총 18건')).toBeInTheDocument();
   await userEvent.click(canvas.getByRole('button', { name: '달력 열기' })); await userEvent.click(within(document.body).getByRole('button', { name: '최근 7일' }));
   await expect(canvas.getByText('총 12건')).toBeInTheDocument();
-  await userEvent.click(canvas.getAllByRole('button', { name: /ORD-.* 액션/ })[0]!);
+  await userEvent.click(canvas.getAllByRole('button', { name: /ORD-.* 작업/ })[0]!);
   await userEvent.click(within(document.body).getByRole('menuitem', { name: '저장' }));
   await expect(await within(document.body).findByText('저장했습니다')).toBeInTheDocument(); toast.dismiss(); root.dataset.playComplete = 'true';
 } };

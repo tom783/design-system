@@ -18,8 +18,9 @@ const withTheme: Decorator = (Story, context) => {
   // 문서 모드에서는 화면 높이를 채우지 않는다. 실측: min-h-dvh 가 인라인 미리보기마다
   // 뷰포트 높이(1100px)를 강제해 내용 86–134px 인 Combobox 문서가 15,471px 로 늘었다.
   const fill = context.viewMode === 'docs' ? '' : ' min-h-dvh';
+  // .storybook은 소비자 Tailwind 스캔 밖이므로 전용 여백은 인라인 토큰으로 지정한다.
   return (
-    <div className={`bg-canvas text-fg p-6${fill}`}>
+    <div className={`bg-canvas text-fg${fill}`} style={{ padding: 'var(--space-24)' }}>
       <Story />
     </div>
   );

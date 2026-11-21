@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Ellipsis } from '@s2life/ui/icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -23,13 +24,13 @@ function Demo({ overflow = false }: { overflow?: boolean }) {
   return <><Peek open={open} onOpenChange={setOpen} title="주문 20260114-0012"
     items={overflow ? Array.from({ length: 7 }, (_, i) => ({ label: `항목 ${i + 1}`, value: `값 ${i + 1}` })) : items}
     action={{ label: '상세 보기', onClick: () => { setOpen(false); setDetail(true); } }}>
-    <Button aria-label="주문 요약 보기">⋯</Button>
+    <Button variant="ghost" size="sm" iconOnly aria-label="주문 20260114-0012 작업"><Ellipsis aria-hidden="true" /></Button>
   </Peek><Button className="ml-4">다음 컨트롤</Button>{detail && <p>주문 상세 화면</p>}</>;
 }
 export const 기본: Story = {
   render: () => <Demo />,
   play: async ({ canvasElement: root }) => {
-    const c = within(root), trigger = c.getByRole('button', { name: '주문 요약 보기' });
+    const c = within(root), trigger = c.getByRole('button', { name: '주문 20260114-0012 작업' });
     await userEvent.hover(trigger); await expect(bubble(root).matches(':popover-open')).toBe(false);
     trigger.focus(); await expect(bubble(root).matches(':popover-open')).toBe(false);
     await userEvent.keyboard('{Enter}');
@@ -59,7 +60,7 @@ export const 줄수초과: Story = {
     try {
       const c = within(root); await userEvent.click(c.getByRole('button', { name: '7줄 준비' }));
       if (import.meta.env.DEV) await waitFor(() => expect(warnings.some(w => w.includes('[Peek]') && w.includes('6줄'))).toBe(true));
-      await userEvent.click(c.getByRole('button', { name: '주문 요약 보기' }));
+      await userEvent.click(c.getByRole('button', { name: '주문 20260114-0012 작업' }));
       await expect(bubble(root).querySelectorAll('dd')).toHaveLength(7);
       await expect(bubble(root).matches(':popover-open')).toBe(true);
     } finally { console.warn = original; }
@@ -72,9 +73,9 @@ const helper = createColumnHelper<typeof dataTableFeatures, Order>();
 const baseColumns = helper.columns([helper.accessor('id', { header: '주문번호' }), helper.accessor('recipient', { header: '수취인' }), helper.accessor('amount', { header: '금액' })]);
 function TablePeek() {
   const [openId, setOpenId] = React.useState<string | null>(null);
-  const columns = helper.columns([...baseColumns, helper.display({ id: 'peek', header: '요약', cell: ({ row }) =>
+  const columns = helper.columns([...baseColumns, helper.display({ id: 'peek', header: () => <span className="sr-only">작업</span>, cell: ({ row }) =>
     <Peek open={openId === row.id} onOpenChange={open => setOpenId(open ? row.id : null)} title={`주문 ${row.id}`} items={items}>
-      <Button size="sm" variant="ghost" aria-label={`${row.id} 요약`}>⋯</Button>
+      <Button variant="ghost" size="sm" iconOnly aria-label={`${row.id} 작업`}><Ellipsis aria-hidden="true" /></Button>
     </Peek> })]);
   return <div style={{ '--data-table-viewport-height': '120px' } as React.CSSProperties}>
     <DataTable data={data} columns={columns} getRowId={row => row.id} virtualize />
@@ -83,7 +84,7 @@ function TablePeek() {
 export const 표에서_요약: Story = {
   name: '표에서-요약', render: () => <TablePeek />,
   play: async ({ canvasElement: root }) => {
-    await userEvent.click(within(root).getByRole('button', { name: 'order-1 요약' }));
+    await userEvent.click(within(root).getByRole('button', { name: 'order-1 작업' }));
     const dialog = root.querySelector<HTMLElement>('[data-peek]:popover-open')!;
     await waitFor(() => expect(dialog).toHaveFocus());
     // 진입 translate 전환이 끝난 뒤 최상위 레이어의 실제 hit-test까지 확인한다.

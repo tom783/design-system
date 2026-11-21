@@ -75,12 +75,13 @@ export function OrderCreateScreen({ onSave, onBack, restart = false, notificatio
         onChange={event => change('name', event.target.value)} onBlur={() => validate('name', draft.name, 'blur')} /></Field>
       <Field label="사업장" required error={errors.site}><Combobox options={sites} value={draft.site}
         placeholder="사업장을 선택하세요" aria-label="사업장" onValueChange={value => change('site', value)} /></Field>
-      <Field label="수량" required error={errors.qty}><Input data-probe="qty" type="text" inputMode="numeric" numeric value={draft.qty}
+      {/* 예상 수량 1–6자리는 기존 최소 폭 120px 안에 들어간다. 폼 전체 폭 끝으로 숫자를 밀지 않는다 (§17.1). */}
+      <Field label="수량" required error={errors.qty} style={{ width: 'var(--field-min-w)', maxWidth: '100%' }}><Input data-probe="qty" type="text" inputMode="numeric" numeric value={draft.qty}
         onChange={event => change('qty', event.target.value)} onBlur={() => validate('qty', draft.qty, 'blur')} /></Field>
-      <div className="space-y-2"><p>배송</p><RadioGroup aria-label="배송" value={draft.delivery} onValueChange={value => change('delivery', value)}>
+      <Field label="배송"><RadioGroup value={draft.delivery} onValueChange={value => change('delivery', value)}>
         <div className="flex items-center gap-2"><RadioGroupItem id={normalId} data-probe="normal" value="normal" /><Label htmlFor={normalId}>일반 배송</Label></div>
         <div className="flex items-center gap-2"><RadioGroupItem id={expressId} data-probe="express" value="express" /><Label htmlFor={expressId}>빠른 배송</Label></div>
-      </RadioGroup></div>
+      </RadioGroup></Field>
       {/* §17.4: 주문 초안에 포함하지 않는다. 이 계정 설정은 저장과 관계없이 즉시 적용한다. */}
       <Field label="알림" description="계정의 알림 받기는 즉시 적용되며 주문을 취소해도 유지됩니다.">
         <Switch data-probe="notifications" checked={notifications} onCheckedChange={setNotifications} />

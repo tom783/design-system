@@ -2,6 +2,7 @@ import * as React from 'react';
 import { CircleAlert } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { FieldErrorContext } from './field-error-context';
+import { FieldLabelContext } from './field-label-context';
 
 type FieldChildProps = React.AriaAttributes & { id?: string; required?: boolean };
 export interface FieldProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -16,6 +17,7 @@ export function Field({ label, description, error, required, children, className
   const generatedId = React.useId();
   const child = React.Children.only(children);
   const id = child.props.id ?? generatedId;
+  const labelId = `${generatedId}-label`;
   const errorId = `${generatedId}-error`;
   const descriptionId = `${generatedId}-description`;
   const hasError = Boolean(error);
@@ -27,15 +29,17 @@ export function Field({ label, description, error, required, children, className
   ].filter(Boolean))].join(' ') || undefined;
   const isRequired = Boolean(required || child.props.required);
   return <div {...props} data-slot="field" className={cn('ds-field', className)}>
-    <label data-slot="field-label" htmlFor={id}>{label}{isRequired && <span data-slot="field-required" role="img" aria-label="필수 입력"> *</span>}</label>
+    <label data-slot="field-label" id={labelId} htmlFor={id}>{label}{isRequired && <span data-slot="field-required" role="img" aria-label="필수 입력"> *</span>}</label>
     {description && <div data-slot="field-description" id={descriptionId}>{description}</div>}
-    <FieldErrorContext.Provider value={{ id: errorId, container: errorContainer, hasError }}>
-      {React.cloneElement(child, {
-        id, required: isRequired || undefined,
-        'aria-describedby': describedBy,
-        'aria-invalid': hasError ? true : child.props['aria-invalid'],
-      })}
-    </FieldErrorContext.Provider>
+    <FieldLabelContext.Provider value={labelId}>
+      <FieldErrorContext.Provider value={{ id: errorId, container: errorContainer, hasError }}>
+        {React.cloneElement(child, {
+          id, required: isRequired || undefined,
+          'aria-describedby': describedBy,
+          'aria-invalid': hasError ? true : child.props['aria-invalid'],
+        })}
+      </FieldErrorContext.Provider>
+    </FieldLabelContext.Provider>
     <div ref={setErrorContainer} data-slot="field-error" id={errorId} aria-live="polite" aria-atomic="true">
       {hasError && <><CircleAlert aria-hidden="true" /><span>{error}</span></>}
     </div>
