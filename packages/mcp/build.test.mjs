@@ -85,7 +85,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 70_000);
+  // R33: leadingIcon API·검색·헤더 없는 카드 지침 추가로 69,986 → 70,643바이트.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 71_000);
 });
 test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 결과와 동일', async () => {
   const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));

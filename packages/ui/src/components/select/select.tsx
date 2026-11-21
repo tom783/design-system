@@ -40,14 +40,14 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     {...React.useContext(SelectWiring)}
     className={cn(
-      "flex h-[var(--control-h-md)] min-w-[var(--field-min-w)] w-full items-center justify-between whitespace-nowrap rounded-[var(--radius-md)] border border-input bg-transparent px-3 py-2 text-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-[var(--control-h-md)] min-w-[var(--field-min-w)] w-full items-center justify-between gap-2 whitespace-nowrap rounded-[var(--radius-md)] border border-field bg-surface px-3 py-2 text-sm text-fg ring-offset-background data-[placeholder]:text-fg-subtle focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon data-slot="select-icon" asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="ds-select-chevron" aria-hidden="true" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))

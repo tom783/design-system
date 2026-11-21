@@ -157,10 +157,11 @@ const intents = [
   entry('Input','form','단일 값·비밀번호·검색어를 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['금액·수량에 type=number를 쓰지 마라','네이티브 검증 메시지에 의존하지 마라','오류를 색만으로 표시하지 마라'],'17',[
     rule("금액·수량: type=text inputMode=numeric, numeric. 예상 자릿수로 폭을 좁혀 우측 숫자와 레이블이 멀어지지 않게 한다.", "17.1"),
     rule("number 휠 증감은 내장 차단하며 페이지 스크롤은 유지한다.", "17.1"),
-    rule("password 보기·search 지우기는 내장 버튼 사용.", "17.1"),
+    rule('검색 칸은 type="search"를 쓴다. 돋보기·지우기가 내장되므로 아이콘을 따로 겹치지 않는다.', '17.1'),
+    rule('앞쪽 장식은 leadingIcon, 검색 돋보기를 끄려면 leadingIcon={null}. password 보기는 내장 버튼을 쓴다.', '17.1'),
     rule("날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.", "17.1"),
     rule("앱 검증·Field 한국어 오류를 쓴다.", "17.1")
-  ],['invalid','numeric','type','inputMode'],['input','input-control','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
+  ],['invalid','numeric','leadingIcon','type','inputMode'],['input','input-control','input-leading-icon','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
   entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],["자동 높이가 필요하면 autoGrow를 쓰고 직접 높이를 계산하지 않는다", "autoGrow가 꺼진 입력의 크기 조절을 막지 마라"],'17',[
     rule("autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.", "17.2"),
     rule("FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.", "17.2")
@@ -183,7 +184,7 @@ const intents = [
   ...[
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
     ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
-  ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5','경계선과 여백으로 구조를 만든다.',['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
+  ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5',['경계선과 여백으로 구조를 만든다.', rule('헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.', '6')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
   entry('Checkbox','form',"선택·해제·일부 선택 상태를 표시한다.",['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17',[
     "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다."
   ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),

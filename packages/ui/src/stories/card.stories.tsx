@@ -148,3 +148,11 @@ export const 주문패널: Story = {
     </Card>
   ),
 };
+
+export const 본문만: Story = {
+  name: '본문만 — 헤더와 같은 시작 여백',
+  render: () => <div className="grid max-w-[760px] gap-4 md:grid-cols-2">
+    <Card data-probe="body-only"><CardBody><CardTitle>본문의 첫 제목</CardTitle><p>헤더 없이 본문만 사용할 수 있습니다.</p></CardBody></Card>
+    <Card data-probe="with-header"><CardHeader><CardTitle>헤더의 제목</CardTitle></CardHeader><CardBody><p>헤더 다음 본문은 위 여백을 더하지 않습니다.</p></CardBody></Card>
+  </div>,
+};

@@ -98,7 +98,7 @@ function SingleCombobox({ multiple: _multiple, options, value, onValueChange, pl
         }}
         data-placeholder={selected ? undefined : ''} title={selected?.label}>
         <span data-slot="combobox-value">{selected?.label ?? placeholder}</span>
-        <ChevronDown aria-hidden="true" />
+        <ChevronDown className="ds-select-chevron" aria-hidden="true" />
       </button>
     </Popover.Trigger>
     <Popover.Portal>

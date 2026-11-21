@@ -28,6 +28,8 @@ export function Example() {
 
 `styles.css`는 토큰·Tailwind 유틸리티·컴포넌트 CSS를 모두 사전 컴파일한 자립형 파일이다. 소비 앱에 Tailwind나 PostCSS 설정이 필요하지 않다. JS에서 CSS를 자동으로 불러오지 않으므로 위 import를 생략하면 스타일이 적용되지 않는다. `@s2life/ui/internal`은 공개 API가 아니다.
 
+제공하는 유틸리티: `.sr-only`는 스크린리더용 문구를 화면에서 숨기고, `.tabular`는 숫자 열을 고정폭으로 정렬한다. `styles.css`·`tailwind.css` 두 경로에서 제공하며 `.truncate`는 공개 계약에 포함하지 않는다.
+
 토큰 파일을 직접 써야 한다면 `@s2life/ui/tokens.css`, Tailwind 이름 매핑은 `@s2life/ui/theme.css`, 기계 판독용 값은 `@s2life/ui/tokens.json`으로 가져온다. `styles.css`에는 토큰이 이미 포함되어 있으므로 `tokens.css`를 중복으로 불러오지 않는다.
 
 ## 이미 Tailwind v4를 쓰는 앱

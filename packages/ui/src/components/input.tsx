@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Eye, EyeOff, X } from 'lucide-react';
+import { Eye, EyeOff, Search, X } from 'lucide-react';
 import { cn } from '../lib/cn';
 
 /**
@@ -18,10 +18,12 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   invalid?: boolean;
   /** 숫자·금액 입력. 고정폭 숫자와 우측 정렬을 적용한다. */
   numeric?: boolean;
+  /** 장식용 앞쪽 아이콘. search는 기본 돋보기이며 null로 숨긴다. */
+  leadingIcon?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, invalid, numeric, type = 'text', onChange, onWheel, ...props }, ref) => {
+  ({ className, invalid, numeric, leadingIcon, type = 'text', onChange, onWheel, ...props }, ref) => {
     const inputRef = React.useRef<HTMLInputElement | null>(null);
     const [visible, setVisible] = React.useState(false);
     const [hasValue, setHasValue] = React.useState(() => String(props.defaultValue ?? '').length > 0);
@@ -42,6 +44,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }, [props.form, type]);
     const password = type === 'password';
     const search = type === 'search';
+    const icon = leadingIcon === undefined && search ? <Search /> : leadingIcon;
+    const hasIcon = icon != null && icon !== false;
     const clearable = search && !props.disabled && !props.readOnly &&
       (props.value !== undefined ? String(props.value).length > 0 : hasValue);
     const input = <input
@@ -59,7 +63,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         'disabled:cursor-not-allowed disabled:bg-sunken disabled:text-fg-disabled',
         invalid ? 'border-danger-ink' : 'border-field hover:border-fg-subtle',
         numeric && 'tabular text-right',
-        (password || search) ? 'ds-input-with-action ps-3' : 'px-3',
+        (password || search) && 'ds-input-with-action',
+        hasIcon ? 'ds-input-with-leading' : 'ps-3',
+        !password && !search && 'pe-3',
         className,
       )}
       onChange={event => { setHasValue(Boolean(event.currentTarget.value)); onChange?.(event); }}
@@ -72,9 +78,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         }
       }}
     />;
-    if (!password && !search) return input;
+    if (!password && !search && !hasIcon) return input;
     return <span data-slot="input-control" className="ds-input-control">
       {input}
+      {/* 입력 뒤의 positioned 형제로 그려 바탕 위에 올린다. 포인터는 입력으로 통과한다. */}
+      {hasIcon && <span data-slot="input-leading-icon" className="ds-input-leading-icon" aria-hidden="true">{icon}</span>}
       {password && <button type="button" data-slot="input-action" className="ds-input-action"
         disabled={props.disabled} aria-label={visible ? '비밀번호 숨기기' : '비밀번호 표시'} aria-pressed={visible}
         onClick={() => setVisible(current => !current)}>

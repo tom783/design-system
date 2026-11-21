@@ -5800,6 +5800,11 @@
           "doc": "숫자·금액 입력. 고정폭 숫자와 우측 정렬을 적용한다."
         },
         {
+          "name": "leadingIcon",
+          "type": "ReactNode",
+          "doc": "장식용 앞쪽 아이콘. search는 기본 돋보기이며 null로 숨긴다."
+        },
+        {
           "name": "defaultMonth",
           "type": "Date"
         },
@@ -5834,6 +5839,7 @@
         "input",
         "input-action",
         "input-control",
+        "input-leading-icon",
         "popover-content"
       ]
     },
@@ -5923,7 +5929,11 @@
           "source": "DESIGN.md 17.1"
         },
         {
-          "text": "password 보기·search 지우기는 내장 버튼 사용.",
+          "text": "검색 칸은 type=\"search\"를 쓴다. 돋보기·지우기가 내장되므로 아이콘을 따로 겹치지 않는다.",
+          "source": "DESIGN.md 17.1"
+        },
+        {
+          "text": "앞쪽 장식은 leadingIcon, 검색 돋보기를 끄려면 leadingIcon={null}. password 보기는 내장 버튼을 쓴다.",
           "source": "DESIGN.md 17.1"
         },
         {
@@ -5964,6 +5974,11 @@
           "name": "numeric",
           "type": "boolean",
           "doc": "숫자·금액 입력. 고정폭 숫자와 우측 정렬을 적용한다."
+        },
+        {
+          "name": "leadingIcon",
+          "type": "ReactNode",
+          "doc": "장식용 앞쪽 아이콘. search는 기본 돋보기이며 null로 숨긴다."
         }
       ],
       "extends": [
@@ -5972,7 +5987,8 @@
       "slots": [
         "input",
         "input-action",
-        "input-control"
+        "input-control",
+        "input-leading-icon"
       ]
     },
     {
@@ -6242,6 +6258,10 @@
         {
           "text": "경계선과 여백으로 구조를 만든다.",
           "source": "DESIGN.md 5"
+        },
+        {
+          "text": "헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.",
+          "source": "DESIGN.md 6"
         }
       ],
       "related": [

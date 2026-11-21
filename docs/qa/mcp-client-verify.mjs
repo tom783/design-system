@@ -131,6 +131,14 @@ const t = async (name, args) => {
   check('부모 조회는 부품 목록을 제공하고 상속 표시는 없다', parent.parts?.includes('SelectTrigger') && !Object.hasOwn(parent, 'inheritedFrom'));
 }
 {
+  const input = (await t('get_component', { name: 'Input' })).structuredContent;
+  check('Input은 leadingIcon API와 장식 슬롯을 전달한다', input.props.some(p => p.name === 'leadingIcon') && input.slots.includes('input-leading-icon'));
+  check('검색 type·내장 돋보기·겹치기 금지·null 해제 지침을 전달한다',
+    input.rules.some(r => r.text.includes('type="search"') && r.text.includes('겹치지')) && input.rules.some(r => r.text.includes('leadingIcon={null}')));
+  const body = (await t('get_component', { name: 'CardBody' })).structuredContent;
+  check('CardBody는 헤더 없이 사용 가능한 위 여백 지침을 상속한다', body.inheritedFrom === 'Card' && body.rules.some(r => r.text.includes('헤더 없이 CardBody') && r.text.includes('위 여백')));
+}
+{
   const r = await t('get_rules', { topic: '폼' });
   const s = JSON.stringify(r.structuredContent ?? r.content?.[0]?.text ?? '');
   check('get_rules 가 폼 규칙을 준다', s.length > 100 && !r?.isError, s.slice(0,160));

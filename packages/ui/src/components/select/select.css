@@ -1,0 +1,8 @@
+@layer components {
+  /* 선택 가능함을 알리는 꺾쇠는 값·플레이스홀더와 독립된 의미색이다.
+     text-tertiary on surface: 라이트 5.95:1 · 다크 8.05:1로 비텍스트 3:1을 충족한다. */
+  .ds-select-chevron {
+    width: var(--space-16); height: var(--space-16); flex-shrink: 0;
+    color: var(--text-tertiary); opacity: 1;
+  }
+}

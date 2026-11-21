@@ -3,6 +3,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Field } from '../components/form';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Input } from '../components/input';
+import { Mail, LockKeyhole } from 'lucide-react';
 
 const meta = {
   tags: ['autodocs'],
@@ -176,4 +177,25 @@ export const 주소: Story = {
     await expect(within(root).getByLabelText('쇼핑몰 주소')).toHaveAttribute('type', 'url');
     root.dataset.playComplete = 'true';
   },
+};
+
+export const 검색기본아이콘: Story = {
+  name: '검색 — 기본 돋보기',
+  render: () => <div className="w-80"><Field label="게시글 검색" description="제목으로 검색합니다."><Input id="article-search" type="search" placeholder="제목 검색" /></Field></div>,
+};
+export const 앞쪽아이콘: Story = {
+  name: '앞쪽 아이콘',
+  render: () => <div className="w-80"><Field label="이메일"><Input type="email" leadingIcon={<Mail />} placeholder="name@example.com" /></Field></div>,
+};
+export const 아이콘과지우기: Story = {
+  name: '아이콘 + 지우기·비밀번호 보기',
+  render: () => <div className="grid w-80 gap-3">
+    <Field label="담당자 검색"><Input type="search" leadingIcon={<Mail />} defaultValue="담당자" /></Field>
+    <Field label="아이콘 없는 검색"><Input type="search" leadingIcon={null} defaultValue="주문" /></Field>
+    <Field label="보안 입력"><Input type="password" leadingIcon={<LockKeyhole />} defaultValue="safe-password" /></Field>
+  </div>,
+};
+export const 아이콘비활성: Story = {
+  name: '검색 아이콘 — 비활성',
+  render: () => <div className="w-80"><Field label="게시글 검색"><Input type="search" defaultValue="검색할 수 없음" disabled /></Field></div>,
 };

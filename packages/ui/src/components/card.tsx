@@ -49,7 +49,8 @@ export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHead
 }
 
 export function CardBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-slot="card-body" className={cn('p-4 pt-0', className)} {...props} />;
+  // 헤더가 없을 때도 제목과 같은 16px 시작선을 갖는다. 헤더 다음의 위 여백은 유지한다.
+  return <div data-slot="card-body" className={cn('p-4 pt-0 first:pt-4', className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

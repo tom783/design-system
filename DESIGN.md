@@ -459,6 +459,19 @@ shadcn/ui 방식으로 **소스를 직접 소유**한다(복사해 와서 우리
 5. **값이 들어가는 자리는 고정 너비를 주지 않는다.** 최소 너비 + 말줄임 + 전체값 보존.
 6. **아이콘 전용 버튼은 `aria-label` 필수.**
 
+CardBody가 카드 첫 자식이면 CSS `first:pt-4`로 위 16px를 준다(R33).
+CardHeader 다음이면 기존 pt-0을 유지한다. 헤더 없는 카드를 위해 prop을 늘리지 않는다.
+
+Select·Combobox 단일/다중·MultiSelect의 기본 트리거는 bg-surface·border-input·높이 38px다(R33).
+ChevronDown은 text-tertiary·불투명도 1·16px를 공통 CSS로 사용한다. 표면 대비가 라이트
+5.95:1·다크 8.05:1여서 비텍스트 3:1 이상이고, 값이나 플레이스홀더에 따라 색이 바뀌지 않는다.
+꺾쇠 오른쪽과 빈 상태 글자 시작은 경계 1px + 여백 12px = 13px다.
+다중 Combobox의 태그 영역은 시작 4px·수직 4px를 유지하고, 빈 상태 시작과 꺾쇠 끝만 12px로 맞춘다.
+
+공개 유틸리티는 `.sr-only`(시각적으로 숨기고 스크린리더에는 전달)·`.tabular`(숫자 열 고정폭)다.
+styles.css에서 직접 정의하고 tailwind.css에도 같은 규칙을 동봉한다. 내부 Tailwind 스캔에
+수명을 의존하지 않는다. `.truncate`는 내부 생성물이며 공개 계약에 포함하지 않는다.
+
 Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·trailingIcon을 모두
 그 링크 안에 보존한다. 앱은 공개 export를 사용한다. SELECTION_COLUMN_ID도
 내부 문자열을 복사하는 대신 공개된 선택 열 식별자를 가져다 쓴다.
@@ -2267,6 +2280,16 @@ ArrowUp 은 네이티브 동작을 유지한다. 금액·수량은 처음부터 
 
 password는 같은 입력의 type을 text/password로 바꾸는 내장 버튼을 제공한다.
 aria-label은 `비밀번호 표시`/`비밀번호 숨기기`, aria-pressed는 표시 여부다.
+검색 칸은 `type="search"`로 사용한다. 기본 돋보기로 검색 용도를 바로 알리고, 소비자가
+절대 위치로 겹친 아이콘을 입력 바탕이 가리는 도그푸딩 4 V1을 피한다(R33).
+`leadingIcon?: React.ReactNode`는 Button과 같은 이름의 장식 슬롯이다. undefined인 search만
+돋보기를 기본 제공하고 `leadingIcon={null}`이면 끈다. 다른 아이콘으로 교체할 수도 있다.
+기존 input-control 래퍼를 재사용하며 실제 input 뒤의 absolute 형제로 그려 바탕 위에 올린다.
+aria-hidden·pointer-events:none이므로 낭독하지 않고 클릭은 실제 입력으로 통과한다.
+아이콘은 text-tertiary·16px, 시작 여백 12px + 아이콘 16px + 글자 간격 8px다.
+오른쪽 지우기·비밀번호 보기의 공간은 독립적이며 id·aria-*·ref는 실제 input에 남는다.
+폭·높이·아이콘 없는 일반 입력의 여백은 유지한다.
+
 search는 값이 있고 편집 가능할 때만 자체 `검색어 지우기` 버튼을 표시한다.
 클릭하면 제어·비제어 입력 모두 input/onChange 경로로 비움을 알리고 입력에 포커스를
 돌려준다. 네이티브 지우기는 실측 헤드리스에서 나타나지 않아 존재를 가정하지 않았다.

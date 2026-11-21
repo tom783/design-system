@@ -20,6 +20,8 @@ import '@s2life/ui/styles.css';
 
 글꼴 파일은 용량과 호스팅 방식을 앱이 정하도록 ui 패키지에 넣지 않는다. Pretendard CSS의 동적 서브셋은 번들러가 앱에서 자체 호스팅하며 외부 CDN이 필요 없다. 이 CSS를 불러오지 않으면 시스템 글꼴로 그려져 숫자 폭·줄바꿈이 디자인과 달라진다. Pretendard는 Google Fonts에 없으므로 `next/font/google` 대신 위 CSS import를 사용한다.
 
+제공하는 유틸리티: `.sr-only`는 스크린리더용 문구를 화면에서 숨기고, `.tabular`는 숫자 열을 고정폭으로 정렬한다. `styles.css`·`tailwind.css` 두 경로에서 제공하며 `.truncate`는 공개 계약에 포함하지 않는다.
+
 토큰 파일을 직접 써야 한다면 `@s2life/ui/tokens.css`, Tailwind 이름 매핑은 `@s2life/ui/theme.css`, 기계 판독용 값은 `@s2life/ui/tokens.json`으로 가져온다. `styles.css`에는 토큰이 이미 포함되어 있으므로 `tokens.css`를 중복으로 불러오지 않는다.
 
 이미 Tailwind v4를 사용하는 앱은 사전 컴파일 CSS 대신 다음 입력을 사용한다. 경로는 `src/app.css` 기준이다.

@@ -62,7 +62,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder = 'ì„ í
             event.preventDefault(); setActive((event.key === 'End' || event.key === 'ArrowUp') ? enabled.at(-1)?.value : enabled[0]?.value); setOpen(true);
           }
         }}>
-        <span data-slot="multi-select-value">{text}</span><ChevronDown aria-hidden="true" />
+        <span data-slot="multi-select-value">{text}</span><ChevronDown className="ds-select-chevron" aria-hidden="true" />
       </button>
     </Popover.Trigger>
     <Popover.Portal>

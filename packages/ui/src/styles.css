@@ -33,6 +33,11 @@
   /* 숫자가 열로 정렬되는 모든 곳에서 고정폭 숫자를 쓴다.
      금액 자릿수가 흔들리면 비교가 불가능해진다. */
   .tabular { font-variant-numeric: tabular-nums; }
+  /* 공개 유틸리티: 내부 Tailwind 사용처가 없어져도 접근성 문구가 노출되지 않아야 한다. */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+  }
 
   /* 키보드 포커스는 어떤 컴포넌트에서도 같은 모양이어야 한다. */
   :focus-visible {

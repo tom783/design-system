@@ -113,7 +113,7 @@ export function MultipleCombobox({ options, value, onValueChange, placeholder = 
       }}>
       <Popover.Anchor asChild>
         <div ref={controlRef} data-slot="combobox-multiple-control" className={cn('ds-combobox-multiple-control', className)}
-          data-disabled={disabled || undefined} data-invalid={hasError || undefined}
+          data-disabled={disabled || undefined} data-invalid={hasError || undefined} data-placeholder={selected.length ? undefined : ''}
           onClick={event => {
             if (!disabled && !(event.target as HTMLElement).closest('button')) { inputRef.current?.focus(); changeOpen(true); }
           }}>
@@ -155,7 +155,7 @@ export function MultipleCombobox({ options, value, onValueChange, placeholder = 
               onCompositionStart={() => { composition.bind.onCompositionStart(); setComposing(true); setArmed(undefined); }}
               onCompositionEnd={event => { composition.bind.onCompositionEnd(); setComposing(false); setQuery(event.currentTarget.value); }} />
           </div>
-          <ChevronDown aria-hidden="true" />
+          <ChevronDown className="ds-select-chevron" aria-hidden="true" />
         </div>
       </Popover.Anchor>
       <Popover.Portal>

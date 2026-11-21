@@ -12,6 +12,9 @@
 
 ### 추가
 
+- Input `leadingIcon` 장식 슬롯. `type="search"`는 돋보기를 기본 제공하며 `leadingIcon={null}`로 끈다. 지우기·비밀번호 보기와 함께 쓸 수 있다.
+- 공개 유틸리티 `.sr-only`·`.tabular`를 두 CSS 경로에 직접 정의하고 README·시작하기에 용도를 안내한다. `.truncate`는 공개하지 않는다.
+
 - ui 토큰 하위 경로 `@s2life/ui/tokens.css`·`theme.css`·`tokens.json`. tokens 패키지 원본을 빌드 시 바이트 그대로 복사한다.
 - Carousel 루트 스타일을 확장하는 `className`.
 - 중립 상태 색 토큰 `--status-neutral-fg`·`--status-neutral-bg` (라이트·다크·OS 테마). 차트의 "대기·기타" 계열과
@@ -29,6 +32,10 @@
   한 번 부른다. `state` 가 `loading`·`error` 일 때는 유지한다. 행을 덧붙이는 무한 스크롤에는 영향이 없다.
 
 ### 고침
+
+- 도그푸딩 4 V1–V3(R33): 입력 바탕 위에 앞쪽 아이콘을 그리고, 헤더 없는 CardBody의 위 여백을 16px로 맞춘다.
+- Select 계열 4종의 표면·경계·38px 높이·빈 상태 시작선과 꺾쇠(16px·text-tertiary·불투명도 1·오른쪽 13px)를 통일한다. 다중 Combobox 태그 영역의 밀도는 유지한다.
+- MCP Input·Card 소비자 규칙과 스토리를 갱신했다. 검색·카드·선택 트리거·공개 유틸리티 계산 스타일 하네스는 작성만 하며 브라우저 실행은 사용자 검증에 맡긴다.
 
 - 레이어 디테일(R32): Dialog·AlertDialog·MediaViewer popup의 막을 테마별 검정 의미 토큰으로 분리해 다크에서도 뒤 화면을 어둡게 한다.
 - 닫기 버튼이 없는 Dialog·AlertDialog 제목과 설명이 상자 안쪽 폭을 모두 쓴다.
