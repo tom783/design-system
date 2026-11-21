@@ -6,7 +6,7 @@ import { API, SymbolFlags, SignatureKind } from 'typescript/unstable/sync';
 import * as ast from 'typescript/unstable/ast';
 import { checkBoundaries } from '../../scripts/check-boundaries.mjs';
 import intents, { principles } from './component-intent.mjs';
-import { restoreComponent } from '../../packages/mcp/catalog.mjs';
+import { restoreComponent, listComponents, getComponent } from '../../packages/mcp/catalog.mjs';
 import { checkConsumerGuidance } from './consumer-guidance.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -195,9 +195,13 @@ export function validate({ components, intents, sections, tokens, expectedNames,
 // (155.5KB vs 101.7KB). 아무도 읽지 않는 들여쓰기 때문에 게이트가 먼저 터진다.
 // 파일은 git 에서 읽기 쉽도록 pretty 로 두고, 재는 것은 compact 쪽이다.
 export function assertSizeBudget(catalog, manifest) {
+  const details = manifest.components.map(entry => [entry.name, Buffer.byteLength(JSON.stringify(getComponent(manifest, entry)))]);
+  const largest = details.reduce((max, item) => item[1] > max[1] ? item : max, ['없음', 0]);
   const sizes = [
-    ['components (전송)', Buffer.byteLength(JSON.stringify(catalog)), 80_000],
+    ['components (전송)', Buffer.byteLength(JSON.stringify(catalog)), 90_000],
     ['전체 (전송)', Buffer.byteLength(JSON.stringify(manifest)), 160_000],
+    ['list_components (전송)', Buffer.byteLength(JSON.stringify(listComponents(manifest))), 24_000],
+    [`get_component 최대 ${largest[0]} (전송)`, largest[1], 6_000],
   ];
   for (const [name, bytes, limit] of sizes)
     console.error(`MCP 크기 ${name}: ${bytes}바이트 / ${limit}바이트 (${(bytes / 1000).toFixed(2)}KB / ${limit / 1000}KB)`);

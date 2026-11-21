@@ -1,0 +1,26 @@
+.file-upload { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+.file-upload-dropzone { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-8); min-width: 0; padding: var(--space-16); border: 1px dashed var(--border-input); border-radius: var(--radius-md); background: var(--bg-surface); }
+.file-upload-dropzone[data-dragging] { border-color: var(--border-focus); background: var(--bg-selected); }
+.file-upload-dropzone:has([aria-invalid="true"]) { border-color: var(--status-danger-fg); }
+.file-upload-dropzone[aria-disabled="true"] { border-color: var(--border-default); }
+/* 빈 영역도 클릭 대상이다. 네이티브 버튼의 가상 요소로 늘려 별도 키보드 동작을 만들지 않는다. */
+/* active의 translate가 가상 요소의 containing block을 버튼으로 바꾸면 빈 영역의 클릭을 놓친다. */
+.file-upload-pick { transform: none; translate: none; }
+.file-upload-pick:focus-visible { outline: none; }
+.file-upload-pick::after { content: ''; position: absolute; inset: 0; }
+.file-upload-pick:focus-visible::after { outline: var(--focus-width) solid var(--border-focus); outline-offset: var(--focus-offset); border-radius: var(--radius-md); }
+.file-upload-hint { color: var(--text-secondary); font-size: var(--text-caption); }
+.file-upload-list, .file-upload-error ul { list-style: none; padding: 0; margin: 0; }
+.file-upload-item { display: flex; align-items: start; gap: var(--space-12); padding-block: var(--space-12); border-bottom: 1px solid var(--border-subtle); min-width: 0; }
+.file-upload-details { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.file-upload-name { display: block; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 고정 폭은 값이 아닌 미리보기 자리만 예약한다. 이름·오류 영역은 남은 폭을 쓴다. */
+.file-upload-thumbnail { flex: 0 0 var(--space-48); width: var(--space-48); }
+.file-upload-cover { width: 100%; }
+.file-upload-status { display: flex; flex-direction: column; align-items: start; gap: var(--space-4); min-width: 0; width: 100%; }
+.file-upload-status > .loading-progress { width: 100%; }
+.file-upload-error { display: flex; gap: var(--space-4); align-items: start; color: var(--status-danger-fg); font-size: var(--text-caption); line-height: var(--text-caption-lh); overflow-wrap: anywhere; }
+.file-upload-error > svg { flex-shrink: 0; margin-top: var(--space-2); }
+.file-upload-error > ul { min-width: 0; }
+.file-upload-rejected-name { display: inline-block; max-width: 100%; vertical-align: bottom; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-upload-errors { min-height: var(--text-caption-lh); }

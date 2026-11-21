@@ -23,3 +23,21 @@ export function restoreComponent(component, derived, components) {
     import: derived.importTemplate.replace('NAME', component.name),
   };
 }
+
+// 생성기와 서버가 같은 복원·상속 경로를 사용해야 실제 소비 응답에 예산을 걸 수 있다.
+export function listComponents(manifest) {
+  return { components: manifest.components.map(entry => {
+    const { name, kind, purpose, import: statement, partOf } = restoreComponent(entry, manifest.derived, manifest.components);
+    return { name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) };
+  }) };
+}
+export function getComponent(manifest, entry) {
+  const component = restoreComponent(entry, manifest.derived, manifest.components);
+  if (!component.partOf) return component;
+  const parent = manifest.components.find(c => c.name === component.partOf);
+  const { useWhen, dont, rules, category, related } = restoreComponent(parent, manifest.derived, manifest.components);
+  return { ...component, useWhen: [...new Set([...(component.useWhen ?? []), ...useWhen])],
+    dont: [...new Set([...(component.dont ?? []), ...dont])], rules, category,
+    ...(component.related ? { related: [...new Set([...(component.related ?? []), ...(related ?? [])])].filter(name => name !== component.name) } : {}),
+    inheritedFrom: parent.name };
+}

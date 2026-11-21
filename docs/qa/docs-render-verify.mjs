@@ -18,6 +18,7 @@ const covered = new Set();
 // 예외 없음: 상수·훅은 kind=component가 아니므로 대상 밖이고, 모든 공개 컴포넌트·부품은 문서화한다.
 const expectedComponents = [...catalog.values()].filter(component => component.kind === 'component').map(component => component.name);
 const primaryTags = new Map([
+  ['Components/FileUpload', 'FileUpload'],
   ['Components/AppShell', 'AppShell'], ['Components/SideNav', 'SideNav'], ['Components/PageHeader', 'PageHeader'],
   ['Components/Carousel', 'Carousel'], ['Components/MediaViewer', 'MediaViewer'],
   ['Components/ClampText', 'ClampText'], ['Components/MultiSelect', 'MultiSelect'],

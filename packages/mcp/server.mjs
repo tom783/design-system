@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { matchComponents } from './match.mjs';
-import { restoreComponent } from './catalog.mjs';
+import { listComponents, getComponent } from './catalog.mjs';
 
 const { version } = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
 
@@ -56,22 +56,11 @@ function callTool(manifest, params) {
       const tokens = manifest.tokens.filter((t) => (!args.category || t.category === args.category.trim().toLowerCase()) && `${t.name} ${t.purpose} ${t.tailwind.join(' ')}`.toLowerCase().includes(query));
       return tokens.length ? structured({ tokens }) : missing('일치하는 토큰이 없습니다. category를 생략하거나 search_tokens의 query를 짧게 해보세요.');
     }
-    case 'list_components': return structured({ components: manifest.components.map((entry) => {
-      const { name, kind, purpose, import: statement, partOf } = restoreComponent(entry, manifest.derived, manifest.components);
-      return { name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) };
-    }) });
+    case 'list_components': return structured(listComponents(manifest));
     case 'get_component': {
-      const entry = manifest.components.find((c) => c.name.toLowerCase() === args.name.trim().toLowerCase());
+      const entry = manifest.components.find(c => c.name.toLowerCase() === args.name.trim().toLowerCase());
       if (!entry) return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
-      const component = restoreComponent(entry, manifest.derived, manifest.components);
-      if (!component.partOf) return structured(component);
-      const parent = manifest.components.find((c) => c.name === component.partOf);
-      // 기본값 복원과 부모 의도 합치기는 응답에서만 한다. 보관 항목은 변경하지 않는다.
-      const { useWhen, dont, rules, category, related } = restoreComponent(parent, manifest.derived, manifest.components);
-      return structured({ ...component, useWhen: [...new Set([...(component.useWhen ?? []), ...useWhen])],
-        dont: [...new Set([...(component.dont ?? []), ...dont])], rules, category,
-        ...(component.related ? { related: [...new Set([...(component.related ?? []), ...(related ?? [])])].filter(name => name !== component.name) } : {}),
-        inheritedFrom: parent.name });
+      return structured(getComponent(manifest, entry));
     }
     case 'which_component': {
       const candidates = matchComponents(args.description, manifest.components, args.limit);

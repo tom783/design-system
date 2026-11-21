@@ -28,6 +28,13 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('FileUpload','form','파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.',['CMS 대표 이미지·상품 이미지·엑셀 일괄 등록·첨부 파일을 고를 때'],['전송·재시도·취소는 앱이 맡는다','붙여넣기·폴더 업로드·이미지 편집에는 쓰지 마라'],'11.7',[
+    'value·onValueChange에 항목 목록을 연결한다. 항목은 id·file과 선택 status·progress·error를 갖는다.',
+    'status는 ready·uploading·success·error, progress는 0~1이다. error에는 실패 이유와 고치는 방법을 쓴다.',
+    'accept·maxSize(바이트)·multiple·maxFiles로 선택을 제한한다. 거절된 파일은 목록에 추가되지 않는다.',
+    'mode=image는 단일 대표 이미지의 미리보기·바꾸기·삭제를 제공한다.',
+    'Field로 레이블·설명을 준다. 선택 거절은 Field 오류 자리, 전송 실패는 해당 파일 옆에 표시된다.'
+  ],['value','onValueChange','accept','maxSize','multiple','maxFiles','mode','disabled','label'],['file-upload','file-upload-input','file-upload-trigger','file-upload-dropzone','file-upload-list','file-upload-item','file-upload-name','file-upload-size','file-upload-error','file-upload-item-error','file-upload-announcement'],['Thumbnail','ProgressTrack','Field','Button','StatusChip'],['파일 업로드','이미지 업로드','첨부','드래그 앤 드롭','대표 이미지','엑셀 업로드']),
   entry('Pagination','navigation','목록의 페이지를 옮기고 표시 범위·전체 건수·페이지 크기를 확인한다.',['주문·출고·게시글을 서버에서 페이지 단위로 조회할 때'],['여러 페이지의 선택 ID를 누적해 일괄 처리하지 마라'],'4.1',[
     'DataTable 아래에 따로 둔다. 표에는 현재 페이지 data와 전체 totalCount를 전달한다.',
     'page는 1부터 시작한다. page·pageSize·totalCount와 변경 콜백은 앱 상태에 연결한다.',

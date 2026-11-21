@@ -4200,6 +4200,143 @@
   ],
   "components": [
     {
+      "name": "FileUpload",
+      "category": "form",
+      "purpose": "파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.",
+      "useWhen": [
+        "CMS 대표 이미지·상품 이미지·엑셀 일괄 등록·첨부 파일을 고를 때"
+      ],
+      "dont": [
+        "전송·재시도·취소는 앱이 맡는다",
+        "붙여넣기·폴더 업로드·이미지 편집에는 쓰지 마라"
+      ],
+      "rules": [
+        {
+          "text": "value·onValueChange에 항목 목록을 연결한다. 항목은 id·file과 선택 status·progress·error를 갖는다.",
+          "source": "11.7"
+        },
+        {
+          "text": "status는 ready·uploading·success·error, progress는 0~1이다. error에는 실패 이유와 고치는 방법을 쓴다.",
+          "source": "11.7"
+        },
+        {
+          "text": "accept·maxSize(바이트)·multiple·maxFiles로 선택을 제한한다. 거절된 파일은 목록에 추가되지 않는다.",
+          "source": "11.7"
+        },
+        {
+          "text": "mode=image는 단일 대표 이미지의 미리보기·바꾸기·삭제를 제공한다.",
+          "source": "11.7"
+        },
+        {
+          "text": "Field로 레이블·설명을 준다. 선택 거절은 Field 오류 자리, 전송 실패는 해당 파일 옆에 표시된다.",
+          "source": "11.7"
+        }
+      ],
+      "related": [
+        "Thumbnail",
+        "ProgressTrack",
+        "Field",
+        "Button",
+        "StatusChip"
+      ],
+      "keywords": [
+        "파일 업로드",
+        "이미지 업로드",
+        "첨부",
+        "드래그 앤 드롭",
+        "대표 이미지",
+        "엑셀 업로드"
+      ],
+      "source": "components/file-upload/file-upload.tsx",
+      "props": [
+        {
+          "name": "value",
+          "type": "FileUploadItem[]",
+          "required": true
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: FileUploadItem[]) => void",
+          "required": true
+        },
+        {
+          "name": "accept",
+          "type": "string"
+        },
+        {
+          "name": "maxSize",
+          "type": "number",
+          "doc": "바이트. 5MB는 5_000_000이다."
+        },
+        {
+          "name": "multiple",
+          "type": "boolean"
+        },
+        {
+          "name": "maxFiles",
+          "type": "number"
+        },
+        {
+          "name": "mode",
+          "type": "\"files\" | \"image\"",
+          "doc": "image는 multiple 없이 대표 이미지 선택에 쓴다."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean"
+        },
+        {
+          "name": "required",
+          "type": "boolean"
+        },
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "className",
+          "type": "string"
+        }
+      ],
+      "extends": [
+        "React.AriaAttributes"
+      ],
+      "slots": [
+        "button",
+        "file-upload",
+        "file-upload-announcement",
+        "file-upload-dropzone",
+        "file-upload-error",
+        "file-upload-errors",
+        "file-upload-input",
+        "file-upload-item",
+        "file-upload-item-error",
+        "file-upload-list",
+        "file-upload-name",
+        "file-upload-size",
+        "file-upload-status",
+        "file-upload-trigger",
+        "progress-bar",
+        "progress-eta",
+        "progress-fill",
+        "progress-percent",
+        "progress-track",
+        "skeleton",
+        "status-chip",
+        "thumbnail",
+        "thumbnail-fallback",
+        "thumbnail-image"
+      ]
+    },
+    {
       "name": "Pagination",
       "category": "navigation",
       "purpose": "목록의 페이지를 옮기고 표시 범위·전체 건수·페이지 크기를 확인한다.",

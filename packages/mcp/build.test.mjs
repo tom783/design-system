@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog } from '../../docs/research/mcp-build.mjs';
-import { restoreComponent } from './catalog.mjs';
+import { restoreComponent, listComponents, getComponent } from './catalog.mjs';
 import intents, { principles } from '../../docs/research/component-intent.mjs';
 const data = JSON.parse(await readFile(new URL('../../docs/research/tokens.json', import.meta.url), 'utf8'));
 const design = await readFile(new URL('../../DESIGN.md', import.meta.url), 'utf8');
@@ -96,8 +96,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R36: 74,697 → 76,883바이트. Sheet·서랍 지침 포함 실측에 217바이트 여유.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 77_100);
+  // R37: R36b 76,925 → 79,416바이트. FileUpload 추가 실측에 284바이트 여유.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 79_700);
 });
 test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
   const entry = (name, extra = {}) => {
@@ -153,18 +153,43 @@ test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 �
   assert.deepEqual(button.extends, components.find((c) => c.name === 'Button').extends);
   assert.ok(manifest.components.every((c) => !Object.hasOwn(c, 'propNames')));
 });
-// 예산은 파일이 아니라 **전송되는 compact JSON** 을 잰다 (pretty 는 53% 더 크다).
-// 그래서 인자는 직렬화 문자열이 아니라 객체다.
-test('크기 예산은 경계값을 허용하고 UTF-8 바이트 초과를 차단', (t) => {
+// 네 예산 모두 compact UTF-8 기준으로 정확한 경계와 +1바이트를 검사한다.
+test('크기 예산 네 개는 경계값을 허용하고 1바이트 초과를 차단', (t) => {
   t.mock.method(console, 'error', () => {});
-  // JSON.stringify(['x'.repeat(n)]) 는 정확히 n+4 바이트다 (["..."]).
-  const atLimit = (limit) => ['x'.repeat(limit - 4)];
-  const components = atLimit(80_000);
-  const manifest = atLimit(160_000);
-  assert.equal(Buffer.byteLength(JSON.stringify(components)), 80_000);
-  assert.equal(Buffer.byteLength(JSON.stringify(manifest)), 160_000);
-  assert.doesNotThrow(() => assertSizeBudget(components, manifest));
-  // '가' 는 UTF-8 3바이트라 한 글자만 바꿔도 넘는다 — 글자 수가 아니라 바이트로 센다
-  assert.throws(() => assertSizeBudget([components[0] + '가'], []), /크기 예산 초과/);
-  assert.throws(() => assertSizeBudget([], [manifest[0] + '가']), /크기 예산 초과/);
+  const fixture = () => {
+    const resource = compactCatalog([{ name: '테스트', kind: 'component', purpose: '', source: 'packages/ui/src/test.tsx',
+      props: [], extends: [], slots: [], import: "import { 테스트 } from '@s2life/ui';" }]);
+    return { resource, manifest: { ...resource, padding: '' } };
+  };
+  const bytes = value => Buffer.byteLength(JSON.stringify(value));
+  const scenarios = [
+    [90_000, f => f.resource, f => f.resource, 'padding'],
+    [160_000, f => f.manifest, f => f.manifest, 'padding'],
+    [24_000, f => listComponents(f.manifest), f => f.manifest.components[0], 'purpose'],
+    [6_000, f => getComponent(f.manifest, f.manifest.components[0]), f => f.manifest.components[0], 'detail'],
+  ];
+  for (const [limit, response, target, key] of scenarios) {
+    const f = fixture();
+    target(f)[key] = '';
+    target(f)[key] = 'x'.repeat(limit - bytes(response(f)));
+    assert.equal(bytes(response(f)), limit);
+    // 목록 경계는 여러 항목 합산 예산이다. 개별 상세 예산에 먼저 걸리지 않게 나눈다.
+    if (limit === 24_000) {
+      f.manifest.components[0].purpose = '';
+      f.manifest.components = Array.from({ length: 8 }, (_, i) => ({ ...f.manifest.components[0], name: `Test${i}`, purpose: '' }));
+      const remaining = limit - bytes(response(f));
+      for (let i = 0; i < 8; i++) f.manifest.components[i].purpose = 'x'.repeat(Math.floor(remaining / 8) + (i < remaining % 8 ? 1 : 0));
+      assert.equal(bytes(response(f)), limit);
+    }
+    assert.doesNotThrow(() => assertSizeBudget(f.resource, f.manifest), `허용 ${limit}`);
+    if (limit === 24_000) f.manifest.components[0].purpose += 'x';
+    else target(f)[key] += 'x';
+    assert.equal(bytes(response(f)), limit + 1);
+    assert.throws(() => assertSizeBudget(f.resource, f.manifest), /크기 예산 초과/);
+  }
+  const f = fixture();
+  f.resource.padding = 'x'.repeat(90_000 - bytes({ ...f.resource, padding: '' }));
+  f.resource.padding = f.resource.padding.slice(0, -2) + '가';
+  assert.equal(bytes(f.resource), 90_001);
+  assert.throws(() => assertSizeBudget(f.resource, f.manifest), /크기 예산 초과/);
 });

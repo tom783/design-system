@@ -150,6 +150,7 @@ const t = async (name, args) => {
 {
   const r = await t('list_components', {});
   const s = JSON.stringify(r.structuredContent ?? '');
+  check('list_components 응답은 24,000바이트 이하', Buffer.byteLength(s) <= 24_000, `${Buffer.byteLength(s)}바이트`);
   check('list_components 가 import 구문을 준다', /import \{/.test(s), s.slice(0,110));
   const list = r.structuredContent.components;
   check('목록은 부품의 partOf를 주고 독립 CardSkeleton은 유지한다', list.find((c) => c.name === 'SelectTrigger')?.partOf === 'Select' && !Object.hasOwn(list.find((c) => c.name === 'CardSkeleton'), 'partOf'));
@@ -158,8 +159,8 @@ const t = async (name, args) => {
 {
   // 카탈로그가 AI 컨텍스트를 태우지 않을 만큼 작은가
   const rr = await call('resources/read', { uri: 'design://components' });
-  const kb = Buffer.byteLength(rr.result.contents[0].text) / 1024;
-  check('components 카탈로그가 80KB 이하', kb <= 80, kb.toFixed(0) + 'KB');
+  const bytes = Buffer.byteLength(rr.result.contents[0].text);
+  check('components 카탈로그가 90,000바이트 이하', bytes <= 90_000, `${bytes}바이트`);
   const { derived, components: catalog } = JSON.parse(rr.result.contents[0].text);
   const part = catalog.find((c) => c.name === 'SelectTrigger');
   check('리소스는 복원 규칙과 상속을 합치지 않은 보관 형태다', derived.sourceRoot === 'packages/ui/src/' && derived.kindDefault === 'component' && part.partOf === 'Select' && ['useWhen', 'dont', 'rules', 'category', 'related', 'keywords', 'inheritedFrom', 'import', 'kind'].every((key) => !Object.hasOwn(part, key)));
@@ -229,6 +230,22 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
     const result = (await t('which_component', { description })).structuredContent;
     check(`${description} 첫 후보는 SheetContent`, result.candidates[0].name === 'SheetContent');
   }
+}
+{
+  for (const description of ['파일 업로드','이미지 업로드','첨부','드래그 앤 드롭','대표 이미지','엑셀 업로드']) {
+    const result = (await t('which_component', { description })).structuredContent;
+    check(`${description} 첫 후보는 FileUpload`, result.candidates[0].name === 'FileUpload');
+  }
+  const upload = (await t('get_component', { name: 'FileUpload' })).structuredContent;
+  check('FileUpload 항목·검증·대표 이미지 API와 소비자 규칙', ['value','onValueChange','accept','maxSize','multiple','maxFiles','mode'].every(name => upload.props.some(prop => prop.name === name))
+    && upload.rules.some(rule => rule.text.includes('id·file')) && upload.dont.some(text => text.includes('전송')));
+  let largest = { name: '', bytes: 0 };
+  for (const entry of stored.components) {
+    const response = await t('get_component', { name: entry.name });
+    const bytes = Buffer.byteLength(response.content[0].text);
+    if (bytes > largest.bytes) largest = { name: entry.name, bytes };
+  }
+  check('get_component 한 건은 6,000바이트 이하', largest.bytes <= 6_000, `${largest.name} ${largest.bytes}바이트`);
 }
 check('stdout 에 JSON 아닌 줄이 하나도 없다', badLines.length === 0, badLines.join(' | ').slice(0,150));
 console.log(`     stderr ${stderrBuf.length}자${stderrBuf?': "'+stderrBuf.slice(0,80)+'"':''}`);

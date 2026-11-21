@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R36: 74,697 → 76,883바이트. Sheet·서랍 지침 포함 실측에 217바이트 여유.
-      assert.ok(Buffer.byteLength(result.text) < 77_100, '복원 규칙까지 포함한 전송량을 잰다');
+      // R37: R36b 76,925 → 79,416바이트. FileUpload 추가 실측에 284바이트 여유.
+      assert.ok(Buffer.byteLength(result.text) < 79_700, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -132,6 +132,9 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }
   // 기존 99개는 R28의 purpose만 갱신했다. 순서·구조와 text 직렬화 비교는 유지한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
+    name: 'FileUpload', kind: 'component', purpose: '파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.',
+    import: "import { FileUpload } from '@s2life/ui';",
+  }, {
     name: 'Pagination', kind: 'component', purpose: '목록의 페이지를 옮기고 표시 범위·전체 건수·페이지 크기를 확인한다.',
     import: "import { Pagination } from '@s2life/ui';",
   }, {
@@ -190,4 +193,22 @@ test('R36: Sheet 검색·Dialog 규칙 상속·독자 갈림길과 API를 함께
     const response = (await call(c, 'which_component', { description })).result;
     assert.equal(response.structuredContent.candidates[0].name, 'SheetContent');
   }
+});
+
+test('R37 파일 업로드의 여섯 검색 의도·API와 실제 응답 예산', async t => {
+  const c = await client(t);
+  for (const description of ['파일 업로드', '이미지 업로드', '첨부', '드래그 앤 드롭', '대표 이미지', '엑셀 업로드']) {
+    const result = (await call(c, 'which_component', { description })).result.structuredContent;
+    assert.equal(result.candidates[0].name, 'FileUpload');
+  }
+  const list = (await call(c, 'list_components', {})).result;
+  assert.ok(Buffer.byteLength(list.content[0].text) <= 24_000);
+  for (const component of manifest.components) {
+    const detail = (await call(c, 'get_component', { name: component.name })).result;
+    assert.ok(Buffer.byteLength(detail.content[0].text) <= 6_000, component.name);
+    assert.equal(detail.content[0].text, JSON.stringify(detail.structuredContent));
+  }
+  const upload = (await call(c, 'get_component', { name: 'FileUpload' })).result.structuredContent;
+  assert.ok(upload.props.some(prop => prop.name === 'value' && prop.type === 'FileUploadItem[]'));
+  assert.ok(upload.rules.some(rule => rule.source === 'DESIGN.md 11.7'));
 });

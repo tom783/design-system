@@ -1,5 +1,6 @@
 import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks';
 import * as FormStories from '../src/stories/form.stories';
+import * as FileUploadStories from '../src/stories/file-upload.stories';
 import { Intent } from './_intent';
 import { DesignLink } from './_page';
 import { FormControlRecipe } from './_form-control';
@@ -48,6 +49,12 @@ FormFlow는 Enter를 Tab 순서의 다음 칸 이동으로 연결하며, 컨트�
 
 <div data-doc-demo="더티 폼"><DirtyFormRecipe /></div>
 <Source code={dirtyCode.replace("from '../src'", "from '@s2life/ui'")} language="tsx" />
+
+## 파일 선택과 업로드 상태
+
+<Intent name="FileUpload" />
+
+<Canvas of={FileUploadStories.사용법} />
 
 ## 한글 IME
 
