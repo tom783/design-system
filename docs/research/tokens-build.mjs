@@ -310,6 +310,8 @@ const SHAPE = {
 
 // 값 길이에 따라 UI 가 겹치지 않도록 하는 치수. 자연어 "넉넉하게"의 수치화.
 const SIZING = {
+  // R34: 240px는 아이콘·라벨·개수를 함께 읽는 메뉴, 64px는 24px 아이콘 + 양쪽 20px 브랜드 여백이다.
+  'side-nav-w': '240px', 'side-nav-rail-w': '64px',
   'control-h-sm': '32px', 'control-h-md': '38px', 'control-h-lg': '44px',
   'row-h-compact': '36px', 'row-h-default': '40px', 'row-h-comfortable': '48px',
   'cell-px': '14px',

@@ -18,6 +18,7 @@ const covered = new Set();
 // 예외 없음: 상수·훅은 kind=component가 아니므로 대상 밖이고, 모든 공개 컴포넌트·부품은 문서화한다.
 const expectedComponents = [...catalog.values()].filter(component => component.kind === 'component').map(component => component.name);
 const primaryTags = new Map([
+  ['Components/AppShell', 'AppShell'], ['Components/SideNav', 'SideNav'], ['Components/PageHeader', 'PageHeader'],
   ['Components/Carousel', 'Carousel'], ['Components/MediaViewer', 'MediaViewer'],
   ['Components/ClampText', 'ClampText'], ['Components/MultiSelect', 'MultiSelect'],
   ['Components/Combobox', 'Combobox'], ['Components/Charts', 'TrendBand'],
@@ -243,7 +244,7 @@ try {
       rendered.push({ id: page.id, title: page.title, propsNames });
     });
   }
-  await check('6개 Primary 코드 검사 대상이 모두 docs 인덱스에 존재', async () => {
+  await check('모든 Primary 코드 검사 대상이 docs 인덱스에 존재', async () => {
     for (const title of primaryTags.keys()) assert.ok(componentPages.some(page => page.title === title), title);
   });
   await check('모든 docs의 ManifestProps 합집합이 공개 컴포넌트 전체를 덮는다', async () => {

@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R33b: 70,643 → 66,507바이트. 복원 설명 포함 실측에 293바이트 여유.
-      assert.ok(Buffer.byteLength(result.text) < 66_800, '복원 규칙까지 포함한 전송량을 잰다');
+      // R34: 66,507 → 72,073바이트. 새 공개 API 포함 실측에 227바이트 여유.
+      assert.ok(Buffer.byteLength(result.text) < 72_300, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -126,6 +126,21 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }
   // 기존 99개는 R28의 purpose만 갱신했다. 순서·구조와 text 직렬화 비교는 유지한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
+    name: 'AppShell', kind: 'component', purpose: '사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',
+    import: "import { AppShell } from '@s2life/ui';",
+  }, {
+    name: 'SideNav', kind: 'component', purpose: '브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.',
+    import: "import { SideNav } from '@s2life/ui';",
+  }, {
+    name: 'SideNavGroup', kind: 'component', purpose: '사이드 메뉴 항목을 제목으로 묶는다.',
+    import: "import { SideNavGroup } from '@s2life/ui';", partOf: 'SideNav',
+  }, {
+    name: 'SideNavItem', kind: 'component', purpose: '아이콘·라벨·개수와 현재 위치 또는 준비 중 상태를 표시한다.',
+    import: "import { SideNavItem } from '@s2life/ui';", partOf: 'SideNav',
+  }, {
+    name: 'PageHeader', kind: 'component', purpose: '페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',
+    import: "import { PageHeader } from '@s2life/ui';",
+  }, {
     name: 'Carousel', kind: 'component', purpose: '배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.',
     import: "import { Carousel } from '@s2life/ui';",
   }, {

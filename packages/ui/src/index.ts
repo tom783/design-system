@@ -53,3 +53,4 @@ export * from './components/collapsible';
 export * from './components/clamp-text';
 export * from './components/media-viewer';
 export * from './components/carousel';
+export * from './components/app-shell';

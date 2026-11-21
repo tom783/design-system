@@ -1,0 +1,67 @@
+.ds-app-shell {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+.ds-app-shell-sidebar { min-height: 0; background: var(--bg-surface); }
+.ds-app-shell-body { isolation: isolate; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.ds-app-shell-header { flex: none; padding: var(--space-16) var(--space-24); border-bottom: var(--border-width) solid var(--border-subtle); background: var(--bg-surface); }
+.ds-app-shell-main { flex: 1; min-height: 0; min-width: 0; overflow: auto; padding: var(--space-24); outline-offset: calc(-1 * var(--focus-width)); }
+.ds-app-shell-content { width: 100%; min-width: 0; margin-inline: auto; }
+/* 셸 안에서만 한 층 올려 표의 sticky 헤더보다 앞에 보인다. 첫 Tab에서만 표시한다. */
+.ds-app-shell-skip { position: absolute; z-index: 1; inset-block-start: var(--space-8); inset-inline-start: var(--space-8); transform: translateY(calc(-100% - var(--space-16))); padding: var(--space-8) var(--space-16); background: var(--bg-surface); color: var(--text-link); border: var(--border-width) solid var(--border-input); border-radius: var(--radius-md); text-decoration: underline; }
+.ds-app-shell-skip:focus { transform: none; }
+.ds-side-nav { box-sizing: border-box; border-inline-end: var(--border-width) solid var(--border-subtle); display: flex; flex-direction: column; width: var(--side-nav-w); height: 100%; min-height: 0; background: var(--bg-surface); color: var(--text-primary); }
+.ds-side-nav-brand { display: flex; align-items: center; gap: var(--space-12); min-height: var(--space-64); padding: var(--space-12) var(--space-20); font-weight: 600; }
+.ds-side-nav-brand-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-side-nav-menu { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: var(--space-8); }
+.ds-side-nav-group { display: flex; flex-direction: column; gap: var(--space-4); }
+.ds-side-nav-group + .ds-side-nav-group { margin-block-start: var(--space-20); }
+.ds-side-nav-group-label { padding: var(--space-8) var(--space-12); font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); font-weight: 600; }
+.ds-side-nav-item, .ds-side-nav-toggle { display: flex; align-items: center; gap: var(--space-12); min-width: 0; min-height: var(--tap-min); padding: var(--space-8) var(--space-12); border-radius: var(--radius-md); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-primary); text-decoration: none; }
+.ds-side-nav-item:hover, .ds-side-nav-toggle:hover:enabled { background: var(--bg-hover); }
+.ds-side-nav-item[aria-current="page"] { background: var(--bg-selected); font-weight: 600; }
+.ds-side-nav-item[aria-disabled="true"] { color: var(--text-secondary); cursor: not-allowed; background: transparent; }
+.ds-side-nav-icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--space-24); height: var(--space-24); }
+.ds-side-nav-icon svg { width: var(--space-20); height: var(--space-20); }
+.ds-side-nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-side-nav-meta { flex: 0 1 auto; min-width: 0; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-caption); }
+.ds-side-nav-badge { padding-inline: var(--space-4); border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.ds-side-nav-toggle { flex: none; margin: var(--space-8); cursor: pointer; background: transparent; border: none; text-align: start; }
+.ds-side-nav-toggle > svg { flex: none; width: var(--space-24); height: var(--space-24); }
+.ds-side-nav-toggle:disabled { cursor: default; color: var(--text-secondary); }
+/* 스크롤 영역의 가장자리에서도 표준 2px 링을 자르지 않는다. */
+.ds-side-nav-item:focus-visible, .ds-side-nav-toggle:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+.ds-side-nav[data-collapsed="true"] { width: var(--side-nav-rail-w); }
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-brand { padding-inline: var(--space-20); }
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-label,
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-meta,
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-brand-label,
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-group-label { display: none; }
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-item,
+.ds-side-nav[data-collapsed="true"] .ds-side-nav-toggle { justify-content: center; padding-inline: var(--space-8); }
+@media (width < 1024px) {
+  .ds-side-nav { width: var(--side-nav-rail-w); }
+  .ds-side-nav .ds-side-nav-item, .ds-side-nav .ds-side-nav-toggle { justify-content: center; padding-inline: var(--space-8); }
+  .ds-side-nav .ds-side-nav-label, .ds-side-nav .ds-side-nav-meta, .ds-side-nav .ds-side-nav-brand-label, .ds-side-nav .ds-side-nav-group-label { display: none; }
+  .ds-app-shell-main, .ds-app-shell-header { padding: var(--space-16); }
+}
+.ds-page-header { container: page-header / inline-size; display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; margin-block-end: var(--space-24); }
+.ds-page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-16); min-width: 0; }
+.ds-page-header-copy { flex: 1; min-width: 0; }
+.ds-page-header-heading { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-12); }
+.ds-page-header-heading h1 { margin: 0; min-width: 0; font-size: var(--text-display); line-height: var(--text-display-lh); letter-spacing: var(--text-display-ls); font-weight: var(--text-display-weight); overflow-wrap: anywhere; }
+.ds-page-header-description { margin-block-start: var(--space-8); color: var(--text-secondary); }
+.ds-page-header-actions { display: flex; flex: 0 1 auto; flex-wrap: wrap; gap: var(--space-8); min-width: 0; max-width: 100%; }
+.ds-page-header-actions > * { max-width: 100%; min-width: 0; }
+/* 뷰포트보다 실제 본문 폭이 중요하다. 패널·문서 안에서도 640px 미만이면 액션을 아래로 옮긴다. */
+@container page-header (width < 640px) {
+  .ds-page-header-row { flex-direction: column; }
+  .ds-page-header-actions { width: 100%; }
+}

@@ -170,6 +170,16 @@ const t = async (name, args) => {
 }
 
 console.log('\n── E. 리소스 ──');
+for (const [query, name] of [['사이드바', 'SideNav'], ['메뉴', 'SideNav'], ['내비게이션', 'SideNav'], ['페이지 제목', 'PageHeader'], ['화면 머리', 'PageHeader']]) {
+  const result = await t('which_component', { description: query });
+  check(`앱 셸 선택 질문: ${query} → ${name}`, result.structuredContent?.candidates.slice(0, 3).some(candidate => candidate.name === name));
+}
+for (const [name, props] of [['AppShell', ['sidebar', 'header', 'children', 'contentMaxWidth']],
+  ['SideNav', ['brand', 'brandIcon', 'collapsed', 'defaultCollapsed', 'onCollapsedChange']],
+  ['PageHeader', ['title', 'description', 'breadcrumb', 'status', 'actions']]]) {
+  const result = (await t('get_component', { name })).structuredContent;
+  check(`${name}의 공개 API·소비자 규칙`, props.every(prop => result.props.some(item => item.name === prop)) && result.rules.length > 0);
+}
 const rl = await call('resources/list', {});
 const res = rl.result?.resources ?? [];
 check('리소스 3개', res.length === 3, res.map(r=>r.uri).join(' · '));

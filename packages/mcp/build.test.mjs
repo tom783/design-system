@@ -96,8 +96,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R33b: 무손실 압축으로 70,643 → 66,507바이트. 복원 설명 포함 실측에 293바이트 여유.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 66_800);
+  // R34: 66,507 → 72,073바이트. 새 공개 API 포함 실측에 227바이트 여유.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 72_300);
 });
 test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
   const entry = (name, extra = {}) => {

@@ -28,6 +28,27 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('AppShell','layout','사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',['제품의 공통 화면 틀을 구성할 때'],['본문 안에 main을 다시 넣지 마라'],'24',[
+    'sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.',
+    '본문으로 건너뛰기 링크와 본문 영역은 내장되어 있다.',
+    '본문은 기본 최대 폭 제한이 없다. 필요한 화면만 contentMaxWidth를 지정한다.',
+    '높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.'
+  ],['sidebar','header','children','contentMaxWidth'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀']),
+  entry('SideNav','navigation','브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.',['사이드바에 제품 메뉴를 배치할 때'],['준비 중인 항목에 이동 동작을 넣지 마라'],'24',[
+    'SideNavGroup으로 묶고 SideNavItem에 icon·label을 준다. 현재 위치는 current로 표시한다.',
+    '다른 링크 컴포넌트를 쓰면 SideNavItem의 asChild 안에 단일 링크를 넣는다.',
+    'collapsed·onCollapsedChange는 제어형, defaultCollapsed는 비제어형이다. 접힘 상태 저장은 앱이 맡는다.',
+    '펼침은 240px, 접힘은 64px다. 1024px 미만에서는 자동으로 접히고 넓어지면 사용자의 선택으로 돌아온다.',
+    '접힌 항목은 호버·포커스에서 라벨을 보여준다. disabled는 준비 중 표시와 함께 이동·Tab 탐색을 막는다.',
+    'brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.'
+  ],['brand','brandIcon','collapsed','onCollapsedChange','defaultCollapsed'],['side-nav','side-nav-menu','side-nav-toggle'],['AppShell','PageHeader'],['사이드바','메뉴','내비게이션','사이드 메뉴','브랜드','왼쪽 메뉴']),
+  part('SideNavGroup','SideNav','사이드 메뉴 항목을 제목으로 묶는다.',['label','children'],['side-nav-group','side-nav-group-label']),
+  part('SideNavItem','SideNav','아이콘·라벨·개수와 현재 위치 또는 준비 중 상태를 표시한다.',['icon','label','badge','current','disabled','asChild','href'],['side-nav-item','side-nav-item-label','side-nav-badge']),
+  entry('PageHeader','layout','페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',['페이지 제목이나 화면 머리를 구성할 때'],['한 페이지에 PageHeader를 여러 개 넣지 마라'],'24',[
+    'title은 페이지의 h1이다. 본문에서 같은 제목을 다시 만들지 않는다.',
+    'breadcrumb에는 Breadcrumb, status에는 StatusChip 등을 넣는다. actions에는 화면의 주요 버튼을 둔다.',
+    '본문 폭이 640px 미만이면 액션이 제목 아래로 내려간다. 주요 버튼은 하나만 둔다.'
+  ],['title','description','breadcrumb','status','actions'],['page-header','page-header-title','page-header-description','page-header-breadcrumb','page-header-status','page-header-actions'],['AppShell','Breadcrumb','StatusChip','Button'],['페이지 제목','화면 머리','페이지 머리','제목과 버튼','페이지 헤더']),
   entry('Carousel','media',"배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",['배너 슬라이드','콘텐츠를 한 장씩 가로로 넘길 때'],["Swiper·Embla 같은 캐러셀 라이브러리를 함께 쓰지 마라", "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"],'23',[
     rule("슬라이드는 CarouselSlide로 감싼다.", "23.1"),
     rule("양 끝에서는 멈춘다. 앱이 순환 이동을 덧붙이지 않는다.", "23.1"),

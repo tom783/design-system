@@ -3703,6 +3703,36 @@
       "tailwind": []
     },
     {
+      "name": "side-nav-w",
+      "cssVariable": "--side-nav-w",
+      "category": "sizing",
+      "purpose": "sizing: side-nav-w",
+      "light": {
+        "value": "240px",
+        "ref": null
+      },
+      "dark": {
+        "value": "240px",
+        "ref": null
+      },
+      "tailwind": []
+    },
+    {
+      "name": "side-nav-rail-w",
+      "cssVariable": "--side-nav-rail-w",
+      "category": "sizing",
+      "purpose": "sizing: side-nav-rail-w",
+      "light": {
+        "value": "64px",
+        "ref": null
+      },
+      "dark": {
+        "value": "64px",
+        "ref": null
+      },
+      "tailwind": []
+    },
+    {
       "name": "control-h-sm",
       "cssVariable": "--control-h-sm",
       "category": "sizing",
@@ -4169,6 +4199,307 @@
     }
   ],
   "components": [
+    {
+      "name": "AppShell",
+      "category": "layout",
+      "purpose": "사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.",
+      "useWhen": [
+        "제품의 공통 화면 틀을 구성할 때"
+      ],
+      "dont": [
+        "본문 안에 main을 다시 넣지 마라"
+      ],
+      "rules": [
+        {
+          "text": "sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.",
+          "source": "24"
+        },
+        {
+          "text": "본문으로 건너뛰기 링크와 본문 영역은 내장되어 있다.",
+          "source": "24"
+        },
+        {
+          "text": "본문은 기본 최대 폭 제한이 없다. 필요한 화면만 contentMaxWidth를 지정한다.",
+          "source": "24"
+        },
+        {
+          "text": "높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.",
+          "source": "24"
+        }
+      ],
+      "related": [
+        "SideNav",
+        "PageHeader"
+      ],
+      "keywords": [
+        "앱 셸",
+        "공통 화면",
+        "레이아웃",
+        "사이드바와 본문",
+        "화면 틀"
+      ],
+      "source": "components/app-shell/app-shell.tsx",
+      "props": [
+        {
+          "name": "sidebar",
+          "type": "ReactNode",
+          "required": true
+        },
+        {
+          "name": "header",
+          "type": "ReactNode",
+          "doc": "전역 검색·사용자 메뉴 등 앱이 구성하는 선택 상단 영역."
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "required": true
+        },
+        {
+          "name": "contentMaxWidth",
+          "type": "MaxWidth<string | number>",
+          "doc": "본문 안쪽 콘텐츠의 최대 폭. 생략하면 넓은 표를 위해 제한하지 않는다."
+        }
+      ],
+      "extends": [
+        "React.HTMLAttributes<HTMLDivElement>"
+      ],
+      "slots": [
+        "app-shell",
+        "app-shell-body",
+        "app-shell-content",
+        "app-shell-header",
+        "app-shell-main",
+        "app-shell-sidebar",
+        "app-shell-skip"
+      ]
+    },
+    {
+      "name": "SideNav",
+      "category": "navigation",
+      "purpose": "브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.",
+      "useWhen": [
+        "사이드바에 제품 메뉴를 배치할 때"
+      ],
+      "dont": [
+        "준비 중인 항목에 이동 동작을 넣지 마라"
+      ],
+      "rules": [
+        {
+          "text": "SideNavGroup으로 묶고 SideNavItem에 icon·label을 준다. 현재 위치는 current로 표시한다.",
+          "source": "24"
+        },
+        {
+          "text": "다른 링크 컴포넌트를 쓰면 SideNavItem의 asChild 안에 단일 링크를 넣는다.",
+          "source": "24"
+        },
+        {
+          "text": "collapsed·onCollapsedChange는 제어형, defaultCollapsed는 비제어형이다. 접힘 상태 저장은 앱이 맡는다.",
+          "source": "24"
+        },
+        {
+          "text": "펼침은 240px, 접힘은 64px다. 1024px 미만에서는 자동으로 접히고 넓어지면 사용자의 선택으로 돌아온다.",
+          "source": "24"
+        },
+        {
+          "text": "접힌 항목은 호버·포커스에서 라벨을 보여준다. disabled는 준비 중 표시와 함께 이동·Tab 탐색을 막는다.",
+          "source": "24"
+        },
+        {
+          "text": "brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.",
+          "source": "24"
+        }
+      ],
+      "related": [
+        "AppShell",
+        "PageHeader"
+      ],
+      "keywords": [
+        "사이드바",
+        "메뉴",
+        "내비게이션",
+        "사이드 메뉴",
+        "브랜드",
+        "왼쪽 메뉴"
+      ],
+      "parts": [
+        "SideNavGroup",
+        "SideNavItem"
+      ],
+      "source": "components/app-shell/side-nav.tsx",
+      "props": [
+        {
+          "name": "brand",
+          "type": "ReactNode",
+          "required": true
+        },
+        {
+          "name": "brandIcon",
+          "type": "ReactNode",
+          "required": true,
+          "doc": "접힌 레일에서도 남는 브랜드 표식."
+        },
+        {
+          "name": "collapsed",
+          "type": "boolean"
+        },
+        {
+          "name": "defaultCollapsed",
+          "type": "boolean"
+        },
+        {
+          "name": "onCollapsedChange",
+          "type": "((collapsed: boolean) => void)"
+        }
+      ],
+      "extends": [
+        "React.HTMLAttributes<HTMLElement>"
+      ],
+      "slots": [
+        "guide-bubble",
+        "guide-tooltip",
+        "side-nav",
+        "side-nav-brand",
+        "side-nav-menu",
+        "side-nav-toggle"
+      ]
+    },
+    {
+      "name": "SideNavGroup",
+      "partOf": "SideNav",
+      "purpose": "사이드 메뉴 항목을 제목으로 묶는다.",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "extends": [
+        "React.HTMLAttributes<HTMLDivElement>"
+      ],
+      "slots": [
+        "side-nav-group",
+        "side-nav-group-label"
+      ]
+    },
+    {
+      "name": "SideNavItem",
+      "partOf": "SideNav",
+      "purpose": "아이콘·라벨·개수와 현재 위치 또는 준비 중 상태를 표시한다.",
+      "props": [
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "required": true
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "badge",
+          "type": "ReactNode"
+        },
+        {
+          "name": "current",
+          "type": "boolean"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean"
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "doc": "Next Link 등 단일 자식 링크에 스타일·이벤트·ref를 합친다."
+        }
+      ],
+      "extends": [
+        "React.AnchorHTMLAttributes<HTMLAnchorElement>"
+      ],
+      "slots": [
+        "guide-bubble",
+        "guide-tooltip",
+        "side-nav-badge",
+        "side-nav-item",
+        "side-nav-item-label"
+      ]
+    },
+    {
+      "name": "PageHeader",
+      "category": "layout",
+      "purpose": "페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.",
+      "useWhen": [
+        "페이지 제목이나 화면 머리를 구성할 때"
+      ],
+      "dont": [
+        "한 페이지에 PageHeader를 여러 개 넣지 마라"
+      ],
+      "rules": [
+        {
+          "text": "title은 페이지의 h1이다. 본문에서 같은 제목을 다시 만들지 않는다.",
+          "source": "24"
+        },
+        {
+          "text": "breadcrumb에는 Breadcrumb, status에는 StatusChip 등을 넣는다. actions에는 화면의 주요 버튼을 둔다.",
+          "source": "24"
+        },
+        {
+          "text": "본문 폭이 640px 미만이면 액션이 제목 아래로 내려간다. 주요 버튼은 하나만 둔다.",
+          "source": "24"
+        }
+      ],
+      "related": [
+        "AppShell",
+        "Breadcrumb",
+        "StatusChip",
+        "Button"
+      ],
+      "keywords": [
+        "페이지 제목",
+        "화면 머리",
+        "페이지 머리",
+        "제목과 버튼",
+        "페이지 헤더"
+      ],
+      "source": "components/app-shell/page-header.tsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "ReactNode"
+        },
+        {
+          "name": "breadcrumb",
+          "type": "ReactNode"
+        },
+        {
+          "name": "status",
+          "type": "ReactNode"
+        },
+        {
+          "name": "actions",
+          "type": "ReactNode"
+        }
+      ],
+      "extends": [
+        "Omit<React.HTMLAttributes<HTMLElement>, 'title' | 'children'>"
+      ],
+      "slots": [
+        "page-header",
+        "page-header-actions",
+        "page-header-breadcrumb",
+        "page-header-description",
+        "page-header-status",
+        "page-header-title"
+      ]
+    },
     {
       "name": "Carousel",
       "category": "media",
