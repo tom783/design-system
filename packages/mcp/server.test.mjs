@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R35: 72,073 → 74,697바이트. Pagination·표 조립 지침 포함 실측에 203바이트 여유.
-      assert.ok(Buffer.byteLength(result.text) < 74_900, '복원 규칙까지 포함한 전송량을 잰다');
+      // R36: 74,697 → 76,883바이트. Sheet·서랍 지침 포함 실측에 217바이트 여유.
+      assert.ok(Buffer.byteLength(result.text) < 77_100, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -158,7 +158,13 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }, {
     name: 'MediaViewer', kind: 'component', purpose: '이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',
     import: "import { MediaViewer } from '@s2life/ui';",
-  }, ...baseline.__list] });
+  }, ...baseline.__list.flatMap(entry => entry.name === 'DialogHeader' ? [{
+    name: 'SheetContent', kind: 'component', purpose: '목록 맥락을 유지하는 모달 옆 패널이다. side는 right·left, size는 sm 400·md 560·lg 720px다.',
+    import: "import { SheetContent } from '@s2life/ui';", partOf: 'Dialog',
+  }, {
+    name: 'SheetBody', kind: 'component', purpose: 'SheetContent의 스크롤 본문이다. 헤더·푸터는 이 바깥에 둔다.',
+    import: "import { SheetBody } from '@s2life/ui';", partOf: 'Dialog',
+  }, entry] : [entry])] });
   // 부품 조회가 보관 형태에 부모 필드나 기본값을 써 넣지 않았는지도 확인한다.
   const resource = (await c.request('resources/read', { uri: 'design://components' })).result.contents[0];
   assert.deepEqual(JSON.parse(resource.text), { derived: manifest.derived, components: manifest.components });
@@ -170,4 +176,18 @@ test('깨진 JSON 후 생존·이후 정상 처리·stdout 오염 없음', async
   assert.deepEqual((await c.request('ping')).result, {});
   assert.equal((await c.rawRequest('[]')).error.code, -32600);
   assert.deepEqual((await c.request('ping')).result, {});
+});
+
+test('R36: Sheet 검색·Dialog 규칙 상속·독자 갈림길과 API를 함께 보존한다', async t => {
+  const c = await client(t);
+  const result = (await call(c, 'get_component', { name: 'SheetContent' })).result;
+  assert.equal(result.structuredContent.partOf, 'Dialog');
+  assert.equal(result.structuredContent.inheritedFrom, 'Dialog');
+  assert.ok(result.structuredContent.rules.some(rule => rule.text.includes('onDismissAttempt')));
+  assert.ok(result.structuredContent.dont.some(text => text.includes('Peek')));
+  assert.ok(result.structuredContent.props.some(prop => prop.name === 'showClose'));
+  for (const description of ['옆 패널','사이드 패널','서랍','드로어','슬라이드 패널']) {
+    const response = (await call(c, 'which_component', { description })).result;
+    assert.equal(response.structuredContent.candidates[0].name, 'SheetContent');
+  }
 });

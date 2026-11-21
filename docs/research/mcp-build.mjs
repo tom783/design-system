@@ -163,7 +163,8 @@ export function validate({ components, intents, sections, tokens, expectedNames,
       const parent = intents.find((c) => c.name === item.partOf);
       if (!parent || !sourceNames.has(item.partOf)) errors.push(`[7 parts] ${item.name} → ${item.partOf}: 부모 없음`);
       else if (parent === item || parent.partOf || !parent.parts?.includes(item.name)) errors.push(`[7 parts] ${item.name} → ${item.partOf}: 루트 부모의 parts와 불일치`);
-      for (const field of ['useWhen', 'dont', 'rules', 'related', 'keywords', 'category'])
+      // 배치가 다른 부품은 고유 검색 의도를 가질 수 있다. 공통 동작 규칙은 부모 한 곳에 둔다.
+      for (const field of ['rules', 'category'])
         if (Object.hasOwn(item, field)) errors.push(`[7 parts] ${item.name}.${field}: 공통 의도는 부모에만 보관`);
     }
     for (const name of item.parts ?? []) {

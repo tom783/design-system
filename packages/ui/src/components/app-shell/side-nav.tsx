@@ -3,7 +3,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Slot, Slottable } from '../../internal/slot';
 import { cn } from '../../lib/cn';
 import { Tooltip } from '../guide';
-import { ShellRailContext, useAutomaticRail } from './app-shell';
+import { ShellRailContext, ShellDrawerContext, useAutomaticRail } from './app-shell';
 
 const NavContext = React.createContext(false);
 
@@ -23,14 +23,15 @@ export function SideNav({ brand, brandIcon, collapsed, defaultCollapsed = false,
   const narrow = shellNarrow ?? standaloneNarrow;
   const [localCollapsed, setLocalCollapsed] = React.useState(defaultCollapsed);
   const preference = collapsed ?? localCollapsed;
-  const rail = narrow || preference;
+  const drawer = React.useContext(ShellDrawerContext) !== null;
+  const rail = !drawer && (narrow || preference);
   const menuId = React.useId();
   const toggle = () => {
     if (collapsed === undefined) setLocalCollapsed(!preference);
     onCollapsedChange?.(!preference);
   };
   return <NavContext.Provider value={rail}>
-    <nav {...props} aria-label={label} data-slot="side-nav" data-collapsed={rail}
+    <nav {...props} aria-label={label} data-slot="side-nav" data-collapsed={rail} data-drawer={drawer}
       className={cn('ds-side-nav', className)}>
       <div data-slot="side-nav-brand" className="ds-side-nav-brand">
         <span className="ds-side-nav-icon" aria-hidden="true">{brandIcon}</span>
@@ -73,6 +74,7 @@ export const SideNavItem = React.forwardRef<HTMLAnchorElement, SideNavItemProps>
   { icon, label, badge, current = false, disabled = false, asChild = false, children, className, ...props }, ref,
 ) {
   const rail = React.useContext(NavContext);
+  const closeDrawer = React.useContext(ShellDrawerContext);
   const classes = cn('ds-side-nav-item', className);
   const content = <>
     <span className="ds-side-nav-icon" aria-hidden="true">{icon}</span>
@@ -88,6 +90,10 @@ export const SideNavItem = React.forwardRef<HTMLAnchorElement, SideNavItemProps>
   const Component = asChild ? Slot : 'a';
   return <Tooltip content={label} disabled={!rail}>
     <Component {...props} ref={ref} data-slot="side-nav-item" className={classes}
+      onClick={event => {
+        props.onClick?.(event);
+        if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) closeDrawer?.();
+      }}
       aria-current={current ? 'page' : undefined} aria-label={rail ? label : props['aria-label']}>
       {asChild ? <Slottable child={children}>{() => content}</Slottable> : content}
     </Component>

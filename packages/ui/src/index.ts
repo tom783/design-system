@@ -55,3 +55,4 @@ export * from './components/media-viewer';
 export * from './components/carousel';
 export * from './components/app-shell';
 export * from './components/pagination';
+export * from './components/sheet';

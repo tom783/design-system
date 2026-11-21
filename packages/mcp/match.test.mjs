@@ -6,7 +6,7 @@ const { components } = JSON.parse(await readFile(new URL('./manifest.json', impo
 
 test('정확한 이름은 독립 컴포넌트가 1위이며 부품은 선택 후보에서 제외', () => {
   for (const c of components.filter((c) => (c.kind ?? 'component') === 'component' && !c.partOf)) assert.equal(matchComponents(c.name, components)[0].name, c.name);
-  for (const c of components.filter((c) => c.partOf)) assert.ok(!matchComponents(c.name, components, components.length).some((candidate) => candidate.name === c.name));
+  for (const c of components.filter((c) => c.partOf && !c.keywords?.length)) assert.ok(!matchComponents(c.name, components, components.length).some((candidate) => candidate.name === c.name));
 });
 test('가족 선택 질문에 부품이 끼지 않고 CardSkeleton은 독립 후보로 남는다', () => {
   for (const [query, parent, excluded] of [
@@ -136,4 +136,14 @@ test('배너 슬라이드 라우팅 1위: Carousel', () => {
 
 for (const query of ['페이지', '페이징', '페이지 이동', '페이지 크기', '몇 개씩']) test(`페이지네이션 라우팅 1위: ${query}`, () => {
   assert.equal(matchComponents(query, components)[0]?.name, 'Pagination');
+});
+
+for (const query of ['옆 패널','사이드 패널','서랍','드로어','슬라이드 패널']) test(`Sheet 검색 1위: ${query}`, () => {
+  assert.equal(matchComponents(query, components)[0]?.name, 'SheetContent');
+});
+test('Sheet는 Dialog 부품이며 독자 검색 의도를 가진다', () => {
+  const sheet = components.find(c => c.name === 'SheetContent');
+  assert.equal(sheet.partOf, 'Dialog');
+  assert.ok(sheet.related.includes('Peek'));
+  assert.ok(sheet.dont.some(text => text.includes('DialogContent')));
 });

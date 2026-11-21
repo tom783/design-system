@@ -52,6 +52,7 @@ const HARNESSES = [
   ['media-viewer-render-verify.mjs', '미디어 팝업·플로팅·화면 속 화면'],
   ['carousel-render-verify.mjs', '캐러셀·네이티브 스냅·자동 넘김 정지'],
   ['pagination-render-verify.mjs', '페이지 이동·크기·포커스·표 조립'],
+  ['sheet-render-verify.mjs', '옆 패널·닫기 보호·서랍'],
   ['app-shell-render-verify.mjs', '앱 셸·사이드 메뉴·페이지 머리'],
   ['input-consistency-render-verify.mjs', '검색 아이콘·카드·선택 트리거·공개 유틸리티'],
   ['input-render-verify.mjs', '입력 타입·Textarea·Radio·Switch'],

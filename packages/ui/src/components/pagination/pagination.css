@@ -1,7 +1,8 @@
 .ds-pagination { container-type: inline-size; min-width: 0; color: var(--text-secondary); font-size: var(--text-body-sm); }
 .ds-pagination-layout { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-12); }
 .ds-pagination-range { min-width: 0; overflow-wrap: anywhere; }
-.ds-pagination-size { width: auto; max-width: 100%; }
+/* 표 아래 번호 버튼과 같은 32px 컨트롤 높이를 쓴다(R35 보정). */
+.ds-pagination-size { height: var(--control-h-sm); width: auto; max-width: 100%; }
 .ds-pagination-controls { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); margin-inline-start: auto; min-width: 0; max-width: 100%; }
 .ds-pagination-pages { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); min-width: 0; }
 .ds-pagination-position { display: none; overflow-wrap: anywhere; min-width: 0; }

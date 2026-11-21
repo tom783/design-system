@@ -59,7 +59,7 @@ test('8: 소비자 지침의 구현 메모·장문·복제를 생성 단계에�
 test('부품은 고유 API만 보관하고 목적·부모 목록을 보존', async () => {
   const { components: catalog, derived } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   for (const part of catalog.filter((c) => c.partOf)) {
-    assert.ok(Object.keys(part).every(key => ['name', 'partOf', 'purpose', 'props', 'extends', 'slots', 'source'].includes(key)));
+    assert.ok(Object.keys(part).every(key => ['name', 'partOf', 'purpose', 'props', 'extends', 'slots', 'source', 'useWhen', 'dont', 'related', 'keywords'].includes(key)));
     assert.equal(part.purpose, intents.find((c) => c.name === part.name).purpose);
     assert.ok(catalog.find((c) => c.name === part.partOf).parts.includes(part.name));
     const restored = restoreComponent(part, derived, catalog);
@@ -96,8 +96,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R35: 72,073 → 74,697바이트. Pagination·표 조립 지침 포함 실측에 203바이트 여유.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 74_900);
+  // R36: 74,697 → 76,883바이트. Sheet·서랍 지침 포함 실측에 217바이트 여유.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 77_100);
 });
 test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
   const entry = (name, extra = {}) => {

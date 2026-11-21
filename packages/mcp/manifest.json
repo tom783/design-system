@@ -4335,6 +4335,10 @@
           "source": "24"
         },
         {
+          "text": "narrowNavigation=drawer는 1024px 미만에서 메뉴 버튼·왼쪽 Sheet를 쓴다. 항목 선택 시 닫히며 기본은 rail이다.",
+          "source": "24"
+        },
+        {
           "text": "높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.",
           "source": "24"
         }
@@ -4368,6 +4372,11 @@
           "required": true
         },
         {
+          "name": "narrowNavigation",
+          "type": "\"drawer\" | \"rail\"",
+          "doc": "1024px 미만 메뉴: 기본 rail, drawer는 왼쪽 모달 Sheet."
+        },
+        {
           "name": "contentMaxWidth",
           "type": "MaxWidth<string | number>",
           "doc": "본문 안쪽 콘텐츠의 최대 폭. 생략하면 넓은 표를 위해 제한하지 않는다."
@@ -4383,7 +4392,15 @@
         "app-shell-header",
         "app-shell-main",
         "app-shell-sidebar",
-        "app-shell-skip"
+        "app-shell-skip",
+        "button",
+        "dialog-close-icon",
+        "dialog-header",
+        "dialog-overlay",
+        "dialog-title",
+        "dialog-trigger",
+        "sheet-body",
+        "sheet-content"
       ]
     },
     {
@@ -5424,7 +5441,7 @@
         "되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"
       ],
       "dont": [
-        "삭제 확인에는 AlertDialog를 사용한다"
+        "삭제 확인에는 AlertDialog, 목록 맥락을 유지하는 상세·편집에는 SheetContent를 사용한다"
       ],
       "rules": [
         {
@@ -5442,11 +5459,17 @@
         {
           "text": "저장하지 않은 변경에는 dismissible=false·onDismissAttempt로 확인 AlertDialog를 연다. Escape도 확인을 거친다.",
           "source": "16.3"
+        },
+        {
+          "text": "SheetContent는 Dialog 안에 두고 DialogHeader·Title·Description·Footer·Close를 공유한다. SheetBody만 스크롤한다.",
+          "source": "16.6"
         }
       ],
       "related": [
         "DialogContent",
-        "AlertDialog"
+        "SheetContent",
+        "AlertDialog",
+        "Peek"
       ],
       "keywords": [
         "모달",
@@ -5458,6 +5481,8 @@
       "parts": [
         "DialogTrigger",
         "DialogContent",
+        "SheetContent",
+        "SheetBody",
         "DialogHeader",
         "DialogTitle",
         "DialogDescription",
@@ -5483,24 +5508,24 @@
       "purpose": "입력 창의 내용과 닫기 보호를 제공한다.",
       "props": [
         {
+          "name": "showClose",
+          "type": "boolean",
+          "doc": "우상단 닫기 버튼. 끄면 앱이 직접 출구를 제공한다."
+        },
+        {
           "name": "size",
           "type": "\"default\" | \"wide\"",
-          "doc": "default는 기존 36rem, wide는 미디어처럼 뷰포트 폭이 필요한 내용에 쓴다."
+          "doc": "default는 기존 36rem, wide는 뷰포트 폭이 필요한 내용에 쓴다."
         },
         {
           "name": "dismissible",
           "type": "boolean",
-          "doc": "false면 바깥 클릭·Escape로 닫히지 않는다. 명시적 닫기 버튼은 계속 동작한다."
+          "doc": "false면 바깥 클릭·Escape를 막고, 콜백이 있으면 내장 닫기도 확인을 거친다."
         },
         {
           "name": "onDismissAttempt",
           "type": "(() => void)",
-          "doc": "dismissible=false일 때 닫으려는 시도를 알린다. 앱에서 확인 AlertDialog를 연다."
-        },
-        {
-          "name": "showClose",
-          "type": "boolean",
-          "doc": "우상단 닫기 버튼. 끄면 앱이 직접 출구를 제공해야 한다."
+          "doc": "보호된 닫기 시도. 앱에서 확인 AlertDialog를 연다."
         }
       ],
       "extends": [
@@ -5510,6 +5535,77 @@
         "dialog-close-icon",
         "dialog-content",
         "dialog-overlay"
+      ]
+    },
+    {
+      "name": "SheetContent",
+      "partOf": "Dialog",
+      "purpose": "목록 맥락을 유지하는 모달 옆 패널이다. side는 right·left, size는 sm 400·md 560·lg 720px다.",
+      "useWhen": [
+        "목록에서 상세·편집·필터를 열거나 좁은 화면 메뉴를 서랍으로 열 때"
+      ],
+      "dont": [
+        "가운데 확인·짧은 입력은 DialogContent, 읽기 전용 요약은 Peek을 쓴다"
+      ],
+      "related": [
+        "DialogContent",
+        "SheetBody",
+        "Peek"
+      ],
+      "keywords": [
+        "옆 패널",
+        "사이드 패널",
+        "서랍",
+        "드로어",
+        "슬라이드 패널"
+      ],
+      "source": "components/sheet/sheet.tsx",
+      "props": [
+        {
+          "name": "onDismissAttempt",
+          "type": "(() => void)",
+          "doc": "보호된 닫기 시도. 앱에서 확인 AlertDialog를 연다."
+        },
+        {
+          "name": "side",
+          "type": "\"left\" | \"right\"",
+          "doc": "화면에 붙는 가장자리. 기본 right."
+        },
+        {
+          "name": "size",
+          "type": "\"lg\" | \"md\" | \"sm\"",
+          "doc": "sm 400 · md 560 · lg 720px. 좁은 화면은 반대편에 16px를 남긴다."
+        },
+        {
+          "name": "dismissible",
+          "type": "boolean",
+          "doc": "false면 바깥 클릭·Escape를 막고, 콜백이 있으면 내장 닫기도 확인을 거친다."
+        },
+        {
+          "name": "showClose",
+          "type": "boolean",
+          "doc": "우상단 닫기 버튼. 끄면 앱이 직접 출구를 제공한다."
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Content>"
+      ],
+      "slots": [
+        "dialog-close-icon",
+        "dialog-overlay",
+        "sheet-content"
+      ]
+    },
+    {
+      "name": "SheetBody",
+      "partOf": "Dialog",
+      "purpose": "SheetContent의 스크롤 본문이다. 헤더·푸터는 이 바깥에 둔다.",
+      "source": "components/sheet/sheet.tsx",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "sheet-body"
       ]
     },
     {
@@ -8387,7 +8483,7 @@
       ],
       "dont": [
         "호버로 열지 마라",
-        "수정·삭제 액션을 넣지 마라"
+        "수정·삭제는 SheetContent를 쓴다"
       ],
       "rules": [
         {
@@ -8399,7 +8495,8 @@
         "Tooltip",
         "Hint",
         "Tour",
-        "DataTable"
+        "DataTable",
+        "SheetContent"
       ],
       "keywords": [
         "요약",

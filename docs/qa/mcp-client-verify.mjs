@@ -220,6 +220,16 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const u = await call('모르는/메서드', {});
   check('모르는 메서드는 -32601', u.error?.code === -32601, JSON.stringify(u.error??'').slice(0,80));
 }
+{
+  const sheet = (await t('get_component', { name: 'SheetContent' })).structuredContent;
+  check('SheetContent는 Dialog 부품·규칙을 상속한다', sheet.partOf === 'Dialog' && sheet.inheritedFrom === 'Dialog'
+    && sheet.rules.some(rule => rule.text.includes('onDismissAttempt')));
+  check('Sheet의 Dialog·Peek 갈림길을 보존한다', sheet.dont.some(text => text.includes('Peek')) && sheet.related.includes('DialogContent'));
+  for (const description of ['옆 패널','사이드 패널','서랍','드로어','슬라이드 패널']) {
+    const result = (await t('which_component', { description })).structuredContent;
+    check(`${description} 첫 후보는 SheetContent`, result.candidates[0].name === 'SheetContent');
+  }
+}
 check('stdout 에 JSON 아닌 줄이 하나도 없다', badLines.length === 0, badLines.join(' | ').slice(0,150));
 console.log(`     stderr ${stderrBuf.length}자${stderrBuf?': "'+stderrBuf.slice(0,80)+'"':''}`);
 

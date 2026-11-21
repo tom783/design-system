@@ -2283,6 +2283,33 @@ browser.mjs를 통해 스토리 play 완료와 실제 키보드·포커스·닫�
 검사한다. play가 끝난 뒤에는 다이얼로그가 모두 닫혀 있으므로 하네스가 다시 연다.
 포커스는 조건 대기 후 단언한다. 실행은 `pnpm qa`에 포함한다.
 
+### 16.6 옆 패널 — Sheet (R36)
+
+가운데 확인·짧은 입력은 Dialog, 목록 맥락을 유지하는 상세·편집·필터는 Sheet,
+읽기 전용 최대 6줄 요약은 Peek이다. Sheet는 같은 모달의 다른 배치다.
+공개 부품은 SheetContent·SheetBody 둘뿐이며 Dialog 루트·트리거·헤더·제목·설명·푸터·닫기를 그대로 쓴다.
+공통 ModalContent가 포털·막·z-index 50·포커스 가둠·복귀·닫기 보호를 맡는다.
+dismissible·onDismissAttempt·showClose는 DialogContent와 같은 계약이다.
+저장 안 한 변경에만 dismissible=false를 주고 세 닫기 경로에서 확인 AlertDialog를 연다.
+
+side는 right(기본)·left, size는 sm 400·md 560(기본)·lg 720px 최대 폭이다.
+좁으면 반대편 16px를 남기며 선택한 가장자리에는 붙는다. 높이는 100dvh다.
+DialogHeader·DialogFooter는 SheetBody 바깥에 둔다. 본문만 min-height:0·overflow-y:auto로
+스크롤하고 헤더·푸터는 flex:none으로 고정한다. 래퍼 안 헤더도 실제 닫기 버튼이 있을 때만
+자리를 비운다. showClose=false는 전체 제목 폭을 돌려주며 앱이 명시적 출구를 둔다.
+등장은 dur-normal·ease-decelerate, 퇴장은 dur-fast·ease-standard를 쓰며
+reduced-motion에서는 막·패널의 animation·transition 지속시간을 정확히 0으로 만든다.
+새 막·그림자·z-index 토큰은 없다. 비모달·크기 조절·위아래 배치는 제공하지 않는다.
+
+AppShell의 narrowNavigation은 기본 rail을 유지한다. drawer를 명시하면 1024px 미만에서
+메뉴 버튼으로 왼쪽 sm Sheet를 열고 SideNavItem 선택 시 닫는다. 메뉴 라벨은 펼쳐서 보여준다.
+넓어지면 서랍을 닫고 기존 사이드 메뉴를 보여준다. 서랍 닫기는 메뉴 버튼으로 포커스를 돌려준다.
+
+MCP에서 SheetContent는 partOf:Dialog로 닫기 보호 규칙을 상속한다. 배치별 검색어가 있는 부품만
+which_component 후보에 포함하고 일반 부품은 계속 부모를 통해 찾는다. 카탈로그 지침은 줄이지 않는다.
+sheet-render-verify.mjs는 폭·가장자리·독립 스크롤·세 닫기 경로·보호·포커스·막·reduce·서랍·콘솔을 검사한다.
+이번 작업은 브라우저 하네스 작성까지만 하며 실행은 pnpm qa에 맡긴다.
+
 ---
 
 ## 17. 나머지 입력 — Textarea · RadioGroup · Switch · Label · Input 타입 (R16)
@@ -2826,7 +2853,7 @@ carousel-render-verify.mjs를 run-all에 등록한다. 한 칸씩 키보드 스�
 좁은 화면에서 접기 버튼은 CSS로 숨겨 첫 페인트부터 Tab 경로에서도 제외하며,
 다시 넓어지면 원래 선택으로 돌아온다.
 접힘 전환에 폭 애니메이션은 넣지 않는다. 표와 입력의 반복 재배치를 피하기 위해서다.
-화면 밖 서랍은 Sheet(R36) 이후에 다룬다.
+화면 밖 서랍은 narrowNavigation="drawer"로 선택한다(§16.6).
 
 ### 24.2 랜드마크·링크·접근성
 

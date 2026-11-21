@@ -8,15 +8,17 @@ export function matchComponents(description, components, limit = 5) {
   const query = normalize(description);
   if (!query) return [];
   const words = description.normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 2 && !GENERIC_WORDS.has(word));
-  // 선택 질문에는 조립 루트만 답한다. 개별 부품은 부모의 parts와 get_component로 찾는다.
-  return components.filter((c) => c.kind !== 'constant' && !c.partOf).map((component) => {
+  // 기본 부품은 제외한다. 고유 검색어를 선언한 다른 배치(Sheet 등)는 직접 선택할 수 있다.
+  return components.filter((c) => c.kind !== 'constant' && (!c.partOf || (c.keywords?.length
+    && (c.keywords.some(keyword => query.includes(normalize(keyword))) || query.includes(normalize(c.name)))))).map((component) => {
     let score = 0;
     const reasons = [];
     if (query.includes(normalize(component.name))) { const weight = query === normalize(component.name) ? 2000 : 1000;
       score += weight; reasons.push(`이름 일치: ${component.name} (+${weight})`); }
-    for (const keyword of component.keywords) if (query.includes(normalize(keyword))) {
+    for (const keyword of component.keywords ?? []) if (query.includes(normalize(keyword))) {
       // 한 글자 문맥(표·행)이 작업 목적(요약)을 압도하지 않게 가중치를 낮춘다.
-      const weight = normalize(keyword).length === 1 ? 4 : 20;
+      // 전체 구절 일치를 우선한다. '슬라이드 패널'이 '슬라이드'보다 구체적이다.
+      const weight = normalize(keyword).length === 1 ? 4 : query === normalize(keyword) ? 80 : 20;
       score += weight; reasons.push(`키워드 일치: ${keyword} (+${weight})`);
     }
     for (const [field, weight] of [['purpose', 2], ['useWhen', 5]]) {

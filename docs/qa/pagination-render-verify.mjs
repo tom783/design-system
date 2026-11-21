@@ -94,6 +94,11 @@ try {
       { same: true, role: 'status', live: 'polite', atomic: 'true' });
     await ev('window.__paginationObserver.disconnect()');
   });
+  await check('크기 Select 높이 = 번호 버튼 높이 = 32px', async () => {
+    await story('페이지크기');
+    const heights = await ev(`({select:${q(slot('size'))}.getBoundingClientRect().height, page:${q(number(1))}.getBoundingClientRect().height})`);
+    assert.equal(heights.select, heights.page); assert.equal(heights.select, 32);
+  });
   await check('페이지 크기 100개씩 선택은 1페이지로 이동·Select 포커스 복귀', async () => {
     await story('페이지크기'); await click(number(3)); await currentIs(3);
     await focus(slot('size')); await key('Enter', 13);

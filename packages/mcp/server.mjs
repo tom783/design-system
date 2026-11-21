@@ -67,8 +67,11 @@ function callTool(manifest, params) {
       if (!component.partOf) return structured(component);
       const parent = manifest.components.find((c) => c.name === component.partOf);
       // 기본값 복원과 부모 의도 합치기는 응답에서만 한다. 보관 항목은 변경하지 않는다.
-      const { useWhen, dont, rules, category } = restoreComponent(parent, manifest.derived, manifest.components);
-      return structured({ ...component, useWhen, dont, rules, category, inheritedFrom: parent.name });
+      const { useWhen, dont, rules, category, related } = restoreComponent(parent, manifest.derived, manifest.components);
+      return structured({ ...component, useWhen: [...new Set([...(component.useWhen ?? []), ...useWhen])],
+        dont: [...new Set([...(component.dont ?? []), ...dont])], rules, category,
+        ...(component.related ? { related: [...new Set([...(component.related ?? []), ...(related ?? [])])].filter(name => name !== component.name) } : {}),
+        inheritedFrom: parent.name });
     }
     case 'which_component': {
       const candidates = matchComponents(args.description, manifest.components, args.limit);

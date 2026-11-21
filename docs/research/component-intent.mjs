@@ -40,8 +40,9 @@ const intents = [
     'sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.',
     '본문으로 건너뛰기 링크와 본문 영역은 내장되어 있다.',
     '본문은 기본 최대 폭 제한이 없다. 필요한 화면만 contentMaxWidth를 지정한다.',
+    'narrowNavigation=drawer는 1024px 미만에서 메뉴 버튼·왼쪽 Sheet를 쓴다. 항목 선택 시 닫히며 기본은 rail이다.',
     '높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.'
-  ],['sidebar','header','children','contentMaxWidth'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀']),
+  ],['sidebar','header','children','contentMaxWidth','narrowNavigation'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀']),
   entry('SideNav','navigation','브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.',['사이드바에 제품 메뉴를 배치할 때'],['준비 중인 항목에 이동 동작을 넣지 마라'],'24',[
     'SideNavGroup으로 묶고 SideNavItem에 icon·label을 준다. 현재 위치는 current로 표시한다.',
     '다른 링크 컴포넌트를 쓰면 SideNavItem의 asChild 안에 단일 링크를 넣는다.',
@@ -120,14 +121,22 @@ const intents = [
   part("BreadcrumbPage", "Breadcrumb", "링크가 아닌 현재 경로 항목이다.", ["aria-current"], ["breadcrumb-page"]),
   part("BreadcrumbSeparator", "Breadcrumb", "보조기기가 읽지 않는 경로 구분자다.", [], ["breadcrumb-separator"]),
   part("BreadcrumbEllipsis", "Breadcrumb", "접힌 경로 수를 읽을 수 있는 생략 표시다.", ["count"], ["breadcrumb-ellipsis"]),
-  entry("Dialog","overlay","입력·편집·선택을 모달로 제공한다.",["되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"],["삭제 확인에는 AlertDialog를 사용한다"],"16",[
+  entry("Dialog","overlay","입력·편집·선택을 모달로 제공한다.",["되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때"],["삭제 확인에는 AlertDialog, 목록 맥락을 유지하는 상세·편집에는 SheetContent를 사용한다"],"16",[
     rule("DialogTitle·DialogDescription → 내용 → 푸터 순서로 배치한다.", "16.3"),
     rule("설명이 없으면 Content에 aria-describedby={undefined}를 준다.", "16.3"),
     rule("첫 요소로 포커스가 가므로 파괴적 버튼을 맨 앞에 두지 않는다.", "16.3"),
     rule("저장하지 않은 변경에는 dismissible=false·onDismissAttempt로 확인 AlertDialog를 연다. Escape도 확인을 거친다.", "16.3")
-  ],["open", "onOpenChange"],[],["DialogContent", "AlertDialog"],["모달", "모달 띄우기", "다이얼로그", "팝업", "편집"]),
+    ,rule("SheetContent는 Dialog 안에 두고 DialogHeader·Title·Description·Footer·Close를 공유한다. SheetBody만 스크롤한다.", "16.6")
+  ],["open", "onOpenChange"],[],["DialogContent", "SheetContent", "AlertDialog", "Peek"],["모달", "모달 띄우기", "다이얼로그", "팝업", "편집"]),
   part("DialogTrigger", "Dialog", "입력 창을 여는 트리거다.", ["asChild"], ["dialog-trigger"]),
   part("DialogContent", "Dialog", "입력 창의 내용과 닫기 보호를 제공한다.", ["size", "dismissible", "onDismissAttempt", "onEscapeKeyDown", "onPointerDownOutside", "onInteractOutside"], ["dialog-content", "dialog-overlay"]),
+  { ...part('SheetContent', 'Dialog', '목록 맥락을 유지하는 모달 옆 패널이다. side는 right·left, size는 sm 400·md 560·lg 720px다.',
+    ['side','size','dismissible','onDismissAttempt','showClose'], ['sheet-content','dialog-overlay']),
+    useWhen: ['목록에서 상세·편집·필터를 열거나 좁은 화면 메뉴를 서랍으로 열 때'],
+    dont: ['가운데 확인·짧은 입력은 DialogContent, 읽기 전용 요약은 Peek을 쓴다'],
+    related: ['DialogContent','SheetBody','Peek'],
+    keywords: ['옆 패널','사이드 패널','서랍','드로어','슬라이드 패널'] },
+  part('SheetBody', 'Dialog', 'SheetContent의 스크롤 본문이다. 헤더·푸터는 이 바깥에 둔다.', [], ['sheet-body']),
   part("DialogHeader", "Dialog", "입력 창 제목·설명 그룹이다.", [], ["dialog-header"]),
   part("DialogTitle", "Dialog", "입력 창의 필수 제목이다.", [], ["dialog-title"]),
   part("DialogDescription", "Dialog", "입력 창의 필수 설명이다.", [], ["dialog-description"]),
@@ -280,7 +289,7 @@ const intents = [
     "실제 액션 버튼에는 이동 표식을 붙이지 않는다. Enter 실행을 보존한다.",
     "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다."
   ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
-  entry('Peek','overlay',"레코드를 열지 않고 핵심 내용을 요약해 보여준다.",['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제 액션을 넣지 마라'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
+  entry('Peek','overlay',"레코드를 열지 않고 핵심 내용을 요약해 보여준다.",['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제는 SheetContent를 쓴다'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable','SheetContent'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
 
 for (const parent of intents) {

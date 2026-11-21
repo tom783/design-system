@@ -1,0 +1,38 @@
+@layer components {
+  /* Dialog의 표면·막·그림자·층을 유지하고 가장자리 배치만 바꾼다.
+     반대편 16px는 목록 맥락과 닫기 영역을 남긴다. 너비는 값 칸의 고정 폭이 아닌 패널 최대 폭이다. */
+  .ds-sheet-content {
+    top: 0; bottom: 0; left: auto; right: 0; transform: none;
+    width: calc(100% - var(--space-16)); max-width: 560px;
+    height: 100dvh; max-height: 100dvh; border-radius: 0;
+    display: flex; flex-direction: column; overflow: hidden; gap: 0; padding: 0;
+    --sheet-offset: 100%;
+  }
+  .ds-sheet-content[data-side="left"] { left: 0; right: auto; --sheet-offset: -100%; }
+  .ds-sheet-content[data-size="sm"] { max-width: 400px; }
+  .ds-sheet-content[data-size="lg"] { max-width: 720px; }
+  .ds-sheet-content .ds-dialog-header, .ds-sheet-content .ds-dialog-footer {
+    flex: none; padding: var(--space-24);
+  }
+  .ds-sheet-content .ds-dialog-header { border-bottom: var(--border-width) solid var(--border-subtle); }
+  /* 내부 패딩 24px에 닫기 폭·간격을 더한다. 래퍼 안 헤더도 같은 예약 폭을 쓴다(R32). */
+  .ds-sheet-content:has(> [data-slot="dialog-close-icon"]) .ds-dialog-header {
+    padding-right: calc(var(--space-24) + var(--control-h-sm) + var(--space-8));
+  }
+  .ds-sheet-content .ds-dialog-footer { border-top: var(--border-width) solid var(--border-subtle); }
+  .ds-sheet-body { flex: 1; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-24); }
+  .ds-sheet-content[data-state="open"] { animation: ds-sheet-in var(--dur-normal) var(--ease-decelerate); }
+  .ds-sheet-content[data-state="closed"] { animation: ds-sheet-out var(--dur-fast) var(--ease-standard); }
+  .ds-sheet-overlay[data-state="open"] { animation: ds-sheet-fade-in var(--dur-normal) var(--ease-decelerate); }
+  .ds-sheet-overlay[data-state="closed"] { animation: ds-sheet-fade-out var(--dur-fast) var(--ease-standard); }
+  @keyframes ds-sheet-in { from { transform: translateX(var(--sheet-offset)); } to { transform: translateX(0); } }
+  @keyframes ds-sheet-out { from { transform: translateX(0); } to { transform: translateX(var(--sheet-offset)); } }
+  @keyframes ds-sheet-fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ds-sheet-fade-out { from { opacity: 1; } to { opacity: 0; } }
+}
+/* base의 전역 .01ms !important와 같은 레이어에서 구체성으로 이긴다. */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    .ds-sheet-content, .ds-sheet-overlay { animation-duration: 0s !important; transition-duration: 0s !important; }
+  }
+}

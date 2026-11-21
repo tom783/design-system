@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-  AppShell, SideNav, SideNavGroup, SideNavItem, PageHeader, Button, DataTable,
+  AppShell, type AppShellProps, SideNav, SideNavGroup, SideNavItem, PageHeader, Button, DataTable,
   createDataTableColumnHelper, DatePicker, Field, Select, SelectTrigger, SelectValue,
   SelectContent, SelectItem, StatusChip, type DateRange,
 } from '../../src';
@@ -20,12 +20,12 @@ const columns = helper.columns([
   helper.accessor('status', { header: '상태', cell: cell => <StatusChip tone={cell.getValue() === 'done' ? 'success' : 'warning'}>{cell.getValue() === 'done' ? '배송 완료' : '준비 중'}</StatusChip> }),
 ]);
 
-export function AppShellExample() {
+export function AppShellExample({ narrowNavigation }: Pick<AppShellProps, 'narrowNavigation'> = {}) {
   const [range, setRange] = React.useState<DateRange | undefined>({ from: new Date(2026, 10, 1), to: new Date(2026, 10, 30) });
   const [status, setStatus] = React.useState('all');
   const filtered = orders.filter(order => (status === 'all' || order.status === status)
     && (!range?.from || order.date >= range.from) && (!range?.to || order.date <= range.to));
-  return <AppShell sidebar={
+  return <AppShell narrowNavigation={narrowNavigation} sidebar={
     <SideNav brand="커머스 운영" brandIcon={<Building2 />}>
       <SideNavGroup label="판매 관리">
         <SideNavItem icon={<ClipboardList />} label="주문 목록" href="#orders" current badge={orders.length} />
