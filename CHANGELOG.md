@@ -12,6 +12,7 @@
 
 ### 추가
 
+- ui 토큰 하위 경로 `@s2life/ui/tokens.css`·`theme.css`·`tokens.json`. tokens 패키지 원본을 빌드 시 바이트 그대로 복사한다.
 - Carousel 루트 스타일을 확장하는 `className`.
 
 ### 고침
@@ -29,6 +30,9 @@
 
 ### 문서
 
+- React 앱 설치 안내를 `npm install @s2life/ui` 하나와 `@s2life/ui/styles.css` 한 줄로 통일했다. 토큰 직접 접근도 ui 하위 경로를 사용하며, tokens는 ui가 같은 버전으로 고정해 가져온다.
+  이전 "시작하기"가 안내하던 `import '@s2life/tokens/tokens.css'` 는 `styles.css` 와 중복이었고,
+  pnpm 에서 ui 만 설치하면 해석에 실패해 빌드가 깨졌다. 배포 리허설이 이제 ui 만 설치한 앱으로 검증한다.
 - 모든 `Components/*` 에 문서 페이지: 사용 의도 → 사용법(코드 보기) → props 표 → 스토리.
   props 표는 Storybook docgen(26개 중 12개만 채워짐)이 아니라 MCP 매니페스트에서 그린다.
   공개 컴포넌트 101개 전부 포함. Dialog·Tabs·Breadcrumb 문서 스토리 신설.

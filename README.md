@@ -5,8 +5,11 @@ B2B 커머스 SaaS용 토큰·React 컴포넌트·읽기 전용 MCP 서버를 �
 ## 기본 설치: Tailwind 없이 사용
 
 ```sh
-npm install @s2life/ui @s2life/tokens react react-dom
+npm install @s2life/ui
 ```
+
+React·React DOM 19.3 이상은 peer 의존성이며, 앱에 없다면 `npm install @s2life/ui react react-dom`으로 함께 설치한다.
+앱에 `@s2life/tokens`를 따로 설치하지 않는다 — ui가 같은 버전을 고정해 가져오며, 따로 설치하면 버전이 어긋날 수 있다.
 
 앱의 공통 진입점에서 CSS를 한 번 불러온다. Next.js App Router에서는 `app/layout.tsx`, Vite에서는 `src/main.tsx`에 둔다. 상태·이벤트를 쓰는 Next.js 컴포넌트는 클라이언트 컴포넌트에서 사용한다.
 
@@ -22,7 +25,7 @@ export function Example() {
 
 `styles.css`는 토큰·Tailwind 유틸리티·컴포넌트 CSS를 모두 사전 컴파일한 자립형 파일이다. 소비 앱에 Tailwind나 PostCSS 설정이 필요하지 않다. JS에서 CSS를 자동으로 불러오지 않으므로 위 import를 생략하면 스타일이 적용되지 않는다. `@s2life/ui/internal`은 공개 API가 아니다.
 
-토큰만 필요하다면 `@s2life/tokens/tokens.css`, Tailwind 이름 매핑은 `@s2life/tokens/theme.css`, 기계 판독용 값은 `@s2life/tokens/tokens.json`으로 가져온다.
+토큰 파일을 직접 써야 한다면 `@s2life/ui/tokens.css`, Tailwind 이름 매핑은 `@s2life/ui/theme.css`, 기계 판독용 값은 `@s2life/ui/tokens.json`으로 가져온다. `styles.css`에는 토큰이 이미 포함되어 있으므로 `tokens.css`를 중복으로 불러오지 않는다.
 
 ## 이미 Tailwind v4를 쓰는 앱
 
@@ -45,6 +48,8 @@ claude mcp add s2life -- npx -y @s2life/mcp
 서버는 npm으로 제공하는 CLI이며 `npx @s2life/mcp`로도 실행한다. 런타임 의존성은 없고 stdout은 JSON-RPC 전용이다. 자세한 프로토콜은 [MCP README](packages/mcp/README.md)를 참고한다.
 
 ## 빌드와 버전
+
+세 패키지는 따로 개발·배포한다. tokens를 고치면 lockstep으로 셋 다 같은 버전으로 배포하고, ui가 그 버전의 tokens를 정확히 고정해 의존하므로 앱은 ui만 업데이트하면 된다.
 
 ```sh
 pnpm install

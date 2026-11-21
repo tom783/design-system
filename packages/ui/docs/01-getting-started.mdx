@@ -6,30 +6,31 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # 시작하기
 
-처음 붙이는 화면은 설치 → 공통 CSS → 컴포넌트 순서로 시작합니다. 이 문서는 현재 저장소의 API를 기준으로 합니다. 0.2.0 도그푸딩에서 없었던 컬럼 헬퍼와 Button asChild는 0.3.0 미게시 변경에 포함됩니다.
+처음 붙이는 화면은 설치 → 공통 CSS → 컴포넌트 순서로 시작합니다. 이 문서는 현재 저장소의 API를 기준으로 합니다.
 
 ```sh
-npm install @s2life/ui @s2life/tokens
+npm install @s2life/ui
 ```
 
-앱에는 React와 React DOM 19.3 이상이 있어야 합니다.
+React와 React DOM 19.3 이상은 peer 의존성입니다. 앱에 없다면 `npm install @s2life/ui react react-dom`으로 함께 설치합니다.
+앱에 `@s2life/tokens`를 따로 설치하지 않습니다 — ui가 같은 버전을 고정해 가져오며, 따로 설치하면 버전이 어긋날 수 있습니다.
 
 ## 공통 CSS를 넣는 곳
 
-일반 React 앱은 앱 진입점(예: Vite의 `src/main.tsx`)에서 아래 두 줄을 한 번 불러옵니다.
+일반 React 앱은 앱 진입점(예: Vite의 `src/main.tsx`)에서 아래 한 줄을 한 번 불러옵니다.
 
 ```tsx
-import '@s2life/tokens/tokens.css';
 import '@s2life/ui/styles.css';
 ```
 
-`styles.css`는 토큰·유틸리티·컴포넌트 스타일이 들어 있는 사전 컴파일 CSS입니다. **Tailwind 설치나 설정은 필요 없습니다.** 첫 줄은 토큰을 명시한 것이며 `styles.css`만으로도 토큰이 포함됩니다.
+`styles.css`는 토큰·유틸리티·컴포넌트 스타일이 들어 있는 사전 컴파일 CSS입니다. **Tailwind 설치나 설정은 필요 없습니다.** 토큰 CSS를 따로 불러오지 않습니다.
+
+토큰 파일을 직접 써야 한다면 `@s2life/ui/tokens.css`, Tailwind 이름 매핑은 `@s2life/ui/theme.css`, 기계 판독용 값은 `@s2life/ui/tokens.json`으로 가져옵니다. `styles.css`와 `tokens.css`를 중복으로 불러오지 않습니다.
 
 Next.js App Router는 루트 `app/layout.tsx`에 넣습니다.
 
 ```tsx
 import type { ReactNode } from 'react';
-import '@s2life/tokens/tokens.css';
 import '@s2life/ui/styles.css';
 
 export default function RootLayout({ children }: { children: ReactNode }) {

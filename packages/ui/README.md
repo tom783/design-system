@@ -3,8 +3,11 @@
 B2B 커머스 SaaS용 React 디자인 시스템. React·React DOM 19.3 이상을 앱에서 제공한다.
 
 ```sh
-npm install @s2life/ui @s2life/tokens react react-dom
+npm install @s2life/ui
 ```
+
+React·React DOM 19.3 이상은 peer 의존성이며, 앱에 없다면 `npm install @s2life/ui react react-dom`으로 함께 설치한다.
+앱에 `@s2life/tokens`를 따로 설치하지 않는다 — ui가 같은 버전을 고정해 가져오며, 따로 설치하면 버전이 어긋날 수 있다.
 
 ```tsx
 import { Button, Field, Input } from '@s2life/ui';
@@ -13,6 +16,8 @@ import '@s2life/ui/styles.css';
 ```
 
 CSS는 앱 공통 진입점에서 한 번 불러온다. 토큰·유틸리티·모든 컴포넌트 스타일이 사전 컴파일되어 있어 Tailwind 설치가 필요 없다. Next.js에서는 CSS를 `app/layout.tsx`에서 불러오고, 이벤트·상태를 쓰는 컴포넌트는 클라이언트 컴포넌트에서 사용한다.
+
+토큰 파일을 직접 써야 한다면 `@s2life/ui/tokens.css`, Tailwind 이름 매핑은 `@s2life/ui/theme.css`, 기계 판독용 값은 `@s2life/ui/tokens.json`으로 가져온다. `styles.css`에는 토큰이 이미 포함되어 있으므로 `tokens.css`를 중복으로 불러오지 않는다.
 
 이미 Tailwind v4를 사용하는 앱은 사전 컴파일 CSS 대신 다음 입력을 사용한다. 경로는 `src/app.css` 기준이다.
 
@@ -24,4 +29,4 @@ CSS는 앱 공통 진입점에서 한 번 불러온다. 토큰·유틸리티·�
 
 이 경로는 앱의 Tailwind가 유틸리티를 한 번만 생성한다. `styles.css`를 동시에 불러오지 않는다. `tailwind.css`에는 토큰·테마 브리지·컴포넌트 CSS·공통 base 규칙이 포함된다.
 
-공개 진입점은 루트·`icons`·`styles.css`·`tailwind.css`이며 `internal`은 내보내지 않는다. JS는 ESM, 타입은 `.d.ts`로 제공한다. `@s2life/tokens`, `@s2life/ui`, `@s2life/mcp`는 같은 버전을 사용한다.
+공개 진입점은 루트·`icons`·`styles.css`·`tailwind.css`·`tokens.css`·`theme.css`·`tokens.json`이며 `internal`은 내보내지 않는다. JS는 ESM, 타입은 `.d.ts`로 제공한다. `@s2life/tokens`, `@s2life/ui`, `@s2life/mcp`는 따로 개발·배포하며 같은 버전을 사용한다. tokens 수정도 lockstep으로 배포하고 ui가 그 버전을 고정해 가져오므로 앱은 ui만 업데이트한다.

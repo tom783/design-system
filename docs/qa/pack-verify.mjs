@@ -33,12 +33,13 @@ for (const [i, name] of ['tokens', 'ui', 'mcp'].entries()) {
 const rootPkg = await json(join(root, 'package.json'));
 await save(join(consumer, 'package.json'), {
   name: 's2life-pack-consumer', private: true, type: 'module',
-  dependencies: Object.fromEntries(packages.map((p, i) => [p.name, `file:${tarballs[i]}`]).concat([
+  // 앱은 ui만 설치한다. MCP는 npx 검사에 쓰며 tokens는 ui의 전이 의존성이다.
+  dependencies: Object.fromEntries(packages.map((p, i) => [p.name, `file:${tarballs[i]}`]).filter(([name]) => name !== '@s2life/tokens').concat([
     ['react', rootPkg.dependencies.react], ['react-dom', rootPkg.dependencies['react-dom']],
   ])),
   devDependencies: Object.fromEntries(['vite', 'typescript', '@types/react', '@types/react-dom'].map((name) => [name, rootPkg.devDependencies[name]])),
-  // ui 가 의존하는 @s2life/tokens 는 소비자의 직접 의존과 **따로** 해소된다.
-  // 격리 설치에서는 레지스트리를 보므로 아직 게시되지 않은 버전(배포 준비 중)에서
+  // ui 가 의존하는 @s2life/tokens 는 격리 설치에서 레지스트리를 보므로
+  // 아직 게시되지 않은 버전(배포 준비 중)에서
   // 리허설이 깨진다 — 정작 가장 필요한 순간이다. 트리 전체를 로컬 tarball 로 묶는다.
   pnpm: { overrides: Object.fromEntries(packages.map((pkg, i) => [pkg.name, `file:${tarballs[i]}`])) },
 });
@@ -53,9 +54,22 @@ await rm(join(consumer, 'pnpm-lock.yaml'), { force: true });
 // 평탄화가 누락된 공개 API를 가리지 않게 pnpm의 엄격한 의존성 격리를 사용한다.
 run('pnpm', ['install', '--ignore-workspace', '--no-frozen-lockfile', '--ignore-scripts', '--config.node-linker=isolated', '--config.hoist=false', '--config.shamefully-hoist=false'], consumer);
 run('node', ['--input-type=module', '-e', `import assert from 'node:assert/strict';
-  for (const name of ['@tanstack/react-table', 'tailwindcss']) {
+  for (const name of ['@s2life/tokens/tokens.css', '@tanstack/react-table', 'tailwindcss']) {
     assert.throws(() => import.meta.resolve(name), {code:'ERR_MODULE_NOT_FOUND'}, name + ' 직접 의존성 없음');
   }`], consumer);
+// 저장소 파일이 아니라 실제 tokens tarball과 비교해야 배포 누락·변환도 잡는다.
+run('node', ['--input-type=module', '-e', `import assert from 'node:assert/strict';
+  import { readFileSync } from 'node:fs';
+  import { execFileSync } from 'node:child_process';
+  import tokens from '@s2life/ui/tokens.json' with { type: 'json' };
+  for (const file of ['tokens.css', 'theme.css', 'tokens.json']) {
+    const actual = readFileSync(new URL(import.meta.resolve('@s2life/ui/' + file)));
+    const expected = execFileSync('tar', ['-xOf', process.argv[1], 'package/' + file]);
+    assert.deepEqual(actual, expected, file + '는 tokens tarball과 바이트가 같아야 한다');
+    if (file === 'tokens.json') assert.deepEqual(tokens, JSON.parse(expected.toString('utf8')));
+  }
+  console.log('ui 토큰 하위 경로 3개: tarball 바이트 동일 · JSON import 통과');
+`, tarballs[0]], consumer);
 run('npx', ['--no-install', 'tsc', '--noEmit', '--strict', '-p', 'tsconfig.json'], consumer);
 run('node', ['--input-type=module', '-e', `import assert from 'node:assert/strict'; import {Button,DataTable,Select} from '@s2life/ui'; assert(Button&&DataTable&&Select); assert.throws(()=>import.meta.resolve('@s2life/ui/internal'),{code:'ERR_PACKAGE_PATH_NOT_EXPORTED'});`], consumer);
 run('npx', ['--no-install', 'vite', 'build'], consumer);

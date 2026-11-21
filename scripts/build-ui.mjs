@@ -1,6 +1,6 @@
 import { build } from 'vite';
 import { execFileSync } from 'node:child_process';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { checkBoundaries } from './check-boundaries.mjs';
 
@@ -25,6 +25,10 @@ execFileSync('pnpm', ['exec', 'tsc', '-p', `${ui}tsconfig.build.json`], { cwd: r
 // source 목록을 복제하지 않도록 공통 진입 CSS에서 빌드 입력을 유도한다.
 const styles = await readFile(`${ui}src/styles.css`, 'utf8');
 await mkdir(`${ui}dist`, { recursive: true });
+// pnpm 격리 설치와 직접 <link> 사용도 지원하도록 tokens 원본을 변환 없이 제공한다.
+for (const file of ['tokens.css', 'theme.css', 'tokens.json']) {
+  await copyFile(`${root}packages/tokens/${file}`, `${ui}dist/${file}`);
+}
 const source = styles.replace('@import "tailwindcss";', '@import "tailwindcss" source(none);\n@source "./";');
 await writeFile(`${ui}src/.build.css`, source);
 try {

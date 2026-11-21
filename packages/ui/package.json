@@ -9,6 +9,9 @@
       "import": "./dist/index.js"
     },
     "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./theme.css": "./dist/theme.css",
+    "./tokens.json": "./dist/tokens.json",
     "./icons": {
       "types": "./dist/icons.d.ts",
       "import": "./dist/icons.js"
