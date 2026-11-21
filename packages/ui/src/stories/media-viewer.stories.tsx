@@ -14,8 +14,9 @@ const image = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w
 const captions = `data:text/vtt,${encodeURIComponent('WEBVTT\n\n00:00:00.000 --> 00:01:00.000\n출고 작업 안내 영상입니다.\n')}`;
 const placements = ['bottom-end', 'bottom-start', 'top-end', 'top-start'] as const;
 
-function Demo({ kind = 'image', mode = 'popup', delayed = false, failure = false, disablePictureInPicture = false, title = '출고 안내 미디어' }:
-  { kind?: 'image' | 'video'; mode?: MediaViewerProps['mode']; delayed?: boolean; failure?: boolean; disablePictureInPicture?: boolean; title?: string }) {
+function Demo({ kind = 'image', mode = 'popup', delayed = false, failure = false, disablePictureInPicture = false, title = '출고 안내 미디어', scrollRoom = true }:
+  { kind?: 'image' | 'video'; mode?: MediaViewerProps['mode']; delayed?: boolean; failure?: boolean; disablePictureInPicture?: boolean; title?: string;
+    /** 플로팅이 스크롤에 고정되는지 검증할 여유 높이. 문서 미리보기에서는 빈 공간이라 끈다. */ scrollRoom?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [basic, setBasic] = React.useState(false);
   const [ready, setReady] = React.useState(!delayed);
@@ -60,7 +61,7 @@ function Demo({ kind = 'image', mode = 'popup', delayed = false, failure = false
     ? { type: 'image', src: failure ? 'data:image/png;base64,broken' : image, alt: '출고 상자 규격 안내 이미지', width: 800, height: 600 }
     : { type: 'video', src: '', poster: image, disablePictureInPicture,
         captions: [{ src: captions, lang: 'ko', label: '한국어' }] };
-  return <div ref={rootRef} data-probe="media-demo" style={{ minHeight: mode === 'floating' ? '180vh' : undefined }}>
+  return <div ref={rootRef} data-probe="media-demo" style={{ minHeight: mode === 'floating' && scrollRoom ? '180vh' : undefined }}>
     <div className="flex flex-wrap items-center gap-3">
       <Button data-probe="open-media" onClick={() => { setReady(!delayed); setOpen(true); }}>미디어 열기</Button>
       <Button data-probe="open-basic" onClick={() => setBasic(true)}>기본 Dialog 열기</Button>
@@ -118,9 +119,9 @@ export const 사용법: Story = {
 
 export const 이미지팝업: Story = { render: () => <Demo />, play: ({ canvasElement }) => exercise(canvasElement, 'image', 'popup') };
 export const 동영상팝업: Story = { render: () => <Demo kind="video" />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'popup') };
-export const 이미지플로팅: Story = { render: () => <Demo mode="floating" />, play: ({ canvasElement }) => exercise(canvasElement, 'image', 'floating') };
-export const 동영상플로팅: Story = { render: () => <Demo kind="video" mode="floating" />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'floating') };
-export const 로딩: Story = { render: () => <Demo kind="video" mode="floating" delayed />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'floating', true) };
+export const 이미지플로팅: Story = { render: (_, { viewMode }) => <Demo mode="floating" scrollRoom={viewMode !== 'docs'} />, play: ({ canvasElement }) => exercise(canvasElement, 'image', 'floating') };
+export const 동영상플로팅: Story = { render: (_, { viewMode }) => <Demo kind="video" mode="floating" scrollRoom={viewMode !== 'docs'} />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'floating') };
+export const 로딩: Story = { render: (_, { viewMode }) => <Demo kind="video" mode="floating" delayed scrollRoom={viewMode !== 'docs'} />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'floating', true) };
 export const 오류: Story = { render: () => <Demo failure />, play: ({ canvasElement }) => exercise(canvasElement, 'image', 'popup', false, true) };
 export const PiP불가: Story = { name: 'PiP불가', render: () => <Demo kind="video" disablePictureInPicture />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'popup') };
 export const 긴제목: Story = { render: () => <Demo title={'서울 물류센터의 출고 작업과 포장 규격을 확인하는 안내 미디어 '.repeat(12)} />, play: ({ canvasElement }) => exercise(canvasElement, 'image', 'popup') };

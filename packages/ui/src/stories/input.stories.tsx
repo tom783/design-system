@@ -93,7 +93,8 @@ export const 금액입력: Story = {
 
 // number는 범용 타입 전달 검증용이다. 금액·수량은 위처럼 text + inputMode=numeric을 쓴다.
 export const 숫자휠가드: Story = {
-  render: () => <div style={{ minHeight: '180vh', maxWidth: 400 }}>
+  // 스크롤 여유 높이는 휠 검증용이다. 문서 미리보기에서는 빈 공간이라 끈다.
+  render: (_, { viewMode }) => <div style={{ minHeight: viewMode === 'docs' ? undefined : '180vh', maxWidth: 400 }}>
     <Field label="네이티브 숫자 타입 테스트" description="금액·수량에는 사용하지 않습니다. 휠 시 포커스를 해제하여 값 변경과 스크롤 차단을 피합니다.">
       <Input type="number" defaultValue="10" />
     </Field>

@@ -69,6 +69,29 @@ async function checkProps() {
   }
   return tables.map(table => table.name);
 }
+// 인라인 미리보기 높이는 내용이 정한다. 창 높이를 따라 변하면 min-h-dvh·vh 같은 화면 채우기가
+// 새어 든 것이다(R26 실측: 데코레이터 min-h-dvh 로 Combobox 문서 15,471px, 테스트용 180vh 로 1,620px).
+// 판별력: .bg-canvas 에 min-height:100dvh 를 주입하면 Carousel·Combobox·Dialog 의 모든 미리보기가 걸린다.
+async function previewsFollowContent() {
+  const heights = () => ev(`Array.from(document.querySelectorAll('[data-doc-page] .docs-story'))
+    .filter(node => !node.querySelector('iframe'))
+    .map(node => ({ id: node.querySelector('[id^="story--"]')?.id ?? '', height: Math.round(node.getBoundingClientRect().height) }))`);
+  const settle = () => ev('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))');
+  try {
+    await cdp('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+    await settle();
+    const tall = await heights();
+    await cdp('Emulation.setDeviceMetricsOverride', { width: 1280, height: 600, deviceScaleFactor: 1, mobile: false });
+    await settle();
+    const short = await heights();
+    const changed = tall.filter((entry, index) => Math.abs(entry.height - (short[index]?.height ?? -1)) > 1)
+      .map((entry, index) => `${entry.id.replace('story--', '')} ${entry.height}→${short[tall.indexOf(entry)]?.height}`);
+    assert.deepEqual(changed, [], '문서 미리보기 높이가 창 높이(900→600)에 따라 변하지 않는다');
+  } finally {
+    await cdp('Emulation.clearDeviceMetricsOverride');
+    await settle();
+  }
+}
 async function noOverlays() {
   const opened = await ev(`Array.from(document.querySelectorAll('[role="dialog"], :popover-open'))
     .filter(node => node.getClientRects().length > 0 && getComputedStyle(node).visibility !== 'hidden')
@@ -191,6 +214,7 @@ try {
       assert.deepEqual(structure.intents, topLevel, 'Intent는 페이지의 최상위 이름마다 한 번만 렌더한다');
       assert.equal(structure.primaryBeforeProps, true, '사용 예시는 첫 props 표보다 위에 있다');
       await noOverlays();
+      await previewsFollowContent();
       if (page.title === 'Components/Guide') {
         assert.equal(await ev(`Array.from(document.querySelectorAll('[data-story-block]')).every(block => !!block.querySelector('iframe'))`), true, 'Guide 스토리는 모두 iframe으로 격리한다');
       }
