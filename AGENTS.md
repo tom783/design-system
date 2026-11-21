@@ -209,6 +209,9 @@ iframe 격리를 쓰는 스토리는 부모가 `viewMode=docs` 일 때 play 를 
 
 ## 아직 없는 것
 
-앱 셸(사이드 내비게이션·페이지 머리) · 페이지네이션 · 검색 입력(앞쪽 아이콘) · 파일 업로드 ·
-옆 패널(Sheet) — P1. 날짜+시간 · KPI 지표 타일 · 세그먼트 컨트롤 · 단계 표시 — P2.
+날짜+시간 · KPI 지표 타일 · 세그먼트 컨트롤 · 단계 표시 — P2.
+P1(검색 입력 R33 · 앱 셸 R34 · 페이지네이션 R35 · 옆 패널 R36 · 파일 업로드 R37)은 2026-11-22 완료.
 근거와 순서는 `docs/research/ui-coverage-review.md` (2026-11-21).
+
+알려진 정리 대상: loading·data-table·state·media-viewer·thumbnail·avatar CSS 에 `ds-` 없는 클래스 39개
+(`.avatar`·`.thumbnail` 등 — 소비자 앱 클래스와 충돌). 새 CSS 클래스는 반드시 `ds-` 로 시작한다.
