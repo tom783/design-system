@@ -66,7 +66,7 @@ export const KPI타일: Story = {
             </small>
           </span>
           <span
-            className={`flex items-center gap-1 font-mono text-[length:var(--text-caption)] font-medium ${
+            className={`tabular flex items-center gap-1 font-sans text-[length:var(--text-caption)] font-medium ${
               k.up ? 'text-success-ink' : 'text-danger-ink'
             }`}
           >
@@ -93,7 +93,7 @@ export const 주문패널: Story = {
       description: {
         story:
           '컴포넌트들이 실제 화면에서 함께 쓰일 때 여백·정렬·대비가 유지되는지 확인한다. ' +
-          '금액 열은 고정폭 숫자 + 우측 정렬 + 최소 너비 128px 로 자릿수가 달라도 비교가 가능하다.',
+          '금액 열은 고정폭 숫자 + 우측 정렬 + 최소 너비 140px 로 자릿수가 달라도 비교가 가능하다.',
       },
     },
   },
@@ -143,7 +143,7 @@ export const 주문패널: Story = {
       </div>
       <CardFooter>
         <span>1,284건 중 1–4</span>
-        <span className="tabular font-mono">페이지 1 / 321</span>
+        <span className="tabular font-sans">페이지 1 / 321</span>
       </CardFooter>
     </Card>
   ),

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Button, DataTable, createDataTableColumnHelper, Select, SelectTrigger, SelectValue,
   SelectContent, SelectItem, Field, Input, Tooltip, Peek, type ButtonProps } from '@s2life/ui';
 import { Check } from '@s2life/ui/icons';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '@s2life/ui/styles.css';
 
 const typed: ButtonProps = { variant: 'primary' };

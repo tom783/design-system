@@ -37,7 +37,7 @@ export const 경계선대비비교: Story = {
   render: () => (
     <div className="grid max-w-[720px] gap-6 md:grid-cols-2">
       <div className="flex flex-col gap-2">
-        <p className="text-danger-ink font-mono text-[11px] tracking-[0.08em] uppercase">
+        <p className="text-danger-ink tabular font-sans text-[11px] tracking-[0.08em] uppercase">
           neutral-200 · 1.31:1 · 위반
         </p>
         <input
@@ -47,7 +47,7 @@ export const 경계선대비비교: Story = {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <p className="text-success-ink font-mono text-[11px] tracking-[0.08em] uppercase">
+        <p className="text-success-ink tabular font-sans text-[11px] tracking-[0.08em] uppercase">
           border-input · 4.17:1 · 통과
         </p>
         <Input placeholder="주문번호 검색" />

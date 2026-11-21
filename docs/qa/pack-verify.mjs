@@ -27,15 +27,17 @@ for (const [i, name] of ['tokens', 'ui', 'mcp'].entries()) {
   const tarball = join(packDir, `s2life-${name}-${packages[i].version}.tgz`);
   const listing = execFileSync('tar', ['-tzf', tarball], { encoding: 'utf8' });
   assert(!/\.test\.|\.stories\.|package\/src\//.test(listing), `${name}: 테스트·원본 소스는 배포에서 제외`);
+  assert(!/\.(?:woff2?|ttf|otf)\b/i.test(listing), `${name}: 글꼴 파일은 앱이 제공한다`);
   if (name === 'mcp') assert(['match.mjs', 'catalog.mjs', 'manifest.json'].every(file => listing.includes(`package/${file}`)));
   tarballs.push(tarball);
 }
 const rootPkg = await json(join(root, 'package.json'));
 await save(join(consumer, 'package.json'), {
   name: 's2life-pack-consumer', private: true, type: 'module',
-  // 앱은 ui만 설치한다. MCP는 npx 검사에 쓰며 tokens는 ui의 전이 의존성이다.
+  // 앱은 안내대로 ui와 pretendard를 설치한다. MCP는 npx 검사, tokens는 ui의 전이 의존성이다.
   dependencies: Object.fromEntries(packages.map((p, i) => [p.name, `file:${tarballs[i]}`]).filter(([name]) => name !== '@s2life/tokens').concat([
     ['react', rootPkg.dependencies.react], ['react-dom', rootPkg.dependencies['react-dom']],
+    ['pretendard', rootPkg.devDependencies.pretendard],
   ])),
   devDependencies: Object.fromEntries(['vite', 'typescript', '@types/react', '@types/react-dom'].map((name) => [name, rootPkg.devDependencies[name]])),
   // ui 가 의존하는 @s2life/tokens 는 격리 설치에서 레지스트리를 보므로
@@ -94,6 +96,7 @@ assert.equal(imports.length, actualFiles.length, '모든 컴포넌트 CSS가 단
 for (const path of actualFiles) assert(imports.some((item) => join(root, 'packages/ui/src', item) === path));
 for (const [name, marker] of Object.entries(markers)) assert(css.replaceAll('"', '').includes(marker), `${name} CSS가 누락됨`);
 assert(!/@import|@tailwind|@source/.test(css), '사전 컴파일 CSS에는 미해결 지시문이 없어야 한다');
+assert(!/@font-face/i.test(css), 'ui CSS는 글꼴 면을 포함하지 않는다');
 assert.match(css, /--control-h-md/);
 const js = await readFile(join(installed, 'ui/dist/index.js'), 'utf8');
 assert(js.startsWith('"use client";'));
@@ -107,12 +110,22 @@ await writeFile(join(consumer, 'src/tailwind.css'), `@import "${join(root, 'node
 @source "../node_modules/@s2life/ui/dist";
 @source "../main.tsx";
 `);
-run('pnpm', ['exec', 'tailwindcss', '-i', join(consumer, 'src/tailwind.css'), '-o', join(consumer, 'dist/combined.css'), '--minify']);
-const combined = await readFile(join(consumer, 'dist/combined.css'), 'utf8');
+run('pnpm', ['exec', 'tailwindcss', '-i', join(consumer, 'src/tailwind.css'), '-o', join(consumer, 'src/combined.css'), '--minify']);
+const combined = await readFile(join(consumer, 'src/combined.css'), 'utf8');
 assert.equal([...combined.matchAll(/\.inline-flex\{/g)].length, 1, 'Tailwind 유틸리티는 한 번만 생성되어야 한다');
 for (const marker of Object.values(markers)) assert(combined.replaceAll('"', '').includes(marker));
 console.log('기존 Tailwind v4 통합 CSS 빌드 통과');
 
+// CSS만 갈아 끼우면 첫 페이지의 로드된 글꼴이 다음 경로의 누락을 가린다.
+// 별도 문서로 이동해 Tailwind 앱도 자신의 CSS import로 웹폰트를 로드하게 한다.
+const main = await readFile(join(consumer, 'main.tsx'), 'utf8');
+assert(main.includes("import '@s2life/ui/styles.css';"));
+await writeFile(join(consumer, 'main-tailwind.tsx'), main.replace("import '@s2life/ui/styles.css';", "import './src/combined.css';"));
+const index = await readFile(join(consumer, 'index.html'), 'utf8');
+try {
+  await writeFile(join(consumer, 'index.html'), index.replace('/main.tsx', '/main-tailwind.tsx'));
+  run('npx', ['--no-install', 'vite', 'build', '--outDir', 'dist/tailwind', '--base', '/tailwind/'], consumer);
+} finally { await writeFile(join(consumer, 'index.html'), index); }
 
 // npm exec는 설치된 패키지의 단일 bin을 선택한다. 레지스트리의 미배포 버전은 요청하지 않는다.
 const proc = spawn('npx', ['--no-install', '@s2life/mcp'], { cwd: consumer, env, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -154,8 +167,26 @@ if (!process.exitCode) {
     }
     browser = await launchBrowser({ port: 9447, outDir: join(root, '.qa-shots/pack') });
     const { cdp, ev, sleep } = browser;
+    const verifyFont = async (path) => {
+      // DOM 생성 직후는 첫 레이아웃 전일 수 있어, 먼저 본문 레이아웃을 확정한다.
+      await ev('document.body.offsetWidth; document.fonts.ready.then(() => true)');
+      const font = await ev(`(() => {
+        const text = document.querySelector('main');
+        const unquote = (family) => family.trim().replace(/^['"]|['"]$/g, '');
+        return {
+          korean: /[가-힣]/.test(text.innerText),
+          firstFamily: unquote(getComputedStyle(text).fontFamily.split(',')[0]),
+          loaded: [...document.fonts].filter(face => unquote(face.family) === 'Pretendard Variable' && face.status === 'loaded').length,
+        };
+      })()`);
+      assert(font.korean, `${path}: 한글을 표시해 동적 서브셋 다운로드를 유도해야 한다`);
+      assert(font.loaded > 0, `${path}: Pretendard Variable 면이 하나 이상 실제 로드되어야 한다`);
+      assert.equal(font.firstFamily, 'Pretendard Variable', `${path}: 본문의 첫 계산 글꼴`);
+      console.log(`${path}: Pretendard Variable ${font.loaded}면 로드 · 본문 첫 글꼴 확인`);
+    };
     await cdp('Page.navigate', { url: 'http://127.0.0.1:6107' });
     for (let i = 0; i < 80 && !await ev('!!document.querySelector("#primary")'); i++) await sleep(100);
+    await verifyFont('기본 CSS 앱');
     assert.equal(await ev('document.querySelector("#primary").getBoundingClientRect().height'), 38);
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=field]")).display'), 'flex');
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=field-error]")).minHeight'), '20px');
@@ -174,17 +205,20 @@ if (!process.exitCode) {
     assert(await ev('!!document.querySelector("[role=listbox]")'), 'Radix Select가 소비 앱에서 열려야 한다');
     assert.deepEqual(browser.errors(), []);
     await browser.shot('consumer');
-    await ev(`new Promise((resolve, reject) => {
-      const old = document.querySelector('link[rel=stylesheet]');
-      const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = '/combined.css';
-      link.onload = () => { old.remove(); resolve(true); }; link.onerror = reject; document.head.append(link);
-    })`);
+    await cdp('Page.navigate', { url: 'http://127.0.0.1:6107/tailwind/' });
+    for (let i = 0; i < 80 && !await ev('location.pathname === "/tailwind/" && !!document.querySelector("#primary")'); i++) await sleep(100);
+    await verifyFont('Tailwind 앱');
+    await ev('document.querySelector("#tooltip-trigger").focus()');
+    await sleep(250);
+    await ev('document.querySelector("#peek-trigger").click()');
+    await sleep(250);
     assert.equal(await ev('document.querySelector("#primary").getBoundingClientRect().height'), 38);
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=field]")).display'), 'flex');
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=peek]")).paddingTop'), '16px');
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=guide-tooltip]")).paddingTop'), '8px');
+    assert.deepEqual(browser.errors(), []);
     await browser.shot('consumer-tailwind');
 
-    console.log('배포 리허설 검사 전부 통과: 타입·ESM·CSS·MCP·Tailwind 없는 앱 실제 렌더');
+    console.log('배포 리허설 검사 전부 통과: 타입·ESM·CSS·MCP·기본/Tailwind 앱 실제 렌더·Pretendard 로드');
   } finally { browser?.close(); server.kill(); }
 }

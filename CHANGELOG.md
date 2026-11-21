@@ -19,6 +19,11 @@
 
 ### 바뀐 동작
 
+- 기본 글꼴을 Pretendard Variable로 바꿨다. 차트 숫자·진행률 퍼센트와 숫자 정렬 스토리는 본문 글꼴의 `tabular-nums`를 쓰며, `--font-mono`는 코드 표시용 시스템 고정폭이다.
+  이전 IBM Plex 는 Storybook 에서만 로드되고 소비 앱에는 오지 않았다(도그푸딩 3 G7: 로드된 웹폰트 0개).
+  글꼴 파일은 패키지에 넣지 않는다 — 앱이 `pretendard` 를 불러오지 않으면 시스템 글꼴로 그려진다.
+- 금액 칸 최소 폭 `--cell-min-w-money` 128px → **140px**. `₩1,248,500,000` 을 Pretendard tabular 14px 로
+  잰 폭 111.73px + 좌우 여백 28px (브라우저 실측). IBM Plex Mono 기준값으로는 12px 모자랐다.
 - **DataTable: `data` 에서 빠진 행은 선택에서 자동 해제된다.** 필터를 바꿔도 화면에 없는 행이 선택된 채 남아
   일괄 작업 대상이 되던 문제(도그푸딩 3: 앱 1,250건 / 툴바 0개). 제어형이면 `onSelectedIdsChange(교집합)` 를
   한 번 부른다. `state` 가 `loading`·`error` 일 때는 유지한다. 행을 덧붙이는 무한 스크롤에는 영향이 없다.
@@ -49,9 +54,10 @@
 
 ### 문서
 
-- React 앱 설치 안내를 `npm install @s2life/ui` 하나와 `@s2life/ui/styles.css` 한 줄로 통일했다. 토큰 직접 접근도 ui 하위 경로를 사용하며, tokens는 ui가 같은 버전으로 고정해 가져온다.
+- 앱의 Pretendard 설치·CSS import와 Next.js App Router·Vite 진입점 안내를 추가했다. 글꼴 파일은 앱이 호스팅하며, 배포 리허설이 기본·Tailwind 경로에서 실제 로드를 검사한다.
+- React 앱 설치 안내를 `npm install @s2life/ui pretendard`와 Pretendard·`@s2life/ui/styles.css` import 두 줄로 통일했다. 토큰 직접 접근도 ui 하위 경로를 사용하며, tokens는 ui가 같은 버전으로 고정해 가져온다.
   이전 "시작하기"가 안내하던 `import '@s2life/tokens/tokens.css'` 는 `styles.css` 와 중복이었고,
-  pnpm 에서 ui 만 설치하면 해석에 실패해 빌드가 깨졌다. 배포 리허설이 이제 ui 만 설치한 앱으로 검증한다.
+  pnpm 에서 ui 만 설치하면 해석에 실패해 빌드가 깨졌다. 배포 리허설은 이제 tokens 직접 의존 없이 ui·pretendard를 설치한 앱으로 검증한다.
 - 모든 `Components/*` 에 문서 페이지: 사용 의도 → 사용법(코드 보기) → props 표 → 스토리.
   props 표는 Storybook docgen(26개 중 12개만 채워짐)이 아니라 MCP 매니페스트에서 그린다.
   공개 컴포넌트 101개 전부 포함. Dialog·Tabs·Breadcrumb 문서 스토리 신설.

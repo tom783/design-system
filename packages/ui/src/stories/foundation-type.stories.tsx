@@ -27,8 +27,8 @@ export const 타입스케일: StoryObj = {
     <div className="flex max-w-[980px] flex-col gap-7">
       {[...type].reverse().map((t) => (
         <div key={t.token} className="flex flex-col gap-1.5">
-          <div className="text-fg-subtle flex flex-wrap items-baseline gap-x-3 font-mono text-[11px] tracking-[0.08em] uppercase">
-            <span className="text-fg-muted">{t.token}</span>
+          <div className="text-fg-subtle tabular flex flex-wrap items-baseline gap-x-3 font-sans text-[11px] tracking-[0.08em] uppercase">
+            <span className="text-fg-muted font-mono">{t.token}</span>
             <span>{t.size}px</span>
             <span>행간 {t.lineHeight}px ({t.lineHeightPct}%)</span>
             <span>자간 {t.letterSpacing}</span>
@@ -68,7 +68,7 @@ export const 본문가독성: StoryObj = {
           { label: '제안 · 본문 160%', lh: '24px', tone: 'text-success-ink' },
         ].map((v) => (
           <div key={v.label} className="flex flex-col gap-2">
-            <p className={`font-mono text-[11px] tracking-[0.08em] uppercase ${v.tone}`}>
+            <p className={`tabular font-sans text-[11px] tracking-[0.08em] uppercase ${v.tone}`}>
               {v.label}
             </p>
             <p className="border-line-strong rounded-[var(--radius-md)] border p-4"
@@ -88,7 +88,7 @@ export const 간격: StoryObj = {
     <div className="flex flex-col gap-2.5">
       {(tokens.spacing as number[]).filter((n) => n > 0).map((n) => (
         <div key={n} className="flex items-center gap-3">
-          <span className="text-fg-muted tabular w-16 shrink-0 font-mono text-[length:var(--text-caption)]">
+          <span className="text-fg-muted tabular w-16 shrink-0 font-sans text-[length:var(--text-caption)]">
             {n}px
           </span>
           <div className="bg-action h-3.5 rounded-[2px]" style={{ width: `${n}px` }} />
@@ -105,8 +105,7 @@ export const 치수: StoryObj = {
       description: {
         story:
           '자연어 "여백을 넉넉하게"를 역산 가능한 수치로 바꾼 값들이다. ' +
-          '금액 칸 128px 은 ₩1,248,500,000(13자)을 IBM Plex Mono 14px 고정폭으로 ' +
-          '조판한 폭에 좌우 여백 28px 을 더해 산출했다.',
+          '금액 칸 140px 은 ₩1,248,500,000 을 Pretendard tabular 14px 로 잰 폭(최대 111.73px) + 좌우 여백 28px 이다 (DESIGN.md §4).',
       },
     },
   },
@@ -118,7 +117,7 @@ export const 치수: StoryObj = {
           className={`flex items-baseline justify-between gap-4 px-3.5 py-2 ${i ? 'border-line border-t' : ''}`}
         >
           <span className="text-fg-muted font-mono text-[length:var(--text-body-sm)]">{k}</span>
-          <span className="text-fg tabular font-mono text-[length:var(--text-body-sm)] font-medium">{v}</span>
+          <span className="text-fg tabular font-sans text-[length:var(--text-body-sm)] font-medium">{v}</span>
         </div>
       ))}
     </div>

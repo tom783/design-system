@@ -38,7 +38,7 @@
 .loading-progress { display: grid; min-width: 0; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .loading-progress-labels { display: flex; align-items: baseline; gap: var(--space-12); min-width: 0; }
 .loading-progress-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.loading-progress-percent { flex-shrink: 0; min-width: 4ch; text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.loading-progress-percent { flex-shrink: 0; min-width: 4ch; text-align: right; font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
 /* 9.1의 진행 트랙 규격은 6px. 숫자 폭은 100%까지 미리 확보한다. */
 .loading-progress-bar { height: 6px; overflow: hidden; border-radius: var(--radius-full); background: var(--progress-track); }
 .loading-progress-fill { display: block; height: 100%; background: var(--progress-fill); border-radius: inherit; }

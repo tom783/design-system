@@ -3784,11 +3784,11 @@
       "category": "sizing",
       "purpose": "sizing: cell-min-w-money",
       "light": {
-        "value": "128px",
+        "value": "140px",
         "ref": null
       },
       "dark": {
-        "value": "128px",
+        "value": "140px",
         "ref": null
       },
       "tailwind": []

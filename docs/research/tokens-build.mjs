@@ -310,8 +310,9 @@ const SIZING = {
   'control-h-sm': '32px', 'control-h-md': '38px', 'control-h-lg': '44px',
   'row-h-compact': '36px', 'row-h-default': '40px', 'row-h-comfortable': '48px',
   'cell-px': '14px',
-  // ₩1,248,500,000 (13자) 를 IBM Plex Mono 14px 고정폭으로 조판한 폭 + 좌우 여백 28px
-  'cell-min-w-money': '128px', 'cell-min-w-text': '80px',
+  // R30 브라우저 실측: ₩1,248,500,000 @ Pretendard Variable 14px tnum = 109.41px(400)·111.73px(500).
+  // ceil(111.73) + 좌우 여백 28 = 140px. IBM Plex Mono 기준 128px로는 12px 모자랐다 (DESIGN.md §4).
+  'cell-min-w-money': '140px', 'cell-min-w-text': '80px',
   'tap-min': '44px', 'field-min-w': '120px', 'card-min-w': '240px',
   // 차트 기본 높이. 스켈레톤이 실제 차트와 같은 높이를 쓰려면 양쪽이 같은 값을
   // 봐야 한다 — 한쪽에 숫자를 복사해두면 다음에 바꿀 때 어긋난다(DESIGN.md 9.2).
@@ -560,8 +561,11 @@ for (const [n, size, lh, ls, w, desc] of TYPE) {
   css += `    --text-${pad(n + '-ls', 12)}: ${pad(ls, 6)};  --text-${pad(n + '-weight', 15)}: ${pad(w, 6)};\n`;
 }
 css += `
-    --font-sans: 'IBM Plex Sans KR', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    /* 앱이 로드한 Pretendard를 우선한다. 없으면 OS UI 서체로 라틴 문맥을 유지하고,
+       그 서체에 한글이 없을 때 macOS·Windows 기본 한글 서체 순으로 폴백한다. */
+    --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    /* 코드 표시 전용. 숫자 정렬은 본문 서체의 tabular-nums를 사용한다. */
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
     /* ── 간격 · 4px 그리드 ────────────────────────────────────────────────── */
 `;

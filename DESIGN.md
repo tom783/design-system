@@ -294,8 +294,18 @@ Storybook `Foundation/활자와 간격 → 본문 가독성 비교`에서 나란
 
 | 역할 | 서체 | 이유 |
 |---|---|---|
-| 본문 | **IBM Plex Sans KR** | 한글·라틴 금속활자 균형. 업무 도구의 격식 |
-| 수치 | **IBM Plex Mono** | 고정폭 숫자. 금액 자릿수가 열로 정렬된다 |
+| 본문 | **Pretendard Variable** (`Pretendard` 폴백) | 한글 가독성과 라틴·숫자의 균형, 가변 굵기 100–900. SIL OFL-1.1 |
+| 수치 | **Pretendard Variable + `tnum`** | 본문과 같은 서체에서 고정폭 숫자를 켜 금액 자릿수를 정렬한다 |
+| 코드 | **시스템 고정폭** (`ui-monospace`·SF Mono·Menlo·Consolas 등) | 코드·식별자를 읽는 용도. 별도 웹폰트를 요구하지 않는다 |
+
+글꼴 파일은 용량과 호스팅 방식을 앱이 정하도록 패키지에 넣지 않는다. 앱은 `pretendard`를
+설치하고 `pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css`를 공통 진입점에서
+import한다. Next.js App Router는 루트 `app/layout.tsx`, Vite는 `src/main.tsx`다.
+Storybook도 같은 import를 쓴다. 번들러가 화면에 쓰인 글자의 동적 서브셋을 자체 호스팅하므로
+외부 CDN이 필요 없다. 생략하면 시스템 글꼴로 그려져 숫자 폭·줄바꿈이 달라진다.
+
+R30 실측(브라우저, Storybook 에서 Pretendard Variable 로드 확인 후): 13·14px × 굵기 400·500·600·700 모두
+`tabular-nums` 를 켜면 0–9 의 최대 폭 차이가 0px, 끄면 14px/400 에서 2.6px. 고정폭 숫자 글꼴을 따로 두지 않는다.
 
 숫자가 열로 정렬되는 모든 곳에서 `font-variant-numeric: tabular-nums`를 적용한다
 (`.tabular` 유틸리티). **금액 자릿수가 흔들리면 비교가 불가능해진다** — 테이블에서
@@ -352,12 +362,15 @@ Tailwind의 기본 간격 스케일(`--spacing: 0.25rem` = 4px 배수)이 이미
 | 입력 필드 | 0 12px | 38px | 120px | 가로 스크롤 |
 | 상태 칩 | 2px 10px | 22px | auto | 말줄임 + `title` 전체값 |
 | 테이블 셀 (기본) | 0 14px | 40px | 80px | 말줄임 + 툴팁 |
-| 테이블 셀 (금액) | 0 14px | 40px | **128px** | 우측 정렬 · 고정폭 숫자 |
+| 테이블 셀 (금액) | 0 14px | 40px | **140px** | 우측 정렬 · 고정폭 숫자 |
 | 카드 | 16~20px | — | 240px | 내부 스크롤 |
 
-**금액 칸 128px의 산출 근거:** `₩1,248,500,000`(13자)을 IBM Plex Mono 14px
-고정폭으로 조판한 폭 + 좌우 여백 28px. 통화가 바뀌거나 서체가 바뀌면 같은 방식으로
-다시 계산한다. 수치의 출처를 남겨두면 나중에 조절할 수 있다.
+**금액 칸 140px의 산출 근거:** R30 브라우저 실측(Pretendard 로드 확인 후). 계산식은 `ceil(max(₩1,248,500,000 전체 조판 폭 @
+Pretendard Variable 14px/400·500, tabular-nums)) + 좌우 여백 28px`이다. 통화 기호·쉼표는
+숫자와 폭이 다를 수 있으므로 13 × 숫자 한 글자 폭으로 계산하지 않는다. 웹폰트 로드 후
+실제 셀과 같은 자간에서 측정한다. 결과 109.41px(400)·111.73px(500) → `ceil(111.73) + 28 = 140px`.
+이전 IBM Plex Mono 기준 128px은 Pretendard 숫자에서 12px 모자랐다. `tabular-nums` 를 켜면 0–9 폭 차이가
+13·14px, 400–700 모두 0px이고 끄면 2.6px다 — 금액 정렬은 이 설정에 기댄다.
 
 **버튼 라벨은 줄바꿈하지 않는다.** `whitespace-nowrap` + `min-w-*`로 아이콘과
 겹치지 않게 하고, 컨테이너를 넘치면 `truncate`로 말줄임한다. 줄바꿈을 허용하면
@@ -514,7 +527,7 @@ Canvas 가 불가능한 것이 아니라, **그 배선을 영구히 소유하는
    색 구분은 작동하지 않는다.
 3. **축·격자는 `--grid`·`--axis` 를 쓰고 데이터보다 약하게 둔다.**
    격자가 데이터선보다 진하면 안 된다.
-4. **숫자 레이블은 고정폭**(`--font-mono` + `tabular-nums`).
+4. **숫자 레이블은 고정폭 숫자**(`--font-sans` + `tabular-nums`).
 5. **`<svg role="img">` + `aria-label`** 에 차트가 말하는 결론을 한 문장으로 적는다.
    "7일 주문 추이" 가 아니라 "11월 8일 980건에서 11월 14일 1,284건으로 증가".
 6. **애니메이션은 진입 시 1회**, `--dur-normal` 이내. 데이터 갱신마다 전체를
@@ -1295,6 +1308,7 @@ shadcn 에서 받아온 코드는 "우리 규약으로 번역해 우리가 소�
 소비자에게는 두 경로를 모두 제공한다:
 
 ```js
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'; // 앱이 글꼴을 호스팅
 import '@s2life/ui/styles.css';   // 사전 컴파일 60KB. Tailwind 가 없어도 된다
 ```
 ```css
@@ -1331,6 +1345,8 @@ eslint 를 쓰지 않는다 — 지금까지와 같은 생성기 게이트 방�
 - **Tailwind 가 없는 앱에서** 실제로 렌더되는가
 - `styles.css` 한 줄로 Tooltip·Field·Peek 이 스타일을 받는가 (15.5 의 회귀 테스트)
 - Tailwind 통합 경로에서도 같은 결과가 나오는가
+- 두 경로 모두 한글이 있는 화면에서 `document.fonts.ready` 뒤 Pretendard Variable 면이
+  하나 이상 `loaded`이고, 본문 계산 글꼴의 첫 항목도 Pretendard Variable인가
 - `npx @s2life/mcp` 가 `initialize` 에 응답하는가
 
 `pnpm qa` 에 들어 있다.
@@ -1608,6 +1624,8 @@ webkit 지우기 UI는 자체 버튼과 겹치지 않도록 숨긴다.
 
 **date는 통과시키되 권장하지 않는다.** 사전 실측 너비는 125px로 같은 조건 text 153px와
 달랐다. value는 `2026-11-15`지만 valueAsDate는 UTC 자정(한국에서는 09:00)이다.
+(125·153px은 스타일 없는 네이티브 요소의 브라우저 기본 치수다 — 빈 문서·글꼴 Arial 에서 R30 에 그대로 재현됐다.
+디자인 글꼴과 무관하므로 Pretendard 전환 뒤에도 유효하다. 우리 Input 안에서는 둘 다 칸 폭을 채워 같다.)
 로컬 날짜로 꺼내면 시간대에 따라 하루가 어긋난다. 검증 문구도 영어다. 날짜 문자열을
 유지하는 DatePicker를 우선 쓰고(§15), 네이티브 타입이 꼭 필요하면 value 문자열만 쓴다.
 
@@ -1624,6 +1642,9 @@ autoGrow 기본값은 false이며 기본 resize:vertical을 보존한다. true�
 
 **IME 조합 중에도 자란다.** 사전 실측은 자동 높이 25→74px, 한글 조합의 줄바꿈 경계는
 27→44px로 한 번 증가했고 확정 후에도 44px로 유지됐다. §11.2가 금지하는 것은 값 변형이다.
+(25→74·27→44px은 R16 의 컴포넌트 이전 시제품 측정이다. 동작 — 늘고, 조합 중에도 늘고, 확정 뒤 같다 — 은
+input-render-verify 가 관계로 단언하며 Pretendard 에서 통과했다. R30 컴포넌트 실측(자동높이 스토리, 폭 480px):
+빈칸 38px → 4줄 98px, `'한글 조합 중 '×30` 118px.)
 높이는 값이 아니므로 composition 플래그로 높이 변경을 막지 않는다.
 
 FormFlow의 기존 textarea 분기를 **그대로** 유지한다. Enter는 줄바꿈,
@@ -1869,6 +1890,8 @@ aria-selected는 실제 선택, data-selected와 aria-activedescendant는 활성
 
 줄바꿈 개수는 라벨 길이에 영향을 받는다. 하네스는 4글자 사업장 라벨과 320px 폭을
 고정해 위 수치를 그대로 단언하고, 긴 라벨은 별도로 말줄임·전체값 보존을 검사한다.
+R30 실측(Pretendard 로드 확인): 1·2·3개 38px(1줄), 4개 68px(2줄), 8개 68px(3줄 중 2줄 표시), 12개 68px(4줄) —
+위 표와 같다.
 칩 묶음은 현재 항목만 tabindex=0인 roving tabindex로 Tab 정지점 하나다.
 좌우 화살표는 이웃, Delete/Backspace는 제거 후 다음 이웃(없으면 이전), 마지막 제거는
 입력으로 포커스한다. 빈 입력 Backspace는 첫 회 마지막 칩 강조만, 두 번째 제거다.

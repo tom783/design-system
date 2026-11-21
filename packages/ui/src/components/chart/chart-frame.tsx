@@ -51,7 +51,7 @@ export function ChartFrame({ title, summary, legend = [], empty, state = 'idle',
 }
 
 // DESIGN.md 3절의 최소 13px와 수치 전용 서체를 SVG에도 동일하게 적용한다.
-export const numericStyle: CSSProperties = { fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' };
+export const numericStyle: CSSProperties = { fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums' };
 export const axisLabel = () => ({ fill: 'var(--chart-axis)', fontSize: 13, style: numericStyle });
 export const dateFormat = (date: Date) => `${date.getMonth() + 1}/${date.getDate()}`;
 // SVG 좌표 계산에는 숫자가 필요하다. 폭 측정 후 호출하므로 SSR에서는 DOM을 읽지 않는다.

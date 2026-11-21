@@ -5,23 +5,26 @@ B2B 커머스 SaaS용 토큰·React 컴포넌트·읽기 전용 MCP 서버를 �
 ## 기본 설치: Tailwind 없이 사용
 
 ```sh
-npm install @s2life/ui
+npm install @s2life/ui pretendard
 ```
 
-React·React DOM 19.3 이상은 peer 의존성이며, 앱에 없다면 `npm install @s2life/ui react react-dom`으로 함께 설치한다.
+React·React DOM 19.3 이상은 peer 의존성이며, 앱에 없다면 `npm install @s2life/ui pretendard react react-dom`으로 함께 설치한다.
 앱에 `@s2life/tokens`를 따로 설치하지 않는다 — ui가 같은 버전을 고정해 가져오며, 따로 설치하면 버전이 어긋날 수 있다.
 
-앱의 공통 진입점에서 CSS를 한 번 불러온다. Next.js App Router에서는 `app/layout.tsx`, Vite에서는 `src/main.tsx`에 둔다. 상태·이벤트를 쓰는 Next.js 컴포넌트는 클라이언트 컴포넌트에서 사용한다.
+앱의 공통 진입점에서 아래 두 줄의 CSS를 한 번 불러온다. Next.js App Router에서는 루트 `app/layout.tsx`, Vite에서는 `src/main.tsx`에 둔다. 상태·이벤트를 쓰는 Next.js 컴포넌트는 클라이언트 컴포넌트에서 사용한다.
 
 ```tsx
 import { Button, Field, Input } from '@s2life/ui';
 import { Check } from '@s2life/ui/icons';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '@s2life/ui/styles.css';
 
 export function Example() {
   return <Field label="상품명"><Input /></Field>;
 }
 ```
+
+글꼴 파일은 용량과 호스팅 방식을 앱이 정하도록 ui 패키지에 넣지 않는다. 위 Pretendard CSS는 화면에 쓰인 글자의 동적 서브셋을 번들러가 앱에서 자체 호스팅하게 하며 외부 CDN을 사용하지 않는다. 불러오지 않으면 시스템 글꼴로 그려져 숫자 폭·줄바꿈이 디자인과 달라진다. Pretendard는 Google Fonts에 없어 `next/font/google` 대신 위 CSS import를 사용한다.
 
 `styles.css`는 토큰·Tailwind 유틸리티·컴포넌트 CSS를 모두 사전 컴파일한 자립형 파일이다. 소비 앱에 Tailwind나 PostCSS 설정이 필요하지 않다. JS에서 CSS를 자동으로 불러오지 않으므로 위 import를 생략하면 스타일이 적용되지 않는다. `@s2life/ui/internal`은 공개 API가 아니다.
 
@@ -37,7 +40,7 @@ export function Example() {
 @source "../node_modules/@s2life/ui/dist";
 ```
 
-`tailwind.css`에는 토큰·테마 브리지·컴포넌트 원본 CSS·공통 base 규칙이 포함된다. 이 경로에서는 `@s2life/ui/styles.css`를 함께 불러오지 않는다.
+`tailwind.css`에는 토큰·테마 브리지·컴포넌트 원본 CSS·공통 base 규칙이 포함된다. 이 경로에서는 `@s2life/ui/styles.css` 대신 앱 진입점에서 위 `pretendard` CSS와 `./app.css`를 불러온다.
 
 ## MCP 설치
 

@@ -47,9 +47,9 @@ function Ramp({ name }: { name: string }) {
         {steps.map(([step, v]) => (
           <div key={step} className="min-w-0 flex-1">
             <div className="h-14" style={{ background: v.hex }} />
-            <div className="border-line text-fg-muted flex flex-col gap-0.5 border-t p-1.5 text-center font-mono text-[10px] leading-3">
+            <div className="border-line text-fg-muted tabular flex flex-col gap-0.5 border-t p-1.5 text-center font-sans text-[10px] leading-3">
               <b className="text-fg text-[11px]">{step}</b>
-              <span className="truncate">{v.hex.replace('#', '')}</span>
+              <span className="truncate font-mono">{v.hex.replace('#', '')}</span>
               <span className="text-fg-subtle">{v.onWhite.toFixed(2)}</span>
             </div>
           </div>
@@ -82,7 +82,7 @@ function SemanticTable({ theme }: { theme: 'light' | 'dark' }) {
             {['토큰', '참조', '값', '역할'].map((h) => (
               <th
                 key={h}
-                className="bg-canvas border-line-strong text-fg-muted border-b px-3.5 py-2.5 text-left font-mono text-[10.5px] font-medium tracking-[0.1em] uppercase"
+                className="bg-canvas border-line-strong text-fg-muted border-b px-3.5 py-2.5 text-left font-sans text-[10.5px] font-medium tracking-[0.1em] uppercase"
               >
                 {h}
               </th>
@@ -155,7 +155,7 @@ export const 검증결과: StoryObj = {
                 className="border-line flex items-baseline justify-between gap-3 border-b py-1.5"
               >
                 <span className="text-fg-muted text-[length:var(--text-body-sm)]">{c.label}</span>
-                <span className="tabular shrink-0 font-mono text-[length:var(--text-body-sm)]">
+                <span className="tabular shrink-0 font-sans text-[length:var(--text-body-sm)]">
                   <b className={c.pass ? 'text-success-ink' : 'text-danger-ink'}>
                     {c.value.toFixed(2)}:1
                   </b>
@@ -186,7 +186,7 @@ export const 검증결과: StoryObj = {
                     className="inline-block size-4 rounded-[2px]"
                     style={{ background: s.b, border: '1px solid rgba(128,122,120,.4)' }}
                   />
-                  <span className="tabular font-mono text-[length:var(--text-body-sm)]">
+                  <span className="tabular font-sans text-[length:var(--text-body-sm)]">
                     <b className={s.pass ? 'text-success-ink' : 'text-danger-ink'}>
                       ΔE {s.value.toFixed(1)}
                     </b>

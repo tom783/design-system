@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { Preview, Decorator } from '@storybook/react-vite';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '../packages/ui/src/styles.css';
 import { ComponentDocumentation } from '../packages/ui/docs/_component-page';
 import { DocumentationContainer } from '../packages/ui/docs/_page';

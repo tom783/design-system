@@ -99,6 +99,12 @@ Storybook 의 `preview-head.html`(Google Fonts 링크) 하나뿐**이다. 패키
 같은 플레이스홀더가 Storybook 185px, 앱 238px 로 잰 이유다. 도그푸딩 1·2 도 같은 상태였을 것이고 아무도 몰랐다.
 번들할지(용량·라이선스 OFL·자체 호스팅) 문서로 안내할지는 결정이 필요하다.
 
+**처리 (R30, 사용자 결정):** 기본 글꼴을 **Pretendard** 로 바꾸고, 패키지에는 넣지 않고 로드 방법을 문서로
+안내한다(`npm install @s2life/ui pretendard` + 동적 서브셋 CSS import). Storybook 도 같은 import 로 바꿨고,
+배포 리허설이 안내대로 한 앱(기본·Tailwind)에서 `Pretendard Variable` 이 실제로 로드되는지 검사한다.
+숫자는 Pretendard `tabular-nums`(0–9 폭 차 0px)로 통일해 앱이 불러올 글꼴은 하나다. 글꼴 폭에서 나온 수치를
+다시 재니 금액 칸이 128px 로는 12px 모자라 140px 로 고쳤다.
+
 ---
 
 ## 반영 결과 (R29, 0.3.1 후보)

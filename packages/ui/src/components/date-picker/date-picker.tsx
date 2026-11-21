@@ -61,8 +61,9 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
     setDraft(formatValue(next)); setError('');
     if (mode === 'single') setOpen(false);
   };
-  // 도그푸딩 G2: 같은 계산 스타일 span에서 범위 값 216px·placeholder 238px.
-  // 입력 264px = 최대 글폭 238 + 좌우 padding 24 + border 2, 루트는 버튼 38 + gap 4를 더한다.
+  // 도그푸딩 G2: 시스템 대체 글꼴에서 범위 값 216px·placeholder 238px, Pretendard 에서는 placeholder 185px (R30).
+  // 입력 264px = 더 넓은 대체 글꼴 238 + 좌우 padding 24 + border 2 — 앱이 글꼴을 못 불러와도 잘리지 않는다.
+  // 루트는 버튼 38 + gap 4를 더한다.
   return <div data-slot="date-picker" className={cn('relative', mode === 'single' ? 'min-w-[240px]' : 'min-w-[306px]', className)}>
     <Popover open={open} onOpenChange={setOpen}>
       <div className="flex items-center gap-1">
