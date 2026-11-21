@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Pagination, Button } from '../index';
+import { Pagination, Button, EmptyState } from '../index';
 import { PaginationExample } from '../../docs/examples/pagination';
 import { PaginatedOrdersExample } from '../../docs/examples/pagination-table';
 import primarySource from '../../docs/examples/pagination.tsx?raw';
@@ -32,7 +32,11 @@ export const 많은페이지: Story = { render: () => <Pages /> };
 export const 중간페이지: Story = { render: () => <Pages initial={12} /> };
 export const 페이지크기: Story = { render: () => <PaginationExample /> };
 export const 한페이지: Story = { render: () => <Pages total={34} /> };
-export const 빈결과: Story = { render: () => <Pages total={0} /> };
+// 0건이면 Pagination 은 렌더하지 않는다. 그 자리는 EmptyState 가 말한다 — 둘을 함께 둔 조립을 보여준다.
+export const 빈결과: Story = { render: () => <div className="flex flex-col gap-3">
+  <EmptyState title="조건에 맞는 주문이 없습니다" description="기간을 넓히거나 상태 필터를 바꿔 보세요." />
+  <Pages total={0} />
+</div> };
 export const 로딩중: Story = { render: () => <Pagination page={4} pageSize={50} totalCount={1234} disabled
   onPageChange={() => { throw new Error('로딩 중 페이지 이동'); }} pageSizeOptions={[20, 50, 100]}
   onPageSizeChange={() => { throw new Error('로딩 중 크기 변경'); }} /> };
