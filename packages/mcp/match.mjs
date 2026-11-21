@@ -1,9 +1,13 @@
 // 공백 없는 한국어 조사 결합과 영문 대소문자를 함께 흡수한다. 외부 모델이나 상태를 쓰지 않는다.
 const normalize = (text) => text.normalize('NFKC').toLocaleLowerCase('ko-KR').replace(/\s+/gu, '');
+// 어느 컴포넌트도 가려내지 못하는 일반어. 목적·쓰임새 문장에 흔히 들어가 우연히 겹친다.
+// R28 실측: "zzzz 아무 관련 없는 말" 이 Card 의 "관련 정보를 카드로 묶을 때" 와 '관련' 하나로 7점을 받았다.
+// 키워드·이름 일치에는 쓰지 않는다 — 문장 토큰 비교에서만 뺀다.
+const GENERIC_WORDS = new Set(['관련', '아무', '없는', '있는', '위한', '대한', '통해', '경우', '모든', '어떤']);
 export function matchComponents(description, components, limit = 5) {
   const query = normalize(description);
   if (!query) return [];
-  const words = description.normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 2);
+  const words = description.normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 2 && !GENERIC_WORDS.has(word));
   // 선택 질문에는 조립 루트만 답한다. 개별 부품은 부모의 parts와 get_component로 찾는다.
   return components.filter((c) => c.kind !== 'constant' && !c.partOf).map((component) => {
     let score = 0;

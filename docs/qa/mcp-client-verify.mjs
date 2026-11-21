@@ -17,6 +17,9 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { readFileSync } from 'node:fs';
+// 문구는 매니페스트가 원본이다. 하네스에 문장을 복사하면 지침을 고칠 때마다 깨진다(R28).
+const stored = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
 // 절대경로를 박으면 내 기계에서만 돈다. 실제로 CI(리눅스)에서 initialize 타임아웃으로 죽었다.
 const SERVER = fileURLToPath(new URL('../../packages/mcp/server.mjs', import.meta.url));
 const proc = spawn('node', [SERVER], { stdio: ['pipe','pipe','pipe'] });
@@ -124,7 +127,7 @@ const t = async (name, args) => {
   check('부품 조회는 부모의 useWhen·dont·rules·category를 합친다',
     ['useWhen', 'dont', 'rules', 'category'].every((key) => parent[key]?.length && isDeepStrictEqual(part?.[key], parent[key])));
   check('합친 부모를 inheritedFrom으로 표시한다', part?.inheritedFrom === 'Select' && part?.partOf === 'Select');
-  check('부품 고유 purpose·API를 보존하고 텍스트 응답도 같다', part?.purpose === '선택 필터를 여는 38px 버튼' && part?.slots.includes('select-trigger') && isDeepStrictEqual(JSON.parse(r.content[0].text), part));
+  check('부품 고유 purpose·API를 보존하고 텍스트 응답도 같다', part?.purpose === stored.components.find((c) => c.name === 'SelectTrigger').purpose && part?.purpose !== parent.purpose && part?.slots.includes('select-trigger') && isDeepStrictEqual(JSON.parse(r.content[0].text), part));
   check('부모 조회는 부품 목록을 제공하고 상속 표시는 없다', parent.parts?.includes('SelectTrigger') && !Object.hasOwn(parent, 'inheritedFrom'));
 }
 {
