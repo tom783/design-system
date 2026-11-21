@@ -1,6 +1,8 @@
 import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks';
 import * as TableStories from '../src/stories/data-table.stories';
 import * as SelectStories from '../src/stories/select.stories';
+import * as PaginationStories from '../src/stories/pagination.stories';
+import paginationCode from './examples/pagination-table.tsx?raw';
 import tableCode from './_table-recipe.tsx?raw';
 import { Intent } from './_intent';
 
@@ -42,6 +44,14 @@ import { Intent } from './_intent';
 | 실패 | `state="error"`, `errorMessage`, `onRetry` |
 
 <Canvas of={TableStories.상태} sourceState="none" />
+
+## 페이지네이션
+
+<Intent name="Pagination" />
+
+<Source code={"'use client';\n\n" + paginationCode.replace("from '../../src'", "from '@s2life/ui'")} language="tsx" />
+
+<Canvas of={PaginationStories.표조립} sourceState="none" />
 
 ## CSV 내보내기
 

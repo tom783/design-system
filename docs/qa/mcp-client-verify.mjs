@@ -180,6 +180,17 @@ for (const [name, props] of [['AppShell', ['sidebar', 'header', 'children', 'con
   const result = (await t('get_component', { name })).structuredContent;
   check(`${name}의 공개 API·소비자 규칙`, props.every(prop => result.props.some(item => item.name === prop)) && result.rules.length > 0);
 }
+for (const description of ['페이지', '페이징', '페이지 이동', '페이지 크기', '몇 개씩']) {
+  const result = (await t('which_component', { description })).structuredContent;
+  check(`페이지네이션 선택 질문: ${description}`, result?.candidates[0]?.name === 'Pagination');
+}
+{
+  const pagination = (await t('get_component', { name: 'Pagination' })).structuredContent;
+  check('Pagination 공개 API·소비자 규칙', ['page', 'pageSize', 'totalCount', 'onPageChange', 'pageSizeOptions', 'onPageSizeChange', 'disabled']
+    .every(name => pagination.props.some(prop => prop.name === name)) && pagination.rules.length > 0);
+  const table = (await t('get_component', { name: 'DataTable' })).structuredContent;
+  check('DataTable 페이지 전환 선택 해제 규칙', table.rules.some(rule => rule.text.includes('페이지를 넘기면 선택이 해제된다')));
+}
 const rl = await call('resources/list', {});
 const res = rl.result?.resources ?? [];
 check('리소스 3개', res.length === 3, res.map(r=>r.uri).join(' · '));

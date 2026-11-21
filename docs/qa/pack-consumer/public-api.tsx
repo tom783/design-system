@@ -1,5 +1,5 @@
 import {
-  Button, DataTable, createDataTableColumnHelper,
+  Button, DataTable, Pagination, type PaginationProps, createDataTableColumnHelper,
   type DataTableColumns, type RowData, type CellContext, type HeaderContext, type DataTableFeatures,
 } from '@s2life/ui';
 
@@ -53,3 +53,9 @@ export const link = <Button asChild><a href="/orders">주문 목록</a></Button>
 export const iconLink = <Button asChild leadingIcon={<svg aria-hidden="true" />} trailingIcon={<svg aria-hidden="true" />}>
   <a href="/orders">주문 목록</a>
 </Button>;
+
+const paginationProps: PaginationProps = {
+  page: 1, pageSize: 50, totalCount: 1234, onPageChange: page => { void page; },
+  pageSizeOptions: [20, 50, 100], onPageSizeChange: size => { void size; }, disabled: false,
+};
+export const pagination = <Pagination {...paginationProps} />;

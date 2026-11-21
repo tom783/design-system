@@ -133,3 +133,7 @@ for (const query of ['이미지 크게 보기', '영상 보면서 작업']) test
 test('배너 슬라이드 라우팅 1위: Carousel', () => {
   assert.equal(matchComponents('배너 슬라이드', components)[0]?.name, 'Carousel');
 });
+
+for (const query of ['페이지', '페이징', '페이지 이동', '페이지 크기', '몇 개씩']) test(`페이지네이션 라우팅 1위: ${query}`, () => {
+  assert.equal(matchComponents(query, components)[0]?.name, 'Pagination');
+});

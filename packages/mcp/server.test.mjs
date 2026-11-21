@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R34: 66,507 → 72,073바이트. 새 공개 API 포함 실측에 227바이트 여유.
-      assert.ok(Buffer.byteLength(result.text) < 72_300, '복원 규칙까지 포함한 전송량을 잰다');
+      // R35: 72,073 → 74,697바이트. Pagination·표 조립 지침 포함 실측에 203바이트 여유.
+      assert.ok(Buffer.byteLength(result.text) < 74_900, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -122,10 +122,19 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   assert.equal(baseline.__list.length, 99);
   for (const [name, expected] of Object.entries(baseline)) {
     if (name === '__list') continue;
-    checkBaseline(await call(c, 'get_component', { name }), expected);
+    // R35에서 허용한 DataTable 지침·관련 링크만 더하고 나머지 API 기준선은 유지한다.
+    const next = name === 'DataTable' ? { ...expected,
+      rules: [...expected.rules.slice(0, -1), {
+        text: '페이지를 넘기면 선택이 해제된다. 서버 페이징은 표 아래에 Pagination을 조립한다.', source: 'DESIGN.md 4.1',
+      }, expected.rules.at(-1)], related: [...expected.related, 'Pagination'],
+    } : expected;
+    checkBaseline(await call(c, 'get_component', { name }), next);
   }
   // 기존 99개는 R28의 purpose만 갱신했다. 순서·구조와 text 직렬화 비교는 유지한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
+    name: 'Pagination', kind: 'component', purpose: '목록의 페이지를 옮기고 표시 범위·전체 건수·페이지 크기를 확인한다.',
+    import: "import { Pagination } from '@s2life/ui';",
+  }, {
     name: 'AppShell', kind: 'component', purpose: '사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',
     import: "import { AppShell } from '@s2life/ui';",
   }, {

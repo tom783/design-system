@@ -28,6 +28,14 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('Pagination','navigation','목록의 페이지를 옮기고 표시 범위·전체 건수·페이지 크기를 확인한다.',['주문·출고·게시글을 서버에서 페이지 단위로 조회할 때'],['여러 페이지의 선택 ID를 누적해 일괄 처리하지 마라'],'4.1',[
+    'DataTable 아래에 따로 둔다. 표에는 현재 페이지 data와 전체 totalCount를 전달한다.',
+    'page는 1부터 시작한다. page·pageSize·totalCount와 변경 콜백은 앱 상태에 연결한다.',
+    'pageSizeOptions와 onPageSizeChange를 함께 준다. 크기 변경은 새 크기와 1페이지를 함께 조회에 반영한다.',
+    '조회 중에는 disabled를 주고 표는 state="loading"으로 둔다. 새 응답 전까지 기존 선택은 유지된다.',
+    '0건이면 숨고 한 페이지면 범위만 표시한다. 좁은 폭에서는 이전·다음과 현재 위치를 표시한다.',
+    'URL 동기화와 서버 조회는 앱이 맡는다. 여러 페이지 일괄 처리는 서버의 조건 전체 선택으로 설계한다.'
+  ],['page','pageSize','totalCount','onPageChange','pageSizeOptions','onPageSizeChange','disabled'],['pagination','pagination-range','pagination-controls','pagination-page','pagination-position','pagination-previous','pagination-next','pagination-size','pagination-pages','pagination-ellipsis'],['DataTable','Select','Button','EmptyState'],['페이지','페이징','페이지 이동','페이지 크기','몇 개씩']),
   entry('AppShell','layout','사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',['제품의 공통 화면 틀을 구성할 때'],['본문 안에 main을 다시 넣지 마라'],'24',[
     'sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.',
     '본문으로 건너뛰기 링크와 본문 영역은 내장되어 있다.',
@@ -214,8 +222,9 @@ const intents = [
     "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
     "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
     "필터 등으로 data에서 빠진 행은 선택이 자동 해제된다. 앱은 selectedIds를 그대로 일괄 작업에 쓴다. 로딩·오류 중에는 선택을 유지한다.",
+    rule('페이지를 넘기면 선택이 해제된다. 서버 페이징은 표 아래에 Pagination을 조립한다.', '4.1'),
     "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다."
-  ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
+  ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip','Pagination'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
   entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6',[],[],[],['DataTable'],['선택 열 식별자']),
   entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
     "state로 loading·empty·error를 구분해 준다."
