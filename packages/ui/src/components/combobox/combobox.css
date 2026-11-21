@@ -21,6 +21,8 @@
     background: transparent; border: 0; border-bottom: 1px solid var(--border-input); border-radius: 0;
     font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
   }
+  /* 팝오버 경계에 붙은 검색칸은 전역 2px 링을 안쪽에 그려 가장자리를 침범하지 않는다. */
+  .ds-combobox-input:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
   .ds-combobox-input::placeholder { color: var(--text-tertiary); }
   /* 240px는 본문 약 10행을 볼 상한이다. 목록만 스크롤하고 입력은 자리에 남는다. */
   .ds-combobox-list { overflow-y: auto; overscroll-behavior: contain; padding: var(--space-4); }
@@ -29,7 +31,7 @@
     min-height: var(--control-h-md); padding: var(--space-8); border-radius: var(--radius-sm); cursor: pointer;
     font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
   }
-  .ds-combobox-option[data-selected="true"] { background: var(--bg-hover); outline: 1px solid var(--border-focus); outline-offset: -1px; }
+  .ds-combobox-option[data-selected="true"] { background: var(--bg-hover); outline: none; }
   .ds-combobox-option[data-value-selected="true"] { font-weight: 600; }
   .ds-combobox-option[data-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
   .ds-combobox-empty { padding: var(--space-12); color: var(--text-secondary); font-size: var(--text-body-sm); }

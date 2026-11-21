@@ -1339,6 +1339,33 @@
       "tailwind": []
     },
     {
+      "name": "overlay-scrim",
+      "cssVariable": "--overlay-scrim",
+      "category": "semantic",
+      "purpose": "검정 막 89/255(약 35%). 뒤 화면을 어둡게 한다",
+      "light": {
+        "value": "#00000059",
+        "ref": "#00000059"
+      },
+      "dark": {
+        "value": "#000000A6",
+        "ref": "#000000A6"
+      },
+      "tailwind": [
+        "bg-overlay-scrim"
+      ],
+      "tailwindAliases": {
+        "color": "overlay-scrim",
+        "examples": [
+          "bg-overlay-scrim",
+          "text-overlay-scrim",
+          "border-overlay-scrim",
+          "fill-overlay-scrim",
+          "stroke-overlay-scrim"
+        ]
+      }
+    },
+    {
       "name": "bg-canvas",
       "cssVariable": "--bg-canvas",
       "category": "semantic",
@@ -1457,14 +1484,14 @@
       "name": "bg-selected",
       "cssVariable": "--bg-selected",
       "category": "semantic",
-      "purpose": "선택된 행·활성 내비게이션",
+      "purpose": "선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.18, 50 은 1.08)",
       "light": {
-        "value": "#FFF3F4",
-        "ref": "brand-50"
+        "value": "#FFE6E8",
+        "ref": "brand-100"
       },
       "dark": {
-        "value": "#32060B",
-        "ref": "brand-975"
+        "value": "#6A1021",
+        "ref": "brand-900"
       },
       "tailwind": [
         "bg-selected"

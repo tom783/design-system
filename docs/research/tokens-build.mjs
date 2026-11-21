@@ -126,12 +126,14 @@ const P = Object.fromEntries(Object.keys(HUES).map((k) => [k, scale(k)]));
 //  내리면(600→700) 명도 차이가 더해져 ΔE 10 이상으로 분리된다.
 const SEMANTIC = {
   light: {
+    // R32: 본문색과 분리한 검정 막. 밝은 배경은 약 35%, 어두운 배경은 약 65%로 작업 맥락을 낮춘다.
+    'overlay-scrim': ['#00000059', null, '검정 막 89/255(약 35%). 뒤 화면을 어둡게 한다'],
     // 바탕
     'bg-canvas':        ['neutral', 50,  '페이지 최하단 바탕. 카드가 떠 보이도록 surface 보다 어둡다'],
     'bg-surface':       ['#FFFFFF', null,'카드·패널·테이블의 기본 면'],
     'bg-sunken':        ['neutral', 100, '입력 그룹·코드 블록처럼 파여 보여야 하는 면'],
     'bg-hover':         ['neutral', 100, '행·메뉴 항목 호버'],
-    'bg-selected':      ['brand',   50,  '선택된 행·활성 내비게이션'],
+    'bg-selected':      ['brand',   100, '선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.18, 50 은 1.08)'],
     // 글자 — 전부 4.5:1 이상 (disabled 제외)
     'text-primary':     ['neutral', 950, '본문·제목·테이블 값. 정보의 1순위'],
     'text-secondary':   ['neutral', 800, '레이블·설명 문장. 1순위를 보조한다'],
@@ -203,11 +205,12 @@ const SEMANTIC = {
   // 다크는 "반전"이 아니라 재설계다. 중립은 단계 방향을 뒤집고,
   // 의미색은 틴트를 어둡게·글자를 밝게 다시 매핑한다.
   dark: {
+    'overlay-scrim': ['#000000A6', null, '검정 막 166/255(약 65%). 이미 어두운 화면에서도 모달과 배경을 분리한다'],
     'bg-canvas':        ['neutral', 1000,'페이지 최하단 바탕'],
     'bg-surface':       ['neutral', 975, '카드·패널. canvas 보다 밝아 떠 보인다'],
     'bg-sunken':        ['#060505', null,'파여 보여야 하는 면'],
     'bg-hover':         ['neutral', 950, '행·메뉴 호버'],
-    'bg-selected':      ['brand',   975, '선택된 행·활성 내비게이션'],
+    'bg-selected':      ['brand',   900, '선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다)'],
     'text-primary':     ['neutral', 50,  '본문·제목·테이블 값'],
     'text-secondary':   ['neutral', 200, '레이블·설명 문장'],
     'text-tertiary':    ['neutral', 400, '메타·플레이스홀더'],
@@ -480,6 +483,17 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
   check(`${theme} progress-fill on surface`, contrast(resolveTok(SEMANTIC[theme]['progress-fill']), bg), 3.0, 'nontext');
 }
 
+// R32: 투명 막은 불투명 색 대비 검사 대신 sRGB 합성 뒤 휘도가 실제로 낮아지는지 검사한다.
+for (const theme of ['light', 'dark']) {
+  const scrim = resolveTok(S[theme]['overlay-scrim']);
+  const rgb = hexToRgb(scrim), alpha = parseInt(scrim.slice(7, 9), 16) / 255;
+  for (const surface of ['bg-canvas', 'bg-surface']) {
+    const bg = hexToRgb(resolveTok(S[theme][surface]));
+    const composite = bg.map((v, i) => rgb[i] * alpha + v * (1 - alpha));
+    check(`${theme} 막 합성 후 ${surface} 휘도 감소`, relLum(bg) / relLum(composite), 1.01, 'ratio');
+  }
+}
+
 // 테마 3상태 안전성: 다크에만 정의된 토큰이 있으면, 테마 미지정 상태에서
 // 그 색이 해소되지 않아 한쪽 테마 글자가 다른 쪽 바탕에 얹히는 버그가 된다.
 // 모든 다크 토큰 이름은 :root(라이트)에 기본값을 갖고 있어야 한다.
@@ -639,6 +653,7 @@ let tw = `/* ===================================================================
 // 토큰 이름에 역할 접두사(text-, border-)를 그대로 남기면 `text-text-primary`
 // 같은 중복 클래스가 생긴다. 아래 이름은 클래스로 썼을 때 읽히도록 고른 것이다.
 const TW_NAME = {
+  'overlay-scrim': 'overlay-scrim',
   'bg-canvas': 'canvas',          // bg-canvas
   'bg-surface': 'surface',        // bg-surface
   'bg-sunken': 'sunken',          // bg-sunken

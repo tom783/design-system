@@ -1,0 +1,10 @@
+@layer components {
+  /* 메뉴마다 별도 판정한다. 포털로 열린 하위 메뉴의 아이콘은 부모 들여쓰기에 영향을 주지 않는다.
+     16px 아이콘 + 8px 간격으로 체크·라디오의 기존 32px 시작점에도 맞춘다. */
+  :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"]):has(
+    :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-sub-trigger"]) > svg:not([data-menu-arrow]),
+    [data-slot="dropdown-menu-checkbox-item"], [data-slot="dropdown-menu-radio-item"]
+  ) :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-sub-trigger"]):not(:has(> svg:not([data-menu-arrow]))) {
+    --menu-item-inset: calc(var(--space-8) + var(--space-16) + var(--space-8));
+  }
+}

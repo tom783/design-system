@@ -4,7 +4,7 @@
     inset: 0;
     /* 기존 포털과 같은 50. top layer·sonner를 위한 별도 스케일은 필요 없다 (§16 실측). */
     z-index: 50;
-    background: color-mix(in srgb, var(--text-primary) 35%, transparent);
+    background: var(--overlay-scrim);
   }
   .ds-dialog-content {
     position: fixed;
@@ -49,7 +49,8 @@
   }
   .ds-dialog-close:hover { background: var(--bg-hover); color: var(--text-primary); }
   /* 제목이 닫기 버튼 밑으로 흐르지 않게 한다. 아이콘 폭 + 좌우 여백만큼 비운다. */
-  .ds-dialog-header { padding-right: calc(var(--control-h-sm) + var(--space-8)); }
+  /* 헤더는 MediaViewer 처럼 래퍼 안에 있을 수 있다 — 직계 자식으로 한정하면 긴 제목이 닫기 버튼 밑으로 들어간다 (R32 회귀). */
+  .ds-dialog-content:has(> [data-slot="dialog-close-icon"]) .ds-dialog-header { padding-right: calc(var(--control-h-sm) + var(--space-8)); }
   .ds-dialog-header { display: grid; gap: var(--space-8); min-width: 0; }
   .ds-dialog-title { font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: 600; }
   .ds-dialog-description { font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-secondary); }

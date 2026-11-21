@@ -110,11 +110,12 @@
     /* ── 의미 색상 · 라이트 (semantic) ──────────────────────────────────────
        이름은 "무슨 색"이 아니라 "무슨 역할"이다. 브랜드를 교체해도
        이 이름들은 그대로 남고 참조하는 원시 단계만 바뀐다. */
+    --overlay-scrim           : #00000059                         ;  /* 검정 막 89/255(약 35%). 뒤 화면을 어둡게 한다 */
     --bg-canvas               : var(--color-neutral-50)           ;  /* 페이지 최하단 바탕. 카드가 떠 보이도록 surface 보다 어둡다 */
     --bg-surface              : #FFFFFF                           ;  /* 카드·패널·테이블의 기본 면 */
     --bg-sunken               : var(--color-neutral-100)          ;  /* 입력 그룹·코드 블록처럼 파여 보여야 하는 면 */
     --bg-hover                : var(--color-neutral-100)          ;  /* 행·메뉴 항목 호버 */
-    --bg-selected             : var(--color-brand-50)             ;  /* 선택된 행·활성 내비게이션 */
+    --bg-selected             : var(--color-brand-100)            ;  /* 선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.18, 50 은 1.08) */
     --text-primary            : var(--color-neutral-950)          ;  /* 본문·제목·테이블 값. 정보의 1순위 */
     --text-secondary          : var(--color-neutral-800)          ;  /* 레이블·설명 문장. 1순위를 보조한다 */
     --text-tertiary           : var(--color-neutral-700)          ;  /* 메타·타임스탬프·플레이스홀더. 4.5:1 하한선 */
@@ -270,11 +271,12 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
+    --overlay-scrim           : #000000A6                         ;  /* 검정 막 166/255(약 65%). 이미 어두운 화면에서도 모달과 배경을 분리한다 */
     --bg-canvas               : var(--color-neutral-1000)         ;  /* 페이지 최하단 바탕 */
     --bg-surface              : var(--color-neutral-975)          ;  /* 카드·패널. canvas 보다 밝아 떠 보인다 */
     --bg-sunken               : #060505                           ;  /* 파여 보여야 하는 면 */
     --bg-hover                : var(--color-neutral-950)          ;  /* 행·메뉴 호버 */
-    --bg-selected             : var(--color-brand-975)            ;  /* 선택된 행·활성 내비게이션 */
+    --bg-selected             : var(--color-brand-900)            ;  /* 선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다) */
     --text-primary            : var(--color-neutral-50)           ;  /* 본문·제목·테이블 값 */
     --text-secondary          : var(--color-neutral-200)          ;  /* 레이블·설명 문장 */
     --text-tertiary           : var(--color-neutral-400)          ;  /* 메타·플레이스홀더 */
@@ -326,11 +328,12 @@
   }
 
   :root[data-theme="dark"] {
+    --overlay-scrim           : #000000A6                         ;  /* 검정 막 166/255(약 65%). 이미 어두운 화면에서도 모달과 배경을 분리한다 */
     --bg-canvas               : var(--color-neutral-1000)         ;  /* 페이지 최하단 바탕 */
     --bg-surface              : var(--color-neutral-975)          ;  /* 카드·패널. canvas 보다 밝아 떠 보인다 */
     --bg-sunken               : #060505                           ;  /* 파여 보여야 하는 면 */
     --bg-hover                : var(--color-neutral-950)          ;  /* 행·메뉴 호버 */
-    --bg-selected             : var(--color-brand-975)            ;  /* 선택된 행·활성 내비게이션 */
+    --bg-selected             : var(--color-brand-900)            ;  /* 선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다) */
     --text-primary            : var(--color-neutral-50)           ;  /* 본문·제목·테이블 값 */
     --text-secondary          : var(--color-neutral-200)          ;  /* 레이블·설명 문장 */
     --text-tertiary           : var(--color-neutral-400)          ;  /* 메타·플레이스홀더 */

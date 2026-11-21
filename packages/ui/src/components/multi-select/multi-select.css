@@ -22,7 +22,7 @@
     padding: var(--space-8); border-radius: var(--radius-sm); cursor: pointer;
     font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
   }
-  .ds-multi-select-option[data-active="true"] { background: var(--bg-hover); outline: 1px solid var(--border-focus); outline-offset: -1px; }
+  .ds-multi-select-option[data-active="true"] { background: var(--bg-hover); outline: none; }
   .ds-multi-select-option[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
   .ds-multi-select-check { display: flex; width: var(--space-16); flex-shrink: 0; }
   .ds-multi-select-option[aria-selected="true"] { font-weight: 600; }

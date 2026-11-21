@@ -1,3 +1,4 @@
+import { layerCollisionPadding } from '../../lib/layer';
 import * as React from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { Command } from '../../internal/command';
@@ -101,7 +102,7 @@ function SingleCombobox({ multiple: _multiple, options, value, onValueChange, pl
       </button>
     </Popover.Trigger>
     <Popover.Portal>
-      <Popover.Content data-slot="combobox-content" className="ds-combobox-content" align="start" sideOffset={4}
+      <Popover.Content collisionPadding={layerCollisionPadding} data-slot="combobox-content" className="ds-combobox-content" align="start" sideOffset={4}
         aria-label={wiring['aria-label'] ?? placeholder} aria-labelledby={wiring['aria-labelledby']}
         onOpenAutoFocus={event => { event.preventDefault(); inputRef.current?.focus(); }}
         onCloseAutoFocus={event => {

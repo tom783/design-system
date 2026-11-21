@@ -6,6 +6,7 @@
    =========================================================================== */
 
 @theme inline {
+  --color-overlay-scrim             : var(--overlay-scrim);
   --color-canvas                    : var(--bg-canvas);
   --color-surface                   : var(--bg-surface);
   --color-sunken                    : var(--bg-sunken);

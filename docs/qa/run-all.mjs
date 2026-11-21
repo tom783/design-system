@@ -55,6 +55,7 @@ const HARNESSES = [
   ['peek-render-verify.mjs', 'Peek·다녀온 행'],
   ['mcp-client-verify.mjs', 'MCP 서버'],
   ['list-screen-render-verify.mjs', '목록 필터·행 액션·알림'],
+  ['layer-detail-render-verify.mjs', '레이어 디테일·O1–O6 라이트·다크'],
   ['design-detail-render-verify.mjs', '디자인 디테일·D1–D6'],
   ['detail-render-verify.mjs', '상세 탭·경로·편집·삭제 확인'],
   ['create-render-verify.mjs', '등록·Enter 계약·목록 왕복'],

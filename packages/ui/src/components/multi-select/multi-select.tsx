@@ -1,3 +1,4 @@
+import { layerCollisionPadding } from '../../lib/layer';
 import * as React from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import * as Popover from '../../internal/popover';
@@ -65,7 +66,7 @@ export function MultiSelect({ options, value, onValueChange, placeholder = 'ì„ í
       </button>
     </Popover.Trigger>
     <Popover.Portal>
-      <Popover.Content data-slot="multi-select-content" className="ds-multi-select-content" align="start" sideOffset={4}
+      <Popover.Content collisionPadding={layerCollisionPadding} data-slot="multi-select-content" className="ds-multi-select-content" align="start" sideOffset={4}
         aria-label={wiring['aria-label'] ?? placeholder} aria-labelledby={wiring['aria-labelledby']}
         onOpenAutoFocus={event => { event.preventDefault(); listRef.current?.focus(); }}>
         <div ref={listRef} id={`${id}-list`} data-slot="multi-select-list" className="ds-multi-select-list"

@@ -1,3 +1,4 @@
+import { layerCollisionPadding } from '../../lib/layer';
 /** shadcn 원본의 Radix 동작은 유지하고, DESIGN.md 4절의 치수·슬롯·평면 규약만 번역한다. */
 import * as React from "react"
 import * as DropdownMenuPrimitive from "../../internal/dropdown-menu"
@@ -26,14 +27,14 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger data-slot="dropdown-menu-sub-trigger"
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "flex cursor-default select-none items-center gap-2 rounded-[var(--radius-md)] pl-[var(--menu-item-inset,var(--space-8))] pr-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
       className
     )}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto" />
+    <ChevronRight data-menu-arrow="" className="ml-auto" />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName =
@@ -43,7 +44,7 @@ const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
 >(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubContent data-slot="dropdown-menu-sub-content"
+  <DropdownMenuPrimitive.SubContent collisionPadding={layerCollisionPadding} data-slot="dropdown-menu-sub-content"
     ref={ref}
     className={cn(
       "z-50 min-w-[8rem] overflow-hidden rounded-[var(--radius-md)] border border-border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[var(--radix-dropdown-menu-content-transform-origin)]",
@@ -60,7 +61,7 @@ const DropdownMenuContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content data-slot="dropdown-menu-content"
+    <DropdownMenuPrimitive.Content collisionPadding={layerCollisionPadding} data-slot="dropdown-menu-content"
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
@@ -84,14 +85,14 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item data-slot="dropdown-menu-item"
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
+      "relative flex cursor-default select-none items-center gap-2 rounded-[var(--radius-md)] pl-[var(--menu-item-inset,var(--space-8))] pr-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
       inset && "pl-8",
       destructive && "text-destructive focus:text-destructive",
       className
     )}
     {...props}
   >
-    {destructive && <Trash2 data-slot="dropdown-menu-destructive-icon" aria-hidden="true" className="mr-2 size-4" />}
+    {destructive && <Trash2 data-slot="dropdown-menu-destructive-icon" aria-hidden="true" className="size-4" />}
     {children}
   </DropdownMenuPrimitive.Item>
 ))

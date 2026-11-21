@@ -1,3 +1,4 @@
+import { layerCollisionPadding } from '../../lib/layer';
 /** shadcn 원본의 Radix 동작은 유지하고, DESIGN.md 4절의 치수·슬롯·평면 규약만 번역한다. */
 import * as React from "react"
 import * as PopoverPrimitive from "../../internal/popover"
@@ -15,7 +16,7 @@ const PopoverContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
   <PopoverPrimitive.Portal>
-    <PopoverPrimitive.Content data-slot="popover-content"
+    <PopoverPrimitive.Content collisionPadding={layerCollisionPadding} data-slot="popover-content"
       ref={ref}
       align={align}
       sideOffset={sideOffset}

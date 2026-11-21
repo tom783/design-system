@@ -30,6 +30,15 @@
 
 ### 고침
 
+- 레이어 디테일(R32): Dialog·AlertDialog·MediaViewer popup의 막을 테마별 검정 의미 토큰으로 분리해 다크에서도 뒤 화면을 어둡게 한다.
+- 닫기 버튼이 없는 Dialog·AlertDialog 제목과 설명이 상자 안쪽 폭을 모두 쓴다.
+- Combobox 단일/다중·MultiSelect의 활성 후보를 Select와 같은 배경·outline 없음으로 맞추고, 팝오버 안 검색 입력의 2px 포커스 링을 안쪽에 그린다.
+- 아이콘이 섞인 메뉴의 글자 시작을 자동 정렬하고, Select·DropdownMenu(하위 메뉴 포함)·DatePicker/Popover·Combobox·MultiSelect의 기본 충돌 여백을 기존 8px 토큰으로 통일한다.
+- 선택 배경 `--bg-selected` 를 라이트 brand-50 → **brand-100**, 다크 brand-975 → **brand-900**. 이전 값은 표면 대비
+  1.08 · 1.02 로 표의 선택된 행과 달력 범위가 거의 보이지 않았다(다크에서 사실상 구별 불가). 이제 1.18 · 1.44,
+  본문 글자 대비 13.29 · 11.38. 달력 범위 중간도 이 토큰을 써서 호버와 구별된다.
+- 양 테마에서 실제 포인터로 여는 레이어 디테일 하네스를 전체 QA에 등록했다. 이번 실행 환경의 브라우저 기동 제한으로 실측은 미완료다.
+
 - ClampText가 `white-space: nowrap` 조상(예: DataTable 셀) 안에서 긴 글을 더보기 없이
   자르던 문제. 글이 가로로만 길어져 세로 넘침 측정이 "안 넘침"으로 판정했다
   (도그푸딩 2: 1210/576px, 더보기 0/16). 내용이 `text-wrap-mode: wrap` 과
