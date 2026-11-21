@@ -205,6 +205,7 @@ export function assertSizeBudget(catalog, manifest) {
 
 export function compactCatalog(catalog) {
   const optionalTypeSuffix = ' | undefined';
+  const ruleSourcePrefix = 'DESIGN.md ';
   const derived = {
     importTemplate: "import { NAME } from '@s2life/ui';",
     sourceRoot: 'packages/ui/src/',
@@ -215,12 +216,17 @@ export function compactCatalog(catalog) {
     // 예외 이름을 하드코딩하지 않고 실제 타입 표기에서 한 번만 모은다.
     optionalTypeSuffixExceptions: [...new Set(catalog.flatMap(component => component.props
       .filter(prop => !prop.required && !prop.type.endsWith(optionalTypeSuffix)).map(prop => prop.type)))],
-    description: 'import는 importTemplate의 NAME을 name으로 치환한다. source는 sourceRoot + 항목의 source다. kind 생략은 kindDefault, props[].required 생략은 requiredDefault다. 선택 prop의 type에는 optionalTypeSuffix를 붙이되 optionalTypeSuffixExceptions의 타입은 이미 undefined를 포함하므로 그대로 쓴다. get_component와 list_components는 복원된 값을 응답한다.',
+    ruleSourcePrefix,
+    // 접두어 없는 출처를 그대로 보존하고, 절 번호와 같은 문자열도 구분한다.
+    ruleSourcePrefixExceptions: [...new Set(catalog.flatMap(component => (component.rules ?? [])
+      .map(rule => rule.source).filter(source => !source.startsWith(ruleSourcePrefix))))],
+    description: 'import는 importTemplate의 NAME을 name으로 치환한다. source는 sourceRoot + 항목의 source다. partOf가 있고 source가 생략되면 부모의 source를 사용한다. props·extends·slots 생략은 각각 빈 배열이다. rules[].source는 ruleSourcePrefix로 시작하거나 ruleSourcePrefixExceptions에 있으면 그대로, 그 외에는 앞에 ruleSourcePrefix를 붙인다. kind 생략은 kindDefault, props[].required 생략은 requiredDefault다. 선택 prop의 type에는 optionalTypeSuffix를 붙이되 optionalTypeSuffixExceptions의 타입은 이미 undefined를 포함하므로 그대로 쓴다. get_component와 list_components는 복원된 값을 응답한다.',
   };
+  const byName = new Map(catalog.map(component => [component.name, component]));
   const components = catalog.map(({ import: _import, ...component }) => {
     if (!component.source.startsWith(derived.sourceRoot)) throw new Error(`MCP sourceRoot 밖의 소스: ${component.source}`);
     if (component.kind === derived.kindDefault) delete component.kind;
-    return {
+    const compact = {
       ...component,
       source: component.source.slice(derived.sourceRoot.length),
       props: component.props.map(({ name, required, type, ...details }) => ({
@@ -230,9 +236,19 @@ export function compactCatalog(catalog) {
         ...details,
       })),
     };
+    if (component.partOf && component.source === byName.get(component.partOf)?.source) delete compact.source;
+    for (const field of ['props', 'extends', 'slots']) if (compact[field]?.length === 0) delete compact[field];
+    if (component.rules) compact.rules = component.rules.map(rule => {
+      const section = rule.source.slice(derived.ruleSourcePrefix.length);
+      // 접두어 없는 출처와 축약한 절 번호가 충돌하면 전체 출처를 남긴다.
+      const shorten = rule.source.startsWith(derived.ruleSourcePrefix)
+        && !section.startsWith(derived.ruleSourcePrefix) && !derived.ruleSourcePrefixExceptions.includes(section);
+      return { ...rule, source: shorten ? section : rule.source };
+    });
+    return compact;
   });
   // 새로운 타입 별칭이나 import 예외가 생겨도 조용히 응답을 바꾸지 않고 생성 단계에서 막는다.
-  if (!isDeepStrictEqual(components.map(component => restoreComponent(component, derived)), catalog))
+  if (!isDeepStrictEqual(components.map(component => restoreComponent(component, derived, components)), catalog))
     throw new Error('MCP 파생 필드 복원 불일치');
   return { derived, components };
 }

@@ -13,7 +13,7 @@ test('ManifestProps: 모든 API는 MCP와 동일하게 복원하며 매니페스
   const before = structuredClone(manifest);
   for (const entry of manifest.components) {
     const result = resolveManifestComponent(manifest.components, manifest.derived, entry.name);
-    assert.deepEqual(result, restoreComponent(entry, manifest.derived));
+    assert.deepEqual(result, restoreComponent(entry, manifest.derived, manifest.components));
   }
   assert.deepEqual(manifest, before);
   const slide = resolveManifestComponent(manifest.components, manifest.derived, 'CarouselSlide');

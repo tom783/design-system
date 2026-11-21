@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R33 공개 API·소비자 지침을 포함한 카탈로그 크기 예산.
-      assert.ok(Buffer.byteLength(result.text) < 71_000, '복원 규칙까지 포함한 전송량을 잰다');
+      // R33b: 70,643 → 66,507바이트. 복원 설명 포함 실측에 293바이트 여유.
+      assert.ok(Buffer.byteLength(result.text) < 66_800, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);

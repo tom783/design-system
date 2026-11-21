@@ -9,7 +9,9 @@
     "optionalTypeSuffixExceptions": [
       "ReactNode"
     ],
-    "description": "import는 importTemplate의 NAME을 name으로 치환한다. source는 sourceRoot + 항목의 source다. kind 생략은 kindDefault, props[].required 생략은 requiredDefault다. 선택 prop의 type에는 optionalTypeSuffix를 붙이되 optionalTypeSuffixExceptions의 타입은 이미 undefined를 포함하므로 그대로 쓴다. get_component와 list_components는 복원된 값을 응답한다."
+    "ruleSourcePrefix": "DESIGN.md ",
+    "ruleSourcePrefixExceptions": [],
+    "description": "import는 importTemplate의 NAME을 name으로 치환한다. source는 sourceRoot + 항목의 source다. partOf가 있고 source가 생략되면 부모의 source를 사용한다. props·extends·slots 생략은 각각 빈 배열이다. rules[].source는 ruleSourcePrefix로 시작하거나 ruleSourcePrefixExceptions에 있으면 그대로, 그 외에는 앞에 ruleSourcePrefix를 붙인다. kind 생략은 kindDefault, props[].required 생략은 requiredDefault다. 선택 prop의 type에는 optionalTypeSuffix를 붙이되 optionalTypeSuffixExceptions의 타입은 이미 undefined를 포함하므로 그대로 쓴다. get_component와 list_components는 복원된 값을 응답한다."
   },
   "tokens": [
     {
@@ -4182,27 +4184,27 @@
       "rules": [
         {
           "text": "슬라이드는 CarouselSlide로 감싼다.",
-          "source": "DESIGN.md 23.1"
+          "source": "23.1"
         },
         {
           "text": "양 끝에서는 멈춘다. 앱이 순환 이동을 덧붙이지 않는다.",
-          "source": "DESIGN.md 23.1"
+          "source": "23.1"
         },
         {
           "text": "autoplay의 정지 버튼은 내장되어 있다. 따로 만들지 않는다.",
-          "source": "DESIGN.md 23.2"
+          "source": "23.2"
         },
         {
           "text": "사용자가 직접 넘기거나 슬라이드 안을 누르면 자동재생이 종료된다. 앱이 재시작하지 않는다.",
-          "source": "DESIGN.md 23.2"
+          "source": "23.2"
         },
         {
           "text": "호버·내부 포커스·숨겨진 탭의 일시 정지는 내장되어 있다. 별도 타이머를 만들지 않는다.",
-          "source": "DESIGN.md 23.2"
+          "source": "23.2"
         },
         {
           "text": "동작 줄이기 설정이 끈 자동재생·부드러운 넘김을 앱이 다시 켜지 않는다.",
-          "source": "DESIGN.md 23.3"
+          "source": "23.3"
         }
       ],
       "related": [
@@ -4252,7 +4254,6 @@
           "doc": "루트 요소의 폭·여백 등 스타일을 확장한다."
         }
       ],
-      "extends": [],
       "slots": [
         "carousel",
         "carousel-announcement",
@@ -4270,8 +4271,6 @@
       "name": "CarouselSlide",
       "partOf": "Carousel",
       "purpose": "캐러셀 안의 콘텐츠 한 장을 표시한다.",
-      "source": "components/carousel/carousel.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -4295,23 +4294,23 @@
       "rules": [
         {
           "text": "영상을 보며 바깥 화면에서 작업해야 하면 mode=floating을 쓴다.",
-          "source": "DESIGN.md 22.1"
+          "source": "22.1"
         },
         {
           "text": "닫기 버튼·패널 안 Escape 닫기를 중복 구현하지 않는다.",
-          "source": "DESIGN.md 22.1"
+          "source": "22.1"
         },
         {
           "text": "이미지에는 내용을 설명하는 alt를 준다.",
-          "source": "DESIGN.md 22.2"
+          "source": "22.2"
         },
         {
           "text": "영상에 poster·captions를 제공하고 내장 재생 컨트롤을 쓴다.",
-          "source": "DESIGN.md 22.2"
+          "source": "22.2"
         },
         {
           "text": "PiP를 금지할 영상에는 disablePictureInPicture를 준다.",
-          "source": "DESIGN.md 22.3"
+          "source": "22.3"
         }
       ],
       "related": [
@@ -4363,7 +4362,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "dialog-close-icon",
@@ -4401,11 +4399,11 @@
       "rules": [
         {
           "text": "트리거 라벨은 앱이 제공한다.",
-          "source": "DESIGN.md 21"
+          "source": "21"
         },
         {
           "text": "닫힌 입력값·자식 상태를 보존하려면 CollapsibleContent에 forceMount를 준다.",
-          "source": "DESIGN.md 21"
+          "source": "21"
         }
       ],
       "related": [
@@ -4423,7 +4421,6 @@
         "CollapsibleContent"
       ],
       "source": "components/collapsible/collapsible.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
@@ -4435,8 +4432,6 @@
       "name": "CollapsibleTrigger",
       "partOf": "Collapsible",
       "purpose": "항상 보이는 버튼으로 내용을 접고 펼친다.",
-      "source": "components/collapsible/collapsible.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
@@ -4448,8 +4443,6 @@
       "name": "CollapsibleContent",
       "partOf": "Collapsible",
       "purpose": "접고 펼칠 내용을 담는다.",
-      "source": "components/collapsible/collapsible.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Content>"
       ],
@@ -4471,15 +4464,15 @@
       "rules": [
         {
           "text": "넘칠 때만 생기는 더보기 버튼을 중복 구현하지 않는다.",
-          "source": "DESIGN.md 21"
+          "source": "21"
         },
         {
           "text": "전체 글은 DOM에 남아 복사된다. 복사용 글을 따로 만들지 않는다.",
-          "source": "DESIGN.md 21"
+          "source": "21"
         },
         {
           "text": "펼침을 제어하려면 expanded·onExpandedChange를 함께 준다.",
-          "source": "DESIGN.md 21"
+          "source": "21"
         }
       ],
       "related": [
@@ -4542,47 +4535,47 @@
       "rules": [
         {
           "text": "기본 초성·자모 검색을 바꾸려면 filter를 준다.",
-          "source": "DESIGN.md 18.2"
+          "source": "18.2"
         },
         {
           "text": "조합 중 결과 없음은 내장 처리된다. 앱이 빈 결과를 따로 표시하지 않는다.",
-          "source": "DESIGN.md 18.2"
+          "source": "18.2"
         },
         {
           "text": "500개 초과 후보는 앱 서버에서 거른다.",
-          "source": "DESIGN.md 18.1"
+          "source": "18.1"
         },
         {
           "text": "multiple에는 value와 onValueChange로 string[]을 주고받는다.",
-          "source": "DESIGN.md 20.2"
+          "source": "20.2"
         },
         {
           "text": "태그는 2줄 뒤 내부 스크롤한다. 앱이 선택 수마다 높이를 늘리지 않는다.",
-          "source": "DESIGN.md 20.2"
+          "source": "20.2"
         },
         {
           "text": "빈 입력 Backspace는 두 번 눌러 태그를 지운다. 앱이 즉시 삭제를 덧붙이지 않는다.",
-          "source": "DESIGN.md 20.2"
+          "source": "20.2"
         },
         {
           "text": "multiple은 선택 뒤에도 머문다. 앱이 닫거나 다음 칸으로 보내지 않는다.",
-          "source": "DESIGN.md 20.2"
+          "source": "20.2"
         },
         {
           "text": "검색 없이 여러 개를 고를 때는 MultiSelect를 쓴다.",
-          "source": "DESIGN.md 20.1"
+          "source": "20.1"
         },
         {
           "text": "FormFlow 안 단일 선택은 고르면 다음 칸으로 간다. 별도 포커스 이동을 붙이지 않는다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "트리거에 data-form-control=advance를 붙이지 않는다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "폼 밖 선택·Escape는 트리거로 돌아간다. 포커스를 다시 옮기지 않는다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         }
       ],
       "related": [
@@ -4694,15 +4687,15 @@
       "rules": [
         {
           "text": "선택 수가 늘어도 트리거 높이는 같다. 태그가 필요하면 Combobox multiple을 쓴다.",
-          "source": "DESIGN.md 20.1"
+          "source": "20.1"
         },
         {
           "text": "선택 뒤에도 머문다. 앱이 닫거나 다음 입력으로 보내지 않는다.",
-          "source": "DESIGN.md 20.1"
+          "source": "20.1"
         },
         {
           "text": "전체 해제·선택 개수를 중복 구현하지 않는다.",
-          "source": "DESIGN.md 20.1"
+          "source": "20.1"
         }
       ],
       "related": [
@@ -4788,11 +4781,11 @@
       "rules": [
         {
           "text": "서버 데이터를 조회하는 패널에는 activationMode=manual을 준다.",
-          "source": "DESIGN.md 16.1"
+          "source": "16.1"
         },
         {
           "text": "넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.",
-          "source": "DESIGN.md 16.1"
+          "source": "16.1"
         }
       ],
       "related": [
@@ -4811,7 +4804,6 @@
         "TabsContent"
       ],
       "source": "components/tabs/tabs.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
@@ -4823,8 +4815,6 @@
       "name": "TabsList",
       "partOf": "Tabs",
       "purpose": "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.",
-      "source": "components/tabs/tabs.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.List>"
       ],
@@ -4836,8 +4826,6 @@
       "name": "TabsTrigger",
       "partOf": "Tabs",
       "purpose": "패널을 선택하는 탭 버튼이다.",
-      "source": "components/tabs/tabs.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
@@ -4849,8 +4837,6 @@
       "name": "TabsContent",
       "partOf": "Tabs",
       "purpose": "선택한 상세 패널을 표시한다.",
-      "source": "components/tabs/tabs.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Content>"
       ],
@@ -4871,15 +4857,15 @@
       "rules": [
         {
           "text": "마지막 항목에는 링크 대신 BreadcrumbPage를 쓴다.",
-          "source": "DESIGN.md 16.2"
+          "source": "16.2"
         },
         {
           "text": "긴 경로는 첫 항목·BreadcrumbEllipsis·마지막 둘로 조립한다.",
-          "source": "DESIGN.md 16.2"
+          "source": "16.2"
         },
         {
           "text": "앱이 consume으로 기록을 읽고 필터·스크롤·재방문 행을 복원한다.",
-          "source": "DESIGN.md 16.2"
+          "source": "16.2"
         }
       ],
       "related": [
@@ -4901,7 +4887,6 @@
         "BreadcrumbEllipsis"
       ],
       "source": "components/breadcrumb/breadcrumb.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'nav'>"
       ],
@@ -4913,8 +4898,6 @@
       "name": "BreadcrumbList",
       "partOf": "Breadcrumb",
       "purpose": "경로 항목의 순서 목록이다.",
-      "source": "components/breadcrumb/breadcrumb.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'ol'>"
       ],
@@ -4926,8 +4909,6 @@
       "name": "BreadcrumbItem",
       "partOf": "Breadcrumb",
       "purpose": "경로의 개별 항목이다.",
-      "source": "components/breadcrumb/breadcrumb.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'li'>"
       ],
@@ -4939,7 +4920,6 @@
       "name": "BreadcrumbLink",
       "partOf": "Breadcrumb",
       "purpose": "라우터를 지정하지 않는 상위 경로 링크다.",
-      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [
         {
           "name": "asChild",
@@ -4957,8 +4937,6 @@
       "name": "BreadcrumbPage",
       "partOf": "Breadcrumb",
       "purpose": "링크가 아닌 현재 경로 항목이다.",
-      "source": "components/breadcrumb/breadcrumb.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'span'>"
       ],
@@ -4970,8 +4948,6 @@
       "name": "BreadcrumbSeparator",
       "partOf": "Breadcrumb",
       "purpose": "보조기기가 읽지 않는 경로 구분자다.",
-      "source": "components/breadcrumb/breadcrumb.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'li'>"
       ],
@@ -4983,7 +4959,6 @@
       "name": "BreadcrumbEllipsis",
       "partOf": "Breadcrumb",
       "purpose": "접힌 경로 수를 읽을 수 있는 생략 표시다.",
-      "source": "components/breadcrumb/breadcrumb.tsx",
       "props": [
         {
           "name": "count",
@@ -5011,19 +4986,19 @@
       "rules": [
         {
           "text": "DialogTitle·DialogDescription → 내용 → 푸터 순서로 배치한다.",
-          "source": "DESIGN.md 16.3"
+          "source": "16.3"
         },
         {
           "text": "설명이 없으면 Content에 aria-describedby={undefined}를 준다.",
-          "source": "DESIGN.md 16.3"
+          "source": "16.3"
         },
         {
           "text": "첫 요소로 포커스가 가므로 파괴적 버튼을 맨 앞에 두지 않는다.",
-          "source": "DESIGN.md 16.3"
+          "source": "16.3"
         },
         {
           "text": "저장하지 않은 변경에는 dismissible=false·onDismissAttempt로 확인 AlertDialog를 연다. Escape도 확인을 거친다.",
-          "source": "DESIGN.md 16.3"
+          "source": "16.3"
         }
       ],
       "related": [
@@ -5046,17 +5021,12 @@
         "DialogFooter",
         "DialogClose"
       ],
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
-      "extends": [],
-      "slots": []
+      "source": "components/dialog/dialog.tsx"
     },
     {
       "name": "DialogTrigger",
       "partOf": "Dialog",
       "purpose": "입력 창을 여는 트리거다.",
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
@@ -5068,7 +5038,6 @@
       "name": "DialogContent",
       "partOf": "Dialog",
       "purpose": "입력 창의 내용과 닫기 보호를 제공한다.",
-      "source": "components/dialog/dialog.tsx",
       "props": [
         {
           "name": "size",
@@ -5104,8 +5073,6 @@
       "name": "DialogHeader",
       "partOf": "Dialog",
       "purpose": "입력 창 제목·설명 그룹이다.",
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -5117,8 +5084,6 @@
       "name": "DialogTitle",
       "partOf": "Dialog",
       "purpose": "입력 창의 필수 제목이다.",
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Title>"
       ],
@@ -5130,8 +5095,6 @@
       "name": "DialogDescription",
       "partOf": "Dialog",
       "purpose": "입력 창의 필수 설명이다.",
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Description>"
       ],
@@ -5143,8 +5106,6 @@
       "name": "DialogFooter",
       "partOf": "Dialog",
       "purpose": "입력 창 하단의 액션 그룹이다.",
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -5156,8 +5117,6 @@
       "name": "DialogClose",
       "partOf": "Dialog",
       "purpose": "입력 창을 닫는 버튼을 제공한다.",
-      "source": "components/dialog/dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Close>"
       ],
@@ -5179,11 +5138,11 @@
       "rules": [
         {
           "text": "Cancel이 초기 포커스를 받는다. 앱이 파괴적 액션으로 옮기지 않는다.",
-          "source": "DESIGN.md 16.4"
+          "source": "16.4"
         },
         {
           "text": "바깥 클릭은 유지, Escape는 닫기다. 앱이 덮어쓰지 않는다.",
-          "source": "DESIGN.md 16.4"
+          "source": "16.4"
         }
       ],
       "related": [
@@ -5207,17 +5166,12 @@
         "AlertDialogAction",
         "AlertDialogCancel"
       ],
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
-      "extends": [],
-      "slots": []
+      "source": "components/dialog/alert-dialog.tsx"
     },
     {
       "name": "AlertDialogTrigger",
       "partOf": "AlertDialog",
       "purpose": "확인 창을 여는 트리거다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
@@ -5229,8 +5183,6 @@
       "name": "AlertDialogContent",
       "partOf": "AlertDialog",
       "purpose": "되돌릴 수 없는 선택을 확인하는 내용을 표시한다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Content>"
       ],
@@ -5243,8 +5195,6 @@
       "name": "AlertDialogHeader",
       "partOf": "AlertDialog",
       "purpose": "확인 제목·설명 그룹이다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -5256,8 +5206,6 @@
       "name": "AlertDialogTitle",
       "partOf": "AlertDialog",
       "purpose": "확인 창의 필수 제목이다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Title>"
       ],
@@ -5269,8 +5217,6 @@
       "name": "AlertDialogDescription",
       "partOf": "AlertDialog",
       "purpose": "되돌릴 수 없는 결과의 설명이다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Description>"
       ],
@@ -5282,8 +5228,6 @@
       "name": "AlertDialogFooter",
       "partOf": "AlertDialog",
       "purpose": "확인·취소 액션 그룹이다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -5295,7 +5239,6 @@
       "name": "AlertDialogAction",
       "partOf": "AlertDialog",
       "purpose": "확인한 작업을 실행하고 확인창을 닫는다.",
-      "source": "components/dialog/alert-dialog.tsx",
       "props": [
         {
           "name": "variant",
@@ -5314,8 +5257,6 @@
       "name": "AlertDialogCancel",
       "partOf": "AlertDialog",
       "purpose": "초기 포커스를 받는 필수 취소 버튼이다.",
-      "source": "components/dialog/alert-dialog.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Cancel>"
       ],
@@ -5336,7 +5277,7 @@
       "rules": [
         {
           "text": "Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다.",
-          "source": "DESIGN.md 11.4"
+          "source": "11.4"
         }
       ],
       "related": [
@@ -5362,19 +5303,15 @@
         "SelectScrollDownButton"
       ],
       "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Root>",
         "Pick<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>, 'id' | 'aria-describedby' | 'aria-invalid' | 'aria-label' | 'aria-labelledby'>"
-      ],
-      "slots": []
+      ]
     },
     {
       "name": "SelectTrigger",
       "partOf": "Select",
       "purpose": "선택 목록을 연다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>"
       ],
@@ -5387,8 +5324,6 @@
       "name": "SelectValue",
       "partOf": "Select",
       "purpose": "선택값이나 플레이스홀더를 표시한다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Value>"
       ],
@@ -5400,8 +5335,6 @@
       "name": "SelectContent",
       "partOf": "Select",
       "purpose": "선택할 옵션 목록을 표시한다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>"
       ],
@@ -5416,8 +5349,6 @@
       "name": "SelectGroup",
       "partOf": "Select",
       "purpose": "관련 선택 항목을 묶는다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Group>"
       ],
@@ -5429,8 +5360,6 @@
       "name": "SelectLabel",
       "partOf": "Select",
       "purpose": "선택 그룹의 이름을 표시한다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>"
       ],
@@ -5442,8 +5371,6 @@
       "name": "SelectItem",
       "partOf": "Select",
       "purpose": "선택 옵션 하나를 표시한다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>"
       ],
@@ -5455,8 +5382,6 @@
       "name": "SelectSeparator",
       "partOf": "Select",
       "purpose": "선택 그룹을 구분한다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>"
       ],
@@ -5468,8 +5393,6 @@
       "name": "SelectScrollUpButton",
       "partOf": "Select",
       "purpose": "선택 목록을 위로 넘긴다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>"
       ],
@@ -5481,8 +5404,6 @@
       "name": "SelectScrollDownButton",
       "partOf": "Select",
       "purpose": "선택 목록을 아래로 넘긴다.",
-      "source": "components/select/select.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>"
       ],
@@ -5503,11 +5424,11 @@
       "rules": [
         {
           "text": "destructive 항목에는 삭제 아이콘을 함께 표시한다.",
-          "source": "DESIGN.md 2.3"
+          "source": "2.3"
         },
         {
           "text": "행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.",
-          "source": "DESIGN.md 2.3"
+          "source": "2.3"
         }
       ],
       "related": [
@@ -5533,17 +5454,12 @@
         "DropdownMenuSubTrigger",
         "DropdownMenuRadioGroup"
       ],
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
-      "extends": [],
-      "slots": []
+      "source": "components/dropdown-menu/dropdown-menu.tsx"
     },
     {
       "name": "DropdownMenuTrigger",
       "partOf": "DropdownMenu",
       "purpose": "행 액션 메뉴를 연다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>"
       ],
@@ -5555,8 +5471,6 @@
       "name": "DropdownMenuContent",
       "partOf": "DropdownMenu",
       "purpose": "실행할 액션 목록을 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>"
       ],
@@ -5568,7 +5482,6 @@
       "name": "DropdownMenuItem",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 액션 하나를 실행한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
           "name": "inset",
@@ -5591,8 +5504,6 @@
       "name": "DropdownMenuCheckboxItem",
       "partOf": "DropdownMenu",
       "purpose": "메뉴에서 켜고 끌 항목을 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>"
       ],
@@ -5604,8 +5515,6 @@
       "name": "DropdownMenuRadioItem",
       "partOf": "DropdownMenu",
       "purpose": "메뉴에서 하나만 고를 항목을 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>"
       ],
@@ -5617,7 +5526,6 @@
       "name": "DropdownMenuLabel",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 그룹 이름을 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
           "name": "inset",
@@ -5635,8 +5543,6 @@
       "name": "DropdownMenuSeparator",
       "partOf": "DropdownMenu",
       "purpose": "메뉴 그룹을 구분한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>"
       ],
@@ -5648,8 +5554,6 @@
       "name": "DropdownMenuShortcut",
       "partOf": "DropdownMenu",
       "purpose": "메뉴의 단축키를 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLSpanElement>"
       ],
@@ -5661,8 +5565,6 @@
       "name": "DropdownMenuGroup",
       "partOf": "DropdownMenu",
       "purpose": "관련 메뉴 항목을 묶는다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof DropdownMenuPrimitive.Group>"
       ],
@@ -5673,27 +5575,17 @@
     {
       "name": "DropdownMenuPortal",
       "partOf": "DropdownMenu",
-      "purpose": "메뉴를 다른 화면 요소 위에 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
-      "extends": [],
-      "slots": []
+      "purpose": "메뉴를 다른 화면 요소 위에 표시한다."
     },
     {
       "name": "DropdownMenuSub",
       "partOf": "DropdownMenu",
-      "purpose": "하위 메뉴를 제공한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
-      "extends": [],
-      "slots": []
+      "purpose": "하위 메뉴를 제공한다."
     },
     {
       "name": "DropdownMenuSubContent",
       "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 목록을 표시한다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>"
       ],
@@ -5705,7 +5597,6 @@
       "name": "DropdownMenuSubTrigger",
       "partOf": "DropdownMenu",
       "purpose": "하위 메뉴를 연다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
       "props": [
         {
           "name": "inset",
@@ -5723,8 +5614,6 @@
       "name": "DropdownMenuRadioGroup",
       "partOf": "DropdownMenu",
       "purpose": "메뉴에서 하나만 고를 항목을 묶는다.",
-      "source": "components/dropdown-menu/dropdown-menu.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>"
       ],
@@ -5745,7 +5634,7 @@
       "rules": [
         {
           "text": "toast.error는 닫기 버튼을 누를 때까지 남는다. duration을 줘도 바뀌지 않는다.",
-          "source": "DESIGN.md 2.5"
+          "source": "2.5"
         }
       ],
       "related": [
@@ -5756,7 +5645,6 @@
         "저장 알림"
       ],
       "source": "components/toast/toast.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Sonner>"
       ],
@@ -5777,7 +5665,7 @@
       "rules": [
         {
           "text": "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
-          "source": "DESIGN.md 11.1"
+          "source": "11.1"
         }
       ],
       "related": [
@@ -5857,11 +5745,11 @@
       "rules": [
         {
           "text": "variant=danger는 되돌릴 수 없는 작업에만 쓴다.",
-          "source": "DESIGN.md 6"
+          "source": "6"
         },
         {
           "text": "링크를 버튼처럼 표시하려면 asChild 안에 링크 하나를 넣는다.",
-          "source": "DESIGN.md 6"
+          "source": "6"
         }
       ],
       "related": [
@@ -5922,27 +5810,27 @@
       "rules": [
         {
           "text": "금액·수량: type=text inputMode=numeric, numeric. 예상 자릿수로 폭을 좁혀 우측 숫자와 레이블이 멀어지지 않게 한다.",
-          "source": "DESIGN.md 17.1"
+          "source": "17.1"
         },
         {
           "text": "number 휠 증감은 내장 차단하며 페이지 스크롤은 유지한다.",
-          "source": "DESIGN.md 17.1"
+          "source": "17.1"
         },
         {
           "text": "검색 칸은 type=\"search\"를 쓴다. 돋보기·지우기가 내장되므로 아이콘을 따로 겹치지 않는다.",
-          "source": "DESIGN.md 17.1"
+          "source": "17.1"
         },
         {
           "text": "앞쪽 장식은 leadingIcon, 검색 돋보기를 끄려면 leadingIcon={null}. password 보기는 내장 버튼을 쓴다.",
-          "source": "DESIGN.md 17.1"
+          "source": "17.1"
         },
         {
           "text": "날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.",
-          "source": "DESIGN.md 17.1"
+          "source": "17.1"
         },
         {
           "text": "앱 검증·Field 한국어 오류를 쓴다.",
-          "source": "DESIGN.md 17.1"
+          "source": "17.1"
         }
       ],
       "related": [
@@ -6005,11 +5893,11 @@
       "rules": [
         {
           "text": "autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.",
-          "source": "DESIGN.md 17.2"
+          "source": "17.2"
         },
         {
           "text": "FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.",
-          "source": "DESIGN.md 17.2"
+          "source": "17.2"
         }
       ],
       "related": [
@@ -6059,15 +5947,15 @@
       "rules": [
         {
           "text": "묶음 제목: Field label. 항목은 Label htmlFor=RadioGroupItem id로 연결한다. aria-label·aria-labelledby 우선.",
-          "source": "DESIGN.md 17.3"
+          "source": "17.3"
         },
         {
           "text": "화살표로 포커스와 선택을 함께 옮긴다.",
-          "source": "DESIGN.md 17.3"
+          "source": "17.3"
         },
         {
           "text": "FormFlow 안 Enter는 다음 칸으로 이동한다. 별도 처리 금지.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         }
       ],
       "related": [
@@ -6083,7 +5971,6 @@
         "RadioGroupItem"
       ],
       "source": "components/radio-group/radio-group.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
@@ -6095,8 +5982,6 @@
       "name": "RadioGroupItem",
       "partOf": "RadioGroup",
       "purpose": "라디오 선택지 하나를 표시한다.",
-      "source": "components/radio-group/radio-group.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Item>"
       ],
@@ -6119,11 +6004,11 @@
       "rules": [
         {
           "text": "Switch의 id에 Label htmlFor를 연결한다.",
-          "source": "DESIGN.md 17.4"
+          "source": "17.4"
         },
         {
           "text": "FormFlow 안 Enter는 이동, Space는 토글이다. 앱이 Enter 토글을 붙이지 않는다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         }
       ],
       "related": [
@@ -6137,7 +6022,6 @@
         "즉시 적용"
       ],
       "source": "components/switch/switch.tsx",
-      "props": [],
       "extends": [
         "React.ComponentProps<typeof Primitive.Root>"
       ],
@@ -6159,11 +6043,11 @@
       "rules": [
         {
           "text": "htmlFor에 컨트롤 id를 준다.",
-          "source": "DESIGN.md 17.5"
+          "source": "17.5"
         },
         {
           "text": "필수 표시와 별개로 컨트롤에도 required를 준다.",
-          "source": "DESIGN.md 17.5"
+          "source": "17.5"
         }
       ],
       "related": [
@@ -6204,7 +6088,7 @@
       "rules": [
         {
           "text": "아이콘 모양과 텍스트로 상태를 구분한다.",
-          "source": "DESIGN.md 2.3"
+          "source": "2.3"
         }
       ],
       "related": [
@@ -6257,11 +6141,11 @@
       "rules": [
         {
           "text": "경계선과 여백으로 구조를 만든다.",
-          "source": "DESIGN.md 5"
+          "source": "5"
         },
         {
           "text": "헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.",
-          "source": "DESIGN.md 6"
+          "source": "6"
         }
       ],
       "related": [
@@ -6280,7 +6164,6 @@
         "CardFooter"
       ],
       "source": "components/card.tsx",
-      "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
@@ -6292,8 +6175,6 @@
       "name": "CardHeader",
       "partOf": "Card",
       "purpose": "카드 제목과 보조 동작을 배치한다.",
-      "source": "components/card.tsx",
-      "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
@@ -6305,8 +6186,6 @@
       "name": "CardTitle",
       "partOf": "Card",
       "purpose": "카드 제목을 표시한다.",
-      "source": "components/card.tsx",
-      "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLHeadingElement>"
       ],
@@ -6318,8 +6197,6 @@
       "name": "CardBody",
       "partOf": "Card",
       "purpose": "카드 본문을 담는다.",
-      "source": "components/card.tsx",
-      "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
@@ -6331,8 +6208,6 @@
       "name": "CardFooter",
       "partOf": "Card",
       "purpose": "카드 하단의 보조 정보를 담는다.",
-      "source": "components/card.tsx",
-      "props": [],
       "extends": [
         "React.HTMLAttributes<HTMLDivElement>"
       ],
@@ -6354,7 +6229,7 @@
       "rules": [
         {
           "text": "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다.",
-          "source": "DESIGN.md 17"
+          "source": "17"
         }
       ],
       "related": [
@@ -6394,23 +6269,23 @@
       "rules": [
         {
           "text": "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
-          "source": "DESIGN.md 4"
+          "source": "4"
         },
         {
           "text": "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
-          "source": "DESIGN.md 4"
+          "source": "4"
         },
         {
           "text": "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
-          "source": "DESIGN.md 4"
+          "source": "4"
         },
         {
           "text": "필터 등으로 data에서 빠진 행은 선택이 자동 해제된다. 앱은 selectedIds를 그대로 일괄 작업에 쓴다. 로딩·오류 중에는 선택을 유지한다.",
-          "source": "DESIGN.md 4"
+          "source": "4"
         },
         {
           "text": "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다.",
-          "source": "DESIGN.md 4"
+          "source": "4"
         }
       ],
       "related": [
@@ -6593,10 +6468,7 @@
         "선택 열 식별자"
       ],
       "kind": "constant",
-      "source": "components/data-table/selection-column.tsx",
-      "props": [],
-      "extends": [],
-      "slots": []
+      "source": "components/data-table/selection-column.tsx"
     },
     {
       "name": "ChartFrame",
@@ -6611,7 +6483,7 @@
       "rules": [
         {
           "text": "state로 loading·empty·error를 구분해 준다.",
-          "source": "DESIGN.md 7.5.6"
+          "source": "7.5.6"
         }
       ],
       "related": [
@@ -6688,7 +6560,6 @@
           "required": true
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "chart-empty",
@@ -6723,7 +6594,7 @@
       "rules": [
         {
           "text": "summary는 추세 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
-          "source": "DESIGN.md 7.5.3"
+          "source": "7.5.3"
         }
       ],
       "related": [
@@ -6851,11 +6722,11 @@
       "rules": [
         {
           "text": "summary는 실적 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
-          "source": "DESIGN.md 7.5.3"
+          "source": "7.5.3"
         },
         {
           "text": "skeletonRows를 실제 지표 수와 맞춰 로딩 전후 높이를 유지한다.",
-          "source": "DESIGN.md 7.5.6"
+          "source": "7.5.6"
         }
       ],
       "related": [
@@ -6958,11 +6829,11 @@
       "rules": [
         {
           "text": "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
-          "source": "DESIGN.md 7.5.3"
+          "source": "7.5.3"
         },
         {
           "text": "계열 색은 --status-{neutral,info,warning,success,danger}-fg를 쓴다. 목록 밖 이름은 그려지지 않고 검게 보인다.",
-          "source": "DESIGN.md 7.5.3"
+          "source": "7.5.3"
         }
       ],
       "related": [
@@ -7072,7 +6943,7 @@
       "rules": [
         {
           "text": "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다.",
-          "source": "DESIGN.md 7.5.6"
+          "source": "7.5.6"
         }
       ],
       "related": [
@@ -7108,7 +6979,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "empty-state",
@@ -7130,7 +7000,7 @@
       "rules": [
         {
           "text": "다시 요청할 수 있는 오류에는 onRetry를 연결한다.",
-          "source": "DESIGN.md 7.5.6"
+          "source": "7.5.6"
         }
       ],
       "related": [
@@ -7165,7 +7035,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "error-state",
@@ -7187,7 +7056,7 @@
       "rules": [
         {
           "text": "name에는 이니셜 대신 보조기기가 읽을 전체 이름을 준다.",
-          "source": "DESIGN.md 14.4"
+          "source": "14.4"
         }
       ],
       "related": [
@@ -7222,7 +7091,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "avatar",
         "avatar-fallback",
@@ -7242,7 +7110,7 @@
       "rules": [
         {
           "text": "ratio를 실제 이미지 비율과 맞춰 자리를 예약한다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7274,7 +7142,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "skeleton",
         "thumbnail",
@@ -7295,7 +7162,7 @@
       "rules": [
         {
           "text": "실제 콘텐츠와 같은 치수를 쓴다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7340,7 +7207,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "skeleton"
       ]
@@ -7358,7 +7224,7 @@
       "rules": [
         {
           "text": "textStyle은 실제 본문에 맞춘다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7387,7 +7253,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "skeleton",
         "skeleton-text",
@@ -7407,7 +7272,7 @@
       "rules": [
         {
           "text": "조절값이 없다. 완료 후 모양이 카드 한 장이 아니면 Skeleton으로 직접 구성한다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7431,7 +7296,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "card",
         "card-body",
@@ -7456,7 +7320,7 @@
       "rules": [
         {
           "text": "rows를 첫 화면에 실제로 보일 행 수와 맞춘다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7506,7 +7370,7 @@
       "rules": [
         {
           "text": "fields를 실제 입력 칸 수와 맞춘다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7558,7 +7422,7 @@
       "rules": [
         {
           "text": "height·variant·legend를 완료 후 차트와 맞춘다.",
-          "source": "DESIGN.md 9.2"
+          "source": "9.2"
         }
       ],
       "related": [
@@ -7622,7 +7486,7 @@
       "rules": [
         {
           "text": "value와 etaSeconds로 진행률과 남은 시간을 함께 알린다.",
-          "source": "DESIGN.md 9.1"
+          "source": "9.1"
         }
       ],
       "related": [
@@ -7657,7 +7521,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "progress-bar",
         "progress-eta",
@@ -7719,7 +7582,6 @@
           "type": "string"
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "progress-bar",
@@ -7748,7 +7610,7 @@
       "rules": [
         {
           "text": "Tooltip 안으로 포커스를 옮기지 않는다. 컨트롤에 그대로 둔다.",
-          "source": "DESIGN.md 10.4"
+          "source": "10.4"
         }
       ],
       "related": [
@@ -7781,7 +7643,6 @@
           "type": "boolean"
         }
       ],
-      "extends": [],
       "slots": [
         "guide-bubble",
         "guide-tooltip"
@@ -7800,7 +7661,7 @@
       "rules": [
         {
           "text": "닫은 안내를 반복하지 않도록 앱이 기억한다.",
-          "source": "DESIGN.md 10.2"
+          "source": "10.2"
         }
       ],
       "related": [
@@ -7845,7 +7706,6 @@
           "type": "{ label: string; onClick: () => void; }"
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "guide-bubble",
@@ -7866,7 +7726,7 @@
       "rules": [
         {
           "text": "최대 3단계이며 항상 건너뛸 수 있다.",
-          "source": "DESIGN.md 10.1"
+          "source": "10.1"
         }
       ],
       "related": [
@@ -7942,7 +7802,7 @@
       "rules": [
         {
           "text": "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다.",
-          "source": "DESIGN.md 11.4"
+          "source": "11.4"
         }
       ],
       "related": [
@@ -8009,27 +7869,27 @@
       "rules": [
         {
           "text": "Enter는 Tab 순서로 이동한다. 별도 입력 순서를 만들지 않는다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "단일 행 Shift+Enter를 제출로 바꾸지 않는다. 이전 칸 이동이다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "자체 컨트롤의 포커스 요소에 data-form-control=advance로 Enter 이동을 지정한다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "마지막 일반 입력의 Enter 제출은 data-form-control=advance 없이 유지한다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "실제 액션 버튼에는 이동 표식을 붙이지 않는다. Enter 실행을 보존한다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         },
         {
           "text": "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
-          "source": "DESIGN.md 11.5"
+          "source": "11.5"
         }
       ],
       "related": [
@@ -8084,7 +7944,7 @@
       "rules": [
         {
           "text": "요약은 최대 6줄. 넘치면 상세 페이지다.",
-          "source": "DESIGN.md 12.1"
+          "source": "12.1"
         }
       ],
       "related": [
@@ -8134,7 +7994,6 @@
           "doc": "요약에서 상세로 이동하는 단일 읽기 액션."
         }
       ],
-      "extends": [],
       "slots": [
         "button",
         "guide-bubble",

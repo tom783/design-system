@@ -57,11 +57,14 @@ test('8: 소비자 지침의 구현 메모·장문·복제를 생성 단계에�
   expectGate(8, f => { f.intents.find(c => c.name === 'Hint').rules[0].text = f.intents[0].rules[0].text; });
 });
 test('부품은 고유 API만 보관하고 목적·부모 목록을 보존', async () => {
-  const { components: catalog } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+  const { components: catalog, derived } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
   for (const part of catalog.filter((c) => c.partOf)) {
-    assert.deepEqual(Object.keys(part).sort(), ['name', 'partOf', 'purpose', 'props', 'extends', 'slots', 'source'].sort());
+    assert.ok(Object.keys(part).every(key => ['name', 'partOf', 'purpose', 'props', 'extends', 'slots', 'source'].includes(key)));
     assert.equal(part.purpose, intents.find((c) => c.name === part.name).purpose);
     assert.ok(catalog.find((c) => c.name === part.partOf).parts.includes(part.name));
+    const restored = restoreComponent(part, derived, catalog);
+    const api = components.find(component => component.name === part.name);
+    for (const field of ['source', 'props', 'extends', 'slots']) assert.deepEqual(restored[field], api[field]);
   }
 });
 test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 추출 원본과 동일하다', async () => {
@@ -75,18 +78,57 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
   const compact = compactCatalog(full);
   assert.deepEqual(full, before, '추출 결과를 변경하지 않는다');
   assert.deepEqual(compact, { derived: manifest.derived, components: manifest.components });
-  assert.deepEqual(compact.components.map(component => restoreComponent(component, compact.derived)), full);
+  const restored = compact.components.map(component => restoreComponent(component, compact.derived, compact.components));
+  assert.deepEqual(restored, full);
+  assert.equal(JSON.stringify(restored), JSON.stringify(full), '응답의 키 순서도 보존한다');
   for (const component of compact.components) {
     assert.ok(!Object.hasOwn(component, 'import'));
     assert.ok(!Object.hasOwn(component, 'kind') || component.kind !== 'component');
-    assert.ok(!component.source.startsWith(compact.derived.sourceRoot));
-    for (const prop of component.props) {
+    assert.ok(!component.source?.startsWith(compact.derived.sourceRoot));
+    if (component.partOf) {
+      const original = full.find(entry => entry.name === component.name);
+      const parent = full.find(entry => entry.name === component.partOf);
+      assert.equal(Object.hasOwn(component, 'source'), original.source !== parent.source, '부모와 다른 소스는 남긴다');
+    }
+    for (const field of ['props', 'extends', 'slots']) assert.notDeepEqual(component[field], [], '빈 API 배열은 생략한다');
+    for (const prop of component.props ?? []) {
       assert.ok(!Object.hasOwn(prop, 'required') || prop.required === true);
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R33: leadingIcon API·검색·헤더 없는 카드 지침 추가로 69,986 → 70,643바이트.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 71_000);
+  // R33b: 무손실 압축으로 70,643 → 66,507바이트. 복원 설명 포함 실측에 293바이트 여유.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) < 66_800);
+});
+test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
+  const entry = (name, extra = {}) => {
+    const { source = 'packages/ui/src/root.tsx', ...intent } = extra;
+    return { name, ...intent, kind: 'component', source, props: [], extends: [], slots: [],
+      import: `import { ${name} } from '@s2life/ui';` };
+  };
+  const full = [
+    entry('SameSource', { partOf: 'Root' }),
+    entry('OtherSource', { partOf: 'Root', source: 'packages/ui/src/other.tsx' }),
+    entry('Root', { rules: [
+      { text: '일반 출처', source: 'DESIGN.md 8' },
+      { text: '다른 문서', source: 'POLICY.md 2' },
+      { text: '접두어 없는 절 번호', source: '7.1' },
+      { text: '절 번호 충돌', source: 'DESIGN.md 7.1' },
+      { text: '접두어로 시작하는 절', source: 'DESIGN.md DESIGN.md 8' },
+    ] }),
+    entry('EmptyRules', { rules: [] }),
+  ];
+  const before = structuredClone(full);
+  const { components: compact, derived } = compactCatalog(full);
+  assert.ok(!Object.hasOwn(compact[0], 'source'));
+  assert.equal(compact[1].source, 'other.tsx');
+  for (const field of ['props', 'extends', 'slots']) assert.ok(!Object.hasOwn(compact[0], field));
+  assert.deepEqual(compact[2].rules.map(rule => rule.source), ['8', 'POLICY.md 2', '7.1', 'DESIGN.md 7.1', 'DESIGN.md DESIGN.md 8']);
+  assert.deepEqual(compact[3].rules, [], '빈 rules는 키까지 보존한다');
+  const restored = compact.map(component => restoreComponent(component, derived, compact));
+  assert.deepEqual(restored, full);
+  assert.equal(JSON.stringify(restored), JSON.stringify(full));
+  assert.deepEqual(full, before, '압축과 복원이 입력을 변경하지 않는다');
+  assert.throws(() => restoreComponent(compact[0], derived, []), /소스 복원 실패.*SameSource/);
 });
 test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 결과와 동일', async () => {
   const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));

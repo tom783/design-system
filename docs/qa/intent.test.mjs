@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolveIntent } from '../../packages/ui/docs/_intent-data.ts';
+import { restoreComponent } from '../../packages/mcp/catalog.mjs';
 
 const entry = (name, extra = {}) => ({ name, purpose: `${name}의 목적`, source: `${name}.tsx`, ...extra });
 
@@ -34,6 +35,7 @@ test('Intent: partOf 순환 참조는 무한 루프 대신 실패한다', () => 
 
 const docs = new URL('../../packages/ui/docs/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
+const components = manifest.components.map(component => restoreComponent(component, manifest.derived, manifest.components));
 const pages = readdirSync(docs).filter(file => file.endsWith('.mdx')).sort();
 
 test('여섯 MDX 페이지의 모든 Intent 이름·부모·관련 이름을 실제 매니페스트로 해소한다', () => {
@@ -42,17 +44,18 @@ test('여섯 MDX 페이지의 모든 Intent 이름·부모·관련 이름을 실
     .matchAll(/<Intent name="([^"]+)"\s*\/>/g)].map(match => match[1]));
   assert.ok(names.length >= 10, 'Intent 호출이 없어 검사가 공회전하면 안 된다');
   for (const name of names) {
-    const resolved = resolveIntent(manifest.components, name, manifest.derived.sourceRoot);
+    const resolved = resolveIntent(components, name);
     assert.ok(resolved.component.purpose);
     for (const component of [resolved.component, ...resolved.parents, ...resolved.related]) {
-      const stored = manifest.components.find(entry => entry.name === component.name);
-      assert.equal(component.source, manifest.derived.sourceRoot + stored.source);
+      const restored = components.find(entry => entry.name === component.name);
+      assert.equal(component.source, restored.source);
+      assert.deepEqual(component.rules, restored.rules, '문서의 규칙 출처도 복원된 값이다');
       assert.ok(component.source.startsWith('packages/ui/src/'));
       assert.ok(existsSync(new URL(`../../${component.source}`, import.meta.url)), `${component.name} 소스 링크가 실제 파일을 가리킨다`);
     }
   }
-  assert.ok(resolveIntent(manifest.components, 'SelectTrigger').parents.some(parent => parent.name === 'Select'));
-  assert.ok(resolveIntent(manifest.components, 'DialogContent').parents.some(parent => parent.name === 'Dialog'));
+  assert.ok(resolveIntent(components, 'SelectTrigger').parents.some(parent => parent.name === 'Select'));
+  assert.ok(resolveIntent(components, 'DialogContent').parents.some(parent => parent.name === 'Dialog'));
 });
 test('문서에 적은 토큰 이름은 모두 매니페스트에 존재한다', () => {
   const tokens = new Set(manifest.tokens.map(token => token.cssVariable));

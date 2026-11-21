@@ -10,7 +10,7 @@ const BASE = 'http://localhost:6099';
 const expectedPages = ['시작하기', '컴포넌트 고르기', '표 만들기', '폼 만들기', '토큰', '차트'];
 const manifest = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
 const catalog = new Map(manifest.components.map(component => {
-  const restored = restoreComponent(component, manifest.derived);
+  const restored = restoreComponent(component, manifest.derived, manifest.components);
   return [restored.name, restored];
 }));
 const names = new Set(catalog.keys());
@@ -146,7 +146,7 @@ try {
         for (const name of [...snapshot.names, ...snapshot.related]) assert.ok(names.has(name), `매니페스트에 없는 이름: ${name}`);
         assert.deepEqual(snapshot.blocks.map(block => block.name), expectedBlocks, 'MDX의 모든 Intent가 렌더되어야 한다');
         for (const block of snapshot.blocks) {
-          const resolved = resolveIntent(manifest.components, block.name);
+          const resolved = resolveIntent([...catalog.values()], block.name);
           for (const entry of [resolved.component, ...resolved.parents]) {
             assert.ok(snapshot.names.includes(entry.name), `부모 누락: ${entry.name}`);
             for (const text of [entry.purpose, ...(entry.useWhen ?? []), ...(entry.dont ?? []), ...(entry.rules ?? []).map(rule => rule.text)]) {

@@ -6,11 +6,13 @@ export interface StoredProp {
 }
 export interface StoredComponent {
   name: string;
-  source: string;
+  source?: string;
+  partOf?: string;
   kind?: string;
-  props: StoredProp[];
+  props?: StoredProp[];
   extends?: string[];
-  slots: string[];
+  slots?: string[];
+  rules?: { text: string; source: string }[];
 }
 export interface CatalogDerived {
   importTemplate: string;
@@ -19,13 +21,15 @@ export interface CatalogDerived {
   requiredDefault: boolean;
   optionalTypeSuffix: string;
   optionalTypeSuffixExceptions: string[];
+  ruleSourcePrefix: string;
+  ruleSourcePrefixExceptions: string[];
 }
-export function restoreComponent<C extends StoredComponent>(component: C, derived: CatalogDerived):
+export function restoreComponent<C extends StoredComponent>(component: C, derived: CatalogDerived, components: readonly StoredComponent[]):
   Omit<C, 'kind' | 'source' | 'props' | 'extends' | 'slots'> & {
     kind: string;
     source: string;
     props: (Omit<StoredProp, 'required'> & { required: boolean })[];
-    extends: string[] | undefined;
+    extends: string[];
     slots: string[];
     import: string;
   };

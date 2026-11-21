@@ -1,9 +1,11 @@
 import type { JSX } from 'react';
 import manifest from '../../mcp/manifest.json';
+import { restoreComponent } from '../../mcp/catalog.mjs';
 import { resolveIntent, type ComponentIntent } from './_intent-data';
 import { DesignLink } from './_page';
 
 const repository = 'https://github.com/tom783/design-system/blob/main/';
+const components = manifest.components.map(component => restoreComponent(component, manifest.derived, manifest.components));
 
 function Rules({ entry }: { entry: ComponentIntent }) {
   return <div data-intent-name={entry.name}>
@@ -19,7 +21,7 @@ function Rules({ entry }: { entry: ComponentIntent }) {
 
 /** 이름·부모 규칙·관련 컴포넌트는 검증된 매니페스트에서만 가져온다. */
 export function Intent({ name }: { name: string }): JSX.Element {
-  const { component, parents, related } = resolveIntent(manifest.components, name, manifest.derived.sourceRoot);
+  const { component, parents, related } = resolveIntent(components, name);
   return <section className="intent-block" aria-label={`${name} 사용 의도`} data-intent-block={name}>
     <Rules entry={component} />
     {parents.map(parent => <section key={parent.name} aria-label={`부모 ${parent.name} 규칙`}>

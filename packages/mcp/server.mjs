@@ -57,17 +57,17 @@ function callTool(manifest, params) {
       return tokens.length ? structured({ tokens }) : missing('일치하는 토큰이 없습니다. category를 생략하거나 search_tokens의 query를 짧게 해보세요.');
     }
     case 'list_components': return structured({ components: manifest.components.map((entry) => {
-      const { name, kind, purpose, import: statement, partOf } = restoreComponent(entry, manifest.derived);
+      const { name, kind, purpose, import: statement, partOf } = restoreComponent(entry, manifest.derived, manifest.components);
       return { name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) };
     }) });
     case 'get_component': {
       const entry = manifest.components.find((c) => c.name.toLowerCase() === args.name.trim().toLowerCase());
       if (!entry) return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
-      const component = restoreComponent(entry, manifest.derived);
+      const component = restoreComponent(entry, manifest.derived, manifest.components);
       if (!component.partOf) return structured(component);
       const parent = manifest.components.find((c) => c.name === component.partOf);
       // 기본값 복원과 부모 의도 합치기는 응답에서만 한다. 보관 항목은 변경하지 않는다.
-      const { useWhen, dont, rules, category } = parent;
+      const { useWhen, dont, rules, category } = restoreComponent(parent, manifest.derived, manifest.components);
       return structured({ ...component, useWhen, dont, rules, category, inheritedFrom: parent.name });
     }
     case 'which_component': {
