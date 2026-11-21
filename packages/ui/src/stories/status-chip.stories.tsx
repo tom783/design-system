@@ -2,9 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StatusChip } from '../components/status-chip';
 
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/StatusChip',
   component: StatusChip,
-  parameters: {
+  parameters: { manifest: ['StatusChip'],
     docs: {
       description: {
         component:

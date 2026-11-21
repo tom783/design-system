@@ -175,6 +175,22 @@ GUI 앱 번들 경로는 **거부**한다. 없으면 `npx playwright install chr
 테마 미지정 상태(사용자 대부분)에서 해소되지 않아 한쪽 테마 글자가 반대 테마 바탕에 얹힌다.
 모든 토큰은 `:root`에 기본값을 갖는다. 생성기가 이것을 검사한다.
 
+**글 영역의 줄바꿈을 `white-space: normal` 로 되돌리지 마라.** 조상의 `nowrap` 을
+이기려다 사용자가 `pre-line`·`pre` 로 보존한 개행까지 지운다(실측: 3줄 → 1줄).
+줄이 바뀌기만 하면 될 때는 `text-wrap-mode: wrap` 을 쓴다. 개행 보존
+(`white-space-collapse`)은 상속값 그대로 남는다. ClampText 가 이렇게 한다.
+
+**문서 페이지에서 iframe 으로 격리한 스토리는 play 가 돈다.** 인라인 스토리와 달리
+`docs.story.inline: false` 의 iframe 은 스토리 화면과 같아서, 여러 iframe 의 play 가
+동시에 포커스를 잡고 서로 빼앗는다(실측: 전체 QA 3회 중 1회 Tour 포커스 단정 실패).
+iframe 격리를 쓰는 스토리는 부모가 `viewMode=docs` 일 때 play 를 건너뛴다
+(`guide.stories.tsx` 의 `outsideDocs`).
+
+**SSR 앱에서 ClampText 의 더보기는 하이드레이션 뒤에 생긴다.** 서버 HTML 에는 버튼이
+없다(설계대로 — 넘침은 브라우저에서만 잰다). 렌더 직후에 세면 0 이다
+(실측: +117ms 0 → +627ms 10). 조건 대기로 센다.
+
+
 ## 작업 규율
 
 - 커밋·푸시하지 않는다. 작업 트리를 더티 상태로 남긴다. 히스토리는 오케스트레이터가 관리한다.

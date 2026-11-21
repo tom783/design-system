@@ -1,3 +1,5 @@
+import { ChartsExample } from '../../docs/examples/charts';
+import primarySource from '../../docs/examples/charts.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
@@ -35,8 +37,9 @@ const compositionSummary = '배송중 비중은 40%에서 60%로 늘고 반품�
 const compositionProps = { data: composition, x: (d: typeof composition[number]) => d.date, series, summary: compositionSummary };
 
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/Charts',
-  parameters: { docs: { description: { component: '의미 토큰을 상속하는 정적 SVG 차트입니다. 폭이 바뀌면 좌표와 눈금을 다시 계산하고, 요약 문장과 직접 라벨로 데이터를 전달합니다.' } } },
+  parameters: { manifest: ['ChartFrame', 'TrendBand', 'BulletRow', 'CompositionArea'], docs: { description: { component: '의미 토큰을 상속하는 정적 SVG 차트입니다. 폭이 바뀌면 좌표와 눈금을 다시 계산하고, 요약 문장과 직접 라벨로 데이터를 전달합니다.' } } },
 } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -51,6 +54,14 @@ async function checkCharts(canvasElement: HTMLElement, count: number) {
     await expect(Math.abs(svg.getBoundingClientRect().width - plot.getBoundingClientRect().width)).toBeLessThan(1);
   }
 }
+
+export const 사용법: Story = {
+  parameters: { docs: { source: {
+    code: primarySource.replace("from '../../src'", "from '@s2life/ui'"),
+    language: 'tsx', type: 'code',
+  } } },
+  render: () => <ChartsExample />,
+};
 
 export const 추이밴드: Story = {
   parameters: { docs: { description: { story: '7일 주문 추이와 시간대 편차 밴드를 함께 표시합니다. 밴드 투명도 0.55, 마지막 점과 1,284건 라벨, 결론을 전달하는 접근성 이름을 확인합니다.' } } },

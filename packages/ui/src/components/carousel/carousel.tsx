@@ -10,6 +10,8 @@ export interface CarouselProps {
   autoplay?: number;
   showArrows?: boolean;
   showDots?: boolean;
+  /** 루트 요소의 폭·여백 등 스타일을 확장한다. */
+  className?: string;
 }
 
 const SlidePosition = React.createContext({ index: 0, total: 1 });
@@ -20,7 +22,7 @@ export function CarouselSlide({ className, ...props }: React.ComponentProps<'div
     role="group" aria-roledescription="슬라이드" aria-label={`${index + 1}번째, 총 ${total}개`} />;
 }
 
-export function Carousel({ label, children, autoplay, showArrows = true, showDots = true }: CarouselProps) {
+export function Carousel({ label, children, autoplay, showArrows = true, showDots = true, className }: CarouselProps) {
   const trackRef = React.useRef<HTMLDivElement>(null);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const trackId = React.useId();
@@ -100,7 +102,7 @@ export function Carousel({ label, children, autoplay, showArrows = true, showDot
   };
   // aria-pressed는 명시적 정지 상태다. 호버·포커스는 선택을 바꾸지 않는 일시 유예다.
   const stopped = paused || userStopped || reduced || atEnd || interval === null;
-  return <div ref={rootRef} data-slot="carousel" className="ds-carousel" data-index={index}
+  return <div ref={rootRef} data-slot="carousel" className={cn('ds-carousel', className)} data-index={index}
     data-playing={playing} data-user-stopped={userStopped}
     onMouseEnter={() => { cancelTimer(); setHovered(true); }} onMouseLeave={() => setHovered(false)}
     onFocusCapture={() => { cancelTimer(); setFocused(true); }}

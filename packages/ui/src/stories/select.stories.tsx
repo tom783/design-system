@@ -5,7 +5,9 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import { Field, FormFlow } from '../components/form';
 import { Input } from '../components/input';
 import { Button } from '../components/button';
-const meta = { title: 'Components/Select' } satisfies Meta;
+const meta = {
+  parameters: { manifest: ['Select', 'SelectTrigger', 'SelectValue', 'SelectContent', 'SelectGroup', 'SelectLabel', 'SelectItem', 'SelectSeparator', 'SelectScrollUpButton', 'SelectScrollDownButton'], },
+  tags: ['autodocs'], title: 'Components/Select' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const 툴바필터: Story = {

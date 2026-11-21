@@ -1,3 +1,5 @@
+import { ClampTextExample } from '../../docs/examples/clamp-text';
+import primarySource from '../../docs/examples/clamp-text.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
@@ -5,7 +7,9 @@ import { ClampText } from '../index';
 
 const shortText = '당일 출고 상품입니다.';
 const longText = '주문하신 상품은 결제 확인 후 순서대로 출고됩니다. 재고와 포장 상태를 확인하고 배송 준비가 끝나면 운송장 번호를 알려드립니다. 도서 산간 지역은 배송에 시간이 더 필요하며 자세한 일정은 담당자에게 문의해 주세요. '.repeat(3);
-const meta = { title: 'Components/ClampText', component: ClampText,
+const meta = {
+  tags: ['autodocs'],
+  parameters: { manifest: ['ClampText'] }, title: 'Components/ClampText', component: ClampText,
   decorators: [(Story) => <div style={{ width: 360, maxWidth: '100%' }}><Story /></div>],
 } satisfies Meta<typeof ClampText>;
 export default meta;
@@ -14,6 +18,14 @@ const done = (root: HTMLElement) => { root.dataset.playComplete = 'true'; };
 const ready = async (root: HTMLElement) => {
   await waitFor(() => expect(root.querySelector('[data-slot="clamp-text-trigger"]')).not.toBeNull()); done(root);
 };
+export const 사용법: Story = {
+  parameters: { docs: { source: {
+    code: primarySource.replace("from '../../src'", "from '@s2life/ui'"),
+    language: 'tsx', type: 'code',
+  } } },
+  render: () => <ClampTextExample />,
+};
+
 export const 짧은글: Story = {
   render: () => <ClampText>{shortText}</ClampText>,
   play: async ({ canvasElement: root }) => {
@@ -66,4 +78,12 @@ export const 여러글: Story = {
   play: async ({ canvasElement: root }) => {
     await waitFor(() => expect(root.querySelectorAll('[data-slot="clamp-text-trigger"]')).toHaveLength(2)); done(root);
   },
+};
+
+export const Nowrap조상: Story = {
+  name: 'nowrap 조상',
+  render: () => <div style={{ whiteSpace: 'nowrap', overflowWrap: 'normal', width: '20rem' }}>
+    <ClampText lines={1}>{longText} https://example.com/{'unbroken-url-segment'.repeat(30)}</ClampText>
+  </div>,
+  play: async ({ canvasElement }) => ready(canvasElement),
 };

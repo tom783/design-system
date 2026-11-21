@@ -3,7 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Thumbnail } from '../components/thumbnail';
 import { Button } from '../components/button';
-const meta = { title: 'Components/Thumbnail', component: Thumbnail, args: { alt: '상품 사진' } } satisfies Meta<typeof Thumbnail>;
+const meta = {
+  parameters: { manifest: ['Thumbnail'], },
+  tags: ['autodocs'], title: 'Components/Thumbnail', component: Thumbnail, args: { alt: '상품 사진' } } satisfies Meta<typeof Thumbnail>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 function FailureExample() {

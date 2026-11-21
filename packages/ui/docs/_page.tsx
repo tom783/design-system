@@ -31,6 +31,9 @@ export function DocumentationContainer({ context, children }: React.PropsWithChi
     <style>{`
       .sbdocs-wrapper { background: var(--bg-canvas); }
       [data-doc-page] { color: var(--text-primary); }
+      [data-doc-page] [data-manifest-props] { min-width: 0; margin-block: var(--space-24); }
+      [data-doc-page] .manifest-props-scroll { overflow-x: auto; }
+      [data-doc-page] [data-manifest-props] td { overflow-wrap: anywhere; }
       [data-doc-page] .intent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--space-16); }
       [data-doc-page] .intent-block { min-width: 0; padding: var(--space-16); border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-surface); overflow-wrap: anywhere; }
       [data-doc-page] .intent-block h3 { margin-top: 0; font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: var(--text-title-sm-weight); }

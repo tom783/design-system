@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within, waitFor } from 'storybook/test';
 import { Toaster, toast } from '../components/toast';
 import { Button } from '../components/button';
-const meta = { title: 'Components/Toast' } satisfies Meta;
+const meta = {
+  parameters: { manifest: ['Toaster'], },
+  tags: ['autodocs'], title: 'Components/Toast' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 function Demo() { return <><Toaster /><Button onClick={() => toast.success('저장했습니다', { duration: 400 })}>성공</Button><Button onClick={() => toast.error('저장 실패', { duration: 50 })}>오류</Button></>; }

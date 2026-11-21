@@ -4,9 +4,10 @@ import { Button } from '../components/button';
 import { expect, userEvent, within } from 'storybook/test';
 
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/Button',
   component: Button,
-  parameters: {
+  parameters: { manifest: ['Button'],
     docs: {
       description: {
         component:

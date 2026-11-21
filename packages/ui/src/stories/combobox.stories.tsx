@@ -1,9 +1,13 @@
+import { ComboboxExample } from '../../docs/examples/combobox';
+import primarySource from '../../docs/examples/combobox.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
 import { Combobox, Field, FormFlow, type ComboboxProps, type ComboboxOption } from '../index';
 
-const meta = { title: 'Components/Combobox', component: Combobox, args: { options: [] },
+const meta = {
+  tags: ['autodocs'],
+  parameters: { manifest: ['Combobox'] }, title: 'Components/Combobox', component: Combobox, args: { options: [] },
   decorators: [(Story) => <div style={{ maxWidth: 480 }}><Story /></div>],
 } satisfies Meta<typeof Combobox>;
 export default meta;
@@ -31,6 +35,14 @@ async function close(root: HTMLElement) {
   await waitFor(() => expect(document.querySelector('[data-slot="combobox-content"]')).not.toBeInTheDocument());
   root.dataset.playComplete = 'true';
 }
+export const 사용법: Story = {
+  parameters: { docs: { source: {
+    code: primarySource.replace("from '../../src'", "from '@s2life/ui'"),
+    language: 'tsx', type: 'code',
+  } } },
+  render: () => <ComboboxExample />,
+};
+
 export const 기본: Story = {
   render: () => <Demo options={many} aria-label="사업장" placeholder="사업장 선택" />,
   play: async ({ canvasElement: root }) => {

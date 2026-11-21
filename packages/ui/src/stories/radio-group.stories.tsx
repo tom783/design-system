@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { RadioGroup, RadioGroupItem, Label } from '../index';
 
-const meta = { title: 'Components/RadioGroup', component: RadioGroup } satisfies Meta<typeof RadioGroup>;
+const meta = {
+  parameters: { manifest: ['RadioGroup', 'RadioGroupItem'], },
+  tags: ['autodocs'], title: 'Components/RadioGroup', component: RadioGroup } satisfies Meta<typeof RadioGroup>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 function Options({ disabled = false }: { disabled?: boolean }) {

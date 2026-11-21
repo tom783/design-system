@@ -3,7 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within, fireEvent, waitFor } from 'storybook/test';
 import { DatePicker, type DateRange } from '../components/date-picker';
 import { formatValue } from '../components/date-picker/date-value';
-const meta = { title: 'Components/DatePicker' } satisfies Meta;
+const meta = {
+  parameters: { manifest: ['DatePicker'], },
+  tags: ['autodocs'], title: 'Components/DatePicker' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const today = new Date(2026, 10, 15);

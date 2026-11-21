@@ -6,9 +6,10 @@ import { StatusChip } from '../components/status-chip';
 import { Input } from '../components/input';
 
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/Card',
   component: Card,
-  parameters: {
+  parameters: { manifest: ['Card', 'CardHeader', 'CardTitle', 'CardBody', 'CardFooter'],
     docs: {
       description: {
         component:

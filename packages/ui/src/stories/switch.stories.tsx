@@ -3,7 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Switch, Label } from '../index';
 
-const meta = { title: 'Components/Switch', component: Switch } satisfies Meta<typeof Switch>;
+const meta = {
+  parameters: { manifest: ['Switch'], },
+  tags: ['autodocs'], title: 'Components/Switch', component: Switch } satisfies Meta<typeof Switch>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 function Setting({ disabled = false }: { disabled?: boolean }) {

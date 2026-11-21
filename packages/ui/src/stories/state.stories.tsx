@@ -5,7 +5,9 @@ import { EmptyState, ErrorState } from '../components/state';
 import { DataTable } from '../components/data-table';
 import { TrendBand, BulletRow, CompositionArea } from '../components/chart';
 
-const meta = { title: 'Components/State' } satisfies Meta;
+const meta = {
+  parameters: { manifest: ['EmptyState', 'ErrorState'], },
+  tags: ['autodocs'], title: 'Components/State' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const reset = fn();

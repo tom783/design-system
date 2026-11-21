@@ -1,9 +1,13 @@
+import { CarouselExample } from '../../docs/examples/carousel';
+import primarySource from '../../docs/examples/carousel.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, waitFor } from 'storybook/test';
 import { Carousel, CarouselSlide, MediaViewer, type CarouselProps } from '../index';
 
-const meta = { title: 'Components/Carousel', component: Carousel } satisfies Meta<typeof Carousel>;
+const meta = {
+  tags: ['autodocs'],
+  parameters: { manifest: ['Carousel', 'CarouselSlide'] }, title: 'Components/Carousel', component: Carousel } satisfies Meta<typeof Carousel>;
 export default meta;
 type Story = StoryObj;
 
@@ -43,6 +47,14 @@ async function ready(root: HTMLElement) {
   await expect(root.querySelector('[data-slot="carousel-slide"]')).not.toHaveAttribute('tabindex');
   root.dataset.playComplete = 'true';
 }
+
+export const 사용법: Story = {
+  parameters: { docs: { source: {
+    code: primarySource.replace("from '../../src'", "from '@s2life/ui'"),
+    language: 'tsx', type: 'code',
+  } } },
+  render: () => <CarouselExample />,
+};
 
 export const 기본: Story = { render: () => <Demo />, play: ({ canvasElement }) => ready(canvasElement) };
 export const 자동재생: Story = { render: () => <Demo autoplay={1200} />, play: ({ canvasElement }) => ready(canvasElement) };

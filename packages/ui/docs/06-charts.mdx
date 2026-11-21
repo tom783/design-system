@@ -1,0 +1,46 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ChartStories from '../src/stories/charts.stories';
+import { Intent } from './_intent';
+import { ManifestProps } from './_manifest-props';
+import { DesignLink } from './_page';
+
+<Meta title="문서/06 차트" />
+
+<div data-doc-page="차트">
+
+# 차트
+
+시간에 따른 추이와 편차는 TrendBand, 실적과 목표의 비교는 BulletRow, 구성 비율의 변화는 CompositionArea를 씁니다. 세 차트는 SVG로 그려 의미 토큰과 테마를 상속하며 컨테이너 폭이 바뀌면 좌표를 다시 계산합니다. 화면의 질문에 맞춰 하나를 고르고, 차트가 전달하는 결론을 한 문장으로 작성하세요.
+
+## 요약 문장은 어디에 보이나요?
+
+`summary`는 화면에 표시하는 본문이 아니라 차트의 `<svg role="img">`에 붙는 `aria-label`입니다. 스크린리더가 개별 좌표를 나열하는 대신 차트의 결론을 읽도록 하는 계약입니다. 근거는 <DesignLink section="7.5">차트 설계 원칙</DesignLink>에 있습니다. 로딩·빈 결과·오류에서는 정상 데이터의 결론을 읽히지 않습니다.
+
+화면에도 결론을 보여주려면 앱이 차트 옆이나 아래에 `<p>` 같은 본문을 추가하고, 정상 데이터가 있을 때만 같은 결론 문장을 표시하세요. ChartFrame은 `title`을 `figcaption`으로 표시하고 범례·플롯 높이·로딩·빈 결과·오류를 제공합니다. `summary`를 본문으로 출력하거나 결론을 넣는 별도 슬롯을 제공하지 않습니다. ChartFrame으로 직접 SVG를 조립하는 경우에는 자식 SVG의 `role="img"`와 `aria-label`도 앱이 연결합니다.
+
+## 추이와 분포
+
+<Intent name="TrendBand" />
+<ManifestProps name="TrendBand" />
+<Canvas of={ChartStories.추이밴드} sourceState="hidden" />
+
+## 실적과 목표
+
+<Intent name="BulletRow" />
+<ManifestProps name="BulletRow" />
+<Canvas of={ChartStories.불릿} sourceState="hidden" />
+
+## 구성 비율의 변화
+
+<Intent name="CompositionArea" />
+<ManifestProps name="CompositionArea" />
+<Canvas of={ChartStories.구성변화} sourceState="hidden" />
+
+## 자체 차트의 공통 틀
+
+<Intent name="ChartFrame" />
+<ManifestProps name="ChartFrame" />
+
+`children` 함수가 받는 실제 폭과 높이로 플롯을 그립니다. `state`와 `onRetry`는 앱의 조회 상태와 재시도에 연결하고, 로딩 지연은 `useDelayedLoading`으로 앱에서 관리합니다. 불릿처럼 데이터 행 수에 따라 높이가 달라지면 `skeletonRows`를 맞춰 로딩 전후의 높이를 보존하세요.
+
+</div>

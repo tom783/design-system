@@ -8,6 +8,38 @@
 
 ---
 
+## 0.3.1 — 미게시
+
+### 추가
+
+- Carousel 루트 스타일을 확장하는 `className`.
+
+### 고침
+
+- ClampText가 `white-space: nowrap` 조상(예: DataTable 셀) 안에서 긴 글을 더보기 없이
+  자르던 문제. 글이 가로로만 길어져 세로 넘침 측정이 "안 넘침"으로 판정했다
+  (도그푸딩 2: 1210/576px, 더보기 0/16). 내용이 `text-wrap-mode: wrap` 과
+  `overflow-wrap: anywhere` 를 소유한다. `white-space: normal` 이 아니라서
+  `pre-line`·`pre` 로 보존한 사용자 개행은 그대로 남는다.
+
+### 바뀐 지침 (MCP)
+
+- ClampText: "DataTable 셀에 쓰지 마라" — 셀이 말줄임과 전체 값 `title` 을 이미 제공한다.
+- DataTable: "긴 글 열을 ClampText 로 감싸지 마라".
+
+### 문서
+
+- 모든 `Components/*` 에 문서 페이지: 사용 의도 → 사용법(코드 보기) → props 표 → 스토리.
+  props 표는 Storybook docgen(26개 중 12개만 채워짐)이 아니라 MCP 매니페스트에서 그린다.
+  공개 컴포넌트 101개 전부 포함. Dialog·Tabs·Breadcrumb 문서 스토리 신설.
+- Carousel·MediaViewer·ClampText·MultiSelect·Combobox 다중·차트의 `사용법` 스토리 —
+  보여주는 코드가 실제로 렌더되는 코드다.
+- 차트 안내 페이지: 무엇을 언제 쓰는지, `summary` 가 화면 글자가 아니라 svg 접근성 이름으로
+  간다는 것과 화면에도 보여주는 방법.
+- 부품 카드에서 같은 페이지 부모의 규칙 반복 제거 (Dialog 15회 → 0).
+- 문서 미리보기가 화면 높이를 채우지 않는다 (Combobox 문서 15,471 → 4,635px).
+- Guide 문서의 Tour·Hint 는 iframe 에 격리해 본문을 덮지 않는다.
+
 ## 0.3.0 — 미게시
 
 도그푸딩으로 공개 API 간극을 메우고, 사람이 읽을 사용 문서를 만들고,

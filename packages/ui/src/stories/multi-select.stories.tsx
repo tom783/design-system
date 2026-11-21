@@ -1,3 +1,5 @@
+import { MultiSelectExample } from '../../docs/examples/multi-select';
+import primarySource from '../../docs/examples/multi-select.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor } from 'storybook/test';
@@ -5,7 +7,9 @@ import { MultiSelect, Field, FormFlow, Input, type MultiSelectProps } from '../i
 
 const options = ['서울본사', '부산지점', '대구창고', '수원창고', '성남지점', '서산물류']
   .map((label, index) => ({ value: `location-${index}`, label, disabled: index === 5 }));
-const meta = { title: 'Components/MultiSelect', component: MultiSelect, args: { options },
+const meta = {
+  tags: ['autodocs'],
+  parameters: { manifest: ['MultiSelect'] }, title: 'Components/MultiSelect', component: MultiSelect, args: { options },
   decorators: [(Story) => <div style={{ maxWidth: 480 }}><Story /></div>],
 } satisfies Meta<typeof MultiSelect>;
 export default meta;
@@ -16,6 +20,14 @@ function Demo(props: MultiSelectProps) {
     <output data-slot="multi-select-demo-value">{JSON.stringify(value)}</output></>;
 }
 const done: NonNullable<Story['play']> = async ({ canvasElement }) => { canvasElement.dataset.playComplete = 'true'; };
+export const 사용법: Story = {
+  parameters: { docs: { source: {
+    code: primarySource.replace("from '../../src'", "from '@s2life/ui'"),
+    language: 'tsx', type: 'code',
+  } } },
+  render: () => <MultiSelectExample />,
+};
+
 export const 기본: Story = {
   render: args => <Demo {...args} aria-label="사업장" />,
   play: async ({ canvasElement }) => {

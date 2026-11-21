@@ -1,9 +1,13 @@
+import { MediaViewerExample } from '../../docs/examples/media-viewer';
+import primarySource from '../../docs/examples/media-viewer.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, MediaViewer, type Media, type MediaViewerProps } from '../index';
 
-const meta = { title: 'Components/MediaViewer', component: MediaViewer } satisfies Meta<typeof MediaViewer>;
+const meta = {
+  tags: ['autodocs'],
+  parameters: { manifest: ['MediaViewer'] }, title: 'Components/MediaViewer', component: MediaViewer } satisfies Meta<typeof MediaViewer>;
 export default meta;
 type Story = StoryObj;
 const image = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="#eeeeee"/><rect x="180" y="120" width="440" height="360" rx="12" fill="#777777"/><text x="400" y="320" text-anchor="middle" fill="white" font-size="48">800 × 600</text></svg>')}`;
@@ -103,6 +107,14 @@ async function exercise(root: HTMLElement, kind: 'image' | 'video', mode: 'popup
   await waitFor(() => expect(root.ownerDocument.querySelector('[data-slot="media-viewer-stage"]')).toBeNull());
   root.dataset.playComplete = 'true';
 }
+
+export const 사용법: Story = {
+  parameters: { docs: { source: {
+    code: primarySource.replace("from '../../src'", "from '@s2life/ui'"),
+    language: 'tsx', type: 'code',
+  } } },
+  render: () => <MediaViewerExample />,
+};
 
 export const 이미지팝업: Story = { render: () => <Demo />, play: ({ canvasElement }) => exercise(canvasElement, 'image', 'popup') };
 export const 동영상팝업: Story = { render: () => <Demo kind="video" />, play: ({ canvasElement }) => exercise(canvasElement, 'video', 'popup') };

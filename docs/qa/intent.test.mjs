@@ -36,8 +36,8 @@ const docs = new URL('../../packages/ui/docs/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
 const pages = readdirSync(docs).filter(file => file.endsWith('.mdx')).sort();
 
-test('다섯 MDX 페이지의 모든 Intent 이름·부모·관련 이름을 실제 매니페스트로 해소한다', () => {
-  assert.equal(pages.length, 5);
+test('여섯 MDX 페이지의 모든 Intent 이름·부모·관련 이름을 실제 매니페스트로 해소한다', () => {
+  assert.equal(pages.length, 6);
   const names = pages.flatMap(file => [...readFileSync(new URL(file, docs), 'utf8')
     .matchAll(/<Intent name="([^"]+)"\s*\/>/g)].map(match => match[1]));
   assert.ok(names.length >= 10, 'Intent 호출이 없어 검사가 공회전하면 안 된다');

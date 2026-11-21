@@ -14,8 +14,9 @@ const tokenMinimum = Number.parseFloat(tokens.loading['loading-min-visible']);
 const tokenLongTask = Number.parseFloat(tokens.loading['loading-long-task']);
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/Loading',
-  parameters: { docs: { description: { component: 'DESIGN.md 9절: 200ms 전에는 아무 표시 없이, 200~400ms에는 컨트롤 상태만, 400ms부터 알려진 형태의 스켈레톤, 3초부터 진행률, 10초부터 떠날 수 있는 경로를 제공합니다.' } } },
+  parameters: { manifest: ['Skeleton', 'SkeletonText', 'CardSkeleton', 'ListSkeleton', 'FormSkeleton', 'ChartSkeleton', 'ProgressTrack', 'TaskProgress'], docs: { description: { component: 'DESIGN.md 9절: 200ms 전에는 아무 표시 없이, 200~400ms에는 컨트롤 상태만, 400ms부터 알려진 형태의 스켈레톤, 3초부터 진행률, 10초부터 떠날 수 있는 경로를 제공합니다.' } } },
 } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;

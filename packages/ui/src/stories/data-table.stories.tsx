@@ -50,10 +50,11 @@ const columns = helper.columns([
 const getRowId = (row: Order) => row.id;
 
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/DataTable',
   component: DataTable<Order>,
   args: { data: orders, columns, getRowId, caption: '오늘 접수된 커머스 주문 12건' },
-  parameters: {
+  parameters: { manifest: ['DataTable'],
     docs: { description: { component: '행 클릭과 선택을 분리하고, 실제 너비로 고정 컬럼을 배치하는 업무용 데이터 테이블입니다. 금액은 원본 숫자를 유지해 정렬과 CSV 내보내기에 사용합니다.' } },
   },
 } satisfies Meta<typeof DataTable<Order>>;

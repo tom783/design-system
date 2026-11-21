@@ -5,7 +5,9 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Button } from '../components/button';
 import { DataTable, dataTableFeatures } from '../components/data-table';
 import { createColumnHelper } from '@tanstack/react-table';
-const meta = { title: 'Components/DropdownMenu' } satisfies Meta;
+const meta = {
+  parameters: { manifest: ['DropdownMenu', 'DropdownMenuTrigger', 'DropdownMenuContent', 'DropdownMenuItem', 'DropdownMenuCheckboxItem', 'DropdownMenuRadioItem', 'DropdownMenuLabel', 'DropdownMenuSeparator', 'DropdownMenuShortcut', 'DropdownMenuGroup', 'DropdownMenuPortal', 'DropdownMenuSub', 'DropdownMenuSubContent', 'DropdownMenuSubTrigger', 'DropdownMenuRadioGroup'], },
+  tags: ['autodocs'], title: 'Components/DropdownMenu' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 function RowMenu({ onDelete, onSave }: { onDelete?: () => void; onSave?: () => void }) {

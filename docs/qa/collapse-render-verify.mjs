@@ -53,7 +53,7 @@ async function wired(buttonSelector, textSelector, description = false) {
 try {
   for (const [group, names] of [
     ['collapsible', ['기본', '기본열림', '폼유지', '모션줄이기']],
-    ['clamptext', ['짧은글', '긴글', '세줄', '좁은폭', '폭변화', '나중에긴글', '제어', '여러글']],
+    ['clamptext', ['짧은글', '긴글', '세줄', '좁은폭', '폭변화', '나중에긴글', '제어', '여러글', 'nowrap조상']],
   ]) for (const name of names) {
     await check(`${group}/${name} play·콘솔 오류 0건`, () => story(`components-${group}--${name}`));
   }
@@ -82,6 +82,26 @@ try {
     // 공백까지 같다는 것이 아니다.
     assert.equal(copied.trim(), before.text.trim());
   });
+  await check('nowrap 조상에서도 긴 URL을 세로로 접고 더보기·간략히로 왕복', async () => {
+    await story('components-clamptext--nowrap조상'); await wait(`!!${q(trigger)}`);
+    const before = await ev(`(() => { const n = ${q(content)}, css = getComputedStyle(n); return {
+      height: n.clientHeight, line: parseFloat(css.lineHeight), text: n.textContent,
+      whiteSpace: css.whiteSpace, overflowWrap: css.overflowWrap,
+      parentWhiteSpace: getComputedStyle(n.parentElement.parentElement).whiteSpace,
+    }; })()`);
+    assert.equal(before.parentWhiteSpace, 'nowrap', '회귀 조건인 조상 nowrap을 실제로 유지한다');
+    assert.equal(before.whiteSpace, 'normal'); assert.equal(before.overflowWrap, 'anywhere');
+    assert.ok(before.height <= before.line + 1, '접힌 높이는 1줄');
+    assert.equal(await ev(`${q(content)}.scrollWidth <= ${q(content)}.clientWidth + 1`), true);
+    assert.equal(await ev(`${q(content)}.scrollHeight > ${q(content)}.clientHeight`), true);
+    await click(trigger); await wait(`${q(trigger)}.getAttribute('aria-expanded') === 'true'`);
+    assert.equal(await ev(`${q(content)}.scrollHeight <= ${q(content)}.clientHeight + 1`), true, '펼친 전체 글');
+    assert.ok(await ev(`${q(content)}.clientHeight`) > before.height);
+    assert.equal(await ev(`${q(content)}.scrollWidth <= ${q(content)}.clientWidth + 1`), true);
+    await click(trigger); await wait(`${q(trigger)}.getAttribute('aria-expanded') === 'false'`);
+    assert.equal(await ev(`${q(content)}.clientHeight`), before.height);
+    assert.equal(await ev(`${q(content)}.textContent`), before.text);
+  });
   await check('3줄 설정은 실제 세 줄 높이로 접힌다', async () => {
     await story('components-clamptext--세줄');
     assert.equal(await ev(`(() => { const n=${q(content)}; return n.clientHeight === parseFloat(getComputedStyle(n).lineHeight)*3; })()`), true);
@@ -97,7 +117,12 @@ try {
   });
   await check('같은 폭·같은 클램프 높이에서 자식 글만 길어져도 버튼 생성', async () => {
     await story('components-clamptext--나중에긴글'); await settled();
-    const before = await ev(`({ width: ${q(content)}.clientWidth, height: ${q(content)}.clientHeight })`);
+    const before = await ev(`(() => { const n = ${q(content)}, css = getComputedStyle(n); return {
+      width: n.clientWidth, height: n.clientHeight, line: parseFloat(css.lineHeight),
+      whiteSpaceCollapse: css.whiteSpaceCollapse,
+    }; })()`);
+    assert.equal(before.whiteSpaceCollapse, 'preserve-breaks', '상속한 사용자 개행 보존');
+    assert.equal(before.height, before.line * 2, '초기 개행 문자열은 정확히 2줄');
     assert.equal(await ev(`${q(trigger)} === null`), true);
     await click('[data-probe="replace"]'); await wait(`!!${q(trigger)}`);
     assert.equal(await ev(`${q(content)}.clientWidth`), before.width);

@@ -3,7 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent, Input } from '../index';
 
-const meta = { title: 'Components/Collapsible', component: Collapsible,
+const meta = {
+  parameters: { manifest: ['Collapsible', 'CollapsibleTrigger', 'CollapsibleContent'], },
+  tags: ['autodocs'], title: 'Components/Collapsible', component: Collapsible,
   decorators: [(Story) => <div style={{ maxWidth: 480 }}><Story /></div>],
 } satisfies Meta<typeof Collapsible>;
 export default meta;

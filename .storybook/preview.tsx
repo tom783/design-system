@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { Preview, Decorator } from '@storybook/react-vite';
 import '../packages/ui/src/styles.css';
+import { ComponentDocumentation } from '../packages/ui/docs/_component-page';
 import { DocumentationContainer } from '../packages/ui/docs/_page';
 
 /**
@@ -13,8 +14,11 @@ const withTheme: Decorator = (Story, context) => {
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+  // 문서 모드에서는 화면 높이를 채우지 않는다. 실측: min-h-dvh 가 인라인 미리보기마다
+  // 뷰포트 높이(1100px)를 강제해 내용 86–134px 인 Combobox 문서가 15,471px 로 늘었다.
+  const fill = context.viewMode === 'docs' ? '' : ' min-h-dvh';
   return (
-    <div className="bg-canvas text-fg min-h-dvh p-6">
+    <div className={`bg-canvas text-fg p-6${fill}`}>
       <Story />
     </div>
   );
@@ -43,7 +47,7 @@ const preview: Preview = {
     // MDX 의 <Meta parameters={{ docs: { container } }} /> 는 이 버전에서 적용되지 않는다.
     // 실측: 컨테이너가 한 번도 실행되지 않아 문서가 테마도 Intent 스타일도 못 받았다.
     // 스토리가 있는 페이지만 데코레이터 덕에 우연히 테마가 붙어 더 헷갈렸다.
-    docs: { container: DocumentationContainer },
+    docs: { container: DocumentationContainer, page: ComponentDocumentation },
   },
 };
 export default preview;

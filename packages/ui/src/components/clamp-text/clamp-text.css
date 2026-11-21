@@ -1,5 +1,7 @@
 @layer components {
   .ds-clamp-text { min-width: 0; }
+  /* nowrap에서도 줄을 바꾸되 pre-line·pre의 개행은 보존한다: normal은 3줄을 20px로 뭉개지만 wrap은 60px를 유지한다. */
+  .ds-clamp-text-content { text-wrap-mode: wrap; overflow-wrap: anywhere; }
   .ds-clamp-text-content[data-expanded="false"] {
     display: -webkit-box;
     -webkit-box-orient: vertical;

@@ -5,9 +5,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Input } from '../components/input';
 
 const meta = {
+  tags: ['autodocs'],
   title: 'Components/Input',
   component: Input,
-  parameters: {
+  parameters: { manifest: ['Input'],
     docs: {
       description: {
         component:

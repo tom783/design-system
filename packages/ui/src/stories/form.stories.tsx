@@ -5,7 +5,8 @@ import { Field, FormFlow, useComposition, shouldValidate } from '../components/f
 import { Input } from '../components/input';
 import { Button } from '../components/button';
 
-const meta = { title: 'Components/Form', parameters: { layout: 'padded' },
+const meta = {
+  tags: ['autodocs'], title: 'Components/Form', parameters: { manifest: ['Field', 'FormFlow', 'Label', 'Checkbox'], layout: 'padded' },
   decorators: [(Story) => <div style={{ maxWidth: 520 }}><Story /></div>],
 } satisfies Meta;
 export default meta;

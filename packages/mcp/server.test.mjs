@@ -108,7 +108,7 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
   assert.equal((await c.request('resources/read', {})).error.code, -32602);
   assert.equal((await c.request('unknown')).error.code, -32601);
 });
-test('R23 응답 기준선을 보존하고 R24 MediaViewer·R25 Carousel 가족만 목록에 추가한다', async (t) => {
+test('R23 기준선에 R26 dont 두 문장만 더하고 신규 가족만 목록에 추가한다', async (t) => {
   const c = await client(t);
   const checkBaseline = (response, expected) => {
     assert.equal(response.error, undefined);
@@ -121,7 +121,14 @@ test('R23 응답 기준선을 보존하고 R24 MediaViewer·R25 Carousel 가족�
   assert.equal(baseline.__list.length, 99);
   for (const [name, expected] of Object.entries(baseline)) {
     if (name === '__list') continue;
-    checkBaseline(await call(c, 'get_component', { name }), expected);
+    // 픽스처를 갱신하지 않는다. 허용한 dont 델타 외의 필드·순서·직렬화 차이는 전부 실패한다.
+    const dontDelta = {
+      ClampText: 'DataTable 셀에 쓰지 마라. 셀이 말줄임과 전체 값 title 을 이미 제공한다',
+      DataTable: '긴 글 열을 ClampText 로 감싸지 마라',
+    };
+    const amended = Object.hasOwn(dontDelta, name)
+      ? { ...expected, dont: [...expected.dont, dontDelta[name]] } : expected;
+    checkBaseline(await call(c, 'get_component', { name }), amended);
   }
   // 기존 99개의 값·순서·text 직렬화 기준선은 바꾸지 않는다. 신규 가족만 앞에 추가한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{

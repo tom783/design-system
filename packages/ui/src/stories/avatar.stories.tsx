@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, waitFor, within } from 'storybook/test';
 import { Avatar } from '../components/avatar';
-const meta = { title: 'Components/Avatar', component: Avatar, args: { name: '김철수' } } satisfies Meta<typeof Avatar>;
+const meta = {
+  parameters: { manifest: ['Avatar'], },
+  tags: ['autodocs'], title: 'Components/Avatar', component: Avatar, args: { name: '김철수' } } satisfies Meta<typeof Avatar>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const 아바타_이니셜: Story = {

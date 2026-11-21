@@ -3,7 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Textarea, Field, Input, FormFlow, Button } from '../index';
 
-const meta = { title: 'Components/Textarea', component: Textarea,
+const meta = {
+  parameters: { manifest: ['Textarea'], },
+  tags: ['autodocs'], title: 'Components/Textarea', component: Textarea,
   decorators: [(Story) => <div style={{ maxWidth: 480 }}><Story /></div>],
 } satisfies Meta<typeof Textarea>;
 export default meta;

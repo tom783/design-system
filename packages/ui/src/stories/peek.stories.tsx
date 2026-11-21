@@ -7,7 +7,8 @@ import { Button } from '../components/button';
 import { StatusChip } from '../components/status-chip';
 import { DataTable, dataTableFeatures } from '../components/data-table';
 
-const meta = { title: 'Components/Peek', parameters: { layout: 'padded' },
+const meta = {
+  tags: ['autodocs'], title: 'Components/Peek', parameters: { manifest: ['Peek'], layout: 'padded' },
   decorators: [(Story) => <div style={{ paddingBlockStart: 'var(--space-80)' }}><Story /></div>],
 } satisfies Meta;
 export default meta;
