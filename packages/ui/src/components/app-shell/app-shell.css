@@ -27,7 +27,7 @@
 .ds-side-nav-item, .ds-side-nav-toggle { display: flex; align-items: center; gap: var(--space-12); min-width: 0; min-height: var(--tap-min); padding: var(--space-8) var(--space-12); border-radius: var(--radius-md); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-primary); text-decoration: none; }
 .ds-side-nav-item:hover, .ds-side-nav-toggle:hover:enabled { background: var(--bg-hover); }
 .ds-side-nav-item[aria-current="page"] { background: var(--bg-selected); font-weight: 600; }
-.ds-side-nav-item[aria-disabled="true"] { color: var(--text-secondary); cursor: not-allowed; background: transparent; }
+.ds-side-nav-item[aria-disabled="true"] { color: var(--text-disabled); cursor: not-allowed; background: transparent; }
 .ds-side-nav-icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--space-24); height: var(--space-24); }
 .ds-side-nav-icon svg { width: var(--space-20); height: var(--space-20); }
 .ds-side-nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -48,6 +48,8 @@
 .ds-side-nav[data-collapsed="true"] .ds-side-nav-toggle { justify-content: center; padding-inline: var(--space-8); }
 @media (width < 1024px) {
   .ds-side-nav { width: var(--side-nav-rail-w); }
+  /* 자동 레일에서는 수동 접기가 동작하지 않는다. 서버 첫 페인트부터 Tab 경로에서도 제외한다. */
+  .ds-side-nav .ds-side-nav-toggle { display: none; }
   .ds-side-nav .ds-side-nav-item, .ds-side-nav .ds-side-nav-toggle { justify-content: center; padding-inline: var(--space-8); }
   .ds-side-nav .ds-side-nav-label, .ds-side-nav .ds-side-nav-meta, .ds-side-nav .ds-side-nav-brand-label, .ds-side-nav .ds-side-nav-group-label { display: none; }
   .ds-app-shell-main, .ds-app-shell-header { padding: var(--space-16); }

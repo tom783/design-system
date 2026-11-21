@@ -2785,7 +2785,8 @@ carousel-render-verify.mjs를 run-all에 등록한다. 한 칸씩 키보드 스�
 상태 판정은 모두 `(width < 1024px)`다. AppShell은 반응형 상태를 공유하고 SideNav는
 단독 사용도 지원한다. CSS가 서버 HTML의 첫 페인트부터 레일 폭과 라벨 숨김을 적용한다.
 자동 레일은 사용자의 collapsed 값을 변경하거나 onCollapsedChange를 호출하지 않는다.
-좁은 화면에서 접기 버튼은 비활성이며 다시 넓어지면 원래 선택으로 돌아온다.
+좁은 화면에서 접기 버튼은 CSS로 숨겨 첫 페인트부터 Tab 경로에서도 제외하며,
+다시 넓어지면 원래 선택으로 돌아온다.
 접힘 전환에 폭 애니메이션은 넣지 않는다. 표와 입력의 반복 재배치를 피하기 위해서다.
 화면 밖 서랍은 Sheet(R36) 이후에 다룬다.
 
@@ -2801,11 +2802,13 @@ SideNav는 `nav aria-label="주 메뉴"`, 본문은 main이다. 상단 header는
 사이드 바탕은 bg-surface, 본문 바탕은 bg-canvas이며 경계는 1px border-subtle다.
 현재 SideNavItem은 current로 `aria-current="page"`·bg-selected·굵기 600을 함께 쓴다.
 색만으로 현재 위치를 알리지 않는다. 링크 자체에 아이콘·라벨·badge를 넣고 긴 라벨은
-말줄임·title로 전체값을 보존한다. 개수는 고정폭 숫자다. 그룹 제목은 SideNavGroup으로 묶는다.
+말줄임하되 전체 글자 내용을 DOM에 남겨 접근성 이름을 보존한다. 개수는 고정폭 숫자다.
+그룹 제목은 SideNavGroup으로 묶는다. 셸이 만드는 요소에는 title 속성을 붙이지 않는다.
+브라우저 기본 툴팁과 기존 Tooltip이 이중으로 뜨는 것을 막기 위해서다.
 접힌 상태의 활성 링크는 호버·키보드 포커스 시 기존 Tooltip으로 라벨을 보여준다.
 준비 중인 항목은 라벨 옆 문구와 aria-disabled를 제공하고 링크 대신 비활성 요소를 렌더한다.
-자식 링크도 렌더하지 않아 href·이벤트·Tab 경로가 남지 않는다. 접혔을 때도 접근명과 title에
-“준비 중”이 남는다. 비활성 문구도 읽을 수 있도록 text-secondary를 쓴다 (§3.4).
+자식 링크도 렌더하지 않아 href·이벤트·Tab 경로가 남지 않는다. 접혔을 때도 접근명에
+“준비 중”이 남는다. 아이콘·라벨·준비 중 문구는 모두 text-disabled를 상속한다 (§3.4).
 
 SideNavItem asChild는 Next Link 등의 단일 자식에 스타일·이벤트·ref를 합친다.
 이동 목적지는 앱이 제공한다. SideNav는 collapsed·onCollapsedChange 제어형과
@@ -2823,7 +2826,9 @@ PageHeader의 title은 유일한 h1이며 description·breadcrumb·status·actio
 아래에 배치되고 여러 버튼은 줄바꿈한다. 주요 버튼은 화면당 하나다 (§6).
 컴포넌트 문서의 규칙은 매니페스트에서 렌더한다. 사용법(Primary)은 테스트 장치 없는
 docs/examples의 독립 파일을 보여준다. Screens/AppShell은 기존 목록과 같은 주문 데이터·
-기간·상태 필터·DataTable을 조립한 라이트·다크 화면이다. 기존 Screens 파일은 변경하지 않는다.
+기간·상태 필터·DataTable을 조립한 라이트·다크 화면이다. 셸 예시는 높이를 덮어쓰지 않고
+기본 100dvh를 쓴다. 셸 스토리는 fullBleed로 데코레이터 여백을 없애며,
+컴포넌트 문서 미리보기는 고정 높이 iframe으로 격리해 문서 본문으로 화면 높이가 새지 않게 한다.
 
 app-shell-render-verify.mjs를 전체 QA에 등록한다. 240·64px·1024 경계, 접힘 복원·제어형,
 Tooltip 호버·포커스, 라이트·다크 현재 위치, 첫 Tab·Enter 건너뛰기, 비활성 이동·Tab 제외,

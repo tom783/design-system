@@ -1,4 +1,4 @@
-// R34: 작성만 수행한다. 실행과 브라우저 실측은 사용자의 pnpm qa에서 진행한다.
+// R34·R34b: 작성만 수행한다. 실행과 브라우저 실측은 사용자의 pnpm qa에서 진행한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchBrowser, storybook, CANVAS } from './browser.mjs';
@@ -55,6 +55,14 @@ async function key(key, code) {
   await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code });
 }
 async function widthIs(width) { await wait(`Math.abs(${q(nav)}.getBoundingClientRect().width - ${width}) < .1`); }
+// 소비자가 슬롯에 넣은 부품(StatusChip 의 전체값 title 등)은 그 부품의 계약이다. 셸이 그린 요소만 센다.
+const consumerSlots = '[data-slot="page-header-breadcrumb"],[data-slot="page-header-status"],[data-slot="page-header-actions"],[data-slot="page-header-description"]';
+async function noTitles(selector) {
+  assert.deepEqual(await ev(`(() => { const root=${q(selector)};
+    return [root, ...root.querySelectorAll('[title]')].filter(el => el.hasAttribute('title') && !el.closest(${JSON.stringify(consumerSlots)}))
+      .map(el => (el.getAttribute('data-slot') || el.tagName) + '=' + el.getAttribute('title')); })()`), [],
+    '셸이 만드는 요소에 브라우저 기본 툴팁을 남기지 않는다');
+}
 async function tooltip() {
   await wait(`!!${q('[role="tooltip"]:popover-open')}`);
   assert.equal(await ev(`${q('[role="tooltip"]:popover-open')}.textContent`), '주문 목록');
@@ -64,7 +72,9 @@ try {
   await viewport(1440);
   await check('펼침 240px·접힘 64px·비제어 토글', async () => {
     await story('components-sidenav--펼침'); await widthIs(240);
+    await noTitles(nav);
     await click(toggle); await widthIs(64);
+    await noTitles(nav);
     await click(toggle); await widthIs(240);
     await story('components-sidenav--접힘'); await widthIs(64);
   });
@@ -72,18 +82,34 @@ try {
     await story('components-sidenav--제어형'); await widthIs(240);
     await click(toggle); await widthIs(64); await click(toggle); await widthIs(240);
   });
-  await check('경계 1024px 펼침·1023px 자동 레일·선택 복원', async () => {
+  await check('경계 1024px 토글 표시·동작·1023px 숨김·Tab 제외·선택 복원', async () => {
     await story();
     await viewport(1024); await widthIs(240);
+    assert.equal(await ev(`getComputedStyle(${q(toggle)}).display`), 'flex');
+    await focus('a[href="#products"]'); await key('Tab', 9);
+    await wait(`document.activeElement === ${q(toggle)}`);
+    await click(toggle); await widthIs(64);
+    await click(toggle); await widthIs(240);
     await viewport(1023); await widthIs(64);
     await wait(`${q(nav)}.dataset.collapsed === 'true'`);
-    assert.equal(await ev(`${q(toggle)}.disabled`), true);
+    assert.equal(await ev(`getComputedStyle(${q(toggle)}).display`), 'none');
+    await focus('a[href="#products"]'); await key('Tab', 9);
+    assert.equal(await ev(`${q(nav)}.contains(document.activeElement)`), false, '마지막 메뉴 다음 Tab은 숨긴 접기 버튼을 건너뛴다');
     await viewport(1440); await widthIs(240);
     await click(toggle); await widthIs(64);
     await viewport(800); await widthIs(64);
     await viewport(1440); await widthIs(64);
     await click(toggle); await widthIs(240);
   });
+  for (const id of ['screens-appshell--라이트', 'screens-appshell--다크', 'screens-appshell--긴메뉴와본문', 'components-appshell--사용법']) {
+    await check(`${id}: 셸 사각형이 뷰포트와 일치`, async () => {
+      for (const width of [1440, 1023]) {
+        await viewport(width); await story(id);
+        assert.deepEqual(await ev(rect('[data-slot="app-shell"]')), { x: 0, y: 0, width, height: 900, bottom: 900 });
+      }
+      await viewport(1440);
+    });
+  }
   await check('접힌 링크 포커스는 Tooltip 라벨·링크 포커스 보존', async () => {
     await story('components-sidenav--접힘');
     await focus(`${item}[aria-current="page"]`); await tooltip();
@@ -116,6 +142,16 @@ try {
       assert.equal(values.canvas, values.canvasToken); assert.equal(values.border, '1px');
       assert.equal(values.padding, '24px'); assert.equal(values.navLabel, '주 메뉴');
       assert.equal(values.mains, 1); assert.equal(values.h1, 1);
+      // 표 셀의 title은 전체값 보존 계약이다. 셸이 소유하는 메뉴·페이지 머리만 검사한다.
+      await noTitles(nav); await noTitles('[data-slot="page-header"]');
+      const disabledColors = await ev(`(() => {
+        const n=${q(`${item}[aria-disabled="true"]`)};
+        const probe=document.createElement('span'); probe.style.color='var(--text-disabled)'; n.append(probe);
+        const expected=getComputedStyle(probe).color; probe.remove();
+        return { expected, colors:['.ds-side-nav-icon', '.ds-side-nav-icon svg', '[data-slot="side-nav-item-label"]', '.ds-side-nav-meta']
+          .map(selector => getComputedStyle(n.querySelector(selector)).color) };
+      })()`);
+      assert.deepEqual(disabledColors.colors, Array(4).fill(disabledColors.expected), '아이콘·라벨·준비 중은 text-disabled');
       await browser.shot(`shell-${theme}`);
     });
   }
@@ -142,6 +178,7 @@ try {
   });
   await check('준비 중은 자식 링크 제거·클릭 이동 없음·실제 Tab 순서에서 제외', async () => {
     await story('components-sidenav--비활성');
+    await noTitles(nav);
     const disabled = `${item}[aria-disabled="true"]`;
     assert.deepEqual(await ev(`(() => { const n=${q(disabled)}; return {tag:n.tagName,tab:n.tabIndex,href:n.getAttribute('href'),child:n.querySelector('a'),text:n.textContent}; })()`),
       { tag: 'SPAN', tab: -1, href: null, child: null, text: '프로모션준비 중' });
@@ -161,6 +198,7 @@ try {
     await check(`페이지 머리 ${name}: h1 하나·콘솔 오류 없음`, async () => {
       await story(`components-pageheader--${name}`);
       assert.equal(await ev(`${all('h1')}.length`), 1); assert.deepEqual(browser.errors(), []);
+      await noTitles('[data-slot="page-header"]');
     });
   }
   await check('페이지 머리 실제 폭 280px에서 액션이 설명 아래·가로 넘침 없음', async () => {
@@ -173,6 +211,7 @@ try {
   });
   await check('메뉴와 본문 독립 스크롤·브랜드/접기 고정·선택 최대 폭', async () => {
     await story('screens-appshell--긴메뉴와본문');
+    await noTitles('[data-slot="app-shell"]');
     assert.equal(await ev(`getComputedStyle(${q('[data-slot="app-shell-content"]')}).maxWidth`), '960px');
     assert.equal(await ev(`${q(menu)}.scrollHeight > ${q(menu)}.clientHeight && ${q(main)}.scrollHeight > ${q(main)}.clientHeight`), true);
     const before = await ev(`({brand:${q('[data-slot="side-nav-brand"]')}.getBoundingClientRect().top,toggle:${q(toggle)}.getBoundingClientRect().top,body:window.scrollY})`);

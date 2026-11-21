@@ -20,7 +20,7 @@ const withTheme: Decorator = (Story, context) => {
   const fill = context.viewMode === 'docs' ? '' : ' min-h-dvh';
   // .storybook은 소비자 Tailwind 스캔 밖이므로 전용 여백은 인라인 토큰으로 지정한다.
   return (
-    <div className={`bg-canvas text-fg${fill}`} style={{ padding: 'var(--space-24)' }}>
+    <div className={`bg-canvas text-fg${fill}`} style={{ padding: context.parameters.fullBleed === true ? 0 : 'var(--space-24)' }}>
       <Story />
     </div>
   );

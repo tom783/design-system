@@ -76,19 +76,18 @@ export const SideNavItem = React.forwardRef<HTMLAnchorElement, SideNavItemProps>
   const classes = cn('ds-side-nav-item', className);
   const content = <>
     <span className="ds-side-nav-icon" aria-hidden="true">{icon}</span>
-    <span data-slot="side-nav-item-label" className="ds-side-nav-label" title={label}>{label}</span>
+    <span data-slot="side-nav-item-label" className="ds-side-nav-label">{label}</span>
     {disabled ? <span className="ds-side-nav-meta">준비 중</span>
-      : badge != null && <span data-slot="side-nav-badge" className="ds-side-nav-meta ds-side-nav-badge tabular"
-        title={typeof badge === 'string' || typeof badge === 'number' ? String(badge) : undefined}>{badge}</span>}
+      : badge != null && <span data-slot="side-nav-badge" className="ds-side-nav-meta ds-side-nav-badge tabular">{badge}</span>}
   </>;
   // 자식 라우터 링크도 렌더하지 않는다. href·핸들러·탭 순서를 남기면 비활성을 우회할 수 있다.
   if (disabled) return <Tooltip content={`${label} (준비 중)`} disabled={!rail}>
     <span data-slot="side-nav-item" className={classes} role="link" aria-disabled="true"
-      aria-label={`${label} (준비 중)`} title={`${label} (준비 중)`}>{content}</span>
+      aria-label={`${label} (준비 중)`}>{content}</span>
   </Tooltip>;
   const Component = asChild ? Slot : 'a';
   return <Tooltip content={label} disabled={!rail}>
-    <Component {...props} ref={ref} data-slot="side-nav-item" className={classes} title={label}
+    <Component {...props} ref={ref} data-slot="side-nav-item" className={classes}
       aria-current={current ? 'page' : undefined} aria-label={rail ? label : props['aria-label']}>
       {asChild ? <Slottable child={children}>{() => content}</Slottable> : content}
     </Component>

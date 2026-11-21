@@ -3,12 +3,12 @@ import { AppShell, SideNav, SideNavGroup, SideNavItem, PageHeader, Button } from
 import { Building2, ClipboardList } from '../icons';
 import { AppShellExample } from '../../docs/examples/app-shell';
 
-const meta = { title: 'Screens/AppShell' } satisfies Meta;
+const meta = { title: 'Screens/AppShell', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
 type Story = StoryObj;
-export const 라이트: Story = { globals: { theme: 'light' }, render: (_, { viewMode }) => <AppShellExample height={viewMode === 'docs' ? 640 : 'calc(100dvh - 48px)'} /> };
+export const 라이트: Story = { globals: { theme: 'light' }, render: () => <AppShellExample /> };
 export const 다크: Story = { ...라이트, globals: { theme: 'dark' } };
-export const 긴메뉴와본문: Story = { render: () => <AppShell style={{ height: 480 }}
+export const 긴메뉴와본문: Story = { render: () => <AppShell
   header={<span>커머스 운영 센터</span>} contentMaxWidth={960}
   sidebar={<SideNav brand="커머스 운영" brandIcon={<Building2 />}><SideNavGroup label="사업장">
     {Array.from({ length: 50 }, (_, i) => <SideNavItem key={i} icon={<ClipboardList />} label={`사업장 ${i + 1}`} href={`#site-${i}`} current={i === 0} />)}
