@@ -27,9 +27,9 @@ async function check(label, run) {
 async function viewport(width, height = 760) {
   await cdp('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
 }
-async function story(name, theme = 'light') {
+async function story(name, theme = 'light', family = 'sheet') {
   assert.deepEqual(browser.errors(), [], '직전 스토리 콘솔 오류');
-  const rendered = await open(`components-sheet--${name}`, { waitPlay: false, extra: `&globals=theme:${theme}` });
+  const rendered = await open(`components-${family}--${name}`, { waitPlay: false, extra: `&globals=theme:${theme}` });
   assert.equal(rendered.sbError, null);
   await wait(`!!${CANVAS}.querySelector('button, [data-slot="data-table-row"]')`);
   await wait(`document.documentElement.dataset.theme === '${theme}'`);
@@ -57,6 +57,10 @@ async function restored(selector = trigger) { await wait(`document.activeElement
 async function geometry() {
   return ev(`(() => { const n=${q(sheet)}, r=n.getBoundingClientRect(); return {width:r.width,left:r.left,right:innerWidth-r.right,top:r.top,bottom:innerHeight-r.bottom,overflow:n.scrollWidth>n.clientWidth}; })()`);
 }
+async function borders(expected) {
+  assert.deepEqual(await ev(`(() => { const s=getComputedStyle(${q(sheet)}); return [s.borderTopWidth,s.borderRightWidth,s.borderBottomWidth,s.borderLeftWidth]; })()`), expected,
+    '패널 안쪽 가장자리만 1px 테두리를 갖는다');
+}
 // R32와 같은 sRGB 합성 휘도·막 실측. 단순 CSS 문자열이 아니라 검정 alpha와 실제 어두워짐을 확인한다.
 const colorHelpers = `
   const ctx=document.createElement('canvas').getContext('2d',{willReadFrequently:true});
@@ -69,6 +73,7 @@ try {
     await check(`${name}: 폭 ${width}px·오른쪽 가장자리·높이`, async () => {
       await story(name); await pointerOpen();
       const m = await geometry(); measurements.push({ name, ...m });
+      await borders(['0px', '0px', '0px', '1px']);
       assert.equal(m.width, width); assert.equal(m.right, 0); assert.equal(m.top, 0); assert.equal(m.bottom, 0); assert.equal(m.overflow, false);
       await key('Escape', 27); await closed(); await restored();
     });
@@ -83,6 +88,7 @@ try {
     for (const width of [1200, 320]) {
       await viewport(width); await story('왼쪽'); await pointerOpen();
       const m = await geometry(); assert.equal(m.left, 0); assert.equal(m.width, Math.min(560, width - 16));
+      await borders(['0px', '1px', '0px', '0px']);
       if (width === 320) assert.equal(m.right, 16);
       await key('Escape', 27); await closed();
     }
@@ -119,6 +125,9 @@ try {
       await story('변경보호'); await pointerOpen();
       await ev(`(() => { const n=${q(`${body} input`)}; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(n,'변경한 배송지'); n.dispatchEvent(new Event('input',{bubbles:true})); })()`);
       await wait(`${q(`${body} input`)}.value === '변경한 배송지'`);
+      // DOM click은 포커스를 옮기지 않는다. 실제 닫기 버튼 조작과 같은 시작 위치를 만든다.
+      const origin = route === '닫기 버튼' ? close : `${body} input`;
+      await ev(`${q(origin)}.focus()`); await restored(origin);
       if (route === 'Escape') await key('Escape', 27);
       else if (route === '바깥 클릭') await pointer(8, 380);
       else await click(close);
@@ -126,11 +135,42 @@ try {
       assert.equal(await ev(`${q(sheet)}.dataset.state`), 'open');
       assert.equal(await ev(`${q('output[aria-label="닫기 시도 횟수"]')}.textContent`), '1');
       await click('[data-slot="alert-dialog-cancel"]'); await wait(`!${q('[role="alertdialog"]')}`);
+      await restored(origin);
+      assert.equal(await ev(`${q('output[aria-label="닫기 시도 횟수"]')}.textContent`), '1', '포커스 복귀도 새 시도가 아니다');
       assert.equal(await ev(`${q(`${body} input`)}.value`), '변경한 배송지');
       await click(close); await wait(`!!${q('[role="alertdialog"]')}`);
       await click('[data-slot="alert-dialog-action"]'); await closed(); await restored();
     });
   }
+  for (const route of ['Escape', '바깥 클릭', '닫기 버튼']) {
+    await check(`Dialog 형제 확인창: ${route} 시도 1회·취소 후 원래 요소로 복귀`, async () => {
+      await story('형제확인창', 'light', 'dialog');
+      const content = '[data-slot="dialog-content"]', dialogClose = `${content} [data-slot="dialog-close-icon"]`;
+      await click(trigger); await wait(`!!${q(content)}`);
+      const origin = route === '닫기 버튼' ? dialogClose : `${content} input`;
+      await ev(`${q(origin)}.focus()`); await restored(origin);
+      if (route === 'Escape') await key('Escape', 27);
+      else if (route === '바깥 클릭') await pointer(8, 380);
+      else await click(dialogClose);
+      await wait(`!!${q('[role="alertdialog"]')}`);
+      assert.equal(await ev(`${q('output[aria-label="닫기 시도 횟수"]')}.textContent`), '1');
+      await click('[data-slot="alert-dialog-cancel"]'); await wait(`!${q('[role="alertdialog"]')}`);
+      await restored(origin);
+      assert.equal(await ev(`${q(content)}.dataset.state`), 'open');
+      assert.equal(await ev(`${q('output[aria-label="닫기 시도 횟수"]')}.textContent`), '1');
+      await click(dialogClose); await wait(`!!${q('[role="alertdialog"]')}`);
+      await click('[data-slot="alert-dialog-action"]'); await wait(`!${q(content)}`); await restored();
+    });
+  }
+  await check('AlertDialog 트리거가 있으면 열기 직전 요소보다 트리거 복귀를 우선', async () => {
+    await story('편집과확인', 'light', 'dialog');
+    await ev(`${q(trigger)}.focus()`); await restored();
+    // .click()은 포커스를 이동하지 않으므로 트리거와 직전 포커스를 서로 다르게 유지한다.
+    const alertTrigger = '[data-slot="alert-dialog-trigger"]';
+    await click(alertTrigger); await wait(`!!${q('[role="alertdialog"]')}`);
+    await click('[data-slot="alert-dialog-cancel"]'); await wait(`!${q('[role="alertdialog"]')}`);
+    await restored(alertTrigger);
+  });
   await check('깨끗한 폼은 확인 없이 닫힘·저장 후에도 보호 해제', async () => {
     await story('변경보호'); await pointerOpen(); await key('Escape', 27); await closed();
     assert.equal(await ev(`${q('[role="alertdialog"]')}`), null);

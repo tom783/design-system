@@ -38,6 +38,9 @@
 
 ### 고침
 
+- Dialog·SheetContent `dismissible=false`: 확인 AlertDialog 를 형제로 두면 Escape·닫기 버튼 한 번에 `onDismissAttempt` 가 두 번 불렸다.
+  확인창으로 포커스가 나가는 것은 시도로 세지 않는다. 막을 눌러도 포커스가 BODY 로 빠지지 않는다.
+- AlertDialog: 트리거 없이 상태로 연 확인창이 닫히면 열리기 직전 포커스 요소로 돌아간다(이전: BODY). 트리거·앱의 `onCloseAutoFocus` 가 우선한다.
 - R35 선행 보정(별도 변경): 페이지네이션 안의 페이지 크기 Select만 38px → 32px로 맞추고 번호 버튼과 높이가 같은지 하네스 단정을 추가했다. Select 공개 API는 유지한다.
 
 - 도그푸딩 4 V1–V3(R33): 입력 바탕 위에 앞쪽 아이콘을 그리고, 헤더 없는 CardBody의 위 여백을 16px로 맞춘다.

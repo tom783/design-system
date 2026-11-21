@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { resolveIntent } from '../../packages/ui/docs/_intent-data.ts';
+import { resolveIntent, resolvePageIntents } from '../../packages/ui/docs/_intent-data.ts';
 import { restoreComponent } from '../../packages/mcp/catalog.mjs';
 
 const entry = (name, extra = {}) => ({ name, purpose: `${name}의 목적`, source: `${name}.tsx`, ...extra });
@@ -31,6 +31,19 @@ test('Intent: 부모나 관련 이름이 사라져도 실패한다', () => {
 });
 test('Intent: partOf 순환 참조는 무한 루프 대신 실패한다', () => {
   assert.throws(() => resolveIntent([entry('A', { partOf: 'B' }), entry('B', { partOf: 'A' })], 'A'), /순환 참조/);
+});
+
+test('페이지 Intent: 같은 부모는 첫 부품 아래 한 번만 소개하고 페이지 간에는 독립적이다', () => {
+  const entries = [entry('Root'), entry('Part', { partOf: 'Root' }), entry('Child', { partOf: 'Part' }), entry('Sibling', { partOf: 'Root' })];
+  const before = structuredClone(entries);
+  const names = ['Child', 'Sibling'];
+  const resolved = resolvePageIntents(entries, names);
+  assert.deepEqual(resolved.map(intent => intent.component.name), names);
+  assert.deepEqual(resolved.map(intent => intent.parents.map(parent => parent.name)), [['Part', 'Root'], []]);
+  assert.deepEqual(resolvePageIntents(entries, names), resolved, '재렌더와 다른 페이지에 공유 상태가 새지 않는다');
+  assert.deepEqual(resolvePageIntents(entries, ['Root', 'Part', 'Sibling']).map(intent => [intent.component.name, intent.parents]), [['Root', []]]);
+  assert.deepEqual(resolvePageIntents(entries, ['Root', 'Child']).map(intent => [intent.component.name, intent.parents.map(parent => parent.name)]), [['Root', []], ['Child', ['Part']]]);
+  assert.deepEqual(entries, before);
 });
 
 const docs = new URL('../../packages/ui/docs/', import.meta.url);

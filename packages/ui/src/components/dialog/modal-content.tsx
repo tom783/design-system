@@ -19,19 +19,21 @@ export interface ModalContentProps extends React.ComponentProps<typeof Primitive
 
 export function ModalContent({ 'data-slot': contentSlot, overlayClassName, dismissible = true, onDismissAttempt, showClose = true, onEscapeKeyDown,
   onPointerDownOutside, onInteractOutside, className, children, ...props }: ModalContentProps) {
-  // pointerdownoutside와 interactoutside는 같은 이벤트를 전달한다. 한 번의 시도는 한 번만 알린다.
-  const lastAttempt = React.useRef<Event | null>(null);
+  // Escape·바깥 포인터만 사용자의 닫기 시도다. 형제 확인창으로의 포커스 이동은 알리지 않는다.
   const guard = (event: Event) => {
     if (dismissible) return;
     event.preventDefault();
-    if (lastAttempt.current !== event) { lastAttempt.current = event; onDismissAttempt?.(); }
+    onDismissAttempt?.();
   };
   return <Primitive.Portal>
-    <Primitive.Overlay data-slot="dialog-overlay" className={cn('ds-dialog-overlay', overlayClassName)} />
+    {/* 닫히지 않는 창의 막을 누르면 브라우저가 포커스를 BODY 로 옮긴다(실측: input → BODY, relatedTarget null).
+        그러면 확인창이 BODY 를 복귀 지점으로 기록해 취소 후 위치를 잃는다. 막 누름은 포커스를 옮기지 않는다. */}
+    <Primitive.Overlay data-slot="dialog-overlay" className={cn('ds-dialog-overlay', overlayClassName)}
+      onMouseDown={dismissible ? undefined : event => event.preventDefault()} />
     <Primitive.Content {...props} data-slot={contentSlot} className={cn('ds-dialog-content', className)}
       onEscapeKeyDown={event => { onEscapeKeyDown?.(event); guard(event); }}
       onPointerDownOutside={event => { onPointerDownOutside?.(event); guard(event); }}
-      onInteractOutside={event => { onInteractOutside?.(event); guard(event); }}>
+      onInteractOutside={event => { onInteractOutside?.(event); if (!dismissible) event.preventDefault(); }}>
       {children}
       {/* dismissible=false 는 바깥 클릭·Escape 를 막는다. 출구까지 막으면 갇힌다 —
           그래서 닫기 버튼을 내장한다. children 뒤에 두어야 초기 포커스가 첫 입력으로 간다.

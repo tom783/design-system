@@ -30,3 +30,15 @@ export function resolveIntent(components: readonly ComponentIntent[], name: stri
     .filter(target => !seen.has(target)).map(find);
   return { component: lineage[0]!, parents: lineage.slice(1), related };
 }
+
+/** 페이지에 부모 자체가 없으면 첫 부품 아래에서만 상속 규칙을 소개한다. */
+export function resolvePageIntents(components: readonly ComponentIntent[], names: readonly string[]) {
+  const intents = names.map(name => resolveIntent(components, name))
+    .filter(({ component }) => !component.partOf || !names.includes(component.partOf));
+  const documented = new Set(names);
+  return intents.map(intent => ({ ...intent, parents: intent.parents.filter(parent => {
+    if (documented.has(parent.name)) return false;
+    documented.add(parent.name);
+    return true;
+  }) }));
+}

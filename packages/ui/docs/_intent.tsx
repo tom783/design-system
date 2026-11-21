@@ -20,13 +20,13 @@ function Rules({ entry }: { entry: ComponentIntent }) {
 }
 
 /** 이름·부모 규칙·관련 컴포넌트는 검증된 매니페스트에서만 가져온다. */
-export function Intent({ name }: { name: string }): JSX.Element {
-  const { component, parents, related } = resolveIntent(components, name);
+export function Intent({ name, resolved }: { name: string; resolved?: ReturnType<typeof resolveIntent> }): JSX.Element {
+  const { component, parents, related } = resolved ?? resolveIntent(components, name);
   return <section className="intent-block" aria-label={`${name} 사용 의도`} data-intent-block={name}>
     <Rules entry={component} />
-    {parents.map(parent => <section key={parent.name} aria-label={`부모 ${parent.name} 규칙`}>
+    {parents.map(parent => <div key={parent.name} data-intent-inherited={parent.name}>
       <p>부품은 부모 {parent.name}의 규칙도 함께 적용합니다.</p><Rules entry={parent} />
-    </section>)}
+    </div>)}
     {!!related.length && <p>함께 보기: {related.map((entry, index) => <span key={entry.name}>
       {index > 0 && ' · '}<a data-intent-related={entry.name} href={`${repository}${entry.source}`} target="_blank" rel="noreferrer">{entry.name} 소스</a>
     </span>)}</p>}

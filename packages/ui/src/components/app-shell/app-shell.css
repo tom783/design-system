@@ -77,7 +77,8 @@
 }
 .ds-app-shell-drawer .ds-sheet-body { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
 .ds-side-nav[data-drawer="true"] { flex: 1; min-height: 0; width: 100%; border: 0; }
-.ds-side-nav[data-drawer="true"] .ds-side-nav-brand { padding-inline: var(--space-20); }
+/* 브랜드를 첫 줄로 두고 우상단 닫기의 실제 폭 32px와 양쪽 간격을 예약한다. */
+.ds-side-nav[data-drawer="true"] .ds-side-nav-brand { padding-inline: var(--space-20) calc(var(--space-12) + var(--control-h-sm) + var(--space-8)); }
 .ds-side-nav[data-drawer="true"] .ds-side-nav-item { justify-content: flex-start; padding-inline: var(--space-12); }
 .ds-side-nav[data-drawer="true"] .ds-side-nav-label,
 .ds-side-nav[data-drawer="true"] .ds-side-nav-meta,

@@ -3,14 +3,38 @@ import * as Primitive from '../../internal/alert-dialog';
 import { buttonVariants, type ButtonProps } from '../button';
 import { cn } from '../../lib/cn';
 
-export const AlertDialog = Primitive.Root;
-export function AlertDialogTrigger(props: React.ComponentProps<typeof Primitive.Trigger>) {
-  return <Primitive.Trigger data-slot="alert-dialog-trigger" {...props} />;
+const TriggerRefContext = React.createContext<React.RefObject<HTMLButtonElement | null> | null>(null);
+
+export function AlertDialog(props: React.ComponentProps<typeof Primitive.Root>) {
+  const trigger = React.useRef<HTMLButtonElement>(null);
+  return <TriggerRefContext.Provider value={trigger}><Primitive.Root {...props} /></TriggerRefContext.Provider>;
 }
-export function AlertDialogContent({ className, ...props }: React.ComponentProps<typeof Primitive.Content>) {
+export function AlertDialogTrigger({ ref, ...props }: React.ComponentProps<typeof Primitive.Trigger>) {
+  const trigger = React.useContext(TriggerRefContext);
+  const element = React.useRef<HTMLButtonElement>(null);
+  React.useImperativeHandle(ref, () => element.current!);
+  React.useImperativeHandle(trigger, () => element.current!);
+  return <Primitive.Trigger data-slot="alert-dialog-trigger" {...props} ref={element} />;
+}
+export function AlertDialogContent({ className, onOpenAutoFocus, onCloseAutoFocus, ...props }: React.ComponentProps<typeof Primitive.Content>) {
+  const trigger = React.useContext(TriggerRefContext);
+  const origin = React.useRef<HTMLElement | null>(null);
   return <Primitive.Portal>
     <Primitive.Overlay data-slot="alert-dialog-overlay" className="ds-dialog-overlay" />
-    <Primitive.Content data-slot="alert-dialog-content" className={cn('ds-dialog-content', className)} {...props} />
+    <Primitive.Content data-slot="alert-dialog-content" className={cn('ds-dialog-content', className)} {...props}
+      onOpenAutoFocus={event => {
+        // 취소 버튼으로 옮기기 전에 기록한다. 상태로만 연 확인창에는 Radix의 복귀 트리거가 없다.
+        origin.current = (event.target as HTMLElement).ownerDocument.activeElement as HTMLElement | null;
+        onOpenAutoFocus?.(event);
+      }}
+      onCloseAutoFocus={event => {
+        onCloseAutoFocus?.(event);
+        // 앱의 명시적 복귀와 기존 트리거를 우선하고, 연결된 원래 요소로의 복귀만 보완한다.
+        if (!event.defaultPrevented && !trigger?.current?.isConnected && origin.current?.isConnected) {
+          event.preventDefault();
+          origin.current.focus({ preventScroll: true });
+        }
+      }} />
   </Primitive.Portal>;
 }
 export function AlertDialogHeader({ className, ...props }: React.ComponentProps<'div'>) {

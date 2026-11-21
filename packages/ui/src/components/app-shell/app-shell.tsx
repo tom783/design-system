@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cn } from '../../lib/cn';
 import { Menu } from 'lucide-react';
 import { Button } from '../button';
-import { Dialog, DialogTrigger, DialogHeader, DialogTitle } from '../dialog';
+import { Dialog, DialogTrigger, DialogTitle } from '../dialog';
 import { SheetContent, SheetBody } from '../sheet';
 
 // CSS도 같은 경계값을 쓴다. 서버에서는 펼침 구조로 렌더하고 CSS가 첫 페인트부터 레일 폭을 보장한다.
@@ -51,7 +51,7 @@ export function AppShell({ sidebar, header, children, contentMaxWidth, narrowNav
             <DialogTrigger asChild><Button leadingIcon={<Menu aria-hidden="true" />}>메뉴 열기</Button></DialogTrigger>
             <SheetContent side="left" size="sm" className="ds-app-shell-drawer" aria-describedby={undefined}
               onCloseAutoFocus={event => { if (!narrow) { event.preventDefault(); main.current?.focus(); } }}>
-              <DialogHeader><DialogTitle>주 메뉴</DialogTitle></DialogHeader>
+              <DialogTitle className="sr-only">주 메뉴</DialogTitle>
               <SheetBody><ShellDrawerContext.Provider value={() => setMenuOpen(false)}>
                 {narrow && sidebar}
               </ShellDrawerContext.Provider></SheetBody>

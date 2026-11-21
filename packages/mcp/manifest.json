@@ -4395,7 +4395,6 @@
         "app-shell-skip",
         "button",
         "dialog-close-icon",
-        "dialog-header",
         "dialog-overlay",
         "dialog-title",
         "dialog-trigger",
@@ -5705,7 +5704,10 @@
         "AlertDialogAction",
         "AlertDialogCancel"
       ],
-      "source": "components/dialog/alert-dialog.tsx"
+      "source": "components/dialog/alert-dialog.tsx",
+      "extends": [
+        "React.ComponentProps<typeof Primitive.Root>"
+      ]
     },
     {
       "name": "AlertDialogTrigger",

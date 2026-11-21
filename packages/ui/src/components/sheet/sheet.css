@@ -5,10 +5,12 @@
     top: 0; bottom: 0; left: auto; right: 0; transform: none;
     width: calc(100% - var(--space-16)); max-width: 560px;
     height: 100dvh; max-height: 100dvh; border-radius: 0;
+    /* 화면에 붙은 세 변에는 선을 겹치지 않고 본문과 만나는 안쪽 변만 구분한다. */
+    border-width: 0; border-left-width: var(--border-width);
     display: flex; flex-direction: column; overflow: hidden; gap: 0; padding: 0;
     --sheet-offset: 100%;
   }
-  .ds-sheet-content[data-side="left"] { left: 0; right: auto; --sheet-offset: -100%; }
+  .ds-sheet-content[data-side="left"] { left: 0; right: auto; border-left-width: 0; border-right-width: var(--border-width); --sheet-offset: -100%; }
   .ds-sheet-content[data-size="sm"] { max-width: 400px; }
   .ds-sheet-content[data-size="lg"] { max-width: 720px; }
   .ds-sheet-content .ds-dialog-header, .ds-sheet-content .ds-dialog-footer {

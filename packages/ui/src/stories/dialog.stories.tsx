@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button, Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
+import { useState } from 'react';
+import { Button, Field, Input, Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription,
   AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '../index';
 
@@ -31,4 +32,32 @@ export const 편집과확인: Story = {
       </AlertDialogContent>
     </AlertDialog>
   </div>,
+};
+
+function ProtectedDialog() {
+  const [open, setOpen] = useState(false), [confirm, setConfirm] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  return <>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button onClick={() => setAttempts(0)}>배송지 편집</Button></DialogTrigger>
+      <DialogContent dismissible={false} onDismissAttempt={() => { setAttempts(n => n + 1); setConfirm(true); }}>
+        <DialogHeader><DialogTitle>배송지 편집</DialogTitle>
+          <DialogDescription>형제 확인창을 취소하면 편집하던 위치로 돌아갑니다.</DialogDescription></DialogHeader>
+        <Field label="배송지"><Input defaultValue="서울시 성동구" /></Field>
+        <output aria-label="닫기 시도 횟수">{attempts}</output>
+      </DialogContent>
+    </Dialog>
+    <AlertDialog open={confirm} onOpenChange={setConfirm}>
+      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>변경 내용을 버릴까요?</AlertDialogTitle>
+        <AlertDialogDescription>저장하지 않은 배송지 변경이 사라집니다.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel>계속 편집</AlertDialogCancel>
+          <AlertDialogAction variant="danger" onClick={() => setOpen(false)}>변경 버리기</AlertDialogAction></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>;
+}
+
+export const 형제확인창: Story = {
+  parameters: { docs: { story: { inline: false, iframeHeight: 400 } } },
+  render: () => <ProtectedDialog />,
 };

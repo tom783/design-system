@@ -221,6 +221,28 @@ try {
     assert.equal(await ev(`${q(main)}.scrollTop`), 400); assert.equal(await ev(`${q(menu)}.scrollTop`), 300);
     assert.deepEqual(await ev(`({brand:${q('[data-slot="side-nav-brand"]')}.getBoundingClientRect().top,toggle:${q(toggle)}.getBoundingClientRect().top,body:window.scrollY})`), before);
   });
+  await check('900px 서랍: 브랜드가 첫 줄·주 메뉴 접근명·닫기와 브랜드 겹침 없음', async () => {
+    await viewport(900); await story('components-appshell--좁은화면서랍');
+    await click('.ds-app-shell-menu button');
+    // 서랍은 CANVAS 바깥 포털이다. 내부 클릭에는 좌표를 쓰지 않는다.
+    const drawer = 'document.querySelector(".ds-app-shell-drawer")';
+    await wait(`!!${drawer} && ${drawer}.getAnimations().every(a => a.playState === 'finished')`);
+    const values = await ev(`(() => {
+      const panel=${drawer}, title=panel.querySelector('[data-slot="dialog-title"]');
+      const brand=panel.querySelector('[data-slot="side-nav-brand"]'), close=panel.querySelector('[data-slot="dialog-close-icon"]');
+      const p=panel.getBoundingClientRect(), b=brand.getBoundingClientRect(), c=close.getBoundingClientRect(), t=title.getBoundingClientRect();
+      const overlaps=[...brand.children].some(n => { const r=n.getBoundingClientRect(); return r.left<c.right && r.right>c.left && r.top<c.bottom && r.bottom>c.top; });
+      return { brand:brand.textContent, firstRow:b.top===p.top, overlaps,
+        name:document.getElementById(panel.getAttribute('aria-labelledby'))?.textContent,
+        hiddenTitle:t.width===1 && t.height===1 && getComputedStyle(title).clip==='rect(0px, 0px, 0px, 0px)',
+        titleAccessible:!title.hidden && title.getAttribute('aria-hidden')!=='true' };
+    })()`);
+    assert.deepEqual(values, { brand: '커머스 운영', firstRow: true, overlaps: false, name: '주 메뉴', hiddenTitle: true, titleAccessible: true });
+    const tree = await cdp('Accessibility.getFullAXTree');
+    assert.ok(tree.nodes.some(node => !node.ignored && node.role?.value === 'dialog' && node.name?.value === '주 메뉴'), '실제 접근성 트리에서도 주 메뉴로 식별한다');
+    await ev(`${drawer}.querySelector('[data-slot="dialog-close-icon"]').click()`);
+    await wait(`!${drawer}`); await viewport(1440);
+  });
   await check('모든 경로에서 콘솔 오류 0건', async () => assert.deepEqual(browser.errors(), []));
 } finally {
   writeFileSync(`${OUT}/results.json`, JSON.stringify({ results, errors: browser.errors() }, null, 2));

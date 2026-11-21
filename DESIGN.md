@@ -1592,8 +1592,9 @@ Content에 `aria-describedby={undefined}`를 명시한다. 초기 포커스는 R
 가능 요소 규칙을 바꾸지 않는다. 파괴적 버튼을 첫 요소로 배치하지 않는다.
 
 DialogContent의 `dismissible` 기본값은 true다. false는 onEscapeKeyDown·
-onPointerDownOutside·onInteractOutside 모두 preventDefault로 막고 onDismissAttempt를
-호출한다. 같은 pointer 이벤트의 두 콜백은 한 시도로 알린다. 앱은 onDismissAttempt에서
+onPointerDownOutside·onInteractOutside 모두 preventDefault로 막는다. onDismissAttempt는
+사용자의 Escape·바깥 포인터 누름·내장 닫기 버튼에서만 한 번 알린다. 확인창으로의
+포커스 이동은 닫기 시도가 아니다(R36b). 앱은 onDismissAttempt에서
 "작성 중인 내용이 사라집니다" 확인 AlertDialog를 열어야 한다. Escape를 무반응으로
 삼키지 않는다.
 
@@ -1618,6 +1619,9 @@ children 뒤에 렌더한다 — 뒤에 두어야 Radix의 첫 포커스가 입�
 Radix는 열린 직후 Cancel로 포커스를 옮긴다. 바깥 클릭은 닫지 않고 Escape는 닫는다.
 이 기본 동작을 덮어쓰지 않는다. AlertDialog에 폼을 넣지 않는다. 입력은 Dialog다.
 AlertDialogAction의 danger 변형은 기존 Button의 danger 액션 토큰을 재사용한다.
+트리거 없이 상태로 연 확인창은 닫힐 때 열리기 직전 요소가 연결돼 있으면 그곳으로 돌아간다.
+트리거가 있으면 기존 트리거 복귀를 유지하며, 앱의 onCloseAutoFocus가 preventDefault하면
+앱의 포커스 처리를 우선한다(R36b).
 
 **확인창은 부모보다 좁다.** 최대 폭은 부모의 36rem에서 기존 `--space-64` 두 개를
 뺀다. 작은 화면도 부모보다 양쪽 `--space-8`씩 안으로 들어와 층이 읽힌다.
@@ -2181,8 +2185,9 @@ Content에 `aria-describedby={undefined}`를 명시한다. 초기 포커스는 R
 가능 요소 규칙을 바꾸지 않는다. 파괴적 버튼을 첫 요소로 배치하지 않는다.
 
 DialogContent의 `dismissible` 기본값은 true다. false는 onEscapeKeyDown·
-onPointerDownOutside·onInteractOutside 모두 preventDefault로 막고 onDismissAttempt를
-호출한다. 같은 pointer 이벤트의 두 콜백은 한 시도로 알린다. 앱은 onDismissAttempt에서
+onPointerDownOutside·onInteractOutside 모두 preventDefault로 막는다. onDismissAttempt는
+사용자의 Escape·바깥 포인터 누름·내장 닫기 버튼에서만 한 번 알린다. 확인창으로의
+포커스 이동은 닫기 시도가 아니다(R36b). 앱은 onDismissAttempt에서
 "작성 중인 내용이 사라집니다" 확인 AlertDialog를 열어야 한다. Escape를 무반응으로
 삼키지 않는다.
 
@@ -2207,6 +2212,9 @@ children 뒤에 렌더한다 — 뒤에 두어야 Radix의 첫 포커스가 입�
 Radix는 열린 직후 Cancel로 포커스를 옮긴다. 바깥 클릭은 닫지 않고 Escape는 닫는다.
 이 기본 동작을 덮어쓰지 않는다. AlertDialog에 폼을 넣지 않는다. 입력은 Dialog다.
 AlertDialogAction의 danger 변형은 기존 Button의 danger 액션 토큰을 재사용한다.
+트리거 없이 상태로 연 확인창은 닫힐 때 열리기 직전 요소가 연결돼 있으면 그곳으로 돌아간다.
+트리거가 있으면 기존 트리거 복귀를 유지하며, 앱의 onCloseAutoFocus가 preventDefault하면
+앱의 포커스 처리를 우선한다(R36b).
 
 **확인창은 부모보다 좁다.** 최대 폭은 부모의 36rem에서 기존 `--space-64` 두 개를
 뺀다. 작은 화면도 부모보다 양쪽 `--space-8`씩 안으로 들어와 층이 읽힌다.
@@ -2294,6 +2302,7 @@ dismissible·onDismissAttempt·showClose는 DialogContent와 같은 계약이다
 
 side는 right(기본)·left, size는 sm 400·md 560(기본)·lg 720px 최대 폭이다.
 좁으면 반대편 16px를 남기며 선택한 가장자리에는 붙는다. 높이는 100dvh다.
+테두리는 본문과 만나는 안쪽 변만 1px이며 화면에 붙은 세 변은 0이다(R36b).
 DialogHeader·DialogFooter는 SheetBody 바깥에 둔다. 본문만 min-height:0·overflow-y:auto로
 스크롤하고 헤더·푸터는 flex:none으로 고정한다. 래퍼 안 헤더도 실제 닫기 버튼이 있을 때만
 자리를 비운다. showClose=false는 전체 제목 폭을 돌려주며 앱이 명시적 출구를 둔다.
@@ -2303,6 +2312,8 @@ reduced-motion에서는 막·패널의 animation·transition 지속시간을 정
 
 AppShell의 narrowNavigation은 기본 rail을 유지한다. drawer를 명시하면 1024px 미만에서
 메뉴 버튼으로 왼쪽 sm Sheet를 열고 SideNavItem 선택 시 닫는다. 메뉴 라벨은 펼쳐서 보여준다.
+서랍의 “주 메뉴” 제목은 sr-only 접근성 이름으로 남기고 브랜드를 첫 줄에 둔다.
+브랜드 오른쪽에는 내장 닫기 버튼의 폭과 간격을 비워 겹침을 막는다(R36b).
 넓어지면 서랍을 닫고 기존 사이드 메뉴를 보여준다. 서랍 닫기는 메뉴 버튼으로 포커스를 돌려준다.
 
 MCP에서 SheetContent는 partOf:Dialog로 닫기 보호 규칙을 상속한다. 배치별 검색어가 있는 부품만
