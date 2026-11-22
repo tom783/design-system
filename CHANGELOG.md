@@ -8,153 +8,254 @@
 
 ---
 
-## 0.3.1 — 미게시
+## 0.4.0 — 미게시
+
+앱 화면의 뼈대(앱 셸·페이지네이션·옆 패널)와 입력·표시 부품 여섯 가지를 더하고, 도그푸딩 2~5와
+2026-11-22 디자인 검토에서 찾은 시각·동작을 고쳤다. 공개 컴포넌트 102개 → **115개**.
+앱 코드나 시각 기준선에 닿는 변경은 **바뀐 동작(마이그레이션)** 에 모았다.
+
+이 판도 **앱 전체를 이 디자인 시스템으로 만드는 것을 전제로 한다.** `styles.css`(와 `tailwind.css`)는
+앱 전체에 preflight·기본 규칙을 적용하며, 기존 앱의 일부 화면에만 넣는 부품 전용 CSS는 제공하지 않는다.
 
 ### 추가
 
-- 같은 줄 정렬 FormRow(2026-11-22 오너 확정 — 폼 밀도 F98 · (b)): 같은 줄 Field들이 레이블·설명·입력·오류 네 행을 함께 쓴다(CSS subgrid). 한쪽만 설명이 있어도 입력칸 y 차이 0, 둘 다 없으면 높이 증가 0(Field 하나와 같은 86px), 오류 2개에도 입력칸 이동 0이다. 행은 Field 자식의 DOM 순서가 아니라 data-slot으로 배정하고, 컨테이너 480px 미만에서는 한 열로 접어 빈 설명 행을 남기지 않는다. 필드 피치 98px은 그대로다. Field의 부품으로 매니페스트·문서(Components/Form)에 올렸고 카탈로그는 88,651바이트(90KB 안)다. 하네스 `form-row-render-verify`(9건)를 전체 QA에 등록했다.
-
-- 등록 화면 스토리 `Screens/ProductCreate`(기본·오류 2개): 상품 등록 F98 · (b) — 카드 세 묶음, 같은 줄 여섯 곳을 FormRow로 정렬, 하단 고정 저장 줄. 폼 카드 묶음·하단 고정 줄 부품은 없어 Card와 sticky 유틸리티로 조립했다.
-
-- 대표 화면 스토리(2026-11-22 디자인 검토 확정안): `Screens/OrderList`(제목 display 34/40·700, 검색·필터 한 줄 툴바·`N건 선택` 일괄 동작·DataTable 다중 선택·Pagination), `Screens/OrderDetail`(D2 — 머리 오른쪽 ⋯ 더보기·수정·출고 처리, 삭제는 더보기 메뉴의 destructive 항목 → AlertDialog 기본 포커스 취소·확정 채운 danger; 기본·메뉴 열림·삭제 확인), `Screens/Dashboard`(StatTile 4개·TrendBand·BulletRow·최근 주문). 정식 부품만 조립하고 스토리 전용 CSS는 없다. 라이트·다크 1440×900 하네스 `screens-render-verify`(14건)를 전체 QA에 등록했다.
-
-- 단계 표시(R43): Steps의 0 기준 현재 위치·완료/진행 중/예정 자동 계산·오류 덮어쓰기, 완료 단계 버튼, 640px 미만 요약과 전체 라벨 보존을 추가했다. 단계마다 FormFlow 하나를 사용하는 상품 등록·제목 포커스 예시, 매니페스트 문서·MCP 갈림길·작성 전용 하네스를 포함한다. 세로 배치·폼 상태 관리·버전 변경은 없다.
-
-- 세그먼트 컨트롤(R42): options 배열 기반 SegmentedControl의 제어·비제어 단일 선택, 아이콘·비활성·sm/md·fullWidth·한 줄 말줄임, 그룹 이름·라디오 의미·로빙 키보드를 추가했다. Tabs·RadioGroup 갈림길, 독립 사용 예시·다크·표/카드 조립 스토리·MCP·작성 전용 하네스를 포함한다. 새 색 토큰·다중 선택·버전 변경은 없다.
-
-- KPI 지표 타일(R41): StatTile의 값·한국어 만/억/조 축약·원문 보존, 방향 아이콘·부호·goodDirection별 증감 색, 접근성 문장, 로딩·오류·재시도와 href/asChild 상세 링크를 추가했다. 4개 그리드·좁은 폭·다크·독립 사용 예시·매니페스트 문서·MCP 검색과 작성 전용 하네스를 포함한다. 스파크라인·새 색 토큰은 추가하지 않고 버전은 유지한다.
-
-- 날짜+시각(R40): DatePicker의 single에 `time=true | { step: 1 | 5 | 10 | 15 | 30 }`을 추가했다. 24시간 직접 입력·시/분 Select·최근접 분 칸 맞춤(동률 올림)과 알림, 날짜·빠른 선택의 시각 보존, Field 오류 연결·다크·독립 사용 예시·MCP 검색·작성 전용 하네스를 포함한다. 브라우저 지역 시간이며 서버 변환은 앱이 맡는다. range+시각은 타입으로 금지하고 버전은 유지한다.
-
-- 파일 업로드(R37): 제어형 FileUpload·FileUploadItem, 선택/드롭 공통 형식·크기·개수 검증, 파일별 상태·진행률·오류, Thumbnail 미리보기와 단일 대표 이미지 바꾸기·삭제를 추가했다. Field 오류 자리·ARIA·polite 알림·삭제 포커스와 object URL 정리를 제공한다. 전송·재시도·취소는 앱이 맡는다. 독립 사용 예시·매니페스트 문서·MCP 검색·작성 전용 하네스를 포함하며 버전은 유지한다.
-
-- 옆 패널(R36): SheetContent·SheetBody를 Dialog 부품과 조립한다. 좌우 배치·3가지 폭·본문 독립 스크롤·공유 닫기 보호와 모션, AppShell 선택형 narrowNavigation="drawer", 사용 예시·MCP 갈림길·작성 전용 하네스를 추가했다. 기본 레일과 버전은 유지한다.
-
-- 페이지네이션(R35): 제어형 Pagination의 범위·전체 건수·페이지 크기·번호 접기·이전/다음, polite 알림과 포커스 보존, 실제 폭 640px 미만의 간략 표시. DataTable 서버 페이징·800ms 지연·로딩 중 선택 유지와 새 응답 후 선택 해제 예시, 매니페스트 기반 문서·MCP·작성 전용 브라우저 하네스를 추가했다. URL 동기화는 앱이 맡으며 버전은 유지한다.
-
-- 앱 셸(R34): AppShell의 건너뛰기 링크·선택 상단 슬롯·독립 본문 스크롤, SideNav의 240px/64px 메뉴·자동 레일·그룹·배지·준비 중·링크 합성, PageHeader의 제목·경로·상태·반응형 액션. 접힘 저장은 앱이 맡는다. 사용 문서·MCP·라이트/다크 목록 조립 스토리와 작성 전용 브라우저 하네스를 추가했다. 버전은 유지한다.
-- Input `leadingIcon` 장식 슬롯. `type="search"`는 돋보기를 기본 제공하며 `leadingIcon={null}`로 끈다. 지우기·비밀번호 보기와 함께 쓸 수 있다.
-- 공개 유틸리티 `.sr-only`·`.tabular`를 두 CSS 경로에 직접 정의하고 README·시작하기에 용도를 안내한다. `.truncate`는 공개하지 않는다.
-
-- ui 토큰 하위 경로 `@s2life/ui/tokens.css`·`theme.css`·`tokens.json`. tokens 패키지 원본을 빌드 시 바이트 그대로 복사한다.
+- **앱 셸** — `AppShell` · `SideNav`(`SideNavGroup`·`SideNavItem`) · `PageHeader` (R34).
+  건너뛰기 링크·선택 상단 슬롯·독립 본문 스크롤, 240px 메뉴와 64px 레일(1024px 미만 자동 레일, 접기 버튼 숨김)·
+  그룹·배지·미오픈 항목·링크 합성, 제목·경로·상태·반응형 액션. 접힌 레일은 Tooltip 하나만 띄운다. 접힘 저장은 앱이 맡는다.
+- **옆 패널** — `SheetContent` · `SheetBody` (R36). Dialog 부품과 조립한다. 좌우 배치·세 가지 폭·본문 독립 스크롤,
+  닫기 보호(`dismissible`)와 모션은 Dialog와 같다. AppShell `narrowNavigation="drawer"`로 좁은 화면 메뉴를 서랍으로 연다.
+- **페이지네이션** — `Pagination` (R35). 범위·전체 건수(`1–20 / 1,284건`)·페이지 크기·번호 접기·이전/다음,
+  polite 알림과 포커스 보존, 실제 폭 640px 미만의 간략 표시. 크기 Select는 번호 버튼과 같은 32px다.
+  0건이면 그리지 않고 EmptyState가 대신 말한다. 로딩 중에는 조작만 막고 진행 표시는 표 스켈레톤이 맡는다.
+  URL 동기화는 앱이 맡는다.
+- **파일 업로드** — `FileUpload` (타입 `FileUploadItem`, R37). 제어형. 선택·드롭 공통 형식·크기·개수 검증,
+  파일별 상태·진행률·오류, Thumbnail 미리보기, 단일 대표 이미지(미리보기 최대 320px, 넓으면 옆에 정보·바꾸기·삭제).
+  드롭존 빈 곳을 눌러도 선택 창이 열린다. Field 오류 테두리는 드롭존에만 그린다. 전송·재시도·취소는 앱이 맡는다.
+- **날짜+시각** — DatePicker `mode="single"`의 `time={true | { step: 1 | 5 | 10 | 15 | 30 }}` (R40).
+  24시간 직접 입력·시/분 Select·최근접 분 칸 맞춤(동률 올림)과 알림, 날짜·빠른 선택의 시각 보존.
+  브라우저 지역 시간이며 서버 변환은 앱이 맡는다. range + 시각은 타입으로 막는다.
+- **KPI 지표 타일** — `StatTile` (R41). 값·한국어 만/억/조 축약(천 단위 쉼표 — `3,842만원`)·원문 보존,
+  방향 아이콘·부호·`goodDirection`별 증감 색, 접근성 문장, 로딩·오류·재시도, `href`/`asChild` 상세 링크.
+- **세그먼트 컨트롤** — `SegmentedControl` (R42). `options` 배열, 제어·비제어 단일 선택, 아이콘·비활성·sm/md·
+  `fullWidth`, 부모가 좁을 때만 한 줄 말줄임, 라디오 의미·로빙 키보드.
+- **단계 표시** — `Steps` (R43). 0 기준 `current`, 완료/진행 중/예정 자동 계산·오류 덮어쓰기, 완료 단계로만
+  돌아가는 버튼, 단계 사이를 잇는 연결선(완료 구간은 성공 색), 640px 미만 요약과 전체 라벨 보존.
+- **같은 줄 정렬** — `FormRow` (폼 밀도 F98 · (b), 2026-11-22 오너 확정). 같은 줄 Field들이 레이블·설명·입력·오류
+  네 행을 함께 쓴다(CSS subgrid). 한쪽만 설명이 있거나 오류가 둘이어도 입력칸이 어긋나지 않고, 컨테이너 480px
+  미만에서는 한 열로 접는다. 필드 피치 98px은 그대로다.
+- Input `leadingIcon` 장식 슬롯 (R33). 지우기·비밀번호 보기와 함께 쓴다. 아이콘은 입력 바탕 위에 그린다.
+- 공개 유틸리티 `.sr-only`·`.tabular`를 두 CSS 경로에 직접 정의했다. `.truncate`는 공개 계약이 아니다.
+- ui 토큰 하위 경로 `@s2life/ui/tokens.css`·`theme.css`·`tokens.json` (R27). tokens 패키지 원본을 빌드 때
+  바이트 그대로 복사한다 — 앱은 `@s2life/tokens`를 따로 설치하지 않는다.
+- 토큰 `--status-neutral-fg`·`--status-neutral-bg`(중립 상태·차트 "대기·기타" 계열, 계열 색 변수가 다섯 개가 됐다)·
+  `--bg-selected-row`(표 선택 행·달력 범위)·`--overlay-scrim`(대화상자 막)·`--side-nav-w`·`--side-nav-rail-w`.
+  Tailwind 이름 `neutral-ink`·`neutral-tint`·`selected-row`·`overlay-scrim`. 지운 토큰은 없다.
 - Carousel 루트 스타일을 확장하는 `className`.
-- 중립 상태 색 토큰 `--status-neutral-fg`·`--status-neutral-bg` (라이트·다크·OS 테마). 차트의 "대기·기타" 계열과
-  StatusChip neutral 이 쓴다 — 칩의 색 값은 그대로다. 계열 색으로 쓸 수 있는 변수가 다섯 개가 됐다.
+- 대표 화면 스토리(2026-11-22 디자인 검토 확정안) `Screens/OrderList`·`Screens/OrderDetail`(D2 — 머리 오른쪽
+  ⋯ 더보기 안의 삭제 → AlertDialog 기본 포커스 취소)·`Screens/Dashboard`·`Screens/ProductCreate`(F98 · (b)).
+  정식 부품만 조립했고 스토리 전용 CSS는 없다.
 
-### 바뀐 동작
+### 바뀐 동작 (마이그레이션)
 
-- **neutral StatusChip 바탕이 호버한 행에서 사라지지 않는다**(`--status-neutral-bg`, 2026-11-23 디자인 총괄 결정). 칩 바탕이 양 테마 모두 `--bg-hover` 와 같은 값이라 호버한 표 행에서 대비 1.00 — 글자와 아이콘만 남고 칩 모양이 없어졌다. 라이트는 neutral-100 `#EFECEB` → **neutral-200 `#E1DCDB`**(표면 1.36·호버 행 1.16·표 선택 행 1.15, 글자 7.14 → 6.18). 다크는 neutral-950 `#262222` → **`#312D2C`**(OKLCH 30% 0.007 H30, 래더 밖 — 표면 1.30·호버 행 1.16·표 선택 행 1.17, 글자 11.59 → 10.02). 다크 neutral-900 은 표 선택 행과 명도가 같아(1.006) 쓰지 않았다(DESIGN.md §2.4). FileUpload 파일 줄의 '전송 대기' 칩도 이 토큰을 쓰므로 함께 바뀐다(부품 코드 변경 없음). `--bg-hover`·다른 톤·`--status-neutral-fg`(차트 중립 계열)는 그대로다. 생성기에 "중립 칩 바탕이 표면·호버 행·표 선택 행과 구별된다" 대비 6건(양 테마)을 더했다. 앱은 neutral 칩이 보이는 시각 회귀 기준선을 갱신해야 하며, `--status-neutral-bg` 를 덮어쓰지 않았다면 코드 수정은 필요 없다.
+앱에서 보이거나 앱 코드를 바꿔야 할 수 있는 변경이다(0.x이므로 minor에 포함한다). 항목마다 **앱이 할 일**을 적었다.
+시각 회귀 기준선(스크린샷)을 쓰는 앱은 기준선을 다시 만든다.
 
-- 표 선택 행 전용 토큰 `--bg-selected-row`(Tailwind `bg-selected-row`, 2026-11-22 디자인 검토): DataTable 선택 행과 달력 범위가 쓴다. 다크는 brand-900 와인색(`#6A1021`)에서 채도를 절반으로 내린 `#552D32`(OKLCH 35% 0.06 H12)로 바뀐다 — 선택 행이 '취소 요청' danger 칩과 같은 계열로 읽히던 문제다. 호버 행과 대비 1.35·ΔE 10.7, 선택 행 위 danger 칩 바탕과 대비 1.39·ΔE 10.2, 본문 10.76·링크 7.05. 라이트는 brand-100 그대로다. SideNav 현재 메뉴·FileUpload 드래그 면은 `--bg-selected`를 유지한다. 생성기에 대비 8건·ΔE 2건 회귀 검사를 더했다. 앱이 `--bg-selected`로 표 선택 행을 직접 칠하고 있었다면 `--bg-selected-row`로 바꾼다.
+- **peer React `^19.3.1` → `^19.0.0`.** React·React DOM 19.0~19.2 앱도 설치할 수 있다. React 18은 지원하지 않는다.
+  배포 리허설을 React·React DOM 19.0.0(`@types` 19.0.x)으로도 돌려 타입·렌더를 확인했다.
+  - 앱이 할 일: 없다. React 18 앱은 19로 올린 뒤 설치한다.
+- **CSS 클래스에 `ds-` 접두어** (R39). 고유 클래스 37개(`.loading-*`·`.data-table-*`·`.state`·`.state-error`·
+  `.thumbnail`·`.avatar`)가 `.ds-<기존 이름>`이 됐다(예: `.loading-skeleton` → `.ds-loading-skeleton`,
+  `.data-table-cell` → `.ds-data-table-cell`). MediaViewer 재사용 선택자도 맞췄다. `data-slot`·공개 API·계산 스타일은 그대로다.
+  - 앱이 할 일: 앱 CSS·테스트가 옛 클래스 이름을 선택자로 쓰고 있었다면 `ds-` 이름으로 바꾼다(가능하면 `data-slot`으로 건다).
+    앱 클래스는 `ds-`로 시작하지 않고, `.flex`·`.hidden` 같은 유틸리티 이름을 다시 정의하지 않는다.
+- **기본 글꼴 Pretendard** (R30). `--font-sans` 첫 글꼴이 IBM Plex Sans KR → Pretendard Variable이다. 숫자 정렬은
+  본문 글꼴의 `tabular-nums`(`.tabular`)를 쓰고 `--font-mono`는 코드용 시스템 고정폭이다(IBM Plex Mono 제외).
+  글꼴 파일은 패키지에 없다 — 0.3.0의 IBM Plex도 Storybook에서만 로드되고 소비 앱에는 오지 않았다(도그푸딩 3 G7).
+  - 앱이 할 일: `npm install pretendard` 후 앱 진입점에서
+    `import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'`를 `@s2life/ui/styles.css` 앞에 한 번 불러온다.
+    불러오지 않으면 시스템 글꼴로 그려져 숫자 폭·줄바꿈이 디자인과 달라진다.
+- **포커스 링: 크림슨 → 중립 고대비** (R01 일부 변경, 오너 결정 2026-11-22). `--border-focus`가 라이트 brand-600 →
+  neutral-950 `#262222`, 다크 brand-400 → neutral-50 `#F7F6F5`(본문색과 같은 값)이다. 크림슨 링이 브랜드 채움·오류
+  빨강과 겹쳐 읽혔다(다크 포커스 vs 오류 ΔE76 22.6 → 60.6). 두께 2px·offset 2px와 안쪽 링 예외(Tabs·팝오버 안 검색
+  입력)는 그대로다. 전역 `:focus-visible`·Select·Calendar·DataTable 행·SegmentedControl·Steps·StatTile·Combobox가
+  함께 바뀐다. Tour·Hint 대상 링(`--hint-ring`)과 FileUpload 드래그 중 드롭존 테두리는 크림슨 그대로다.
+  - 앱이 할 일: `--border-focus`를 덮어쓰지 않았다면 코드 수정은 없다. 포커스 상태를 담은 시각 기준선을 갱신한다.
+    앱이 직접 그린 포커스 표시가 브랜드 색이면 `--border-focus`로 바꾼다.
+- **선택 배경 `--bg-selected` 값과 표 선택 행 전용 `--bg-selected-row`** (R32 · 2026-11-22 디자인 검토).
+  `--bg-selected`는 라이트 brand-50 → brand-100, 다크 brand-975 → brand-900이다(이전 값은 표면 대비 1.08·1.02로 선택이
+  거의 보이지 않았다). 표 선택 행·달력 범위 중간은 새 `--bg-selected-row`(Tailwind `bg-selected-row`)를 쓴다 — 라이트는
+  brand-100(`--bg-selected`와 같은 값), 다크는 brand-900 와인색 `#6A1021`의 채도를 절반으로 내린 `#552D32`다(선택 행이
+  '취소 요청' danger 칩과 같은 계열로 읽혔다. 호버 행과 ΔE 10.7, 본문 대비 10.76). `--bg-selected`는 현재 위치(SideNav
+  현재 메뉴)와 FileUpload 드래그 면이 쓴다.
+  - 앱이 할 일: 앱이 `--bg-selected`(`bg-selected`)로 표 선택 행이나 범위를 직접 칠했다면 `--bg-selected-row`로 바꾼다.
+    선택 행이 보이는 화면의 시각 기준선을 갱신한다.
+- **금액 칸 최소 폭 `--cell-min-w-money` 128px → 140px** (R30). `₩1,248,500,000`을 Pretendard tabular 14px로 잰
+  111.73px + 좌우 여백 28px다. 금액 열이 12px 넓어진다.
+  - 앱이 할 일: 금액 열 폭을 이 값에 맞춰 잡은 레이아웃(고정 폭 표 컨테이너 등)이 있으면 다시 확인한다.
+- **중립 칩 바탕(양 테마)** (2026-11-22 · 2026-11-23 디자인 총괄 결정). StatusChip `neutral`(미결제·판매중지 등)과 FileUpload
+  '전송 대기' 칩의 바탕 `--status-neutral-bg`가 라이트 `#EFECEB`(neutral-100 = `bg-sunken`) → neutral-200 `#E1DCDB`, 다크 `#060505`
+  (= `bg-sunken`) → `#312D2C`(OKLCH 30% 0.007 H30)다. 0.3.0 값은 다크에서 표면보다 어두워 구멍처럼 보였고, 중간에 시도한 값
+  (양 테마 `--bg-hover`와 같은 값)은 호버한 표 행에서 대비 1.00으로 칩 모양이 사라졌다. 이제 (라이트·다크) 표면 1.36·1.30, 호버 행
+  1.16·1.16, 표 선택 행 1.15·1.17로 구별되고 글자 대비는 라이트 7.14 → 6.18, 다크 14.99 → 10.02다. 글자색
+  `--status-neutral-fg`(차트 중립 계열)·`--bg-hover`·다른 톤은 그대로다.
+  - 앱이 할 일: `--status-neutral-bg`를 덮어쓰지 않았다면 코드 수정은 없다. neutral 칩이 보이는 화면(양 테마)의 시각 기준선을 갱신한다.
+- **Tabs 기준선** (R31 · 2026-11-22). 선택 밑줄이 기준선에서 5px 떠 있던 것을 기준선 위에 앉혔다 — 목록 아래 여백 4px와
+  경계선 1px를 없애 **탭 목록 높이가 5px 줄었다.** 기준선은 스크롤 내용 바닥에 붙인 1px 배경이라 클래식 스크롤바
+  (Windows·리눅스·마우스를 연결한 macOS, 10~11px)가 있어도 가려지지 않는다(이전에는 탭이 넘치면 스크롤바가 기준선을
+  덮었다). 탭 포커스 링은 스크롤 영역에서 잘리지 않게 안쪽에 그린다.
+  - 앱이 할 일: Tabs 아래 내용이 5px 올라온다. 탭 목록 높이에 맞춘 고정 값이 있으면 확인하고 시각 기준선을 갱신한다.
+- **Toast 닫기 버튼 위치·Escape·포커스 복귀** (2026-11-22). 닫기 버튼이 왼쪽 위 모서리 밖에 반쯤 걸친 20px 원에서
+  **오른쪽 위 안쪽 32×32**(Button ghost sm iconOnly와 같은 크기)로 옮겼고, 닫기가 있으면 본문 오른쪽 여백이 48px이다.
+  상태 아이콘은 여러 줄에서도 첫 줄 가운데에 선다. **Escape**가 포커스가 들어간 알림을 닫는다(닫기 버튼이 있는 알림만).
+  클릭·Escape로 닫으면 알림에 들어오기 직전 요소로 포커스가 돌아가고, 그 요소가 사라졌으면 `main` 랜드마크(tabindex가
+  없으면 -1을 준다)로 간다.
+  - 앱이 할 일: 코드 수정은 없다. 오류 알림(`toast.error`는 닫기 버튼 내장)의 배치가 바뀌니 시각 기준선을 갱신하고,
+    닫은 뒤 포커스를 단정하는 테스트는 '직전 요소'로 맞춘다. `main` 랜드마크가 없으면 포커스는 그대로 남는다(AppShell은 `main`을 그린다).
+    포커스를 가진 알림을 `toast.dismiss()`로 지운 뒤 다른 알림을 닫으면 최종 위치는 맞지만 그 요소에 focus·blur가 한 번
+    지나간다 — blur에서 검증하는 입력이면 검증이 한 번 돈다.
+- **DataTable 툴바 문구와 선택 표시** (R38 · 2026-11-22). 선택 상태 `N개 선택` → `N건 선택`(천 단위 쉼표 — Pagination
+  `1–20 / 1,284건`·부분 로드 안내·전체 선택 라벨과 단위를 맞췄다). 선택 기능이 없는 표에는 선택 상태 줄을 그리지 않는다.
+  부분 로드 내보내기는 버튼 `{N}건 내보내기`와 상태 문구 `전체 {M}건 중 {N}건`으로 나눴다(이전: 버튼 라벨이 문장
+  "로드된 50건만 내보냅니다"). MultiSelect의 `N개 선택`(고른 값의 개수)은 그대로다.
+  - 앱이 할 일: 이 문구로 요소를 찾던 e2e 테스트와 시각 기준선을 갱신한다.
+- **DataTable: `data`에서 빠진 행은 선택에서 자동 해제된다** (R29, 사용자 결정). 필터를 바꿔도 화면에 없는 행이 선택된 채
+  일괄 작업 대상이 되던 문제다(도그푸딩 3: 앱 1,250건 / 툴바 0개). 제어형이면 `onSelectedIdsChange(교집합)`를 한 번 부른다.
+  `state`가 `loading`·`error`일 때는 유지한다. 행을 덧붙이는 무한 스크롤에는 영향이 없다.
+  - 앱이 할 일: 서버 페이징에서 페이지를 넘겨도 선택을 남기려면 선택을 앱 상태에 따로 보관한다(새 `data`에 없는 id는 해제된다).
+    제어형은 `onSelectedIdsChange`가 데이터 변경만으로도 불린다는 것을 전제로 둔다.
+- **DatePicker 오류 줄·오류 문구·빠른 선택** (R29 · R40b · 2026-11-22 디자인 검수).
+  자체 오류 줄(20px)을 예약하지 않는다. Field 안에서는 Field의 오류 자리를 함께 써서(이중 예약 해소) **Field로 감싼
+  DatePicker가 20px 낮아지고**, Field 밖(필터 툴바)에서는 오류가 입력 아래 20px에 투명 바탕으로 걸친다 — 툴바에서 다른
+  컨트롤보다 10px 위에 놓이던 것이 맞춰진다. 오류 문구는 고치는 법을 말한다: 단일 `YYYY-MM-DD 형식으로 입력하세요.`
+  (이전 `날짜를 YYYY-MM-DD 형식으로 입력하세요.`), 형식이 맞고 값이 틀리면 `월은 01~12로 입력하세요.`·
+  `2026년 2월은 01~28일로 입력하세요.`. 기간은 형식 → 없는 날짜 → 순서 중 하나만 말한다:
+  `YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.` · `시작일: 2026년 2월은 01~28일로 입력하세요.` ·
+  `종료일을 시작일과 같거나 이후로 입력하세요.`(이전 `기간을 YYYY-MM-DD ~ YYYY-MM-DD 순서로 입력하세요.`).
+  빠른 선택은 모드를 따른다 — 기간 `오늘·최근 7일·이번 달·지난 달`, 단일 `오늘·어제`, 단일 + 시각 `오늘·내일`
+  (이전에는 단일에서도 기간 단추가 나와 "이번 달"이 그 달 끝날을 골랐다).
+  - 앱이 할 일: Field 밖 DatePicker 아래(필터 툴바 아래)는 20px 이상 띄운다. 오류 문구·빠른 선택 단추 이름으로 찾던 테스트와
+    Field로 감싼 폼의 시각 기준선을 갱신한다.
+- **Input: 검색 입력의 기본 돋보기, 폭 클래스는 바깥 래퍼에** (R33 · 2026-11-22). `type="search"`가 앞쪽 돋보기를 기본으로
+  그린다(`leadingIcon={null}`로 끈다). 래퍼가 있는 입력(검색·비밀번호·앞 아이콘)에서 `className`의 폭·배치 클래스
+  (`w-`·`min-w-`·`max-w-`·`flex-1`·`basis`·`grow`·`shrink`·`order`·`self`·`col-`/`row-`·`m*`)는 바깥 래퍼
+  `.ds-input-control`에 붙는다 — 이전에는 안쪽 input에만 붙어 `className="w-80"`을 줘도 래퍼(width:100%)가 툴바 한 줄을
+  차지했다. 글자·테두리·안쪽 여백 클래스는 input에 남는다.
+  - 앱이 할 일: 검색 입력 앞에 돋보기를 직접 붙였다면 지운다(두 개가 된다). 래퍼 폭을 앱 CSS로 덮던 우회가 있으면
+    `className` 폭 클래스로 바꾼다.
+- **헤더 없는 CardBody의 위 여백 16px** (R33). CardBody가 카드의 첫 자식이면 위 여백 16px로 헤더 있는 카드와 시작선을 맞춘다.
+  - 앱이 할 일: 헤더 없는 카드에 위 여백을 앱이 직접 주고 있었다면 지운다.
+- **PageHeader는 바깥 여백이 없다** (R38). 간격은 부모의 `gap`이 준다 — 앱 gap과 겹쳐 머리와 툴바 사이가 약 60px이던
+  문제다. AppShell 본문 여백(24px, 좁으면 16px)은 내장이다. *0.3.0에는 없던 부품이라 미게시 빌드로 먼저 쓴 앱만 해당한다.*
+  - 앱이 할 일: 페이지 루트를 `flex flex-col gap-6`처럼 묶어 PageHeader 아래 간격을 준다. AppShell 안 페이지 루트에 padding을 다시 주지 않는다.
+- **SideNav 미오픈 표시 "출시 예정"** (2026-11-22 디자인 검토 §25). `SideNavItem disabled`의 라벨 옆 문구·접근 이름·접힌
+  레일 툴팁이 `준비 중` → `출시 예정`이다 — 주문 상태 칩 "준비 중"과 한 화면에서 두 뜻이 됐다. 글자색은 `--text-disabled`다.
+  *0.3.0에는 없던 부품이라 미게시 빌드로 먼저 쓴 앱만 해당한다.*
+  - 앱이 할 일: "준비 중"으로 메뉴 항목을 찾던 테스트를 "출시 예정"으로 바꾼다.
+- **MCP 응답 크기 예산은 응답 단위다** (R37 · R42). 상한을 AI에게 실제로 가는 응답마다 둔다: `design://components`(카탈로그)
+  90,000바이트(0.3.0: 80,000) · `list_components` 24,000 · `get_component` 한 건(부모 의도 포함) 6,000 · `design://tokens`
+  80,000 · `get_rules` 전체 8,000. 0.3.0의 "전체 매니페스트 160,000바이트" 상한은 없앴다 — 한 번에 전송되는 응답이 아니다.
+  생성할 때 하나라도 넘으면 빌드가 멈춘다. 이번 판 실측: 카탈로그 88,863 · 토큰 67,507 · 규칙 4,327 · 목록 19,873 ·
+  상세 최대 4,576(DataTable).
+  - 앱이 할 일: 없다. MCP를 쓰는 AI 클라이언트의 컨텍스트 예산은 위 응답 단위로 잡는다.
+- **내부 도우미 8개는 다음 마이너에서 공개 API에서 빠진다 (예고).** `placeFallback`·`resolveStep`·`useAnchored`·
+  `supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`에 `@deprecated`를 붙였다.
+  0.4.0에서는 그대로 쓸 수 있다.
+  - 앱이 할 일: 쓰고 있다면 공개 부품으로 옮긴다 — 위치·앵커는 Tooltip·Hint·Tour·Peek, Enter 이동은 FormFlow,
+    로딩 표시 지연은 `useDelayedLoading`. `shouldValidate`는 같은 판단식 `!isComposing && (trigger !== 'change' || hasErrored)`을 앱에 둔다.
 
-- **포커스 링 색이 크림슨에서 진한 회색(라이트 `#262222`)/밝은 회색(다크 `#F7F6F5`)으로 바뀌었다**(R01 일부 변경, 오너 결정 2026-11-22). `--border-focus` 가 brand-600/brand-400 대신 neutral-950/neutral-50(본문색과 같은 값)을 가리킨다. 크림슨 링이 브랜드 채움·오류 빨강과 겹쳐 읽혔기 때문이다(다크 포커스 `#FF8394` vs 오류 `#FF896E` ΔE76 22.6 → 새 값 60.6). 두께 2px·offset 2px·안쪽 링 예외(Tabs·팝오버 안 Combobox 검색 입력)는 그대로다. `--border-focus` 를 쓰는 전역 `:focus-visible`·shadcn `ring`(Select·Calendar)·DataTable 행·SegmentedControl·Steps·StatTile·Combobox 포커스가 함께 바뀐다. Tour·Hint 대상 링(`--hint-ring`)·선택 바탕(`--bg-selected`)·FileUpload 드래그 중 드롭존 테두리는 크림슨 그대로다(드롭존은 포커스 토큰 대신 브랜드 윤곽 `--action-primary-border` 를 쓴다). 앱은 포커스 상태를 담은 시각 회귀 기준선을 갱신해야 하며, `--border-focus` 를 덮어쓰지 않았다면 코드 수정은 필요 없다. 생성기에 포커스 링 vs 오류 글자 ΔE 검사(양 테마)를 추가했다.
-
-- MCP 예산(R42): 한 번에 전송되지 않는 전체 매니페스트 160KB 상한을 실제 응답인 design://tokens 80KB·get_rules 전체 8KB로 바꿨다. 카탈로그 90KB·목록 24KB·상세 6KB는 유지하며 경계값·UTF-8 초과 테스트를 추가했다.
-
-- CSS 이름 공간(R39): loading·data-table·state·thumbnail·avatar의 내부 클래스 이름 37개를 `ds-<기존 이름>`으로 바꾸고 MediaViewer의 재사용 선택자도 맞췄다. 앱 CSS가 옛 이름을 덮어쓰고 있었다면 해당 선택자를 `ds-` 이름으로 바꿔야 한다. `data-slot`·공개 API·계산 스타일은 유지한다. `styles.css`의 앱 전체 preflight·유틸리티 계약과 앱 클래스 이름 규칙을 README·시작하기·MCP 원칙에 명시했다.
-
-- 기본 글꼴을 Pretendard Variable로 바꿨다. 차트 숫자·진행률 퍼센트와 숫자 정렬 스토리는 본문 글꼴의 `tabular-nums`를 쓰며, `--font-mono`는 코드 표시용 시스템 고정폭이다.
-  이전 IBM Plex 는 Storybook 에서만 로드되고 소비 앱에는 오지 않았다(도그푸딩 3 G7: 로드된 웹폰트 0개).
-  글꼴 파일은 패키지에 넣지 않는다 — 앱이 `pretendard` 를 불러오지 않으면 시스템 글꼴로 그려진다.
-- 금액 칸 최소 폭 `--cell-min-w-money` 128px → **140px**. `₩1,248,500,000` 을 Pretendard tabular 14px 로
-  잰 폭 111.73px + 좌우 여백 28px (브라우저 실측). IBM Plex Mono 기준값으로는 12px 모자랐다.
-- **DataTable: `data` 에서 빠진 행은 선택에서 자동 해제된다.** 필터를 바꿔도 화면에 없는 행이 선택된 채 남아
-  일괄 작업 대상이 되던 문제(도그푸딩 3: 앱 1,250건 / 툴바 0개). 제어형이면 `onSelectedIdsChange(교집합)` 를
-  한 번 부른다. `state` 가 `loading`·`error` 일 때는 유지한다. 행을 덧붙이는 무한 스크롤에는 영향이 없다.
+그 밖의 시각 보정(Select 계열 트리거 통일·다크 대화상자 막·달력 날짜 색·메뉴 글자 시작 정렬 등)은 **고침**에 있다.
+코드 수정은 필요 없지만 시각 기준선에는 함께 잡힌다.
 
 ### 고침
 
-- DataTable 내장 툴바의 선택 상태를 `N개 선택`에서 `N건 선택`으로 바꿨다(천 단위 쉼표 포함). Pagination(`1–20 / 1,284건`)·부분 로드 안내·전체 선택 라벨과 단위가 갈렸다. 선택 상태 줄을 찾던 스토리·하네스 단정도 함께 고쳤다. MultiSelect의 `N개 선택`(고른 값의 개수)은 그대로다.
-
-- StatTile 축약 값: 앞수가 네 자리일 때 천 단위 쉼표가 빠져 38,420,000원이 `3842만원`으로 나왔다. compact 서식의 기본 useGrouping(`min2`)을 `true`(always)로 바꿔 `3,842만원`으로 표시한다. 같은 줄의 `1,284건`과 표기가 맞는다. `format`으로 덮을 수 있고 원문(`full`)은 그대로다.
-
-- Input 검색·비밀번호·앞 아이콘: className의 폭·배치 클래스(w-·min-w-·max-w-·flex-1·basis·grow·shrink·order·self·col-/row-·m*)를 바깥 래퍼 `.ds-input-control`에 붙인다. 안쪽 input에만 붙어 `className="w-80"`을 줘도 래퍼(width:100%)가 툴바 한 줄을 차지했다. 글자·테두리·안쪽 여백은 input에 남고, 래퍼 없는 입력은 그대로다. 분리 규칙 단위 테스트와 툴바 한 줄 하네스 검사를 추가했다.
-
-- DropdownMenuItem `destructive`: 글자·삭제 아이콘 색을 채움용 `text-destructive`(danger-700 `#B42800`)에서 테마별 글자 토큰 `text-danger-ink`(`--status-danger-fg`)로 바꿨다. 다크 팝오버에서 2.73:1로 본문 하한 4.5:1에 못 미쳤다. 이제 라이트 6.47:1·하이라이트 5.51:1, 다크 7.63:1·하이라이트 6.79:1이다. 토큰 생성기에 메뉴 파괴적 항목 대비 4건, 레이어 하네스에 계산 색 대비 검사를 추가했다. 라이트 글자색은 같은 값이다.
-
-- 도그푸딩 5 보정(R38): PageHeader의 바깥 여백을 페이지의 gap 24px로 옮기고 기존 예시 간격을 보존했다. AppShell 내장 여백·필터 Select 폭 규칙을 안내한다. DataTable은 선택 기능 없이 선택 상태를 표시하지 않으며 부분 로드 내보내기를 짧은 버튼과 범위 안내로 나눈다. 추천은 떨어진 낱말과 검색 입력을 찾으며 전체 기존 질의의 1순위를 대조한다. 버전·공개 API·Select 기본 폭·카탈로그 상한은 유지한다.
-
-- Dialog·SheetContent `dismissible=false`: 확인 AlertDialog 를 형제로 두면 Escape·닫기 버튼 한 번에 `onDismissAttempt` 가 두 번 불렸다.
-  확인창으로 포커스가 나가는 것은 시도로 세지 않는다. 막을 눌러도 포커스가 BODY 로 빠지지 않는다.
-- AlertDialog: 트리거 없이 상태로 연 확인창이 닫히면 열리기 직전 포커스 요소로 돌아간다(이전: BODY). 트리거·앱의 `onCloseAutoFocus` 가 우선한다.
-- R35 선행 보정(별도 변경): 페이지네이션 안의 페이지 크기 Select만 38px → 32px로 맞추고 번호 버튼과 높이가 같은지 하네스 단정을 추가했다. Select 공개 API는 유지한다.
-
-- 도그푸딩 4 V1–V3(R33): 입력 바탕 위에 앞쪽 아이콘을 그리고, 헤더 없는 CardBody의 위 여백을 16px로 맞춘다.
-- Select 계열 4종의 표면·경계·38px 높이·빈 상태 시작선과 꺾쇠(16px·text-tertiary·불투명도 1·오른쪽 13px)를 통일한다. 다중 Combobox 태그 영역의 밀도는 유지한다.
-- MCP Input·Card 소비자 규칙과 스토리를 갱신했다. 검색·카드·선택 트리거·공개 유틸리티 계산 스타일 하네스는 작성만 하며 브라우저 실행은 사용자 검증에 맡긴다.
-
-- 레이어 디테일(R32): Dialog·AlertDialog·MediaViewer popup의 막을 테마별 검정 의미 토큰으로 분리해 다크에서도 뒤 화면을 어둡게 한다.
-- 닫기 버튼이 없는 Dialog·AlertDialog 제목과 설명이 상자 안쪽 폭을 모두 쓴다.
-- Combobox 단일/다중·MultiSelect의 활성 후보를 Select와 같은 배경·outline 없음으로 맞추고, 팝오버 안 검색 입력의 2px 포커스 링을 안쪽에 그린다.
-- 아이콘이 섞인 메뉴의 글자 시작을 자동 정렬하고, Select·DropdownMenu(하위 메뉴 포함)·DatePicker/Popover·Combobox·MultiSelect의 기본 충돌 여백을 기존 8px 토큰으로 통일한다.
-- 선택 배경 `--bg-selected` 를 라이트 brand-50 → **brand-100**, 다크 brand-975 → **brand-900**. 이전 값은 표면 대비
-  1.08 · 1.02 로 표의 선택된 행과 달력 범위가 거의 보이지 않았다(다크에서 사실상 구별 불가). 이제 1.18 · 1.44,
-  본문 글자 대비 13.29 · 11.38. 달력 범위 중간도 이 토큰을 써서 호버와 구별된다.
-- 양 테마에서 실제 포인터로 여는 레이어 디테일 하네스를 전체 QA에 등록했다. 이번 실행 환경의 브라우저 기동 제한으로 실측은 미완료다.
-
-- ClampText가 `white-space: nowrap` 조상(예: DataTable 셀) 안에서 긴 글을 더보기 없이
-  자르던 문제. 글이 가로로만 길어져 세로 넘침 측정이 "안 넘침"으로 판정했다
-  (도그푸딩 2: 1210/576px, 더보기 0/16). 내용이 `text-wrap-mode: wrap` 과
-  `overflow-wrap: anywhere` 를 소유한다. `white-space: normal` 이 아니라서
-  `pre-line`·`pre` 로 보존한 사용자 개행은 그대로 남는다.
+- ClampText가 `white-space: nowrap` 조상(예: DataTable 셀) 안에서 긴 글을 더보기 없이 자르던 문제(도그푸딩 2: 1210/576px,
+  더보기 0/16). 내용이 `text-wrap-mode: wrap`과 `overflow-wrap: anywhere`를 소유한다. `white-space: normal`이 아니라서
+  `pre-line`·`pre`로 보존한 사용자 개행은 그대로 남는다.
 - DataTable 헤더 체크박스가 보이는 행 중 선택이 0개인데 "일부 선택"으로 보이던 문제. 현재 행 기준으로 센다.
-- DatePicker 범위 입력이 고른 기간보다 좁아 잘리던 문제 (입력 198px < 값 216px · 플레이스홀더 238px → 264px).
-- DatePicker 가 필터 툴바에서 다른 컨트롤보다 10px 위에 놓이던 문제. 자체 오류 줄을 예약하지 않는다 —
-  Field 안에서는 Field 의 오류 자리를 함께 쓰고(이중 예약 해소), Field 밖에서는 입력 아래에 띄운다.
-  오류 문구가 고치는 법을 말한다: "YYYY-MM-DD 형식으로 입력하세요." · "시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요."
-
-- Tabs 선택 밑줄이 기준선에서 5px 떠 있던 문제. 목록 아래 여백을 없애고 기준선을 안쪽 그림자로 그려 2px 밑줄이
-  기준선 위에 앉는다. 탭의 키보드 포커스 링은 스크롤 영역에서 잘리지 않게 안쪽(`outline-offset` 음수)에 그린다.
-- Field 안의 RadioGroup 에 접근 이름이 없던 문제. Field 레이블이 `<label htmlFor>` 로는 `div` 루트에 연결되지
-  않았다 — 이제 레이블 id 를 `aria-labelledby` 로 넘긴다(소비자의 `aria-label`·`aria-labelledby` 가 우선).
-  라디오 묶음 제목을 Field 로 주면 다른 레이블과 같은 모양이 된다.
+- DatePicker 범위 입력이 고른 기간보다 좁아 잘리던 문제(입력 198px < 값 216px · 플레이스홀더 238px → 264px).
+- 달력의 이번 달 날짜는 `--text-primary`, 이웃 달 날짜는 `--text-tertiary`다(대비 라이트 5.95 · 다크 8.05). 이전에는 셀 색보다
+  안쪽 ghost 버튼의 글자색이 우선해 둘 다 `--text-secondary`였다.
+- Field 안의 RadioGroup에 접근 이름이 없던 문제. Field 레이블이 `<label htmlFor>`로는 `div` 루트에 연결되지 않았다 —
+  레이블 id를 `aria-labelledby`로 넘긴다(소비자의 `aria-label`·`aria-labelledby`가 우선). 묶음 제목을 Field로 주면 다른 레이블과 같은 모양이다.
+- Dialog·SheetContent `dismissible={false}`: 확인 AlertDialog를 형제로 두면 Escape·닫기 버튼 한 번에 `onDismissAttempt`가
+  두 번 불렸다. 확인창으로 포커스가 나가는 것은 시도로 세지 않는다. 막을 눌러도 포커스가 BODY로 빠지지 않는다.
+- AlertDialog: 트리거 없이 상태로 연 확인창이 닫히면 열리기 직전 포커스 요소로 돌아간다(이전: BODY). 트리거·앱의
+  `onCloseAutoFocus`가 우선한다.
+- Dialog·AlertDialog·MediaViewer 팝업의 막이 본문 글자색을 섞어 다크에서 밝아지던 문제. 테마별 검정 막 `--overlay-scrim`
+  (라이트 35% · 다크 65%)을 쓴다 (R32).
+- 닫기 버튼이 없는 Dialog·AlertDialog의 제목과 설명이 상자 안쪽 폭을 모두 쓴다.
+- Combobox 단일/다중·MultiSelect의 활성 후보를 Select와 같은 배경·outline 없음으로 맞추고, 팝오버 안 검색 입력의 2px 포커스 링을 안쪽에 그린다.
+- 아이콘이 섞인 메뉴의 글자 시작을 맞추고, Select·DropdownMenu(하위 메뉴 포함)·DatePicker/Popover·Combobox·MultiSelect의
+  화면 가장자리 충돌 여백을 8px 토큰으로 통일했다.
+- Select·Combobox 단일/다중·MultiSelect 트리거의 바탕(`bg-surface`)·경계·38px 높이·빈 상태 글자 시작과 꺾쇠(16px·
+  text-tertiary·불투명도 1·오른쪽 13px)를 통일했다 (R33). 다중 Combobox 태그 영역의 밀도는 그대로다.
+- DropdownMenuItem `destructive`의 글자·아이콘 색을 채움용 `text-destructive`(danger-700 `#B42800`)에서 테마별 글자 토큰
+  `text-danger-ink`(`--status-danger-fg`)로 바꿨다. 다크 팝오버에서 2.73:1로 본문 하한 4.5:1에 못 미쳤다. 이제 라이트 6.47:1·
+  하이라이트 5.51:1, 다크 7.63:1·하이라이트 6.79:1이다. 라이트 글자색은 같은 값이다.
 
 ### 바뀐 지침 (MCP)
 
-- `purpose`·`useWhen`·`dont`·`rules`를 화면을 만드는 소비자의 말로 정리했다.
-  구현 메모는 DESIGN.md에 보존하고, 규칙마다 한 생각과 출처를 둔다.
-  빌드에서 구현 금지어·120자 초과·컴포넌트 사이 규칙 복제를 차단한다.
-  MCP 상세 기준선 8개와 목록의 용도를 갱신하고 R26의 임시 dont 델타를 흡수했다.
-- ClampText: "DataTable 셀에 쓰지 마라" — 셀이 말줄임과 전체 값 `title` 을 이미 제공한다.
-- DataTable: "긴 글 열을 ClampText 로 감싸지 마라".
-- DataTable: 빠진 행의 선택 자동 해제, 화면 라벨이 원본과 다른 열(상태 등)은 `exportValue` 로 CSV 값을 지정.
-- 행 액션 트리거는 `Button variant="ghost" size="sm" iconOnly` + `Ellipsis` 아이콘 + 행을 밝히는 `aria-label`.
-  문자 `⋯`·테두리 버튼을 쓰지 않는다. 열 제목은 화면에서 숨긴다.
+- `purpose`·`useWhen`·`dont`·`rules`를 화면을 만드는 소비자의 말로 정리했다(R28). 구현 메모는 DESIGN.md에 보존하고,
+  규칙마다 한 생각과 출처를 둔다. 빌드에서 구현 금지어·120자 초과·컴포넌트 사이 규칙 복제를 차단한다.
+- 원칙(`get_rules` 간격): "앱 전체를 이 시스템으로 만든다. styles.css는 앱 전체 preflight를 포함하며 부품 전용 CSS는 없다."
+  와 "앱 CSS 클래스는 ds-로 시작하지 않으며, .flex·.hidden 같은 유틸리티 이름을 다시 정의하지 않는다."
+- 추천(`which_component`): 여러 낱말 키워드는 떨어져 있어도 맞춘다(R38 — "옆에서 열리는 편집 패널" → SheetContent,
+  "상품 이미지 여러 장 업로드" → FileUpload, "상품명 검색" → Input). 문장 비교에서 일반어 10개(관련·아무·없는·있는·위한·
+  대한·통해·경우·모든·어떤)를 빼 무관한 질의가 부품에 매칭되지 않는다.
+- 새 부품의 규칙과 갈림길(AppShell·SideNav·PageHeader·Pagination·Sheet·FileUpload·StatTile·SegmentedControl·Steps·FormRow).
+  그중 화면 조립 규칙: AppShell 본문 여백은 내장이라 페이지 루트에 padding을 다시 주지 않는다 · PageHeader는 바깥 여백이 없고
+  간격은 gap · 미오픈 메뉴는 "출시 예정" · Pagination의 진행 표시는 표 스켈레톤이 맡는다.
+- Select: 필터 줄에서는 폭을 지정한다.
+- DatePicker: Field 밖 오류는 아래로 20px 걸치므로 필터 툴바 아래는 20px 이상 띄운다.
+- Toaster: 포커스가 들어간 알림은 Escape로 닫힌다.
+- ClampText: "DataTable 셀에 쓰지 마라" — 셀이 말줄임과 전체 값 `title`을 이미 제공한다.
+- DataTable: "긴 글 열을 ClampText로 감싸지 마라" · 빠진 행의 선택 자동 해제 · 화면 라벨이 원본과 다른 열(상태 등)은
+  `exportValue`로 CSV 값을 지정.
+- 행 액션 트리거는 `Button variant="ghost" size="sm" iconOnly` + `Ellipsis` 아이콘 + 행을 밝히는 `aria-label`. 문자 `⋯`·
+  테두리 버튼을 쓰지 않는다. 열 제목은 화면에서 숨긴다.
 - Input: 숫자 입력은 예상 자릿수에 맞춰 폭을 좁힌다 — 넓은 칸 오른쪽 끝의 숫자는 레이블과 멀어진다.
-- RadioGroup: 묶음 제목은 Field 로 준다.
+- RadioGroup: 묶음 제목은 Field로 준다.
 - CompositionArea: 계열 색은 `--status-{neutral,info,warning,success,danger}-fg`. 목록 밖 이름은 검게 그려진다.
 
 ### 문서
 
-- DESIGN.md §6.1 선택·현재 표시 표를 네 갈래로 고쳤다: 현재 위치 = 브랜드(SideNav 틴트+600·Tabs 2px 밑줄+600), 선택된 데이터 = 선택 틴트(`--bg-selected-row`), 모드·값 = 중립 칩, 진행 = 브랜드 채움. 달력은 시작·끝·단일 = 브랜드 채움, 범위 중간 = 선택 틴트다. §11.9에서 'Field 옵션'·'추가 부품 후보 4' 언급을 지웠다.
-
-- DESIGN.md에 2026-11-22 디자인 검토 문안을 넣었다: §6.1 선택·현재 표시 규칙 표, §6.2 상세 화면의 파괴적 액션(⋯ 더보기 안 삭제·확정 단계에서만 채운 danger), §11.9 폼 세로 리듬과 같은 줄 정렬(FormRow), §24.4 페이지 제목 34 단일, §25 문구(건/개·출시 예정·범위 오류·숫자 축약). 문안은 그대로 옮겼고 현 코드와 다른 곳은 고치지 않았다.
-
-- 앱의 Pretendard 설치·CSS import와 Next.js App Router·Vite 진입점 안내를 추가했다. 글꼴 파일은 앱이 호스팅하며, 배포 리허설이 기본·Tailwind 경로에서 실제 로드를 검사한다.
-- React 앱 설치 안내를 `npm install @s2life/ui pretendard`와 Pretendard·`@s2life/ui/styles.css` import 두 줄로 통일했다. 토큰 직접 접근도 ui 하위 경로를 사용하며, tokens는 ui가 같은 버전으로 고정해 가져온다.
-  이전 "시작하기"가 안내하던 `import '@s2life/tokens/tokens.css'` 는 `styles.css` 와 중복이었고,
-  pnpm 에서 ui 만 설치하면 해석에 실패해 빌드가 깨졌다. 배포 리허설은 이제 tokens 직접 의존 없이 ui·pretendard를 설치한 앱으로 검증한다.
-- 모든 `Components/*` 에 문서 페이지: 사용 의도 → 사용법(코드 보기) → props 표 → 스토리.
-  props 표는 Storybook docgen(26개 중 12개만 채워짐)이 아니라 MCP 매니페스트에서 그린다.
-  공개 컴포넌트 101개 전부 포함. Dialog·Tabs·Breadcrumb 문서 스토리 신설.
-- Carousel·MediaViewer·ClampText·MultiSelect·Combobox 다중·차트의 `사용법` 스토리 —
-  보여주는 코드가 실제로 렌더되는 코드다.
-- 차트 안내 페이지: 무엇을 언제 쓰는지, `summary` 가 화면 글자가 아니라 svg 접근성 이름으로
-  간다는 것과 화면에도 보여주는 방법.
-- 부품 카드에서 같은 페이지 부모의 규칙 반복 제거 (Dialog 15회 → 0).
-- 문서 미리보기가 화면 높이를 채우지 않는다 (Combobox 문서 15,471 → 4,635px).
-  테스트용 스크롤 여유 높이(`180vh`)도 스토리 화면에서만 준다 — MediaViewer 플로팅
-  3개·Input 숫자휠가드가 문서에서 1,620px 빈 상자였다. 하네스가 창 높이를 900→600 으로
-  바꿔도 미리보기 높이가 그대로인지 검사한다.
-- Guide 문서의 Tour·Hint 는 iframe 에 격리해 본문을 덮지 않는다.
+- 설치 안내를 `npm install @s2life/ui pretendard`와 CSS import 두 줄(Pretendard·`@s2life/ui/styles.css`)로 통일했다(R27·R30).
+  토큰 직접 접근도 ui 하위 경로를 쓴다. 이전 "시작하기"의 `import '@s2life/tokens/tokens.css'`는 `styles.css`와 중복이었고
+  pnpm에서 ui만 설치하면 해석에 실패해 빌드가 깨졌다. Next.js App Router·Vite 진입점 안내를 더했다.
+- README·시작하기: 앱 전체 전제(부품 전용 CSS 없음)와 `ds-` 클래스 규칙, peer React 19.0 이상(React 18 미지원).
+- DESIGN.md
+  - 2026-11-22 디자인 검토 문안: §6.1 선택·현재 표시 네 갈래(현재 위치 = 브랜드, 선택된 데이터 = 선택 틴트, 모드·값 = 중립 칩,
+    진행 = 브랜드 채움), §6.2 상세 화면의 파괴적 액션(⋯ 더보기 안 삭제·확정 단계에서만 채운 danger), §11.9 폼 세로 리듬과
+    같은 줄 정렬(FormRow), §24.4 페이지 제목 34 단일, §25 문구(건/개·출시 예정·범위 오류·숫자 축약).
+  - 새 절 §24 레이아웃(앱 셸)·§4.1 페이지네이션(로딩 중 진행 표시는 표 스켈레톤). §11.1.1·§11.3 날짜 입력 오류 문구와 "오류 문구는 최소 폭에서 한 줄" 규칙, §16.1 탭 기준선과
+    클래식 스크롤바, §16.5 Toast 닫기·호버 틴트, §15.7 peer 하한 리허설.
+  - §12.2~§16.4.1 중복 사본을 지웠다(R32에서 한 번 더 들어가 두 사본의 내용이 달라져 있었다).
+- 모든 `Components/*`에 문서 페이지: 사용 의도 → 사용법(코드 보기) → props 표 → 스토리. props 표는 Storybook docgen
+  (26개 중 12개만 채워짐)이 아니라 MCP 매니페스트에서 그린다. Dialog·Tabs·Breadcrumb 문서 스토리 신설.
+- Carousel·MediaViewer·ClampText·MultiSelect·Combobox 다중·차트의 `사용법` 스토리 — 보여주는 코드가 실제로 렌더되는 코드다.
+- 차트 안내 페이지: 무엇을 언제 쓰는지, `summary`가 화면 글자가 아니라 svg 접근성 이름으로 간다는 것과 화면에도 보여주는 방법.
+- 부품 카드에서 같은 페이지 부모의 규칙 반복을 없앴다(Dialog 15회 → 0).
+- 문서 미리보기가 화면 높이를 채우지 않는다(Combobox 문서 15,471 → 4,635px). 테스트용 스크롤 여유 높이(`180vh`)는 스토리
+  화면에서만 준다. Guide 문서의 Tour·Hint는 iframe에 격리해 본문을 덮지 않는다.
+- 도그푸딩 기록(02 마케팅·03 물류·04 CMS·05 상품 관리)과 UI 요소 준비도 검토(`docs/research/ui-coverage-review.md`).
 
 ### 내부
 
-- 테스트 장치 스토리를 `QA/`로 옮겼다: `Screens/ListScreen`·`Screens/DetailScreen`·`Screens/AppShell`·`Screens/CreateScreen`·`Screens/Flow` → `QA/ListScreen`·`QA/DetailScreen`·`QA/AppShell`·`QA/CreateScreen`·`QA/Flow`. 내용(폼 밖 사업장 선택 등 장치 포함)은 그대로이며 스토리 id를 쓰던 하네스(detail·design-detail·app-shell·list-screen·create)와 문서 참조를 함께 고쳤다. `Screens/`에는 디자인 검토를 거친 대표 화면만 둔다.
-
-- MCP 예산(R37)을 실제 소비 경로 기준으로 재설정했다. 카탈로그 80,000→90,000바이트, 전체 160,000바이트 유지, 복원된 목록 24,000바이트·부모 의도를 합친 상세 한 건 6,000바이트를 생성 시 차단한다. 네 경계값/+1바이트 검사와 실제 stdio 응답 검증을 추가했다. 카탈로그 실측은 R36b 76,925→79,416바이트이며 지침은 줄이지 않았다.
-
-- MCP 카탈로그의 중복 부품 소스·빈 API 배열·규칙 출처 접두어를 무손실 압축해 전송량을 70,643 → 66,507바이트로 줄였다(R33b). 도구 응답 110건(부품 102개 get_component 포함)이 이전과 바이트 단위로 같다. 공식 예산·버전은 유지한다.
+- 테스트 장치 스토리를 `QA/`로 옮겼다(`Screens/ListScreen`·`DetailScreen`·`AppShell`·`CreateScreen`·`Flow` → `QA/…`).
+  `Screens/`에는 디자인 검토를 거친 대표 화면만 둔다.
+- MCP 카탈로그의 중복 부품 소스·빈 API 배열·규칙 출처 접두어를 무손실 압축했다(R33b, 70,643 → 66,507바이트, 도구 응답 110건
+  바이트 동일). 응답 예산은 **바뀐 동작**의 MCP 항목이 최종 값이다 — R37에서 카탈로그 80,000 → 90,000과 목록·상세 상한을
+  두었고, R42에서 전체 매니페스트 상한을 응답 단위(토큰·규칙)로 바꿨다. 현재 크기 회귀 상한은 단위 테스트와 MCP 하네스에 있다.
+- `mcp-build`가 DESIGN.md 절 번호 중복이면 매니페스트 생성을 멈춘다(규칙 출처가 절 번호를 가리킨다).
+- 게이트: `check-boundaries`가 `packages/ui/src` 안의 `@s2life/ui` 자기 참조를 막고, pre-push가 임시 worktree에서 dist 없이
+  typecheck한다(`pnpm typecheck:clean`). 스토리 3개의 자기 참조 import가 R31~R43b 원격 CI를 11회 연속 깨뜨렸다.
+- QA: 리눅스 헤드리스의 hover·pointer 조건(`parityArgs`)과 글꼴 힌팅 1px 허용, 그려진 픽셀을 보는 `decodePng`,
+  `run-all --only`·`--shard i/N`·`--timings`와 하네스별 시간 기준선, `cdp()` 응답 뒤 45초 타이머 해제(CI 1,408초 중 약
+  1,080초가 그 대기였다). 새 하네스: 앱 셸·페이지네이션·옆 패널·파일 업로드·날짜+시각·StatTile·세그먼트·단계 표시·
+  같은 줄 정렬(9건)·대표 화면(14건)·레이어 디테일·디자인 디테일·검색 입력 일관성·도그푸딩 3.
+- 배포 리허설: `S2_PACK_REACT=<x.y.z>`로 소비 앱 React를 지정한다(peer 하한 확인). 기본·지정 모두 번들 안 React 버전이 하나인지 검사한다.
+- CI: 게이트 제한 시간 verify 20 → 45분·release 25 → 60분, 실행 기반과 액션 런타임 정리.
+- 개발 의존성 `pretendard` 1.3.9 — Storybook도 소비 앱과 같은 CSS import로 글꼴을 로드한다.
 
 ## 0.3.0 — 2026-11-21
 
