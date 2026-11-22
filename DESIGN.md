@@ -192,7 +192,8 @@ Storybook `StatusChip / 흑백 출력 검증` 스토리에서 색을 제거한 �
 | `--bg-surface` | `#FFFFFF` | neutral-975 | `bg-surface` | 카드 · 패널 · 테이블 |
 | `--bg-sunken` | neutral-100 | `#060505` | `bg-sunken` | 파여 보여야 하는 면 |
 | `--bg-hover` | neutral-100 | neutral-950 | `bg-hovered` | 행 · 메뉴 호버 |
-| `--bg-selected` | brand-100 | brand-900 | `bg-selected` | 선택된 행 · 활성 내비 · 달력 범위 |
+| `--bg-selected` | brand-100 | brand-900 | `bg-selected` | 현재 위치 — 활성 내비 · 드래그 대상 면 |
+| `--bg-selected-row` | brand-100 | `#552D32` (OKLCH 35% 0.06 H12) | `bg-selected-row` | 선택된 데이터 — 표 선택 행 · 달력 범위 (§16.4.1) |
 | `--text-primary` | neutral-950 | neutral-50 | `text-fg` | 본문 · 테이블 값 |
 | `--text-secondary` | neutral-800 | neutral-200 | `text-fg-muted` | 레이블 · 설명 |
 | `--text-tertiary` | neutral-700 | neutral-400 | `text-fg-subtle` | 메타 · 플레이스홀더 |
@@ -1272,7 +1273,7 @@ Select가 폼 안에서 덧붙이는 숨은 native select 등)은 모두 입력 
 ### 12.2 다녀온 행은 네 번째 배경색이 아니다
 
 표의 행 배경은 이미 셋을 쓴다 — 기본(`--bg-surface`) · 호버(`--bg-hover`) ·
-선택(`--bg-selected`). 전부 흰색 계열이다. **네 번째를 더하면 구별되지 않는다.**
+선택(`--bg-selected-row`). 전부 흰색 계열이다. **네 번째를 더하면 구별되지 않는다.**
 
 그래서 **다른 시각 채널**을 쓴다 — 왼쪽 가장자리 마커(`--row-marker`).
 채널이 다르므로 **선택된 행 위에도 겹쳐 쓸 수 있다.**
@@ -1868,7 +1869,7 @@ Select(popper 기본 배치)·DropdownMenu 및 SubContent·DatePicker/범용 Pop
 Combobox 단일/다중·MultiSelect의 `collisionPadding` 기본값에 적용한다.
 기존 Radix 배치 props를 명시한 소비자의 설정은 우선하며 포털·z-index는 바꾸지 않는다.
 
-달력 범위 중간과 끝점 사이 셀 바탕은 선택된 행과 같은 `--bg-selected`다. R32 에서 이전 값
+달력 범위 중간과 끝점 사이 셀 바탕은 선택된 행과 같은 선택 틴트다(2026-11-22부터 `--bg-selected-row`, 아래). R32 에서 이전 값
 (라이트 brand-50 · 다크 brand-975)이 팝오버 대비 **1.08 · 1.02** 로 거의 보이지 않았다 — 표의 선택된 행도 같은
 문제였다(다크에서 사실상 구별 불가). 단계를 올렸다:
 
@@ -1880,6 +1881,23 @@ Combobox 단일/다중·MultiSelect의 `collisionPadding` 기본값에 적용한
 다크를 더 올린 이유: 어두운 면에서는 같은 대비도 덜 보인다. brand-950 은 오류 바탕(danger-950 `#460900`)과
 명도가 같아 오히려 오류처럼 읽힐 수 있어 건너뛰었다 — brand-900 은 명도·색조 둘 다 오류 바탕과 다르다.
 선택은 색만으로 전하지 않는다(체크박스·끝점 채움이 함께 있다).
+
+**표 선택 행 전용 토큰 `--bg-selected-row` (2026-11-22 디자인 검토).** 다크 brand-900 와인색은 화면에서 가장 강한
+면이 되고 '취소 요청' danger 칩과 같은 계열로 읽혔다(오류 칩 바탕과 ΔE 9.7). "한 단계 옅게"(brand-950)는 칩 바탕과
+명도가 같아(ΔE 2.4·대비 1.00) 더 나빴다. 명도는 그대로 두고 채도를 절반으로 내린 시안 `#552B2E`(L34.5 C0.06 H16)
+계열을 쓴다. 값은 OKLCH 35% 0.06 H12 `#552D32` — 시안과 ΔE 0.7(지각 불가)이면서 오류 칩 바탕과의 ΔE를 10 위로 올린다.
+라이트는 brand-100 그대로다. SideNav 현재 메뉴·FileUpload 드래그 면은 "현재 위치"라 `--bg-selected`를 유지한다(§6.1).
+
+| 다크 `#552D32` | 값 | 기준 |
+|---|---|---|
+| 호버 행(`#262222`)과 | 대비 1.35 · ΔE 10.7 | ≥ 1.2 · ≥ 10 |
+| 선택 행 위 danger 칩 바탕(`#460900`)과 | 대비 1.39 · ΔE 10.2 | ≥ 1.2 · ≥ 10 |
+| 본문 글자 · 링크 글자 | 10.76 · 7.05 | ≥ 4.5 |
+| 다녀온 행 마커 | 5.31 | ≥ 3 |
+| 표면과 | 1.52 | (참고) |
+
+생성기가 이 값을 회귀 검사로 막는다(대비 8건·ΔE 2건). 1.2는 호버 대 표면(1.12)보다 뚜렷하다는 하한이고,
+ΔE 10은 브랜드·에러 분리와 같은 내부 기준이다. 칩은 아이콘·글자로 상태를 전하므로 바탕 구별은 보조 신호다.
 1100×760·Pretendard에서 양 테마의 O1–O6를 실제 CDP 포인터로 여는
 `docs/qa/layer-detail-render-verify.mjs`를 전체 QA에 등록했다.
 

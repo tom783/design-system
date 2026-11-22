@@ -12,6 +12,7 @@
   --color-sunken                    : var(--bg-sunken);
   --color-hovered                   : var(--bg-hover);
   --color-selected                  : var(--bg-selected);
+  --color-selected-row              : var(--bg-selected-row);
   --color-fg                        : var(--text-primary);
   --color-fg-muted                  : var(--text-secondary);
   --color-fg-subtle                 : var(--text-tertiary);

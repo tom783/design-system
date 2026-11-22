@@ -124,6 +124,16 @@ const P = Object.fromEntries(Object.keys(HUES).map((k) => [k, scale(k)]));
 //  danger 가 600 이 아니라 700 을 참조하는 것이 S1 전략의 핵심이다.
 //  색상각(14° vs 34°)만으로는 ΔE 7 대에 머물지만, 참조 단계를 한 칸
 //  내리면(600→700) 명도 차이가 더해져 ΔE 10 이상으로 분리된다.
+
+// 다크 표 선택 행(2026-11-22 디자인 검토). bg-selected(brand-900, C0.122)를 그대로 쓰면 와인색이
+// 화면에서 가장 강한 면이 되고 '취소 요청' danger 칩과 같은 계열로 읽혔다. 명도는 900 단계 근처에
+// 두고 채도를 절반(0.06)으로 내린 시안 #552B2E(L34.5·H16) 계열이다. L35·H12 는 시안과 ΔE 0.7
+// (JND 2 미만, 눈으로 같은 색)이면서 오류 칩 바탕(danger-950)과의 ΔE 를 9.6 → 10.3 으로 벌린다.
+// SideNav 현재 메뉴·FileUpload 드래그 면은 "현재 위치"라 bg-selected 를 유지한다.
+const SELECTED_ROW_DARK = { L: 0.35, C: 0.06, H: 12 };
+const selectedRowDark = { ...hex(SELECTED_ROW_DARK.L, SELECTED_ROW_DARK.C, SELECTED_ROW_DARK.H),
+  lab: labOf(SELECTED_ROW_DARK.L, SELECTED_ROW_DARK.C, SELECTED_ROW_DARK.H) };
+
 const SEMANTIC = {
   light: {
     // R32: 본문색과 분리한 검정 막. 밝은 배경은 약 35%, 어두운 배경은 약 65%로 작업 맥락을 낮춘다.
@@ -133,7 +143,8 @@ const SEMANTIC = {
     'bg-surface':       ['#FFFFFF', null,'카드·패널·테이블의 기본 면'],
     'bg-sunken':        ['neutral', 100, '입력 그룹·코드 블록처럼 파여 보여야 하는 면'],
     'bg-hover':         ['neutral', 100, '행·메뉴 항목 호버'],
-    'bg-selected':      ['brand',   100, '선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.18, 50 은 1.08)'],
+    'bg-selected':      ['brand',   100, '현재 위치 — 활성 내비게이션·드래그 대상 면 (R32 실측: 표면 대비 1.18, 50 은 1.08)'],
+    'bg-selected-row':  ['brand',   100, '선택된 데이터 — 표 선택 행·달력 범위. 라이트는 bg-selected 와 같은 값'],
     // 글자 — 전부 4.5:1 이상 (disabled 제외)
     'text-primary':     ['neutral', 950, '본문·제목·테이블 값. 정보의 1순위'],
     'text-secondary':   ['neutral', 800, '레이블·설명 문장. 1순위를 보조한다'],
@@ -214,7 +225,8 @@ const SEMANTIC = {
     'bg-surface':       ['neutral', 975, '카드·패널. canvas 보다 밝아 떠 보인다'],
     'bg-sunken':        ['#060505', null,'파여 보여야 하는 면'],
     'bg-hover':         ['neutral', 950, '행·메뉴 호버'],
-    'bg-selected':      ['brand',   900, '선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다)'],
+    'bg-selected':      ['brand',   900, '현재 위치 — 활성 내비게이션·드래그 대상 면 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다)'],
+    'bg-selected-row':  [selectedRowDark.hex, null, '선택된 데이터 — 표 선택 행·달력 범위. OKLCH 35% 0.06 H12, 채도를 낮춰 오류 칩과 분리'],
     'text-primary':     ['neutral', 50,  '본문·제목·테이블 값'],
     'text-secondary':   ['neutral', 200, '레이블·설명 문장'],
     'text-tertiary':    ['neutral', 400, '메타·플레이스홀더'],
@@ -451,11 +463,27 @@ for (const [theme, bg] of [['light', Lbg], ['dark', Dbg]]) {
   const marker = resolveTok(SEMANTIC[theme]['row-marker']);
   check(`${theme} row-marker on surface`, contrast(marker, bg), 3.0, 'nontext');
   check(`${theme} row-marker on 선택된 행`, contrast(marker, resolveTok(SEMANTIC[theme]['bg-selected'])), 3.0, 'nontext');
+  check(`${theme} row-marker on 표 선택 행`, contrast(marker, resolveTok(SEMANTIC[theme]['bg-selected-row'])), 3.0, 'nontext');
   // 아바타 이니셜은 글자다. 작게 쓰이므로 본문 기준을 그대로 적용한다.
   check(`${theme} 아바타 이니셜 on 아바타 바탕`,
     contrast(resolveTok(SEMANTIC[theme]['avatar-fg']), resolveTok(SEMANTIC[theme]['avatar-bg'])), 4.5, 'text');
   check(`${theme} 아바타 바탕이 표면과 구별된다`,
     contrast(resolveTok(SEMANTIC[theme]['avatar-bg']), bg), 1.2, 'nontext');
+}
+
+// 표 선택 행(bg-selected-row, 2026-11-22). 선택 행은 호버 행과 구별돼야 하고(호버 vs 표면 1.12 보다 뚜렷하게),
+// 그 위의 본문·링크 글자는 4.5:1, 그 위에 놓이는 danger 칩 바탕은 행 바탕과 구별돼야 한다.
+// 칩은 아이콘·글자로 상태를 전하므로 바탕 구별은 보조 신호다 — 비율 1.2 를 하한으로 둔다(실측 1.39).
+// 라이트는 brand-100 그대로라 호버와 명도가 같고 색조(분홍 대 회색)로 구별한다(§16.4.1). 구별 검사는 다크만 건다.
+for (const theme of ['light', 'dark']) {
+  const row = resolveTok(SEMANTIC[theme]['bg-selected-row']);
+  check(`${theme} 본문 글자 on 표 선택 행`, contrast(resolveTok(SEMANTIC[theme]['text-primary']), row), 4.5, 'text');
+  check(`${theme} 링크 글자 on 표 선택 행`, contrast(resolveTok(SEMANTIC[theme]['text-link']), row), 4.5, 'text');
+}
+{
+  const row = resolveTok(SEMANTIC.dark['bg-selected-row']);
+  check('dark 표 선택 행이 호버 행과 구별된다', contrast(row, resolveTok(SEMANTIC.dark['bg-hover'])), 1.2, 'ratio');
+  check('dark danger 칩 바탕이 표 선택 행과 구별된다', contrast(resolveTok(SEMANTIC.dark['status-danger-bg']), row), 1.2, 'ratio');
 }
 
 // shadcn 브리지 대비 — 브리지는 이름만 바꾸는 게 아니라 **실제로 함께 렌더되는 쌍**을
@@ -552,6 +580,9 @@ const dePairs = [
   // 되돌리면 다크(brand-400 vs danger-400 ΔE 5.4)에서 이 검사가 깨진다(R01 일부 변경, 2026-11-22).
   ['포커스 링 vs 에러 글자 (라이트)', semPrim('light', 'border-focus'), semPrim('light', 'status-danger-fg'), 10],
   ['포커스 링 vs 에러 글자 (다크)',   semPrim('dark', 'border-focus'),  semPrim('dark', 'status-danger-fg'),  10],
+  // 다크 표 선택 행(2026-11-22). brand-900 일 때 오류 칩 바탕과 9.7 로 "오류 행"처럼 읽혔다.
+  ['표 선택 행 vs 오류 칩 바탕 (다크)', selectedRowDark,               semPrim('dark', 'status-danger-bg'),  10],
+  ['표 선택 행 vs 호버 행 (다크)',      selectedRowDark,               semPrim('dark', 'bg-hover'),          10],
 ];
 const deResults = dePairs.map(([label, a, b, min]) => {
   const v = deltaE(a.lab, b.lab);
@@ -694,6 +725,7 @@ const TW_NAME = {
   'bg-sunken': 'sunken',          // bg-sunken
   'bg-hover': 'hovered',          // bg-hovered
   'bg-selected': 'selected',      // bg-selected
+  'bg-selected-row': 'selected-row', // bg-selected-row
   'text-primary': 'fg',           // text-fg
   'text-secondary': 'fg-muted',   // text-fg-muted
   'text-tertiary': 'fg-subtle',   // text-fg-subtle

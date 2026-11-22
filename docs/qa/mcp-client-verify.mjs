@@ -323,8 +323,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const tokens = (await call('resources/read', { uri: 'design://tokens' })).result.contents[0].text;
   const list = (await t('list_components', {})).content[0].text;
   const rules = (await t('get_rules', {})).content[0].text;
-  // FormRow(2026-11-22) 포함 카탈로그 실측 88,651B + 299B. 운영 상한 90KB는 그대로다.
-  for (const [name, text, limit] of [['카탈로그',catalog,88_950],['목록',list,19_950],['토큰',tokens,67_300],['규칙',rules,4_400]]) {
+  // FormRow(2026-11-22) 포함 카탈로그 실측 88,651B + 299B, 표 선택 행 토큰 포함 토큰 67,503B + 297B. 운영 상한은 그대로다.
+  for (const [name, text, limit] of [['카탈로그',catalog,88_950],['목록',list,19_950],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }

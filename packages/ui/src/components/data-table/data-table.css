@@ -46,7 +46,8 @@
 [data-slot="data-table"] .ds-data-table-value:focus-within { overflow: visible; }
 [data-slot="data-table-row"] { --data-table-row-bg: var(--bg-surface); }
 [data-slot="data-table-row"]:hover { --data-table-row-bg: var(--bg-hover); }
-[data-slot="data-table-row"][data-selected] { --data-table-row-bg: var(--bg-selected); }
+/* 선택된 데이터는 bg-selected-row 다. 다크에서 bg-selected(brand-900)는 오류 칩과 같은 계열로 읽혔다(2026-11-22). */
+[data-slot="data-table-row"][data-selected] { --data-table-row-bg: var(--bg-selected-row); }
 [data-slot="data-table-cell"] { background: var(--data-table-row-bg); }
 [data-slot="data-table"] .ds-data-table-pinned { z-index: 1; }
 [data-slot="data-table"] th.ds-data-table-pinned { background: var(--bg-surface); z-index: 2; }

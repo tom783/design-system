@@ -115,7 +115,8 @@
     --bg-surface              : #FFFFFF                           ;  /* 카드·패널·테이블의 기본 면 */
     --bg-sunken               : var(--color-neutral-100)          ;  /* 입력 그룹·코드 블록처럼 파여 보여야 하는 면 */
     --bg-hover                : var(--color-neutral-100)          ;  /* 행·메뉴 항목 호버 */
-    --bg-selected             : var(--color-brand-100)            ;  /* 선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.18, 50 은 1.08) */
+    --bg-selected             : var(--color-brand-100)            ;  /* 현재 위치 — 활성 내비게이션·드래그 대상 면 (R32 실측: 표면 대비 1.18, 50 은 1.08) */
+    --bg-selected-row         : var(--color-brand-100)            ;  /* 선택된 데이터 — 표 선택 행·달력 범위. 라이트는 bg-selected 와 같은 값 */
     --text-primary            : var(--color-neutral-950)          ;  /* 본문·제목·테이블 값. 정보의 1순위 */
     --text-secondary          : var(--color-neutral-800)          ;  /* 레이블·설명 문장. 1순위를 보조한다 */
     --text-tertiary           : var(--color-neutral-700)          ;  /* 메타·타임스탬프·플레이스홀더. 4.5:1 하한선 */
@@ -278,7 +279,8 @@
     --bg-surface              : var(--color-neutral-975)          ;  /* 카드·패널. canvas 보다 밝아 떠 보인다 */
     --bg-sunken               : #060505                           ;  /* 파여 보여야 하는 면 */
     --bg-hover                : var(--color-neutral-950)          ;  /* 행·메뉴 호버 */
-    --bg-selected             : var(--color-brand-900)            ;  /* 선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다) */
+    --bg-selected             : var(--color-brand-900)            ;  /* 현재 위치 — 활성 내비게이션·드래그 대상 면 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다) */
+    --bg-selected-row         : #552D32                           ;  /* 선택된 데이터 — 표 선택 행·달력 범위. OKLCH 35% 0.06 H12, 채도를 낮춰 오류 칩과 분리 */
     --text-primary            : var(--color-neutral-50)           ;  /* 본문·제목·테이블 값 */
     --text-secondary          : var(--color-neutral-200)          ;  /* 레이블·설명 문장 */
     --text-tertiary           : var(--color-neutral-400)          ;  /* 메타·플레이스홀더 */
@@ -335,7 +337,8 @@
     --bg-surface              : var(--color-neutral-975)          ;  /* 카드·패널. canvas 보다 밝아 떠 보인다 */
     --bg-sunken               : #060505                           ;  /* 파여 보여야 하는 면 */
     --bg-hover                : var(--color-neutral-950)          ;  /* 행·메뉴 호버 */
-    --bg-selected             : var(--color-brand-900)            ;  /* 선택된 행·활성 내비게이션·달력 범위 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다) */
+    --bg-selected             : var(--color-brand-900)            ;  /* 현재 위치 — 활성 내비게이션·드래그 대상 면 (R32 실측: 표면 대비 1.44, 975 는 1.02 로 보이지 않았다) */
+    --bg-selected-row         : #552D32                           ;  /* 선택된 데이터 — 표 선택 행·달력 범위. OKLCH 35% 0.06 H12, 채도를 낮춰 오류 칩과 분리 */
     --text-primary            : var(--color-neutral-50)           ;  /* 본문·제목·테이블 값 */
     --text-secondary          : var(--color-neutral-200)          ;  /* 레이블·설명 문장 */
     --text-tertiary           : var(--color-neutral-400)          ;  /* 메타·플레이스홀더 */

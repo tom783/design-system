@@ -33,7 +33,8 @@ const columns = helper.columns([
 ]);
 const PERIODS = { '7d': 7, '30d': 30 } as const;
 
-function OrderListScreen({ initialSelected = ['ORD-20480', 'ORD-20479', 'ORD-20477'] }: { initialSelected?: string[] }) {
+// 기본 선택에 '취소 요청'(danger 칩) 행을 넣는다. 선택 행 바탕 위에서 오류 칩이 구별되는지가 검토 대상이다(2026-11-22).
+function OrderListScreen({ initialSelected = ['ORD-20480', 'ORD-20479', 'ORD-20475'] }: { initialSelected?: string[] }) {
   const [query, setQuery] = React.useState('');
   const [status, setStatus] = React.useState<'all' | OrderStatus>('all');
   const [period, setPeriod] = React.useState<keyof typeof PERIODS>('30d');

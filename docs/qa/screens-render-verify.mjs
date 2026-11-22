@@ -12,6 +12,7 @@ const { ev, cdp, sleep } = browser;
 const { open } = storybook(browser);
 const results = [];
 const q = selector => `document.querySelector(${JSON.stringify(selector)})`;
+const close = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 1);
 async function wait(expression, label = expression) {
   for (let i = 0; i < 100; i++) { if (await ev(expression)) return; await sleep(40); }
   throw new Error(`조건 대기 실패: ${label}`);
@@ -56,15 +57,44 @@ try {
           status:${q('[data-screen="bulk"] [role="status"]')}.textContent, selected:selected.map(r => r.dataset.rowId),
           range:${q('[data-slot="pagination-range"]')}?.textContent, rows:document.querySelectorAll('[data-slot="data-table-row"]').length,
           primary:[...document.querySelectorAll('button, a')].filter(el => same(rgb(getComputedStyle(el).backgroundColor), token('--action-primary-bg'))).map(el => el.textContent.trim()),
-          selectedRow:{ background:rowBg, selectedToken:token('--bg-selected'), vsSurface:contrast(rowBg, surface) } }; })()`);
+          selectedRow:{ background:rowBg, selectedToken:token('--bg-selected-row'), vsSurface:contrast(rowBg, surface) } }; })()`);
       assert.equal(new Set(m.tops).size, 1, `툴바가 한 줄이어야 한다 ${JSON.stringify(m.tops)}`);
       assert.equal(m.search, 320); assert.equal(m.status, '3건 선택');
-      assert.deepEqual(m.selected, ['ORD-20480', 'ORD-20479', 'ORD-20477']);
+      assert.deepEqual(m.selected, ['ORD-20480', 'ORD-20479', 'ORD-20475']);
       assert.equal(m.range, '1–20 / 1,284건'); assert.equal(m.rows, 20);
       assert.deepEqual(m.primary, ['주문 등록'], '주요 버튼은 화면당 하나');
       assert.ok(m.selectedRow.background.every((v, i) => Math.abs(v - m.selectedRow.selectedToken[i]) <= 1), JSON.stringify(m.selectedRow));
       await browser.shot(`list-${theme}`);
       return { title: t, ...m };
+    });
+    await check(`목록: 선택 행(bg-selected-row)·호버 행·선택 행 위 danger 칩 구별 ${theme}`, async () => {
+      // 2026-11-22: 다크 선택 행이 brand-900 와인색이라 '취소 요청' 칩과 같은 계열로 읽혔다. 실제 포인터로 호버 행을 만든다.
+      const point = await ev(`(() => { const r=${q('[data-row-id="ORD-20478"] td:nth-child(4)')}.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()`);
+      await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point }); await sleep(300);
+      const m = await ev(`(() => { ${colorHelpers}
+        const lab = c => { const [r,g,b]=c.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+          const l=Math.cbrt(.4122214708*r+.5363325363*g+.0514459929*b), m=Math.cbrt(.2119034982*r+.6806995451*g+.1073969566*b), s=Math.cbrt(.0883024619*r+.2817188376*g+.6299787005*b);
+          return [.2104542553*l+.793617785*m-.0040720468*s, 1.9779984951*l-2.428592205*m+.4505937099*s, .0259040371*l+.7827717662*m-.808675766*s]; };
+        const dE = (a,b) => { const x=lab(a), y=lab(b); return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2])*100; };
+        const row=${q('[data-row-id="ORD-20475"]')}, hover=${q('[data-row-id="ORD-20478"]')}, chip=row.querySelector('[data-slot="status-chip"]');
+        const bg=el => rgb(getComputedStyle(el.querySelector('td')).backgroundColor);
+        const selected=bg(row), hovered=bg(hover), chipBg=rgb(getComputedStyle(chip).backgroundColor);
+        const text=rgb(getComputedStyle(row.querySelector('td:nth-child(4)')).color), link=rgb(getComputedStyle(row.querySelector('a')).color);
+        return { selectedRowIsSelected:row.hasAttribute('data-selected'), hoverMatches:hover.matches(':hover'), chip:chip.textContent,
+          selected, hovered, chipBg, tokenRow:token('--bg-selected-row'), tokenHover:token('--bg-hover'),
+          selectedVsHover:{ contrast:contrast(selected,hovered), dE:dE(selected,hovered) },
+          chipVsSelected:{ contrast:contrast(chipBg,selected), dE:dE(chipBg,selected) },
+          textOnSelected:contrast(text,selected), linkOnSelected:contrast(link,selected) }; })()`);
+      assert.ok(m.selectedRowIsSelected && m.hoverMatches, JSON.stringify(m)); assert.equal(m.chip, '취소 요청');
+      assert.ok(close(m.selected, m.tokenRow) && close(m.hovered, m.tokenHover), JSON.stringify(m));
+      assert.ok(m.textOnSelected >= 4.5 && m.linkOnSelected >= 4.5, JSON.stringify(m));
+      if (theme === 'dark') {
+        assert.ok(m.selectedVsHover.contrast >= 1.2 && m.selectedVsHover.dE >= 10, JSON.stringify(m.selectedVsHover));
+        assert.ok(m.chipVsSelected.contrast >= 1.2 && m.chipVsSelected.dE >= 10, JSON.stringify(m.chipVsSelected));
+      }
+      await browser.shot(`list-hover-${theme}`);
+      await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 1, y: 1 });
+      return m;
     });
     await check(`목록: 검색어가 표·전체 건수·선택을 함께 바꾼다 ${theme}`, async () => {
       // 제어 입력이라 네이티브 setter + input 이벤트로 React onChange 를 부른다.

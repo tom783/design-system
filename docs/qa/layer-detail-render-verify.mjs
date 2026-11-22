@@ -182,7 +182,7 @@ try {
       const m=await ev(`(() => { ${colorHelpers}
         const bg=getComputedStyle(${q(range)}).backgroundColor, hovered=getComputedStyle(${q(hover)}).backgroundColor,
           surface=getComputedStyle(${q('[data-slot="popover-content"]')}).backgroundColor,
-          selected=getComputedStyle(document.documentElement).getPropertyValue('--bg-selected');
+          selected=getComputedStyle(document.documentElement).getPropertyValue('--bg-selected-row');
         return { range:rgb(bg),hover:rgb(hovered),selected:rgb(selected),surface:rgb(surface),contrast:contrast(rgb(bg),rgb(surface)),hoverContrast:contrast(rgb(hovered),rgb(surface)) };
       })()`);
       assert.deepEqual(m.range,m.selected); assert.notDeepEqual(m.range,m.hover);

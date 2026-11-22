@@ -101,7 +101,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
   assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950);
   assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);
-  assert.ok(Buffer.byteLength(JSON.stringify(manifest.tokens)) <= 67_300);
+  // 2026-11-22 표 선택 행 토큰(bg-selected-row) 추가: 토큰 67,503B + 297B. 운영 상한 80KB 는 유지한다.
+  assert.ok(Buffer.byteLength(JSON.stringify(manifest.tokens)) <= 67_800);
   assert.ok(Buffer.byteLength(JSON.stringify({ rules: manifest.principles })) <= 4_400);
 });
 test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
