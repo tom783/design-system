@@ -13,6 +13,7 @@
     "qaEndedAt": "2026-11-22T14:14:30.7453908Z"
   },
   "method": "gh run view --log 의 줄 시각. run-all 은 하네스가 끝날 때 결과 줄을 쓰므로 각 결과 줄 시각을 끝, 바로 앞 결과 줄 시각을 시작으로 쳤다. 첫 하네스(steps-render-verify)의 시작은 \"브라우저:\" 줄이라 정적 서버 기동 대기(npx http-server)가 섞여 있다.",
+  "note": "45초 대기 포함, 수정 전 값이다. 이 run 때 docs/qa/browser.mjs 의 cdp() 는 응답 뒤에도 45초 타이머를 지우지 않아, process.exit() 대신 process.exitCode 로 끝나는 하네스 24개가 매번 약 45초씩 종료를 기다렸다(1408.6초 중 약 1080초). 타이머 수정 뒤에는 CI 에서 run-all --shard i/4 --timings 로 다시 재고, 네 JSON 의 harnesses 를 합쳐 이 파일을 바꾼다. 그 전까지는 하네스 사이 비율이 실제와 달라 샤드 균형이 틀어질 수 있다.",
   "totalSeconds": 1408.6,
   "harnesses": {
     "steps-render-verify": 52.5,

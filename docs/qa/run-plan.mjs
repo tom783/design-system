@@ -51,6 +51,7 @@ export const NO_STORYBOOK = new Set(['pack-verify.mjs', 'mcp-client-verify.mjs']
 
 // 샤드 배분 기준. 리눅스 CI 실측이어야 한다 — macOS 로컬은 하네스별 비율이 다르다.
 // 갱신할 때는 CI 에서 --timings 로 받은 JSON(같은 모양)으로 바꾸고 이 경로를 고친다.
+// 지금 파일은 cdp() 45초 타이머 수정 전 값이다(파일의 note) — 수정 뒤 CI 에서 다시 잰다.
 export const BASELINE_FILE = new URL('./timings/ci-f172d30.json', import.meta.url);
 
 export const harnessName = (file) => file.replace(/\.mjs$/, '');
