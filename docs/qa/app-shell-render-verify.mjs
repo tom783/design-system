@@ -199,6 +199,7 @@ try {
       await story(`components-pageheader--${name}`);
       assert.equal(await ev(`${all('h1')}.length`), 1); assert.deepEqual(browser.errors(), []);
       await noTitles('[data-slot="page-header"]');
+      assert.equal(await ev(`getComputedStyle(${q('[data-slot="page-header"]')}).marginBlockEnd`), '0px');
     });
   }
   await check('페이지 머리 실제 폭 280px에서 액션이 설명 아래·가로 넘침 없음', async () => {
@@ -209,6 +210,32 @@ try {
       actionOverflow:a.scrollWidth > a.clientWidth }; })()`);
     assert.deepEqual(values, { below: true, overflow: false, width: 280, actionOverflow: false });
   });
+  for (const id of ['screens-appshell--라이트', 'screens-appshell--다크', 'components-appshell--사용법', 'screens-appshell--긴메뉴와본문']) {
+    await check(`${id}: PageHeader 바깥 여백 0·기존 24px 간격과 화면 위치 불변`, async () => {
+      for (const width of [1440, 800]) {
+        await viewport(width); await story(id);
+        const geometry = await ev(`(() => {
+          const header=${q('[data-slot="page-header"]')}, group=header.parentElement, next=header.nextElementSibling;
+          const bounds=n => { const r=n.getBoundingClientRect(); return [r.x,r.y,r.width,r.height]; };
+          const nodes=[header,next,...${all('[data-slot="field"], [data-slot="data-table"], p[role="status"]')}];
+          const current=nodes.map(bounds), margin=getComputedStyle(header).marginBlockEnd;
+          const gap=next.getBoundingClientRect().top-header.getBoundingClientRect().bottom;
+          // 이전 배치의 margin 24px·gap 0과 같은 위치인지 비교한다. 원래 인라인 스타일은 복원한다.
+          const groupStyle=group.getAttribute('style'), headerStyle=header.getAttribute('style');
+          group.style.rowGap='0px'; header.style.marginBlockEnd='24px';
+          const legacy=nodes.map(bounds);
+          groupStyle===null ? group.removeAttribute('style') : group.setAttribute('style',groupStyle);
+          headerStyle===null ? header.removeAttribute('style') : header.setAttribute('style',headerStyle);
+          return {current,legacy,margin,gap};
+        })()`);
+        assert.equal(geometry.margin, '0px');
+        assert.ok(Math.abs(geometry.gap - 24) <= 1, JSON.stringify(geometry));
+        geometry.current.forEach((rect, index) => rect.forEach((value, axis) =>
+          assert.ok(Math.abs(value - geometry.legacy[index][axis]) <= 1, JSON.stringify(geometry))));
+      }
+      await viewport(1440);
+    });
+  }
   await check('메뉴와 본문 독립 스크롤·브랜드/접기 고정·선택 최대 폭', async () => {
     await story('screens-appshell--긴메뉴와본문');
     await noTitles('[data-slot="app-shell"]');

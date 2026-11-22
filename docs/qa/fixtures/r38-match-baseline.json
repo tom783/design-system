@@ -1,0 +1,1758 @@
+[
+  {
+    "query": "파일 업로드",
+    "before": "FileUpload"
+  },
+  {
+    "query": "이미지 업로드",
+    "before": "FileUpload"
+  },
+  {
+    "query": "첨부",
+    "before": "FileUpload"
+  },
+  {
+    "query": "드래그 앤 드롭",
+    "before": "FileUpload"
+  },
+  {
+    "query": "대표 이미지",
+    "before": "FileUpload"
+  },
+  {
+    "query": "엑셀 업로드",
+    "before": "FileUpload"
+  },
+  {
+    "query": "CMS 대표 이미지·상품 이미지·엑셀 일괄 등록·첨부 파일을 고를 때",
+    "before": "FileUpload"
+  },
+  {
+    "query": "파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.",
+    "before": "StatusChip"
+  },
+  {
+    "query": "페이지",
+    "before": "Pagination"
+  },
+  {
+    "query": "페이징",
+    "before": "Pagination"
+  },
+  {
+    "query": "페이지 이동",
+    "before": "Pagination"
+  },
+  {
+    "query": "페이지 크기",
+    "before": "Pagination"
+  },
+  {
+    "query": "몇 개씩",
+    "before": "Pagination"
+  },
+  {
+    "query": "주문·출고·게시글을 서버에서 페이지 단위로 조회할 때",
+    "before": "Pagination"
+  },
+  {
+    "query": "목록의 페이지를 옮기고 표시 범위·전체 건수·페이지 크기를 확인한다.",
+    "before": "Pagination"
+  },
+  {
+    "query": "앱 셸",
+    "before": "AppShell"
+  },
+  {
+    "query": "공통 화면",
+    "before": "AppShell"
+  },
+  {
+    "query": "레이아웃",
+    "before": "AppShell"
+  },
+  {
+    "query": "사이드바와 본문",
+    "before": "AppShell"
+  },
+  {
+    "query": "화면 틀",
+    "before": "AppShell"
+  },
+  {
+    "query": "제품의 공통 화면 틀을 구성할 때",
+    "before": "AppShell"
+  },
+  {
+    "query": "사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "사이드바",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴",
+    "before": "SideNav"
+  },
+  {
+    "query": "내비게이션",
+    "before": "SideNav"
+  },
+  {
+    "query": "사이드 메뉴",
+    "before": "SideNav"
+  },
+  {
+    "query": "브랜드",
+    "before": "SideNav"
+  },
+  {
+    "query": "왼쪽 메뉴",
+    "before": "SideNav"
+  },
+  {
+    "query": "사이드바에 제품 메뉴를 배치할 때",
+    "before": "SideNav"
+  },
+  {
+    "query": "브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "사이드 메뉴 항목을 제목으로 묶는다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "아이콘·라벨·개수와 현재 위치 또는 준비 중 상태를 표시한다.",
+    "before": "StatusChip"
+  },
+  {
+    "query": "페이지 제목",
+    "before": "PageHeader"
+  },
+  {
+    "query": "화면 머리",
+    "before": "PageHeader"
+  },
+  {
+    "query": "페이지 머리",
+    "before": "PageHeader"
+  },
+  {
+    "query": "제목과 버튼",
+    "before": "PageHeader"
+  },
+  {
+    "query": "페이지 헤더",
+    "before": "PageHeader"
+  },
+  {
+    "query": "페이지 제목이나 화면 머리를 구성할 때",
+    "before": "PageHeader"
+  },
+  {
+    "query": "페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.",
+    "before": "PageHeader"
+  },
+  {
+    "query": "캐러셀",
+    "before": "Carousel"
+  },
+  {
+    "query": "배너",
+    "before": "Carousel"
+  },
+  {
+    "query": "슬라이드",
+    "before": "Carousel"
+  },
+  {
+    "query": "슬라이더",
+    "before": "Carousel"
+  },
+  {
+    "query": "자동 넘김",
+    "before": "Carousel"
+  },
+  {
+    "query": "가로 스크롤",
+    "before": "Carousel"
+  },
+  {
+    "query": "배너 슬라이드",
+    "before": "Carousel"
+  },
+  {
+    "query": "콘텐츠를 한 장씩 가로로 넘길 때",
+    "before": "Carousel"
+  },
+  {
+    "query": "배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",
+    "before": "Carousel"
+  },
+  {
+    "query": "캐러셀 안의 콘텐츠 한 장을 표시한다.",
+    "before": "Carousel"
+  },
+  {
+    "query": "이미지 확대",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "라이트박스",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "사진 크게",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "동영상 재생",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "영상 팝업",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "떠 있는 창",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "화면 속 화면",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "PiP",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "이미지 크게 보기",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "영상 보면서 작업",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "이미지나 영상을 확대해서 볼 때",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.",
+    "before": "MediaViewer"
+  },
+  {
+    "query": "접기",
+    "before": "Collapsible"
+  },
+  {
+    "query": "펼치기",
+    "before": "Collapsible"
+  },
+  {
+    "query": "아코디언 아님",
+    "before": "Collapsible"
+  },
+  {
+    "query": "고급 설정",
+    "before": "Collapsible"
+  },
+  {
+    "query": "고급 설정 접기",
+    "before": "Collapsible"
+  },
+  {
+    "query": "패널을 접고 펼칠 때",
+    "before": "Collapsible"
+  },
+  {
+    "query": "고급 설정 같은 내용을 항상 보이는 버튼으로 접고 펼친다.",
+    "before": "Collapsible"
+  },
+  {
+    "query": "항상 보이는 버튼으로 내용을 접고 펼친다.",
+    "before": "Button"
+  },
+  {
+    "query": "접고 펼칠 내용을 담는다.",
+    "before": "Collapsible"
+  },
+  {
+    "query": "더보기",
+    "before": "ClampText"
+  },
+  {
+    "query": "간략히",
+    "before": "ClampText"
+  },
+  {
+    "query": "말줄임",
+    "before": "ClampText"
+  },
+  {
+    "query": "긴 글",
+    "before": "ClampText"
+  },
+  {
+    "query": "긴 설명 더보기",
+    "before": "ClampText"
+  },
+  {
+    "query": "상품 설명·비고 등 긴 설명 더보기",
+    "before": "ClampText"
+  },
+  {
+    "query": "긴 글을 N줄로 자르고 넘칠 때만 더보기·간략히를 제공한다.",
+    "before": "ClampText"
+  },
+  {
+    "query": "콤보박스",
+    "before": "Combobox"
+  },
+  {
+    "query": "자동완성",
+    "before": "Combobox"
+  },
+  {
+    "query": "검색 선택",
+    "before": "Combobox"
+  },
+  {
+    "query": "많은 옵션",
+    "before": "Combobox"
+  },
+  {
+    "query": "초성 검색",
+    "before": "Combobox"
+  },
+  {
+    "query": "목록에서 찾기",
+    "before": "Combobox"
+  },
+  {
+    "query": "타이핑으로 찾기",
+    "before": "Combobox"
+  },
+  {
+    "query": "초성으로 찾기",
+    "before": "Combobox"
+  },
+  {
+    "query": "많은 옵션에서 검색해 선택",
+    "before": "Combobox"
+  },
+  {
+    "query": "검색해서 여러 개 고르기",
+    "before": "Combobox"
+  },
+  {
+    "query": "태그 선택",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "20개를 넘는 후보에서 타이핑으로 찾을 때",
+    "before": "Combobox"
+  },
+  {
+    "query": "많은 옵션에서 검색해 단일 값 또는 multiple로 여러 개를 고른다.",
+    "before": "Combobox"
+  },
+  {
+    "query": "다중 선택",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "여러 개 선택",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "복수 선택",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "체크 목록",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "여러 사업장 고르기",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "검색 없이 여러 개 선택할 때",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "요약 트리거와 체크 목록으로 여러 값을 고른다.",
+    "before": "MultiSelect"
+  },
+  {
+    "query": "탭",
+    "before": "Tabs"
+  },
+  {
+    "query": "탭으로 나누기",
+    "before": "Tabs"
+  },
+  {
+    "query": "분류별 패널",
+    "before": "Tabs"
+  },
+  {
+    "query": "상세 화면을 분류별 패널로 나눌 때",
+    "before": "Tabs"
+  },
+  {
+    "query": "상세 정보를 탭별 패널로 나눠 보여준다.",
+    "before": "Tabs"
+  },
+  {
+    "query": "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.",
+    "before": "Tooltip"
+  },
+  {
+    "query": "패널을 선택하는 탭 버튼이다.",
+    "before": "Button"
+  },
+  {
+    "query": "선택한 상세 패널을 표시한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "경로",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "빵부스러기",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "뒤로",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "목록으로 돌아가는 경로",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "상세에서 상위 목록과 뒤로 가는 경로가 필요할 때",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "목록으로 돌아가는 경로를 빵부스러기로 표현한다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "경로 항목의 순서 목록이다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "경로의 개별 항목이다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "라우터를 지정하지 않는 상위 경로 링크다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "링크가 아닌 현재 경로 항목이다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "보조기기가 읽지 않는 경로 구분자다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "접힌 경로 수를 읽을 수 있는 생략 표시다.",
+    "before": "Breadcrumb"
+  },
+  {
+    "query": "모달",
+    "before": "Dialog"
+  },
+  {
+    "query": "모달 띄우기",
+    "before": "Dialog"
+  },
+  {
+    "query": "다이얼로그",
+    "before": "Dialog"
+  },
+  {
+    "query": "팝업",
+    "before": "Dialog"
+  },
+  {
+    "query": "편집",
+    "before": "Dialog"
+  },
+  {
+    "query": "되돌릴 수 있는 입력이나 편집을 팝업으로 띄울 때",
+    "before": "Dialog"
+  },
+  {
+    "query": "입력·편집·선택을 모달로 제공한다.",
+    "before": "Dialog"
+  },
+  {
+    "query": "입력 창을 여는 트리거다.",
+    "before": "Input"
+  },
+  {
+    "query": "입력 창의 내용과 닫기 보호를 제공한다.",
+    "before": "Input"
+  },
+  {
+    "query": "옆 패널",
+    "before": "SheetContent"
+  },
+  {
+    "query": "사이드 패널",
+    "before": "SheetContent"
+  },
+  {
+    "query": "서랍",
+    "before": "SheetContent"
+  },
+  {
+    "query": "드로어",
+    "before": "SheetContent"
+  },
+  {
+    "query": "슬라이드 패널",
+    "before": "SheetContent"
+  },
+  {
+    "query": "목록에서 상세·편집·필터를 열거나 좁은 화면 메뉴를 서랍으로 열 때",
+    "before": "SheetContent"
+  },
+  {
+    "query": "목록 맥락을 유지하는 모달 옆 패널이다. side는 right·left, size는 sm 400·md 560·lg 720px다.",
+    "before": "SheetContent"
+  },
+  {
+    "query": "SheetContent의 스크롤 본문이다. 헤더·푸터는 이 바깥에 둔다.",
+    "before": "SheetContent"
+  },
+  {
+    "query": "입력 창 제목·설명 그룹이다.",
+    "before": "Input"
+  },
+  {
+    "query": "입력 창의 필수 제목이다.",
+    "before": "Input"
+  },
+  {
+    "query": "입력 창의 필수 설명이다.",
+    "before": "Input"
+  },
+  {
+    "query": "입력 창 하단의 액션 그룹이다.",
+    "before": "Input"
+  },
+  {
+    "query": "입력 창을 닫는 버튼을 제공한다.",
+    "before": "Input"
+  },
+  {
+    "query": "확인창",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "삭제 확인",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "되돌릴 수 없",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "취소 확인",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "영구 삭제·작성 취소 확인이 필요할 때",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "삭제 확인 등 되돌릴 수 없는 선택을 요구하는 확인창이다.",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "확인 창을 여는 트리거다.",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "되돌릴 수 없는 선택을 확인하는 내용을 표시한다.",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "확인 제목·설명 그룹이다.",
+    "before": "PageHeader"
+  },
+  {
+    "query": "확인 창의 필수 제목이다.",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "되돌릴 수 없는 결과의 설명이다.",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "확인·취소 액션 그룹이다.",
+    "before": "Button"
+  },
+  {
+    "query": "확인한 작업을 실행하고 확인창을 닫는다.",
+    "before": "AlertDialog"
+  },
+  {
+    "query": "초기 포커스를 받는 필수 취소 버튼이다.",
+    "before": "Button"
+  },
+  {
+    "query": "선택 필터",
+    "before": "Select"
+  },
+  {
+    "query": "셀렉트",
+    "before": "Select"
+  },
+  {
+    "query": "상태 필터",
+    "before": "Select"
+  },
+  {
+    "query": "20개 이하",
+    "before": "Select"
+  },
+  {
+    "query": "20개 이하의 상태·정렬 옵션을 선택할 때",
+    "before": "Select"
+  },
+  {
+    "query": "상태·정렬 필터에서 하나를 고른다.",
+    "before": "StatusChip"
+  },
+  {
+    "query": "선택 목록을 연다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택값이나 플레이스홀더를 표시한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택할 옵션 목록을 표시한다.",
+    "before": "DataTable"
+  },
+  {
+    "query": "관련 선택 항목을 묶는다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택 그룹의 이름을 표시한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택 옵션 하나를 표시한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택 그룹을 구분한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택 목록을 위로 넘긴다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택 목록을 아래로 넘긴다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "행 메뉴",
+    "before": "DropdownMenu"
+  },
+  {
+    "query": "드롭다운 액션",
+    "before": "DropdownMenu"
+  },
+  {
+    "query": "표의 행에서 액션을 실행할 때",
+    "before": "DropdownMenu"
+  },
+  {
+    "query": "행에서 실행할 액션을 메뉴로 제공한다.",
+    "before": "DropdownMenu"
+  },
+  {
+    "query": "행 액션 메뉴를 연다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "실행할 액션 목록을 표시한다.",
+    "before": "DataTable"
+  },
+  {
+    "query": "메뉴 액션 하나를 실행한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴에서 켜고 끌 항목을 표시한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴에서 하나만 고를 항목을 표시한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴 그룹 이름을 표시한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴 그룹을 구분한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴의 단축키를 표시한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "관련 메뉴 항목을 묶는다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴를 다른 화면 요소 위에 표시한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "하위 메뉴를 제공한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "하위 메뉴 목록을 표시한다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "하위 메뉴를 연다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "메뉴에서 하나만 고를 항목을 묶는다.",
+    "before": "SideNav"
+  },
+  {
+    "query": "토스트",
+    "before": "Toaster"
+  },
+  {
+    "query": "저장 알림",
+    "before": "Toaster"
+  },
+  {
+    "query": "사용자 작업 결과를 알릴 때",
+    "before": "Toaster"
+  },
+  {
+    "query": "저장·오류 알림을 표시한다.",
+    "before": "Field"
+  },
+  {
+    "query": "날짜",
+    "before": "DatePicker"
+  },
+  {
+    "query": "기간 필터",
+    "before": "DatePicker"
+  },
+  {
+    "query": "달력",
+    "before": "DatePicker"
+  },
+  {
+    "query": "주문·물류 목록의 기간 필터가 필요할 때",
+    "before": "DatePicker"
+  },
+  {
+    "query": "한국어 단일 날짜·기간 입력과 빠른 선택을 제공한다.",
+    "before": "DatePicker"
+  },
+  {
+    "query": "버튼",
+    "before": "Button"
+  },
+  {
+    "query": "저장",
+    "before": "Button"
+  },
+  {
+    "query": "삭제",
+    "before": "Button"
+  },
+  {
+    "query": "액션",
+    "before": "Button"
+  },
+  {
+    "query": "저장·취소·삭제 버튼이 필요할 때",
+    "before": "Button"
+  },
+  {
+    "query": "명시적인 사용자 동작을 실행한다.",
+    "before": "Button"
+  },
+  {
+    "query": "입력",
+    "before": "Input"
+  },
+  {
+    "query": "텍스트",
+    "before": "Input"
+  },
+  {
+    "query": "금액",
+    "before": "Input"
+  },
+  {
+    "query": "입력칸",
+    "before": "Input"
+  },
+  {
+    "query": "숫자 입력",
+    "before": "Input"
+  },
+  {
+    "query": "통화",
+    "before": "Input"
+  },
+  {
+    "query": "가격",
+    "before": "Input"
+  },
+  {
+    "query": "비밀번호",
+    "before": "Input"
+  },
+  {
+    "query": "검색창",
+    "before": "Input"
+  },
+  {
+    "query": "전화번호",
+    "before": "Input"
+  },
+  {
+    "query": "수량",
+    "before": "Input"
+  },
+  {
+    "query": "금액 입력",
+    "before": "Input"
+  },
+  {
+    "query": "텍스트·금액 한 칸을 입력할 때",
+    "before": "Input"
+  },
+  {
+    "query": "단일 값·비밀번호·검색어를 입력한다.",
+    "before": "Input"
+  },
+  {
+    "query": "여러 줄",
+    "before": "Textarea"
+  },
+  {
+    "query": "메모",
+    "before": "Textarea"
+  },
+  {
+    "query": "비고",
+    "before": "Textarea"
+  },
+  {
+    "query": "메모·비고를 여러 줄로 작성할 때",
+    "before": "Textarea"
+  },
+  {
+    "query": "여러 줄 메모와 긴 글을 입력한다.",
+    "before": "Textarea"
+  },
+  {
+    "query": "라디오",
+    "before": "RadioGroup"
+  },
+  {
+    "query": "하나만 선택",
+    "before": "RadioGroup"
+  },
+  {
+    "query": "택일",
+    "before": "RadioGroup"
+  },
+  {
+    "query": "여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때",
+    "before": "RadioGroup"
+  },
+  {
+    "query": "여러 선택지 중 하나만 선택한다.",
+    "before": "RadioGroup"
+  },
+  {
+    "query": "라디오 선택지 하나를 표시한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "스위치",
+    "before": "Switch"
+  },
+  {
+    "query": "토글",
+    "before": "Switch"
+  },
+  {
+    "query": "켜기 끄기",
+    "before": "Switch"
+  },
+  {
+    "query": "즉시 적용",
+    "before": "Switch"
+  },
+  {
+    "query": "알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때",
+    "before": "Switch"
+  },
+  {
+    "query": "켜기 끄기 설정을 즉시 적용한다.",
+    "before": "Switch"
+  },
+  {
+    "query": "레이블",
+    "before": "Field"
+  },
+  {
+    "query": "입력 이름",
+    "before": "Label"
+  },
+  {
+    "query": "Field를 쓰지 않는 Switch·Checkbox·Radio 옆에 입력 이름이 필요할 때",
+    "before": "Checkbox"
+  },
+  {
+    "query": "컨트롤 옆의 레이블로 입력 이름을 연결한다.",
+    "before": "Label"
+  },
+  {
+    "query": "상태",
+    "before": "StatusChip"
+  },
+  {
+    "query": "완료",
+    "before": "StatusChip"
+  },
+  {
+    "query": "경고",
+    "before": "StatusChip"
+  },
+  {
+    "query": "칩",
+    "before": "StatusChip"
+  },
+  {
+    "query": "주문 상태",
+    "before": "StatusChip"
+  },
+  {
+    "query": "배송 상태",
+    "before": "StatusChip"
+  },
+  {
+    "query": "상태 표시",
+    "before": "StatusChip"
+  },
+  {
+    "query": "완료·경고·오류 상태를 표시할 때",
+    "before": "StatusChip"
+  },
+  {
+    "query": "레코드의 상태를 라벨과 실루엣으로 표시한다.",
+    "before": "StatusChip"
+  },
+  {
+    "query": "카드",
+    "before": "Card"
+  },
+  {
+    "query": "Card",
+    "before": "Card"
+  },
+  {
+    "query": "관련 정보를 카드로 묶을 때",
+    "before": "Card"
+  },
+  {
+    "query": "관련 정보를 평면 카드로 묶는다.",
+    "before": "Card"
+  },
+  {
+    "query": "카드 제목과 보조 동작을 배치한다.",
+    "before": "Card"
+  },
+  {
+    "query": "카드 제목을 표시한다.",
+    "before": "Card"
+  },
+  {
+    "query": "카드 본문을 담는다.",
+    "before": "Card"
+  },
+  {
+    "query": "카드 하단의 보조 정보를 담는다.",
+    "before": "Card"
+  },
+  {
+    "query": "체크",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택",
+    "before": "Checkbox"
+  },
+  {
+    "query": "혼합",
+    "before": "Checkbox"
+  },
+  {
+    "query": "행 선택이나 복수 선택이 필요할 때",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택·해제·일부 선택 상태를 표시한다.",
+    "before": "Checkbox"
+  },
+  {
+    "query": "표",
+    "before": "DataTable"
+  },
+  {
+    "query": "테이블",
+    "before": "DataTable"
+  },
+  {
+    "query": "행",
+    "before": "DataTable"
+  },
+  {
+    "query": "정렬",
+    "before": "DataTable"
+  },
+  {
+    "query": "목록",
+    "before": "ListSkeleton"
+  },
+  {
+    "query": "레코드",
+    "before": "DataTable"
+  },
+  {
+    "query": "여러 건 선택",
+    "before": "DataTable"
+  },
+  {
+    "query": "일괄 선택",
+    "before": "DataTable"
+  },
+  {
+    "query": "주문 목록",
+    "before": "DataTable"
+  },
+  {
+    "query": "많은 레코드를 열로 비교할 때",
+    "before": "DataTable"
+  },
+  {
+    "query": "정렬·선택·가상화가 가능한 데이터 표다.",
+    "before": "DataTable"
+  },
+  {
+    "query": "선택 열 식별자",
+    "before": "Checkbox"
+  },
+  {
+    "query": "선택 열 고정을 지정할 때",
+    "before": "Checkbox"
+  },
+  {
+    "query": "DataTable 선택 열의 식별자 상수다.",
+    "before": "DataTable"
+  },
+  {
+    "query": "차트 프레임",
+    "before": "ChartFrame"
+  },
+  {
+    "query": "범례",
+    "before": "ChartFrame"
+  },
+  {
+    "query": "차트 공통 외곽과 상태가 필요할 때",
+    "before": "ChartFrame"
+  },
+  {
+    "query": "차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",
+    "before": "ChartFrame"
+  },
+  {
+    "query": "추세",
+    "before": "TrendBand"
+  },
+  {
+    "query": "추이",
+    "before": "TrendBand"
+  },
+  {
+    "query": "시계열",
+    "before": "TrendBand"
+  },
+  {
+    "query": "밴드",
+    "before": "TrendBand"
+  },
+  {
+    "query": "선 그래프",
+    "before": "TrendBand"
+  },
+  {
+    "query": "변동 범위",
+    "before": "TrendBand"
+  },
+  {
+    "query": "상하한",
+    "before": "TrendBand"
+  },
+  {
+    "query": "편차",
+    "before": "TrendBand"
+  },
+  {
+    "query": "시계열 추세와 밴드를 비교할 때",
+    "before": "TrendBand"
+  },
+  {
+    "query": "시간 추세와 상하 범위를 보여준다.",
+    "before": "TrendBand"
+  },
+  {
+    "query": "실적",
+    "before": "BulletRow"
+  },
+  {
+    "query": "목표",
+    "before": "BulletRow"
+  },
+  {
+    "query": "KPI",
+    "before": "BulletRow"
+  },
+  {
+    "query": "불릿",
+    "before": "BulletRow"
+  },
+  {
+    "query": "달성률",
+    "before": "BulletRow"
+  },
+  {
+    "query": "목표 대비",
+    "before": "BulletRow"
+  },
+  {
+    "query": "실적 비교",
+    "before": "BulletRow"
+  },
+  {
+    "query": "KPI 목표 달성도를 비교할 때",
+    "before": "BulletRow"
+  },
+  {
+    "query": "목표 대비 실적을 행으로 비교한다.",
+    "before": "BulletRow"
+  },
+  {
+    "query": "구성비",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "구성 비율",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "비중",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "누적",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "면적",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "점유율",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "비율 변화",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "시간별 구성",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "구성 비중 변화를 비교할 때",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "시간별 구성비를 누적 면적으로 보여준다.",
+    "before": "CompositionArea"
+  },
+  {
+    "query": "빈 상태",
+    "before": "EmptyState"
+  },
+  {
+    "query": "데이터 없음",
+    "before": "EmptyState"
+  },
+  {
+    "query": "필터 초기화",
+    "before": "EmptyState"
+  },
+  {
+    "query": "필터 결과가 비었을 때",
+    "before": "EmptyState"
+  },
+  {
+    "query": "표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.",
+    "before": "Button"
+  },
+  {
+    "query": "불러오기 실패",
+    "before": "ErrorState"
+  },
+  {
+    "query": "재시도",
+    "before": "ErrorState"
+  },
+  {
+    "query": "데이터 오류",
+    "before": "ErrorState"
+  },
+  {
+    "query": "데이터 요청이 실패했을 때",
+    "before": "ErrorState"
+  },
+  {
+    "query": "불러오기 실패와 재시도 경로를 제공한다.",
+    "before": "ErrorState"
+  },
+  {
+    "query": "아바타",
+    "before": "Avatar"
+  },
+  {
+    "query": "이니셜",
+    "before": "Avatar"
+  },
+  {
+    "query": "사용자 사진",
+    "before": "Avatar"
+  },
+  {
+    "query": "사용자 이름과 사진을 표시할 때",
+    "before": "Avatar"
+  },
+  {
+    "query": "사진이나 이니셜로 사람을 식별한다.",
+    "before": "Avatar"
+  },
+  {
+    "query": "썸네일",
+    "before": "Thumbnail"
+  },
+  {
+    "query": "상품 사진",
+    "before": "Thumbnail"
+  },
+  {
+    "query": "이미지 실패",
+    "before": "Thumbnail"
+  },
+  {
+    "query": "상품·미디어 이미지를 표시할 때",
+    "before": "Thumbnail"
+  },
+  {
+    "query": "이미지 공간을 예약하고 실패를 대체한다.",
+    "before": "Thumbnail"
+  },
+  {
+    "query": "스켈레톤",
+    "before": "Skeleton"
+  },
+  {
+    "query": "자리 표시",
+    "before": "Skeleton"
+  },
+  {
+    "query": "로딩",
+    "before": "Skeleton"
+  },
+  {
+    "query": "불러오는",
+    "before": "Skeleton"
+  },
+  {
+    "query": "불러오기",
+    "before": "Skeleton"
+  },
+  {
+    "query": "데이터 대기",
+    "before": "Skeleton"
+  },
+  {
+    "query": "콘텐츠 대기",
+    "before": "Skeleton"
+  },
+  {
+    "query": "로딩 중",
+    "before": "Skeleton"
+  },
+  {
+    "query": "콘텐츠 모양을 미리 알 때",
+    "before": "Skeleton"
+  },
+  {
+    "query": "알려진 콘텐츠 형태의 자리 표시자다.",
+    "before": "Skeleton"
+  },
+  {
+    "query": "문단 로딩",
+    "before": "SkeletonText"
+  },
+  {
+    "query": "텍스트 스켈레톤",
+    "before": "SkeletonText"
+  },
+  {
+    "query": "여러 줄 텍스트를 기다릴 때",
+    "before": "Textarea"
+  },
+  {
+    "query": "문단 형태의 로딩 자리 표시자다.",
+    "before": "Skeleton"
+  },
+  {
+    "query": "카드 로딩",
+    "before": "CardSkeleton"
+  },
+  {
+    "query": "카드 스켈레톤",
+    "before": "CardSkeleton"
+  },
+  {
+    "query": "카드 불러오는 중",
+    "before": "CardSkeleton"
+  },
+  {
+    "query": "카드 불러오기",
+    "before": "CardSkeleton"
+  },
+  {
+    "query": "카드의 콘텐츠 배치와 치수를 알 때",
+    "before": "CardSkeleton"
+  },
+  {
+    "query": "카드 형태의 로딩 자리 표시자다.",
+    "before": "Skeleton"
+  },
+  {
+    "query": "목록 로딩",
+    "before": "ListSkeleton"
+  },
+  {
+    "query": "목록 스켈레톤",
+    "before": "ListSkeleton"
+  },
+  {
+    "query": "목록 불러오는 중",
+    "before": "ListSkeleton"
+  },
+  {
+    "query": "목록 불러오기",
+    "before": "ListSkeleton"
+  },
+  {
+    "query": "목록의 콘텐츠 배치와 치수를 알 때",
+    "before": "ListSkeleton"
+  },
+  {
+    "query": "목록 형태의 로딩 자리 표시자다.",
+    "before": "Skeleton"
+  },
+  {
+    "query": "폼",
+    "before": "FormSkeleton"
+  },
+  {
+    "query": "폼 로딩",
+    "before": "FormSkeleton"
+  },
+  {
+    "query": "폼 스켈레톤",
+    "before": "FormSkeleton"
+  },
+  {
+    "query": "폼 불러오는 중",
+    "before": "FormSkeleton"
+  },
+  {
+    "query": "폼 불러오기",
+    "before": "FormSkeleton"
+  },
+  {
+    "query": "폼의 콘텐츠 배치와 치수를 알 때",
+    "before": "FormSkeleton"
+  },
+  {
+    "query": "폼 형태의 로딩 자리 표시자다.",
+    "before": "Skeleton"
+  },
+  {
+    "query": "차트",
+    "before": "ChartSkeleton"
+  },
+  {
+    "query": "차트 로딩",
+    "before": "ChartSkeleton"
+  },
+  {
+    "query": "차트 스켈레톤",
+    "before": "ChartSkeleton"
+  },
+  {
+    "query": "차트 불러오는 중",
+    "before": "ChartSkeleton"
+  },
+  {
+    "query": "차트 불러오기",
+    "before": "ChartSkeleton"
+  },
+  {
+    "query": "차트의 콘텐츠 배치와 치수를 알 때",
+    "before": "ChartSkeleton"
+  },
+  {
+    "query": "차트 형태의 로딩 자리 표시자다.",
+    "before": "Skeleton"
+  },
+  {
+    "query": "진행률",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "진행 표시",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "대기",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "남은 시간",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "예상 시간",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "진행 바",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "긴 작업의 진행 정도를 알릴 때",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "진행률과 예상 시간을 표시한다.",
+    "before": "ProgressTrack"
+  },
+  {
+    "query": "대량",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "일괄",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "장기 작업",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "내보내기",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "오래 걸리는",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "진행 상황",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "작업 단계",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "백그라운드 작업",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "대량 내보내기·일괄 작업을 기다릴 때",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "드문 장기 작업의 단계와 진행을 표시한다.",
+    "before": "TaskProgress"
+  },
+  {
+    "query": "툴팁",
+    "before": "Tooltip"
+  },
+  {
+    "query": "호버",
+    "before": "Tooltip"
+  },
+  {
+    "query": "한 줄",
+    "before": "Tooltip"
+  },
+  {
+    "query": "컨트롤 설명",
+    "before": "Tooltip"
+  },
+  {
+    "query": "UI 설명",
+    "before": "Tooltip"
+  },
+  {
+    "query": "호버·키보드 포커스로 UI 의미를 확인할 때",
+    "before": "Tooltip"
+  },
+  {
+    "query": "컨트롤의 뜻을 한 줄로 설명한다.",
+    "before": "Tooltip"
+  },
+  {
+    "query": "힌트",
+    "before": "Hint"
+  },
+  {
+    "query": "새 기능",
+    "before": "Hint"
+  },
+  {
+    "query": "한 번",
+    "before": "Hint"
+  },
+  {
+    "query": "맥락형 안내",
+    "before": "Hint"
+  },
+  {
+    "query": "새 기능을 2~3줄과 액션으로 알릴 때",
+    "before": "Hint"
+  },
+  {
+    "query": "새 기능·놓치기 쉬운 UI를 한 번 알린다.",
+    "before": "Hint"
+  },
+  {
+    "query": "투어",
+    "before": "Tour"
+  },
+  {
+    "query": "온보딩",
+    "before": "Tour"
+  },
+  {
+    "query": "단계",
+    "before": "Tour"
+  },
+  {
+    "query": "단계별",
+    "before": "Tour"
+  },
+  {
+    "query": "단계별 안내",
+    "before": "Tour"
+  },
+  {
+    "query": "사용법",
+    "before": "Tour"
+  },
+  {
+    "query": "흐름 학습",
+    "before": "Tour"
+  },
+  {
+    "query": "기능 흐름",
+    "before": "Tour"
+  },
+  {
+    "query": "처음 온 사용자",
+    "before": "Tour"
+  },
+  {
+    "query": "둘러보기",
+    "before": "Tour"
+  },
+  {
+    "query": "시작 안내",
+    "before": "Tour"
+  },
+  {
+    "query": "사용자가 전체 흐름 학습을 요청할 때",
+    "before": "Tour"
+  },
+  {
+    "query": "사용자가 요청한 UI 흐름을 단계로 안내한다.",
+    "before": "Tour"
+  },
+  {
+    "query": "필드",
+    "before": "Field"
+  },
+  {
+    "query": "오류",
+    "before": "Field"
+  },
+  {
+    "query": "폼 검증",
+    "before": "Field"
+  },
+  {
+    "query": "입력값 검증",
+    "before": "Field"
+  },
+  {
+    "query": "틀렸을 때",
+    "before": "Field"
+  },
+  {
+    "query": "오류 문구",
+    "before": "Field"
+  },
+  {
+    "query": "유효성 검사",
+    "before": "Field"
+  },
+  {
+    "query": "폼 필드의 설명과 검증 오류를 표시할 때",
+    "before": "Field"
+  },
+  {
+    "query": "레이블·설명·오류와 입력 접근성을 연결한다.",
+    "before": "Field"
+  },
+  {
+    "query": "연속 입력",
+    "before": "FormFlow"
+  },
+  {
+    "query": "반복 입력",
+    "before": "FormFlow"
+  },
+  {
+    "query": "Enter",
+    "before": "FormFlow"
+  },
+  {
+    "query": "폼 이동",
+    "before": "FormFlow"
+  },
+  {
+    "query": "다음 입력칸",
+    "before": "FormFlow"
+  },
+  {
+    "query": "키보드 이동",
+    "before": "FormFlow"
+  },
+  {
+    "query": "다음 칸",
+    "before": "FormFlow"
+  },
+  {
+    "query": "이전 칸",
+    "before": "FormFlow"
+  },
+  {
+    "query": "반복 입력에서 마우스 이동을 줄일 때",
+    "before": "FormFlow"
+  },
+  {
+    "query": "반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.",
+    "before": "FormFlow"
+  },
+  {
+    "query": "요약",
+    "before": "Peek"
+  },
+  {
+    "query": "미리보기",
+    "before": "Peek"
+  },
+  {
+    "query": "peek",
+    "before": "Peek"
+  },
+  {
+    "query": "팝오버",
+    "before": "Peek"
+  },
+  {
+    "query": "행 상세",
+    "before": "Peek"
+  },
+  {
+    "query": "레코드 내용",
+    "before": "Peek"
+  },
+  {
+    "query": "표의 행을 열지 않고 내용을 확인할 때",
+    "before": "Peek"
+  },
+  {
+    "query": "레코드를 열지 않고 핵심 내용을 요약해 보여준다.",
+    "before": "Peek"
+  },
+  {
+    "query": "옆에서 열리는 편집 패널",
+    "before": "Dialog"
+  },
+  {
+    "query": "상품 이미지 여러 장 업로드",
+    "before": "Thumbnail"
+  },
+  {
+    "query": "상품명 검색",
+    "before": "Combobox"
+  }
+]

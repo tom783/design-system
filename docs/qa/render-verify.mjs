@@ -166,6 +166,22 @@ const lum = rgb.length >= 3 ? (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[
 check('다크에서 셀 배경이 어둡다 (토큰이 실제로 먹음)', lum < 0.3,
   `${dk.cellBg} → 휘도 ${lum.toFixed(3)} · 토큰 --bg-surface=${dk.tokenSurface}`);
 
+// R38: 새 단정만 추가한다. 기존 위치·동작 검사는 그대로 둔다.
+console.log('\n── B. 선택 없는 표·부분 내보내기 문구 ──');
+for (const [name, label, range] of [
+  ['선택없이내보내기', 'CSV 내보내기', ''],
+  ['선택없이부분내보내기', '50건 내보내기', '전체 1,284건 중 50건'],
+]) {
+  await openStory(`components-datatable--${name}`);
+  const toolbar = await evalIn(`(() => {
+    const bar=document.querySelector('[data-slot="data-table-toolbar"]');
+    return { text:bar.textContent, button:bar.querySelector('button').textContent.trim(),
+      statuses:[...bar.querySelectorAll('[role="status"]')].map(node => node.textContent.trim()) };
+  })()`);
+  check(`${name}: 선택 상태 줄 없음`, !/개 선택|건이 선택됨/.test(toolbar.text), toolbar.text);
+  check(`${name}: 짧은 내보내기 라벨`, toolbar.button === label, toolbar.button);
+  check(`${name}: 부분 로드 범위 상태`, JSON.stringify(toolbar.statuses) === JSON.stringify(range ? [range] : []), JSON.stringify(toolbar.statuses));
+}
 // ══ 요약 ══
 session.close();
 const fail = results.filter((r) => !r.pass);

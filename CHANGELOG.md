@@ -40,6 +40,8 @@
 
 ### 고침
 
+- 도그푸딩 5 보정(R38): PageHeader의 바깥 여백을 페이지의 gap 24px로 옮기고 기존 예시 간격을 보존했다. AppShell 내장 여백·필터 Select 폭 규칙을 안내한다. DataTable은 선택 기능 없이 선택 상태를 표시하지 않으며 부분 로드 내보내기를 짧은 버튼과 범위 안내로 나눈다. 추천은 떨어진 낱말과 검색 입력을 찾으며 전체 기존 질의의 1순위를 대조한다. 버전·공개 API·Select 기본 폭·카탈로그 상한은 유지한다.
+
 - Dialog·SheetContent `dismissible=false`: 확인 AlertDialog 를 형제로 두면 Escape·닫기 버튼 한 번에 `onDismissAttempt` 가 두 번 불렸다.
   확인창으로 포커스가 나가는 것은 시도로 세지 않는다. 막을 눌러도 포커스가 BODY 로 빠지지 않는다.
 - AlertDialog: 트리거 없이 상태로 연 확인창이 닫히면 열리기 직전 포커스 요소로 돌아간다(이전: BODY). 트리거·앱의 `onCloseAutoFocus` 가 우선한다.

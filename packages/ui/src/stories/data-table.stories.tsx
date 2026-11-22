@@ -387,6 +387,9 @@ export const 무한스크롤: Story = {
   render: () => <InfiniteExample />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await expect(canvas.getByRole('button', { name: '50건 내보내기' })).toBeVisible();
+    await expect(canvas.getByText('전체 1,284건 중 50건')).toBeVisible();
+    await expect(canvas.queryByText(/개 선택/)).not.toBeInTheDocument();
     for (let count = 50; count < infiniteTotal; count = Math.min(count + 50, infiniteTotal)) {
       scrollToTableEnd(canvasElement);
       await waitFor(() => expect(canvas.getByText('불러오는 중')).toBeVisible());
@@ -464,9 +467,18 @@ export const 부분로드_전체선택: Story = {
   args: { data: tenThousandOrders.slice(0, 50), totalCount: infiniteTotal, selectionMode: 'multi', exportFileName: '부분-주문', caption: '전체 1,284건 중 처음 50건의 선택 범위' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole('button', { name: '로드된 50건만 내보냅니다' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: '50건 내보내기' })).toBeVisible();
     await userEvent.click(canvas.getByRole('checkbox', { name: '로드된 50건 선택' }));
     await expect(canvas.getByText('로드된 50건이 선택됨 · 전체 1,284건')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: '선택한 행 내보내기' })).toBeVisible();
     await expect(canvas.queryByRole('button', { name: '전체 선택' })).not.toBeInTheDocument();
   },
+};
+
+// 선택을 생략한 표와 명시적으로 끈 부분 로드 표를 각각 검증하는 예시다.
+export const 선택없이내보내기: Story = {
+  args: { exportFileName: '주문' },
+};
+export const 선택없이부분내보내기: Story = {
+  args: { data: tenThousandOrders.slice(0, 50), totalCount: infiniteTotal, selectionMode: 'none', exportFileName: '현재-페이지-주문' },
 };

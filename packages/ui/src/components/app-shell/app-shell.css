@@ -54,7 +54,8 @@
   .ds-side-nav .ds-side-nav-label, .ds-side-nav .ds-side-nav-meta, .ds-side-nav .ds-side-nav-brand-label, .ds-side-nav .ds-side-nav-group-label { display: none; }
   .ds-app-shell-main, .ds-app-shell-header { padding: var(--space-16); }
 }
-.ds-page-header { container: page-header / inline-size; display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; margin-block-end: var(--space-24); }
+/* 바깥 간격은 페이지의 gap이 맡아 소비자 여백과 이중으로 합쳐지지 않게 한다. */
+.ds-page-header { container: page-header / inline-size; display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
 .ds-page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-16); min-width: 0; }
 .ds-page-header-copy { flex: 1; min-width: 0; }
 .ds-page-header-heading { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-12); }

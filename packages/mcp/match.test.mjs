@@ -147,3 +147,30 @@ test('Sheet는 Dialog 부품이며 독자 검색 의도를 가진다', () => {
   assert.ok(sheet.related.includes('Peek'));
   assert.ok(sheet.dont.some(text => text.includes('DialogContent')));
 });
+
+for (const [query, expected] of [
+  ['옆에서 열리는 편집 패널', 'SheetContent'],
+  ['상품 이미지 여러 장 업로드', 'FileUpload'],
+  ['상품명 검색', 'Input'],
+]) test(`R38 떨어진 낱말·검색 입력 1위: ${query}`, () => {
+  assert.equal(matchComponents(query, components)[0]?.name, expected);
+});
+
+test('R38 연속 구절 우선·모든 낱말 필수·순서가 달라도 후보·낱말 내부 오인 방지', () => {
+  const sheet = query => matchComponents(query, components, components.length).find(c => c.name === 'SheetContent');
+  assert.ok(sheet('옆 패널을 열기').score > sheet('옆에서 열리는 패널').score);
+  assert.ok(sheet('패널을 옆에서 열기'));
+  assert.equal(sheet('패널을 열기'), undefined);
+  const dropdown = matchComponents('메뉴 액션 하나를 실행한다.', components, components.length).find(c => c.name === 'DropdownMenu');
+  assert.ok(dropdown?.reasons.some(reason => reason.includes('행 메뉴 (+8)')));
+  assert.equal(matchComponents('메뉴 액션 하나를 실행한다.', components)[0]?.name, 'SideNav');
+  assert.ok(sheet('옆에서열리는편집패널'));
+  assert.equal(matchComponents('상품이미지 여러 장 업로드', components)[0]?.name, 'FileUpload');
+});
+
+test('R38 기존 모든 keywords·useWhen·purpose의 1순위에 의도하지 않은 변화가 없다', async () => {
+  const { compareRankings } = await import('../../docs/qa/r38-match-compare.mjs');
+  const rows = await compareRankings();
+  assert.equal(rows.length, 439);
+  assert.deepEqual(rows.filter(row => row.after !== row.expected), []);
+});

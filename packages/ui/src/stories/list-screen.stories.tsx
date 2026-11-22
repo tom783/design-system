@@ -36,7 +36,7 @@ function ListScreen() {
   return <main className="mx-auto min-w-0 max-w-6xl space-y-4"><Toaster /><h1 className="text-xl font-semibold">주문 목록</h1>
     <div className="flex flex-wrap items-start gap-4 border-b border-border pb-2">
       <Field label="주문 기간"><DatePicker value={range} onChange={setRange} today={today} /></Field>
-      <Field label="주문 상태"><Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+      <Field label="주문 상태"><Select value={status} onValueChange={setStatus}><SelectTrigger className="w-auto min-w-40"><SelectValue /></SelectTrigger><SelectContent>
         <SelectItem value="all">전체</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem>
       </SelectContent></Select></Field>
     </div><p role="status" className="tabular">총 {filtered.length}건</p>

@@ -33,7 +33,7 @@ claude mcp add s2life -- npx -y @s2life/mcp
 
 `component-intent.mjs`는 의도·사용 조건·금지사항·키워드와 소스 대조용 props·slots 목록을 소유한다. 생성기는 export 완전성, 실제 props, 실제 슬롯, DESIGN 절 제목, related 참조, 토큰 이름·참조를 검증한 뒤에만 출력한다. 토큰 값은 `tokens.json`에서, Tailwind 색 별칭은 이미 생성된 `packages/tokens/theme.css`에서 읽어 수동 매핑 중복을 피한다. 역할에 따라 쓰는 클래스가 다른 토큰은 Tailwind 목록이 비어 있을 수 있으며 `cssVariable`로 소비한다. 서체처럼 `tokens.json`에 없는 값은 추측해 추가하지 않는다.
 
-`which_component`는 순수 문자열 매칭이다. NFKC·소문자·공백 제거 후 전체 이름 일치 +2000, 설명 안 이름 포함 +1000, 키워드 +20(한 글자는 +4), 설명 단어의 useWhen 일치 +5, purpose 일치 +2를 합산한다. 동점은 이름순이며 기본 5개(최대 10개)를 반환한다. 단어별 의미 추론·동의어 추론은 하지 않는다. 점수 근거·useWhen·dont를 같이 주므로 호출자가 후보를 비교한다. 무매칭은 `isError: true`와 `list_components` 안내로 반환한다.
+`which_component`는 순수 문자열 매칭이다. NFKC·소문자·공백 제거 후 전체 이름 일치 +2000, 설명 안 이름 포함 +1000, 키워드 완전 일치 +80, 포함 일치 +20(한 글자는 +4, 여러 낱말의 연속 구절은 +40)를 합산한다. 여러 낱말이 떨어져 있어도 모두 질의에 포함되면 일치한다. 각 질의 낱말의 앞부분에서 원래 순서대로 맞으면 +24, 순서가 다르거나 낱말 내부에서 맞으면 +8이며 겹치는 단일 키워드 점수는 중복 가산하지 않는다. 고유 검색어가 있는 부품의 후보 판정도 같은 비교를 쓴다. 설명 단어의 useWhen 일치는 +5, purpose 일치는 +2다. 동점은 이름순이며 기본 5개(최대 10개)를 반환한다. 의미·동의어 추론은 하지 않는다. 점수 근거·useWhen·dont를 함께 주며, 무매칭은 `isError: true`와 `list_components` 안내로 반환한다.
 
 `manifest.json`은 파생 필드를 항목마다 반복하지 않고 최상위 `derived`에 복원 규칙을 보관한다.
 `importTemplate`의 `NAME`은 항목 이름이고, 전체 소스 경로는 `sourceRoot + source`다.

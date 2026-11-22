@@ -45,7 +45,7 @@ const intents = [
   ],['page','pageSize','totalCount','onPageChange','pageSizeOptions','onPageSizeChange','disabled'],['pagination','pagination-range','pagination-controls','pagination-page','pagination-position','pagination-previous','pagination-next','pagination-size','pagination-pages','pagination-ellipsis'],['DataTable','Select','Button','EmptyState'],['페이지','페이징','페이지 이동','페이지 크기','몇 개씩']),
   entry('AppShell','layout','사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',['제품의 공통 화면 틀을 구성할 때'],['본문 안에 main을 다시 넣지 마라'],'24',[
     'sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.',
-    '본문으로 건너뛰기 링크와 본문 영역은 내장되어 있다.',
+    '본문·건너뛰기 링크와 여백(24px, 좁으면 16px)은 내장이다. 페이지 루트에 padding을 다시 주지 않는다. 화면 요소 사이는 gap 24px.',
     '본문은 기본 최대 폭 제한이 없다. 필요한 화면만 contentMaxWidth를 지정한다.',
     'narrowNavigation=drawer는 1024px 미만에서 메뉴 버튼·왼쪽 Sheet를 쓴다. 항목 선택 시 닫히며 기본은 rail이다.',
     '높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.'
@@ -61,7 +61,7 @@ const intents = [
   part('SideNavGroup','SideNav','사이드 메뉴 항목을 제목으로 묶는다.',['label','children'],['side-nav-group','side-nav-group-label']),
   part('SideNavItem','SideNav','아이콘·라벨·개수와 현재 위치 또는 준비 중 상태를 표시한다.',['icon','label','badge','current','disabled','asChild','href'],['side-nav-item','side-nav-item-label','side-nav-badge']),
   entry('PageHeader','layout','페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',['페이지 제목이나 화면 머리를 구성할 때'],['한 페이지에 PageHeader를 여러 개 넣지 마라'],'24',[
-    'title은 페이지의 h1이다. 본문에서 같은 제목을 다시 만들지 않는다.',
+    'title은 페이지의 h1이다. 같은 제목을 다시 만들지 않는다. 바깥 여백이 없다. 아래 요소와의 간격은 페이지 배치(gap)로 준다.',
     'breadcrumb에는 Breadcrumb, status에는 StatusChip 등을 넣는다. actions에는 화면의 주요 버튼을 둔다.',
     '본문 폭이 640px 미만이면 액션이 제목 아래로 내려간다. 주요 버튼은 하나만 둔다.'
   ],['title','description','breadcrumb','status','actions'],['page-header','page-header-title','page-header-description','page-header-breadcrumb','page-header-status','page-header-actions'],['AppShell','Breadcrumb','StatusChip','Button'],['페이지 제목','화면 머리','페이지 머리','제목과 버튼','페이지 헤더']),
@@ -172,7 +172,7 @@ const intents = [
     ['SelectSeparator', "선택 그룹을 구분한다.", ['select-separator'], 'Select'],
     ['SelectScrollUpButton', "선택 목록을 위로 넘긴다.", ['select-scroll-up-button'], 'Select'],
     ['SelectScrollDownButton', "선택 목록을 아래로 넘긴다.", ['select-scroll-down-button'], 'Select'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다.', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다. 필터 줄에서는 SelectTrigger에 폭을 지정한다(기본은 칸을 채운다).', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
   ...[
     ['DropdownMenu', "행에서 실행할 액션을 메뉴로 제공한다.", [], null],
     ['DropdownMenuTrigger', "행 액션 메뉴를 연다.", ['dropdown-menu-trigger'], 'DropdownMenu'],
@@ -206,7 +206,7 @@ const intents = [
     rule('앞쪽 장식은 leadingIcon, 검색 돋보기를 끄려면 leadingIcon={null}. password 보기는 내장 버튼을 쓴다.', '17.1'),
     rule("날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.", "17.1"),
     rule("앱 검증·Field 한국어 오류를 쓴다.", "17.1")
-  ],['invalid','numeric','leadingIcon','type','inputMode'],['input','input-control','input-leading-icon','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색창','전화번호','수량','금액 입력']),
+  ],['invalid','numeric','leadingIcon','type','inputMode'],['input','input-control','input-leading-icon','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색','검색창','전화번호','수량','금액 입력']),
   entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],["자동 높이가 필요하면 autoGrow를 쓰고 직접 높이를 계산하지 않는다", "autoGrow가 꺼진 입력의 크기 조절을 막지 마라"],'17',[
     rule("autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.", "17.2"),
     rule("FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.", "17.2")

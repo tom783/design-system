@@ -485,7 +485,7 @@
     ],
     "rules": [
       {
-        "text": "Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다.",
+        "text": "Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다. 필터 줄에서는 SelectTrigger에 폭을 지정한다(기본은 칸을 채운다).",
         "source": "DESIGN.md 11.4"
       }
     ],

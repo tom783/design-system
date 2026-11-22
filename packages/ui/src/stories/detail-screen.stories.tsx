@@ -45,7 +45,7 @@ function OrderList({ orders, status, setStatus, restored, open }: {
   }, [restored]);
   return <div ref={root} className="space-y-4" style={{ '--data-table-viewport-height': '240px' } as React.CSSProperties}>
     <h1 className="text-title font-semibold">주문 목록</h1>
-    <Field label="주문 상태"><Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger>
+    <Field label="주문 상태"><Select value={status} onValueChange={setStatus}><SelectTrigger className="w-auto min-w-40"><SelectValue /></SelectTrigger>
       <SelectContent><SelectItem value="all">전체</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem></SelectContent>
     </Select></Field>
     <DataTable data={orders.filter(order => status === 'all' || order.status === status)} columns={columns}

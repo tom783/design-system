@@ -86,6 +86,7 @@ export function DataTable<T extends RowData>({
   const selectedCount = rows.filter((row) => row.getIsSelected()).length;
   const totalCount = options.totalCount ?? options.data.length;
   const partiallyLoaded = totalCount > rows.length;
+  const selectable = options.selectionMode != null && options.selectionMode !== 'none';
   const allLoadedSelected = rows.length > 0 && selectedCount === rows.length;
   const partialSelectionNotice = partiallyLoaded && allLoadedSelected;
 
@@ -218,14 +219,17 @@ export function DataTable<T extends RowData>({
     <div data-slot="data-table" data-density={density} className={cn('min-w-0 max-w-full text-fg', className)}>
       {(exportFileName || partialSelectionNotice) && (
         <div data-slot="data-table-toolbar" className="flex flex-wrap items-center justify-between gap-3 pb-3">
-          <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
+          {selectable && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
             {partialSelectionNotice
               ? `로드된 ${rows.length.toLocaleString('ko-KR')}건이 선택됨 · 전체 ${totalCount.toLocaleString('ko-KR')}건`
               : `${selectedCount}개 선택`}
-          </span>
-          {exportFileName && <Button variant="secondary" size="sm" leadingIcon={<Download aria-hidden="true" />}
+          </span>}
+          {exportFileName && partiallyLoaded && !selectedCount && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
+            {`전체 ${totalCount.toLocaleString('ko-KR')}건 중 ${rows.length.toLocaleString('ko-KR')}건`}
+          </span>}
+          {exportFileName && <Button variant="secondary" size="sm" className="ml-auto" leadingIcon={<Download aria-hidden="true" />}
             disabled={!ready || rows.length === 0} onClick={exportRows}>
-            {selectedCount ? '선택한 행 내보내기' : partiallyLoaded ? `로드된 ${rows.length.toLocaleString('ko-KR')}건만 내보냅니다` : 'CSV 내보내기'}
+            {selectedCount ? '선택한 행 내보내기' : partiallyLoaded ? `${rows.length.toLocaleString('ko-KR')}건 내보내기` : 'CSV 내보내기'}
           </Button>}
         </div>
       )}

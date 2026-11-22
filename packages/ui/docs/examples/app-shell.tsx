@@ -36,17 +36,21 @@ export function AppShellExample({ narrowNavigation }: Pick<AppShellProps, 'narro
       </SideNavGroup>
     </SideNav>
   }>
-    <PageHeader title="주문 목록" description="주문 기간과 처리 상태로 주문을 조회하고 관리합니다."
-      actions={<Button variant="primary">주문 등록</Button>} />
-    <div className="flex flex-wrap items-start gap-4 border-b border-line pb-2">
-      <Field label="주문 기간"><DatePicker value={range} onChange={setRange} today={new Date(2026, 10, 15)} /></Field>
-      <Field label="주문 상태"><Select value={status} onValueChange={setStatus}>
-        <SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-          <SelectItem value="all">전체</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem>
-        </SelectContent>
-      </Select></Field>
+    <div className="flex min-w-0 flex-col gap-6">
+      <PageHeader title="주문 목록" description="주문 기간과 처리 상태로 주문을 조회하고 관리합니다."
+        actions={<Button variant="primary">주문 등록</Button>} />
+      <div>
+        <div className="flex flex-wrap items-start gap-4 border-b border-line pb-2">
+          <Field label="주문 기간"><DatePicker value={range} onChange={setRange} today={new Date(2026, 10, 15)} /></Field>
+          <Field label="주문 상태"><Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="w-auto min-w-40"><SelectValue /></SelectTrigger><SelectContent>
+              <SelectItem value="all">전체</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem>
+            </SelectContent>
+          </Select></Field>
+        </div>
+        <p role="status" className="tabular my-4">총 {filtered.length}건</p>
+        <DataTable data={filtered} columns={columns} getRowId={order => order.id} caption="기간 및 상태로 조회한 주문 목록" />
+      </div>
     </div>
-    <p role="status" className="tabular my-4">총 {filtered.length}건</p>
-    <DataTable data={filtered} columns={columns} getRowId={order => order.id} caption="기간 및 상태로 조회한 주문 목록" />
   </AppShell>;
 }
