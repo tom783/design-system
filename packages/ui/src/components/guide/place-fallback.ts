@@ -1,6 +1,7 @@
 export type Rect = { top: number; left: number; width: number; height: number };
 export type Placement = 'top' | 'bottom';
 
+/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 위치는 Tooltip·Hint·Tour가 정한다. */
 export function placeFallback(
   target: Rect,
   tip: { width: number; height: number },

@@ -5,6 +5,7 @@ export type TourStep = {
   body: string;
 };
 
+/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 단계 고르기는 Tour가 맡는다. */
 export function resolveStep(
   steps: TourStep[],
   from: number,

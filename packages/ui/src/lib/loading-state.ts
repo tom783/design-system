@@ -10,7 +10,10 @@ export interface LoadingInput {
   minVisible: number;
 }
 
-/** at은 반환된 단계에 진입한 시각이다. idle은 시각을 보관하지 않는다. */
+/**
+ * at은 반환된 단계에 진입한 시각이다. idle은 시각을 보관하지 않는다.
+ * @deprecated 다음 마이너에서 공개 API에서 뺀다. 로딩 표시 지연은 useDelayedLoading을 쓴다.
+ */
 export function nextPhase({ phase, isLoading, now, startedAt, shownAt, delay, minVisible }: LoadingInput): {
   phase: LoadingPhase; at: number | null;
 } {

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { placeFallback } from './place-fallback';
 
+/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 앵커 배치는 Tooltip·Hint·Tour·Peek이 맡는다. */
 export const supportsAnchor = () =>
   typeof CSS !== 'undefined' && CSS.supports('anchor-name', '--x');
 const anchorSupported = supportsAnchor();
@@ -33,6 +34,7 @@ export function useGuideChild(child: GuideChild) {
   return { target, ref };
 }
 
+/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 앵커 배치는 Tooltip·Hint·Tour·Peek이 맡는다. */
 export function useAnchored({ target, open, onClose, dialog = false, ring = false }: {
   target: Element | null;
   open: boolean;
