@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Ellipsis } from '@s2life/ui/icons';
+import { Ellipsis } from '../icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within, waitFor } from 'storybook/test';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../components/dropdown-menu';
