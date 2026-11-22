@@ -8,6 +8,7 @@
 //   --timings <json> 실행한 하네스마다 초·결과를 남긴다
 //   --port <n>       정적 서버 포트. 기본 0 = OS 가 빈 포트를 준다. 차 있으면 즉시 실패
 //   --jobs N         서버 하나에 브라우저 N개로 병렬 실행(기본 1)
+//   --group g        storybook(정적 서버가 필요한 하네스) | node(필요 없는 것). --shard 는 그룹 안에서 나눈다
 //   --build          스토리북을 다시 빌드한다
 import { readFileSync } from 'node:fs';
 
@@ -57,31 +58,39 @@ export const NO_STORYBOOK = new Set(['pack-verify.mjs', 'mcp-client-verify.mjs']
 // 조건 없이 다시 써서, 같은 때 그것을 읽는 mcp-client·docs 하네스가 반쯤 쓴 파일을 볼 수 있다.
 export const EXCLUSIVE = new Set(['pack-verify.mjs']);
 
+// --group 의 분류. 따로 목록을 두지 않고 NO_STORYBOOK 하나로 정한다 — 두 곳을 맞추다 어긋나지 않게.
+export const GROUPS = {
+  storybook: ([file]) => !NO_STORYBOOK.has(file),
+  node: ([file]) => NO_STORYBOOK.has(file),
+};
+
 // 샤드 배분 기준. 리눅스 CI 실측이어야 한다 — macOS 로컬은 하네스별 비율이 다르다.
 // 갱신할 때는 CI 에서 --timings 로 받은 JSON(같은 모양)으로 바꾸고 이 경로를 고친다.
-// 지금 파일은 cdp() 45초 타이머 수정 전 값이다(파일의 note) — 수정 뒤 CI 에서 다시 잰다.
-export const BASELINE_FILE = new URL('./timings/ci-f172d30.json', import.meta.url);
+// 45초 타이머 수정(83ceeab) 뒤 DevOps 2샤드 run 의 --timings 두 개를 합친 것이다. ci-f172d30.json 은 수정 전 기록.
+export const BASELINE_FILE = new URL('./timings/ci-734862c.json', import.meta.url);
 
 export const harnessName = (file) => file.replace(/\.mjs$/, '');
 
 export class UsageError extends Error {}
 
-export const USAGE = `사용법: node docs/qa/run-all.mjs [--build] [--only a,b | --shard i/N] [--port n] [--jobs N] [--timings <out.json>]
+export const USAGE = `사용법: node docs/qa/run-all.mjs [--build] [--only a,b | --group g] [--shard i/N] [--port n] [--jobs N] [--timings <out.json>]
   --only a,b        이 하네스만 (파일 이름, .mjs 생략 가능)
   --shard i/N       기준선 시간으로 N 등분한 것 중 i 번째 (1 ≤ i ≤ N)
+  --group g         storybook(정적 서버가 필요한 하네스) | node(pack·mcp 처럼 필요 없는 것). --shard 와 같이 쓰면 그룹 안에서 나눈다
   --timings <파일>   하네스마다 소요 시간(초)·결과를 JSON 으로 남긴다
   --port <n>        정적 서버 포트 (기본 0 = 빈 포트). 차 있으면 즉시 실패한다
   --jobs N          서버 하나에 브라우저 N개로 병렬 실행 (기본 1, 최대 16)
   --build           스토리북을 다시 빌드한다`;
 
-const VALUE_FLAGS = new Set(['--only', '--shard', '--timings', '--port', '--jobs']);
+const VALUE_FLAGS = new Set(['--only', '--shard', '--timings', '--port', '--jobs', '--group']);
 
 /**
  * argv(process.argv.slice(2)) 를 해석한다. 틀리면 UsageError 를 던진다.
  * 오타(--shards)를 무시하면 샤드 4개가 전부를 4번 돌리므로 모르는 인자도 실패시킨다.
  */
-export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) {
-  const opts = { build: false, only: null, shard: null, timings: null, port: 0, jobs: 1 };
+export function parseArgs(argv, harnesses = HARNESSES) {
+  const names = harnesses.map(([f]) => harnessName(f));
+  const opts = { build: false, only: null, shard: null, timings: null, port: 0, jobs: 1, group: null };
   const seen = new Set();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -100,15 +109,27 @@ export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) 
       i++;
     }
     if (flag === '--only') opts.only = parseOnly(value, names);
-    else if (flag === '--shard') opts.shard = parseShard(value, names.length);
+    else if (flag === '--shard') opts.shard = parseShard(value);
     else if (flag === '--port') opts.port = parseInteger('--port', value, 0, 65535);
     else if (flag === '--jobs') opts.jobs = parseInteger('--jobs', value, 1, 16);
+    else if (flag === '--group') {
+      if (!Object.hasOwn(GROUPS, value)) throw new UsageError(`--group 은 ${Object.keys(GROUPS).join(' | ')} 중 하나입니다: "${value}"`);
+      opts.group = value;
+    }
     else {
       if (!value) throw new UsageError('--timings 에 파일 경로가 없습니다.');
       opts.timings = value;
     }
   }
   if (opts.only && opts.shard) throw new UsageError('--only 와 --shard 는 같이 쓸 수 없습니다.');
+  if (opts.only && opts.group) throw new UsageError('--only 와 --group 은 같이 쓸 수 없습니다.');
+  // 빈 샤드를 만들면 그 잡은 아무것도 안 돌리고 녹색이 된다. 그룹이 있으면 그룹 크기로 본다.
+  if (opts.shard) {
+    const count = opts.group ? harnesses.filter(GROUPS[opts.group]).length : names.length;
+    if (opts.shard.total > count) {
+      throw new UsageError(`--shard: 샤드 ${opts.shard.total}개가 하네스 ${count}개${opts.group ? `(--group ${opts.group})` : ''}보다 많습니다.`);
+    }
+  }
   return opts;
 }
 
@@ -133,14 +154,12 @@ function parseOnly(value, names) {
   return picked;
 }
 
-function parseShard(value, count) {
+function parseShard(value) {
   const m = /^(\d+)\/(\d+)$/.exec(value);
   if (!m) throw new UsageError(`--shard 형식은 i/N 입니다(예: 1/4): "${value}"`);
   const index = Number(m[1]), total = Number(m[2]);
   if (total < 1) throw new UsageError(`--shard: N 은 1 이상이어야 합니다: "${value}"`);
   if (index < 1 || index > total) throw new UsageError(`--shard: i 는 1~${total} 이어야 합니다: "${value}"`);
-  // 빈 샤드를 만들면 그 잡은 아무것도 안 돌리고 녹색이 된다.
-  if (total > count) throw new UsageError(`--shard: 샤드 ${total}개가 하네스 ${count}개보다 많습니다.`);
   return { index, total };
 }
 
@@ -203,7 +222,8 @@ export function assignShards(names, baseline, total) {
  * 인자에 따라 돌릴 하네스를 고른다.
  * 반환: { harnesses: [[file, label]...], shard: {index,total,seconds,unknown,fallback} | null }
  */
-export function selectHarnesses(opts, { harnesses = HARNESSES, baseline = null } = {}) {
+export function selectHarnesses(opts, { harnesses: all = HARNESSES, baseline = null } = {}) {
+  const harnesses = opts.group ? all.filter(GROUPS[opts.group]) : all;
   if (opts.only) {
     const want = new Set(opts.only);
     return { harnesses: harnesses.filter(([f]) => want.has(harnessName(f))), shard: null };

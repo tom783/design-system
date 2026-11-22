@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "source": {
+    "kind": "ci-timings",
+    "run": "https://github.com/tom783/design-system/actions/runs/45044777477",
+    "runId": 45044777477,
+    "sha": "734862cf789b55d398acecd8dcb4a1e08f3bd22c",
+    "branch": "tom783/ci-speed-b",
+    "conclusion": "success",
+    "runner": "ubuntu-latest",
+    "platform": "linux-x64",
+    "node": "v24.22.3",
+    "artifacts": [
+      "qa-timings-1 (shard 1/2)",
+      "qa-timings-2 (shard 2/2)"
+    ],
+    "shards": {
+      "1/2": {
+        "startedAt": "2026-11-22T16:37:17.977Z",
+        "endedAt": "2026-11-22T16:40:59.281Z",
+        "totalSeconds": 218.7,
+        "serverSeconds": 2.6
+      },
+      "2/2": {
+        "startedAt": "2026-11-22T16:37:29.825Z",
+        "endedAt": "2026-11-22T16:40:17.302Z",
+        "totalSeconds": 166,
+        "serverSeconds": 1.5
+      }
+    }
+  },
+  "method": "run-all --shard i/2 --timings 가 남긴 JSON 두 개(gh run download)의 harnesses 를 합쳤다. 하네스 자체 소요 시간만이고 정적 서버 기동·빌드는 들어 있지 않다.",
+  "note": "cdp() 45초 타이머 수정(83ceeab) 뒤의 리눅스 CI 실측이다. 수정 전 기록은 ci-f172d30.json.",
+  "totalSeconds": 384.7,
+  "harnesses": {
+    "steps-render-verify": 5.1,
+    "pack-verify": 17.9,
+    "render-verify": 39.8,
+    "charts-render-verify": 25.6,
+    "segmented-control-render-verify": 3.4,
+    "stat-tile-render-verify": 2.4,
+    "dogfood3-render-verify": 5.8,
+    "loading-render-verify": 52.3,
+    "state-render-verify": 4.3,
+    "guide-render-verify": 7.7,
+    "form-render-verify": 6.3,
+    "date-time-render-verify": 8.8,
+    "file-upload-render-verify": 9.6,
+    "combobox-render-verify": 5.6,
+    "multi-select-render-verify": 6.6,
+    "collapse-render-verify": 7.4,
+    "media-viewer-render-verify": 10.2,
+    "carousel-render-verify": 52.6,
+    "pagination-render-verify": 5,
+    "sheet-render-verify": 16,
+    "app-shell-render-verify": 8.9,
+    "input-consistency-render-verify": 4.8,
+    "input-render-verify": 7,
+    "peek-render-verify": 5.1,
+    "mcp-client-verify": 0.8,
+    "list-screen-render-verify": 11.3,
+    "layer-detail-render-verify": 9.3,
+    "design-detail-render-verify": 15.1,
+    "detail-render-verify": 5.1,
+    "create-render-verify": 4.5,
+    "docs-render-verify": 20.4
+  }
+}

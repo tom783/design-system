@@ -5,6 +5,7 @@
 //   pnpm qa --only steps-render-verify,mcp-client-verify
 //   pnpm qa --shard 1/4 --timings .qa-shots/timings-1.json
 //   pnpm qa --jobs 2   (서버 하나에 브라우저 2개)
+//   pnpm qa --group storybook --shard 1/2   (CI: 정적 서버가 필요한 하네스만 2등분)
 //
 // 하네스 목록·인자·샤드 배분은 run-plan.mjs 에 있다.
 //
@@ -38,9 +39,10 @@ try {
 }
 const HARNESSES = plan.harnesses;
 if (opts.only) console.log(`--only: ${HARNESSES.length}개 하네스`);
+if (opts.group && !plan.shard) console.log(`--group ${opts.group}: ${HARNESSES.length}개 하네스`);
 if (plan.shard) {
   const { index, total, seconds, unknown, fallback } = plan.shard;
-  console.log(`--shard ${index}/${total}: ${HARNESSES.length}개 하네스 · 예상 ${seconds}초 (기준선 ${BASELINE_FILE.pathname.split('/').pop()})`);
+  console.log(`${opts.group ? `--group ${opts.group} ` : ''}--shard ${index}/${total}: ${HARNESSES.length}개 하네스 · 예상 ${seconds}초 (기준선 ${BASELINE_FILE.pathname.split('/').pop()})`);
   if (unknown.length) console.log(`  기준선에 없어 중간값 ${fallback}초로 계산: ${unknown.join(', ')}`);
 }
 
@@ -180,6 +182,7 @@ function writeTimings(path) {
       only: opts.only,
       shard: opts.shard ? `${opts.shard.index}/${opts.shard.total}` : null,
       jobs: opts.jobs,
+      group: opts.group,
       startedAt: startedAt.toISOString(),
       endedAt: new Date().toISOString(),
     },

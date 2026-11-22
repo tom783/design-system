@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import {
-  EXCLUSIVE, HARNESSES, NO_STORYBOOK, githubOnly, UsageError, assignShards, harnessName, loadBaseline, median,
+  BASELINE_FILE, EXCLUSIVE, GROUPS, HARNESSES, NO_STORYBOOK, githubOnly, UsageError, assignShards, harnessName, loadBaseline, median,
   parseArgs, readBaseline, selectHarnesses,
 } from './run-plan.mjs';
 
@@ -19,9 +19,15 @@ test('하네스 목록: 이름이 겹치지 않고 파일이 있다', () => {
   for (const file of NO_STORYBOOK) assert.ok(HARNESSES.some(([f]) => f === file), file);
 });
 
-test('기준선: CI 실측 JSON 을 숫자 맵으로 읽는다', () => {
+test('기준선: 45초 수정 뒤 리눅스 CI 실측(ci-734862c, 합계 384.7초)을 숫자 맵으로 읽는다', () => {
+  assert.match(BASELINE_FILE.pathname, /ci-734862c\.json$/);
   assert.ok(BASE.size >= 31);
+  assert.equal(Math.round([...BASE.values()].reduce((a, b) => a + b, 0) * 10) / 10, 384.7);
   assert.equal(BASE.get('mcp-client-verify'), 0.8);
+});
+
+test('기준선: 2샤드는 192.8 / 191.9초(DevOps 2샤드 계획의 전제)', () => {
+  assert.deepEqual(assignShards(NAMES, BASE, 2).map((s) => s.seconds), [192.8, 191.9]);
 });
 
 test('기준선: --timings 출력 모양({seconds})도 읽고, 이상한 값은 버린다', () => {
@@ -104,7 +110,7 @@ test('배분: 샤드 수가 하네스 수보다 많거나 1 미만이면 실패'
 const parse = (s) => parseArgs(s ? s.split(' ') : []);
 
 test('인자: 없으면 전부, --build 는 그대로', () => {
-  assert.deepEqual(parse(''), { build: false, only: null, shard: null, timings: null, port: 0, jobs: 1 });
+  assert.deepEqual(parse(''), { build: false, only: null, shard: null, timings: null, port: 0, jobs: 1, group: null });
   assert.equal(parse('--build').build, true);
   assert.equal(selectHarnesses(parse('')).harnesses.length, HARNESSES.length);
 });
@@ -182,4 +188,33 @@ test('pre-push 예외: 바뀐 파일이 .github/** 뿐일 때만 하네스를 �
   assert.equal(githubOnly(['.github/workflows/verify.yml', 'docs/qa/run-all.mjs']), false);
   assert.equal(githubOnly(['.githooks/pre-push']), false); // .github 와 이름만 비슷하다
   assert.equal(githubOnly([]), false); // 근거가 없으면 돈다
+});
+
+test('--group: storybook 은 정적 서버가 필요한 것, node 는 아닌 것 — 둘을 합치면 전체', () => {
+  const sb = selectHarnesses(parse('--group storybook')).harnesses.map(([f]) => f);
+  const node = selectHarnesses(parse('--group node')).harnesses.map(([f]) => f);
+  assert.deepEqual(node, HARNESSES.map(([f]) => f).filter((f) => NO_STORYBOOK.has(f)));
+  assert.equal(sb.length + node.length, HARNESSES.length);
+  assert.ok(sb.every((f) => !NO_STORYBOOK.has(f)));
+  assert.ok(HARNESSES.every((h) => GROUPS.storybook(h) !== GROUPS.node(h)));
+});
+
+test('--group 과 --shard: 그룹 안에서 나눈다(DevOps B = --group storybook --shard i/2)', () => {
+  const all = [];
+  for (let i = 1; i <= 2; i++) {
+    const { harnesses, shard } = selectHarnesses(parse(`--group storybook --shard ${i}/2`), { baseline: BASE });
+    assert.ok(harnesses.length > 0 && shard.seconds > 0);
+    assert.ok(harnesses.every(([f]) => !NO_STORYBOOK.has(f)));
+    all.push(...harnesses.map(([f]) => f));
+  }
+  assert.deepEqual(all.sort(), HARNESSES.map(([f]) => f).filter((f) => !NO_STORYBOOK.has(f)).sort());
+});
+
+test('--group 오류: 모르는 그룹, --only 와 같이, 그룹보다 많은 샤드', () => {
+  assert.throws(() => parse('--group web'), UsageError);
+  assert.throws(() => parse('--group'), UsageError);
+  assert.throws(() => parse('--group node --only mcp-client-verify'), /--only 와 --group/);
+  assert.throws(() => parse('--only mcp-client-verify --group node'), /--only 와 --group/);
+  assert.throws(() => parse('--group node --shard 1/3'), /하네스 2개\(--group node\)/);
+  assert.deepEqual(parse('--group node --shard 2/2').shard, { index: 2, total: 2 });
 });
