@@ -52,6 +52,8 @@ CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지�
 
 ```bash
 pnpm qa           # 아래를 전부 — 빌드·서버 기동·10개 하네스 (배포 리허설 포함)
+pnpm qa --only steps-render-verify,mcp-client-verify   # 일부만. 모르는 이름·틀린 인자는 서버 띄우기 전 exit 2
+pnpm qa --shard 1/4 --timings out.json  # 리눅스 CI 기준선(docs/qa/timings/)으로 4등분한 1번째 + 하네스별 초·결과 JSON
 pnpm build        # 패키지 빌드 (ui dist + CSS)
 pnpm qa:pack      # 배포 리허설만 — tarball → 샘플 앱 설치 → 실제 렌더
 pnpm version:set  # 세 패키지 버전을 함께 올린다 (lockstep)
@@ -68,6 +70,9 @@ node docs/qa/form-render-verify.mjs    # 폼·한글 IME            19건
 node docs/qa/peek-render-verify.mjs    # Peek·다녀온 행         22건
 node docs/qa/mcp-client-verify.mjs     # MCP 서버 (브라우저 없음) 36건
 ```
+
+하네스 목록·인자·샤드 배분은 `docs/qa/run-plan.mjs` 에 있다. 새 하네스는 거기 `HARNESSES` 에 넣는다
+(기준선에 없으면 중간값으로 배분된다).
 
 전부 `docs/qa/browser.mjs` 를 거친다. **GUI Chrome 을 직접 띄우지 마라** —
 이유는 "이미 밟은 함정" 절에 있다.
