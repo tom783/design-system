@@ -4,7 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deflateSync } from 'node:zlib';
-import { playwrightCaches, revisionsNewestFirst, resolveHeadlessShell, parityArgs, decodePng } from './browser.mjs';
+import { spawnSync } from 'node:child_process';
+import { playwrightCaches, revisionsNewestFirst, resolveHeadlessShell, parityArgs, decodePng, cdpRequests } from './browser.mjs';
 
 test('macOS 캐시 경로', () => {
   assert.deepEqual(playwrightCaches({}, 'darwin', '/Users/x'), ['/Users/x/Library/Caches/ms-playwright']);
@@ -105,4 +106,61 @@ for (const channels of [3, 4]) test(`decodePng — ${channels === 4 ? 'RGBA' : '
   const image = decodePng(png(width, height, channels, rows, [0, 1, 2, 3, 4]));
   assert.equal(image.width, width); assert.equal(image.height, height);
   for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) assert.deepEqual(image.pixel(x, y), color(x, y), `${x},${y}`);
+});
+
+// ── CDP 요청 타이머 ──
+// 응답 뒤에도 45초 타이머가 남아 하네스 24개가 매번 약 45초씩 종료를 기다렸다(CI f172d30, 1408초 중 약 1080초).
+const timers = () => process.getActiveResourcesInfo().filter((r) => r === 'Timeout').length;
+
+test('cdpRequests: 응답이 오면 타이머가 남지 않는다', async () => {
+  const sent = [];
+  const before = timers();
+  const r = cdpRequests((d) => sent.push(JSON.parse(d)), { timeout: 60000 });
+  const p = r.call('Runtime.evaluate', { expression: '1' });
+  assert.equal(timers(), before + 1);
+  assert.equal(r.settle({ id: sent[0].id, result: { value: 1 } }), true);
+  assert.deepEqual(await p, { value: 1 });
+  assert.equal(timers(), before);
+  assert.equal(r.pending(), 0);
+});
+
+test('cdpRequests: 오류 응답도 타이머를 지우고 메시지로 실패한다', async () => {
+  const sent = [];
+  const before = timers();
+  const r = cdpRequests((d) => sent.push(JSON.parse(d)), { timeout: 60000 });
+  const p = r.call('Page.navigate');
+  r.settle({ id: sent[0].id, error: { message: 'Cannot navigate' } });
+  await assert.rejects(p, /Cannot navigate/);
+  assert.equal(timers(), before);
+});
+
+test('cdpRequests: 진짜로 응답이 없으면 여전히 타임아웃이 난다', async () => {
+  const sent = [];
+  const before = timers();
+  const r = cdpRequests((d) => sent.push(JSON.parse(d)), { timeout: 20 });
+  await assert.rejects(r.call('Runtime.evaluate'), /Runtime\.evaluate 타임아웃/);
+  assert.equal(r.pending(), 0);
+  assert.equal(timers(), before);
+  // 타임아웃 뒤 늦게 온 응답은 무시한다(이미 실패로 끝난 요청).
+  assert.equal(r.settle({ id: sent[0].id, result: {} }), false);
+});
+
+test('cdpRequests: 이벤트(id 없음)는 응답으로 소비하지 않고, 보내기 실패는 타이머 없이 실패한다', async () => {
+  const r = cdpRequests(() => {}, { timeout: 60000 });
+  assert.equal(r.settle({ method: 'Runtime.consoleAPICalled', params: {} }), false);
+  const before = timers();
+  const broken = cdpRequests(() => { throw new Error('소켓 닫힘'); }, { timeout: 60000 });
+  await assert.rejects(broken.call('Page.enable'), /소켓 닫힘/);
+  assert.equal(timers(), before);
+});
+
+test('cdpRequests: 응답을 받은 프로세스는 timeout 을 기다리지 않고 바로 끝난다', () => {
+  // 같은 프로세스 안의 카운트만으로는 "종료가 붙잡히지 않는다" 는 것을 직접 보지 못한다.
+  const script = `import { cdpRequests } from ${JSON.stringify(new URL('./browser.mjs', import.meta.url).href)};
+    let r; r = cdpRequests((d) => queueMicrotask(() => r.settle({ id: JSON.parse(d).id, result: {} })), { timeout: 30000 });
+    await r.call('Runtime.evaluate');`;
+  const t = Date.now();
+  const out = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', timeout: 20000 });
+  assert.equal(out.status, 0, out.stderr);
+  assert.ok(Date.now() - t < 10000, `종료까지 ${Date.now() - t}ms`);
 });

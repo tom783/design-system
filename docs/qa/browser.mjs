@@ -152,6 +152,42 @@ export function decodePng(buffer) {
 }
 
 /**
+ * CDP 요청·응답 짝 맞추기. send 는 문자열 한 건을 보내는 함수(ws.send).
+ *
+ * **응답(오류 포함)이 오면 타이머를 지운다.** 지우지 않으면 마지막 호출 뒤 timeout(45초)
+ * 동안 그 타이머가 이벤트 루프를 붙잡아, process.exit() 대신 exitCode 로 끝나는 하네스가
+ * 매번 약 45초씩 그냥 기다린다. 실측: 작업 0.2초 → 프로세스 종료 45.2초,
+ * CI f172d30 에서 하네스 24개 · 1408초 중 약 1080초.
+ * unref 는 하지 않는다 — 브라우저가 죽어 소켓이 닫힌 뒤에도 타임아웃 오류가 나야 한다.
+ */
+export function cdpRequests(send, { timeout = 45000 } = {}) {
+  let mid = 0;
+  const pending = new Map();
+  const call = (method, params = {}) => new Promise((res, rej) => {
+    const id = ++mid;
+    const timer = setTimeout(() => {
+      if (pending.delete(id)) rej(new Error(`${method} 타임아웃`));
+    }, timeout);
+    pending.set(id, { res, rej, timer });
+    try {
+      send(JSON.stringify({ id, method, params }));
+    } catch (e) {
+      pending.delete(id); clearTimeout(timer); rej(e);
+    }
+  });
+  /** 응답이면 해당 요청을 끝내고 true. 이벤트이거나 이미 끝난(타임아웃 난) 요청이면 false. */
+  const settle = (m) => {
+    const p = m?.id ? pending.get(m.id) : undefined;
+    if (!p) return false;
+    pending.delete(m.id);
+    clearTimeout(p.timer);
+    if (m.error) p.rej(new Error(m.error.message)); else p.res(m.result);
+    return true;
+  };
+  return { call, settle, pending: () => pending.size };
+}
+
+/**
  * 브라우저를 띄우고 CDP 세션을 연다.
  *
  * 반환: { cdp, ev, shot, errors, resetErrors, close }
@@ -197,17 +233,12 @@ export async function launchBrowser({
   if (!ws) { kill(); throw new Error(`CDP 연결 실패 (port ${port})\n${launchLog.slice(0, 500)}`); }
   await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
 
-  let mid = 0;
-  const pending = new Map();
+  const requests = cdpRequests((data) => ws.send(data), { timeout });
   let consoleErrors = [];
   let pageExceptions = [];
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
-    if (m.id && pending.has(m.id)) {
-      const { res, rej } = pending.get(m.id);
-      pending.delete(m.id);
-      return m.error ? rej(new Error(m.error.message)) : res(m.result);
-    }
+    if (requests.settle(m)) return;
     if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') {
       consoleErrors.push(m.params.args.map((a) => a.value ?? a.description ?? '').join(' ').slice(0, 300));
     }
@@ -215,12 +246,7 @@ export async function launchBrowser({
       pageExceptions.push((m.params.exceptionDetails.exception?.description ?? m.params.exceptionDetails.text ?? '').slice(0, 300));
     }
   };
-  const cdp = (method, params = {}) => new Promise((res, rej) => {
-    const id = ++mid;
-    pending.set(id, { res, rej });
-    ws.send(JSON.stringify({ id, method, params }));
-    setTimeout(() => { if (pending.has(id)) { pending.delete(id); rej(new Error(`${method} 타임아웃`)); } }, timeout);
-  });
+  const cdp = requests.call;
 
   await cdp('Page.enable');
   await cdp('Runtime.enable');
