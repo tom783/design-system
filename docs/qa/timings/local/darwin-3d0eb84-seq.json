@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "source": {
+    "kind": "run-all",
+    "sha": "3d0eb84a02ce6e3fd1932d0c36a369b4febddff8",
+    "dirty": false,
+    "platform": "darwin-arm64",
+    "node": "v24.13.0",
+    "ci": null,
+    "only": null,
+    "shard": null,
+    "jobs": 1,
+    "group": null,
+    "startedAt": "2026-11-22T17:07:24.308Z",
+    "endedAt": "2026-11-22T17:13:36.378Z"
+  },
+  "serverSeconds": 0,
+  "totalSeconds": 371.8,
+  "wallSeconds": 371.8,
+  "passed": 31,
+  "failed": 0,
+  "harnesses": {
+    "steps-render-verify": {
+      "seconds": 4.3,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 10건 · 통과 10 · 실패 0"
+    },
+    "pack-verify": {
+      "seconds": 19.5,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "배포 리허설 검사 전부 통과: 타입·ESM·CSS·MCP·기본/Tailwind 앱 실제 렌더·Pretendard 로드"
+    },
+    "render-verify": {
+      "seconds": 40.7,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 16건 · 통과 16 · 실패 0"
+    },
+    "charts-render-verify": {
+      "seconds": 25.5,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 22건 · 통과 22 · 실패 0"
+    },
+    "segmented-control-render-verify": {
+      "seconds": 3.2,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "10건 검사 · 10건 통과 · 0건 실패"
+    },
+    "stat-tile-render-verify": {
+      "seconds": 2,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "7건 검사 · 7건 통과 · 0건 실패"
+    },
+    "dogfood3-render-verify": {
+      "seconds": 4.5,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 25건 · 통과 25 · 실패 0"
+    },
+    "loading-render-verify": {
+      "seconds": 52.3,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 42건 · 통과 42 · 실패 0"
+    },
+    "state-render-verify": {
+      "seconds": 3.8,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 26건 · 통과 26 · 실패 0"
+    },
+    "guide-render-verify": {
+      "seconds": 7.5,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 30건 · 통과 30 · 실패 0"
+    },
+    "form-render-verify": {
+      "seconds": 6.1,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 19건 · 통과 19 · 실패 0"
+    },
+    "date-time-render-verify": {
+      "seconds": 7.9,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "16건 검사 · 16건 통과 · 0건 실패"
+    },
+    "file-upload-render-verify": {
+      "seconds": 9.3,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "18건 검사 · 18건 통과 · 0건 실패"
+    },
+    "combobox-render-verify": {
+      "seconds": 5.4,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "29건 검사 · 29건 통과 · 0건 실패"
+    },
+    "multi-select-render-verify": {
+      "seconds": 6.8,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "34건 검사 · 34건 통과 · 0건 실패"
+    },
+    "collapse-render-verify": {
+      "seconds": 7,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 27건 · 통과 27 · 실패 0"
+    },
+    "media-viewer-render-verify": {
+      "seconds": 9.3,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 28건 · 통과 28 · 실패 0"
+    },
+    "carousel-render-verify": {
+      "seconds": 52.2,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 29건 · 통과 29 · 실패 0"
+    },
+    "pagination-render-verify": {
+      "seconds": 4.7,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "19건 검사 · 19건 통과 · 0건 실패"
+    },
+    "sheet-render-verify": {
+      "seconds": 15.2,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "27건 검사 · 27건 통과 · 0건 실패"
+    },
+    "app-shell-render-verify": {
+      "seconds": 8.2,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "29건 검사 · 29건 통과 · 0건 실패"
+    },
+    "input-consistency-render-verify": {
+      "seconds": 4,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 13건 · 통과 13 · 실패 0"
+    },
+    "input-render-verify": {
+      "seconds": 7.8,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 40건 · 통과 40 · 실패 0"
+    },
+    "peek-render-verify": {
+      "seconds": 4.1,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 22건 · 통과 22 · 실패 0"
+    },
+    "mcp-client-verify": {
+      "seconds": 0.9,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 116건 · 통과 116 · 실패 0"
+    },
+    "list-screen-render-verify": {
+      "seconds": 10.7,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "27개 검사, 27개 통과"
+    },
+    "layer-detail-render-verify": {
+      "seconds": 8.7,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "28개 검사, 28개 통과"
+    },
+    "design-detail-render-verify": {
+      "seconds": 15.4,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "51개 검사, 51개 통과"
+    },
+    "detail-render-verify": {
+      "seconds": 4.9,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 36건 · 통과 36 · 실패 0"
+    },
+    "create-render-verify": {
+      "seconds": 4.3,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "검사 17건 · 통과 17 · 실패 0"
+    },
+    "docs-render-verify": {
+      "seconds": 15.6,
+      "status": "pass",
+      "exitCode": 0,
+      "signal": null,
+      "summary": "59건 검사 · 59건 통과 · 0건 실패"
+    }
+  }
+}
