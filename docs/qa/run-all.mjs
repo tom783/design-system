@@ -2,6 +2,7 @@
 //
 //   pnpm qa            (빌드는 미리 되어 있어야 한다 — pnpm build-storybook)
 //   pnpm qa --build    (빌드부터)
+//   pnpm qa --only steps-render-verify,mcp-client-verify
 //   pnpm qa --timings .qa-shots/timings.json   (하네스마다 초·결과)
 //
 // 하네스 목록·인자 해석은 run-plan.mjs 에 있다.
@@ -10,7 +11,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { resolveHeadlessShell } from './browser.mjs';
-import { HARNESSES, USAGE, UsageError, harnessName, parseArgs } from './run-plan.mjs';
+import { USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
 
 const root = new URL('../..', import.meta.url).pathname;
 const PORT = 6099;
@@ -19,14 +20,17 @@ const t0 = performance.now(), startedAt = new Date();
 const secs = (ms) => Math.round(ms / 100) / 10;
 
 // 인자부터 본다. 틀린 인자로 서버를 띄우고 하네스를 돌기 시작하면 안 된다.
-let opts;
+let opts, plan;
 try {
   opts = parseArgs(process.argv.slice(2));
+  plan = selectHarnesses(opts);
 } catch (e) {
   if (!(e instanceof UsageError)) throw e;
   console.error(`${e.message}\n\n${USAGE}`);
   process.exit(2);
 }
+const HARNESSES = plan.harnesses;
+if (opts.only) console.log(`--only: ${HARNESSES.length}개 하네스`);
 
 // 브라우저부터 확인한다. 없으면 7개를 다 돌려놓고 마지막에 실패하는 것보다 낫다.
 try {
@@ -107,6 +111,7 @@ function writeTimings(path) {
       ci: process.env.GITHUB_RUN_ID
         ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
         : null,
+      only: opts.only,
       startedAt: startedAt.toISOString(),
       endedAt: new Date().toISOString(),
     },
