@@ -7,6 +7,7 @@
 //   --shard i/N      기준선 시간으로 N 등분한 것 중 i 번째(1부터). --only 와 같이 못 쓴다
 //   --timings <json> 실행한 하네스마다 초·결과를 남긴다
 //   --port <n>       정적 서버 포트. 기본 0 = OS 가 빈 포트를 준다. 차 있으면 즉시 실패
+//   --jobs N         서버 하나에 브라우저 N개로 병렬 실행(기본 1)
 //   --build          스토리북을 다시 빌드한다
 import { readFileSync } from 'node:fs';
 
@@ -52,6 +53,10 @@ export const HARNESSES = [
 // pack-verify 는 tarball 로 만든 자기 앱을 렌더하고, mcp-client-verify 는 브라우저가 없다.
 export const NO_STORYBOOK = new Set(['pack-verify.mjs', 'mcp-client-verify.mjs']);
 
+// --jobs 에서도 혼자 도는 하네스. pack-verify 는 pnpm build 로 packages/mcp/manifest.json·토큰 파일을
+// 조건 없이 다시 써서, 같은 때 그것을 읽는 mcp-client·docs 하네스가 반쯤 쓴 파일을 볼 수 있다.
+export const EXCLUSIVE = new Set(['pack-verify.mjs']);
+
 // 샤드 배분 기준. 리눅스 CI 실측이어야 한다 — macOS 로컬은 하네스별 비율이 다르다.
 // 갱신할 때는 CI 에서 --timings 로 받은 JSON(같은 모양)으로 바꾸고 이 경로를 고친다.
 // 지금 파일은 cdp() 45초 타이머 수정 전 값이다(파일의 note) — 수정 뒤 CI 에서 다시 잰다.
@@ -61,21 +66,22 @@ export const harnessName = (file) => file.replace(/\.mjs$/, '');
 
 export class UsageError extends Error {}
 
-export const USAGE = `사용법: node docs/qa/run-all.mjs [--build] [--only a,b | --shard i/N] [--port n] [--timings <out.json>]
+export const USAGE = `사용법: node docs/qa/run-all.mjs [--build] [--only a,b | --shard i/N] [--port n] [--jobs N] [--timings <out.json>]
   --only a,b        이 하네스만 (파일 이름, .mjs 생략 가능)
   --shard i/N       기준선 시간으로 N 등분한 것 중 i 번째 (1 ≤ i ≤ N)
   --timings <파일>   하네스마다 소요 시간(초)·결과를 JSON 으로 남긴다
   --port <n>        정적 서버 포트 (기본 0 = 빈 포트). 차 있으면 즉시 실패한다
+  --jobs N          서버 하나에 브라우저 N개로 병렬 실행 (기본 1, 최대 16)
   --build           스토리북을 다시 빌드한다`;
 
-const VALUE_FLAGS = new Set(['--only', '--shard', '--timings', '--port']);
+const VALUE_FLAGS = new Set(['--only', '--shard', '--timings', '--port', '--jobs']);
 
 /**
  * argv(process.argv.slice(2)) 를 해석한다. 틀리면 UsageError 를 던진다.
  * 오타(--shards)를 무시하면 샤드 4개가 전부를 4번 돌리므로 모르는 인자도 실패시킨다.
  */
 export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) {
-  const opts = { build: false, only: null, shard: null, timings: null, port: 0 };
+  const opts = { build: false, only: null, shard: null, timings: null, port: 0, jobs: 1 };
   const seen = new Set();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -96,6 +102,7 @@ export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) 
     if (flag === '--only') opts.only = parseOnly(value, names);
     else if (flag === '--shard') opts.shard = parseShard(value, names.length);
     else if (flag === '--port') opts.port = parseInteger('--port', value, 0, 65535);
+    else if (flag === '--jobs') opts.jobs = parseInteger('--jobs', value, 1, 16);
     else {
       if (!value) throw new UsageError('--timings 에 파일 경로가 없습니다.');
       opts.timings = value;

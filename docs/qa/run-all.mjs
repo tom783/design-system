@@ -4,6 +4,7 @@
 //   pnpm qa --build    (빌드부터)
 //   pnpm qa --only steps-render-verify,mcp-client-verify
 //   pnpm qa --shard 1/4 --timings .qa-shots/timings-1.json
+//   pnpm qa --jobs 2   (서버 하나에 브라우저 2개)
 //
 // 하네스 목록·인자·샤드 배분은 run-plan.mjs 에 있다.
 //
@@ -17,7 +18,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { resolveHeadlessShell } from './browser.mjs';
-import { BASELINE_FILE, NO_STORYBOOK, USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
+import { BASELINE_FILE, EXCLUSIVE, NO_STORYBOOK, USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
 import { startStaticServer } from './static-server.mjs';
 import { STATIC_DIR, checkStorybook, writeNonce } from './storybook-target.mjs';
 
@@ -101,26 +102,51 @@ function runHarness(file) {
   });
 }
 
-const failed = [];
-const timings = {};
-for (const [file, label] of HARNESSES) {
-  process.stdout.write(`── ${label.padEnd(20)} `);
+const results = new Map(); // 파일 → { seconds, out, summary }
+async function exec(file) {
   const t = performance.now();
   const out = await runHarness(file);
-  const seconds = secs(performance.now() - t);
-  const summary = (out.stdout ?? '').split('\n').reverse()
-    .find((l) => l.includes('검사') && l.includes('통과')) ?? '';
+  const summary = ((out.stdout ?? '').split('\n').reverse()
+    .find((l) => l.includes('검사') && l.includes('통과')) ?? '').trim();
+  const r = { seconds: secs(performance.now() - t), out, summary };
+  results.set(file, r);
+  return r;
+}
+const mark = ({ out, summary }) => (out.status === 0 ? `✓ ${summary}` : `✗ ${summary || '실행 실패'}`);
+
+if (opts.jobs === 1) {
+  // 순차: 지금 무엇이 도는지 보이도록 이름을 먼저 쓴다(예전 형식 그대로).
+  for (const [file, label] of HARNESSES) {
+    process.stdout.write(`── ${label.padEnd(20)} `);
+    console.log(mark(await exec(file)));
+  }
+} else {
+  // 병렬: 하네스 출력은 각자 모았다가, 끝난 하네스마다 한 줄을 통째로 찍는다 — 줄이 섞이지 않는다.
+  const solo = HARNESSES.filter(([f]) => EXCLUSIVE.has(f));
+  const pool = HARNESSES.filter(([f]) => !EXCLUSIVE.has(f));
+  console.log(`--jobs ${opts.jobs}: 브라우저 ${opts.jobs}개 병렬${solo.length ? ` (${solo.map(([f]) => harnessName(f)).join('·')} 는 혼자 먼저)` : ''}`);
+  const line = ([file, label]) => console.log(`── ${label.padEnd(20)} ${mark(results.get(file))}`);
+  for (const h of solo) { await exec(h[0]); line(h); }
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(opts.jobs, pool.length) }, async () => {
+    while (next < pool.length) { const h = pool[next++]; await exec(h[0]); line(h); }
+  }));
+}
+await stop();
+
+// 기록·실패 목록은 실행 순서와 관계없이 HARNESSES 순서로 — 같은 입력이면 같은 모양.
+const failed = [];
+const timings = {};
+for (const [file] of HARNESSES) {
+  const { seconds, out, summary } = results.get(file);
   timings[harnessName(file)] = {
     seconds, status: out.status === 0 ? 'pass' : 'fail',
-    exitCode: out.status, signal: out.signal ?? null, summary: summary.trim() || null,
+    exitCode: out.status, signal: out.signal ?? null, summary: summary || null,
   };
-  if (out.status === 0) console.log(`✓ ${summary.trim()}`);
-  else {
-    console.log(`✗ ${summary.trim() || '실행 실패'}`);
+  if (out.status !== 0) {
     failed.push({ file, tail: ((out.stdout ?? '') + (out.stderr ?? '')).trim().split('\n').slice(-12).join('\n') });
   }
 }
-await stop();
 
 if (opts.timings) writeTimings(resolve(process.cwd(), opts.timings));
 
@@ -153,6 +179,7 @@ function writeTimings(path) {
         : null,
       only: opts.only,
       shard: opts.shard ? `${opts.shard.index}/${opts.shard.total}` : null,
+      jobs: opts.jobs,
       startedAt: startedAt.toISOString(),
       endedAt: new Date().toISOString(),
     },

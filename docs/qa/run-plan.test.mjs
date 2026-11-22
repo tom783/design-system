@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import {
-  HARNESSES, NO_STORYBOOK, UsageError, assignShards, harnessName, loadBaseline, median,
+  EXCLUSIVE, HARNESSES, NO_STORYBOOK, UsageError, assignShards, harnessName, loadBaseline, median,
   parseArgs, readBaseline, selectHarnesses,
 } from './run-plan.mjs';
 
@@ -104,7 +104,7 @@ test('배분: 샤드 수가 하네스 수보다 많거나 1 미만이면 실패'
 const parse = (s) => parseArgs(s ? s.split(' ') : []);
 
 test('인자: 없으면 전부, --build 는 그대로', () => {
-  assert.deepEqual(parse(''), { build: false, only: null, shard: null, timings: null, port: 0 });
+  assert.deepEqual(parse(''), { build: false, only: null, shard: null, timings: null, port: 0, jobs: 1 });
   assert.equal(parse('--build').build, true);
   assert.equal(selectHarnesses(parse('')).harnesses.length, HARNESSES.length);
 });
@@ -163,4 +163,15 @@ test('인자: --port 는 0~65535 정수, 기본 0(빈 포트)', () => {
   assert.equal(parseArgs(['--port=0']).port, 0);
   for (const bad of ['-1', '65536', 'abc', '60.5', '']) assert.throws(() => parseArgs([`--port=${bad}`]), UsageError, bad);
   assert.throws(() => parse('--port'), UsageError);
+});
+
+test('인자: --jobs 는 1~16 정수, 기본 1', () => {
+  assert.equal(parse('').jobs, 1);
+  assert.equal(parse('--jobs 2').jobs, 2);
+  assert.equal(parse('--shard 1/4 --jobs 3').jobs, 3);
+  for (const bad of ['0', '17', 'x', '']) assert.throws(() => parseArgs([`--jobs=${bad}`]), UsageError, bad);
+});
+
+test('단독 하네스(EXCLUSIVE)는 목록에 있는 이름이다', () => {
+  for (const file of EXCLUSIVE) assert.ok(HARNESSES.some(([f]) => f === file), file);
 });
