@@ -23,6 +23,16 @@ RadioGroup(폼 입력)으로 우회한다 — 둘 다 모양·의미가 맞지 �
 - 스토리: 기본 · 아이콘+라벨 · 아이콘 전용 · 크기 2 · 비활성 항목 · fullWidth · 좁은 폭 · 다크 · 표/카드 보기 전환 조립. Primary 깨끗하게
 - MCP 크기: 상한 회귀 단정을 실측 + 여유 300 이하로. 카탈로그 90KB·목록 24KB·상세 6KB 안
 
+## 2b. MCP "전체 매니페스트" 예산을 응답 단위로 바꾼다 (내가 측정·결정했다)
+
+R41 후 전체 매니페스트 154,853 / 160,000. 이 라운드와 R43 으로 넘을 수 있다. 그런데 전체 매니페스트는 **어떤 MCP 응답으로도
+한 번에 나가지 않는다** — 응답은 `list_components`(≤24KB)·`get_component`(≤6KB)·`design://components`(카탈로그 ≤90KB)·
+`design://tokens`·`get_rules` 로 나뉘어 나가고, 앞의 셋은 이미 응답 예산이 있다. 예산이 없는 응답은 토큰(실측 67,002)과 규칙(4,141)뿐이다.
+
+- `assertSizeBudget` 의 "전체 160,000" 을 없애고 **`design://tokens` 응답 ≤ 80,000**, **`get_rules` 응답(전체) ≤ 8,000** 으로 바꾼다
+  (출력 형식은 기존 줄과 같게, 넘으면 exit 1). 경계값 테스트도 함께
+- DESIGN 13.3·`packages/mcp/README.md` 의 예산 문장과 이유 한 단락(위 실측). 카탈로그 90KB 는 그대로
+
 ## 3. 검증
 
 `npm_config_offline=true pnpm verify`, `node docs/qa/mcp-client-verify.mjs .qa-shots/mcp-client-verify`.
