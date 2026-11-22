@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R40: 변경 전 79,679 → 80,286바이트. 날짜+시각 추가 실측에 214바이트 여유.
-      assert.ok(Buffer.byteLength(result.text) <= 80_500, '복원 규칙까지 포함한 전송량을 잰다');
+      // R41: 지표 타일 포함 실측 83,668바이트 + 여유 232바이트.
+      assert.ok(Buffer.byteLength(result.text) <= 83_900, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -130,7 +130,7 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     } : expected;
     checkBaseline(await call(c, 'get_component', { name }), next);
   }
-  // 기존 99개의 순서·구조·직렬화를 보존하고 R40 DatePicker의 일시 안내 문장만 갱신한다.
+  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile만 명시적으로 더한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
     name: 'FileUpload', kind: 'component', purpose: '파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.',
     import: "import { FileUpload } from '@s2life/ui';",
@@ -168,6 +168,9 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }, {
     name: 'SheetBody', kind: 'component', purpose: 'SheetContent의 스크롤 본문이다. 헤더·푸터는 이 바깥에 둔다.',
     import: "import { SheetBody } from '@s2life/ui';", partOf: 'Dialog',
+  }, entry] : [entry]).flatMap(entry => entry.name === 'TrendBand' ? [{
+    name: 'StatTile', kind: 'component', purpose: '대시보드의 단일 지표 값과 비교 기간의 증감을 보여준다.',
+    import: "import { StatTile } from '@s2life/ui';",
   }, entry] : [entry])] });
   // 부품 조회가 보관 형태에 부모 필드나 기본값을 써 넣지 않았는지도 확인한다.
   const resource = (await c.request('resources/read', { uri: 'design://components' })).result.contents[0];

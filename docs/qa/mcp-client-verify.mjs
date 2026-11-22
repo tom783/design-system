@@ -170,6 +170,25 @@ const t = async (name, args) => {
   check('모르는 도구는 JSON-RPC 에러 -32602', bad.error?.code === -32602, JSON.stringify(bad.error??bad.result).slice(0,100));
 }
 
+for (const query of ['KPI', '지표', '대시보드 숫자', '요약 수치', '증감', '전일 대비']) {
+  const response = await t('which_component', { description: query });
+  check(`지표 타일 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'StatTile');
+}
+for (const [query, name] of [['KPI 목표 달성도', 'BulletRow'], ['매출 시간 추세', 'TrendBand']]) {
+  const response = await t('which_component', { description: query });
+  check(`지표 갈림길: ${query}`, response.structuredContent?.candidates[0]?.name === name);
+}
+{
+  const component = (await t('get_component', { name: 'StatTile' })).structuredContent;
+  check('StatTile 상세는 API·한국어 축약·그리드·증감 규칙을 제공한다',
+    ['label', 'value', 'format', 'delta', 'goodDirection', 'state', 'href', 'asChild'].every(name => component?.props.some(p => p.name === name))
+    && component.rules.some(r => r.text.includes('만/억/조')) && component.rules.some(r => r.text.includes('200px') && r.text.includes('16px'))
+    && component.rules.some(r => r.text.includes('success/danger')));
+  check('StatTile와 BulletRow는 단일 KPI·목표 달성의 갈림길을 전달한다',
+    component.related.includes('BulletRow') && component.dont.some(s => s.includes('BulletRow'))
+    && (await t('get_component', { name: 'BulletRow' })).structuredContent.dont.some(s => s.includes('StatTile')));
+}
+
 for (const query of ['날짜 시간', '시각', '예약 발행', '일시']) {
   const response = await t('which_component', { description: query });
   check(`날짜+시각 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'DatePicker');

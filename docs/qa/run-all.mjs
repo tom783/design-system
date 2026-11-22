@@ -41,6 +41,7 @@ const HARNESSES = [
   ['pack-verify.mjs', 'tarball 배포 리허설'],
   ['render-verify.mjs', '기본 컴포넌트·테이블'],
   ['charts-render-verify.mjs', '차트 로딩·오류'],
+  ['stat-tile-render-verify.mjs', 'KPI 값·증감·접근성·좁은 폭'],
   ['dogfood3-render-verify.mjs', '필터 선택·기간 입력·중립 계열'],
   ['loading-render-verify.mjs', '스켈레톤·진행률'],
   ['state-render-verify.mjs', '상태·아바타·썸네일'],

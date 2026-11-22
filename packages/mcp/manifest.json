@@ -7289,6 +7289,149 @@
       ]
     },
     {
+      "name": "StatTile",
+      "category": "chart",
+      "purpose": "대시보드의 단일 지표 값과 비교 기간의 증감을 보여준다.",
+      "useWhen": [
+        "대시보드 위에 주문·매출·반품률 요약 수치를 놓을 때"
+      ],
+      "dont": [
+        "목표 달성 비교는 BulletRow, 시간 추세는 TrendBand를 쓴다",
+        "긴 문자열은 compactValue로 짧은 한국어 표기를 제공한다"
+      ],
+      "rules": [
+        {
+          "text": "value는 문자열 또는 숫자다. 숫자는 ko-KR·만 이상 만/억/조·소수 첫째 자리로 축약하고 원문을 보존한다. format으로 숫자 서식을 정한다.",
+          "source": "7.5.7"
+        },
+        {
+          "text": "delta는 부호 있는 수다. 기본 percent에서 12는 12%, absolute는 deltaUnit을 쓴다. deltaLabel에 전일 대비 등 기준을 준다.",
+          "source": "7.5.7"
+        },
+        {
+          "text": "goodDirection 기본 up, 반품률은 down, 판단 없는 증감은 none이다. 방향 아이콘·부호·success/danger 색을 함께 쓰고 0은 중립이다.",
+          "source": "7.5.7"
+        },
+        {
+          "text": "값은 title 24px·고정폭 숫자다. 접근성 이름은 라벨·원문·증감 방향과 크기·비교 기준을 한 문장으로 읽는다.",
+          "source": "7.5.7"
+        },
+        {
+          "text": "그리드는 repeat(auto-fit, minmax(min(100%, 200px), 1fr))·gap 16px로 배치한다. 별도 그리드 부품은 없다.",
+          "source": "7.5.7"
+        },
+        {
+          "text": "state=loading은 스켈레톤, error는 ErrorState·onRetry다. 실패를 0으로 표시하지 않는다. 짧은 대기는 useDelayedLoading으로 지연한다.",
+          "source": "7.5.7"
+        },
+        {
+          "text": "href 또는 asChild의 단일 자식 링크로 상세 이동을 연결한다. 로딩·오류에서는 이동을 제공하지 않는다.",
+          "source": "7.5.7"
+        }
+      ],
+      "related": [
+        "Card",
+        "BulletRow",
+        "TrendBand",
+        "ErrorState"
+      ],
+      "keywords": [
+        "KPI",
+        "지표",
+        "대시보드 숫자",
+        "요약 수치",
+        "증감",
+        "전일 대비"
+      ],
+      "source": "components/stat-tile/stat-tile.tsx",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string | number"
+        },
+        {
+          "name": "format",
+          "type": "NumberFormatOptions",
+          "doc": "숫자의 ko-KR 표기 옵션. 기본은 만 이상 한국어 축약, 소수 첫째 자리까지다."
+        },
+        {
+          "name": "unit",
+          "type": "string",
+          "doc": "숫자 뒤 단위. 문자열 value에는 이미 포함해도 된다."
+        },
+        {
+          "name": "compactValue",
+          "type": "string",
+          "doc": "미리 서식화한 문자열의 짧은 표시. 원문은 title과 접근성 이름에 보존한다."
+        },
+        {
+          "name": "delta",
+          "type": "number",
+          "doc": "percent는 12가 12%다. absolute는 deltaUnit을 붙인다."
+        },
+        {
+          "name": "deltaFormat",
+          "type": "\"absolute\" | \"percent\""
+        },
+        {
+          "name": "deltaUnit",
+          "type": "string"
+        },
+        {
+          "name": "deltaLabel",
+          "type": "string"
+        },
+        {
+          "name": "goodDirection",
+          "type": "\"down\" | \"none\" | \"up\""
+        },
+        {
+          "name": "state",
+          "type": "\"error\" | \"idle\" | \"loading\""
+        },
+        {
+          "name": "errorMessage",
+          "type": "string"
+        },
+        {
+          "name": "onRetry",
+          "type": "(() => void)"
+        },
+        {
+          "name": "href",
+          "type": "string"
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "doc": "단일 자식 링크에 내용·속성을 합친다. href 대신 앱 라우터 링크를 줄 때 쓴다."
+        }
+      ],
+      "extends": [
+        "React.HTMLAttributes<HTMLElement>"
+      ],
+      "slots": [
+        "button",
+        "error-state",
+        "skeleton",
+        "stat-tile",
+        "stat-tile-change",
+        "stat-tile-comparison",
+        "stat-tile-delta",
+        "stat-tile-label",
+        "stat-tile-loading",
+        "stat-tile-value",
+        "state-description",
+        "state-graphic",
+        "state-title"
+      ]
+    },
+    {
       "name": "TrendBand",
       "category": "chart",
       "purpose": "시간 추세와 상하 범위를 보여준다.",
@@ -7296,7 +7439,8 @@
         "시계열 추세와 밴드를 비교할 때"
       ],
       "dont": [
-        "텍스트 요약을 빼지 마라"
+        "텍스트 요약을 빼지 마라",
+        "단일 값과 증감만 필요하면 StatTile을 쓴다"
       ],
       "rules": [
         {
@@ -7305,7 +7449,8 @@
         }
       ],
       "related": [
-        "ChartFrame"
+        "ChartFrame",
+        "StatTile"
       ],
       "keywords": [
         "추세",
@@ -7424,7 +7569,8 @@
         "KPI 목표 달성도를 비교할 때"
       ],
       "dont": [
-        "달성 여부를 색만으로 표현하지 마라"
+        "달성 여부를 색만으로 표현하지 마라",
+        "단일 KPI 값·전일 대비 증감은 StatTile을 쓴다"
       ],
       "rules": [
         {
@@ -7437,12 +7583,13 @@
         }
       ],
       "related": [
-        "ChartFrame"
+        "ChartFrame",
+        "StatTile"
       ],
       "keywords": [
         "실적",
         "목표",
-        "KPI",
+        "KPI 목표",
         "불릿",
         "달성률",
         "목표 대비",

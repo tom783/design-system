@@ -4,6 +4,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { matchComponents } from '../../packages/mcp/match.mjs';
 
 export const intendedChanges = new Map([
+  // R41: 단일 KPI는 새 지표 타일, 목표 달성 질의는 계속 BulletRow다.
+  ['KPI', 'StatTile'],
   ['상태·정렬 필터에서 하나를 고른다.', 'Select'],
   ['행 액션 메뉴를 연다.', 'DropdownMenu'],
   ['저장·오류 알림을 표시한다.', 'Toaster'],

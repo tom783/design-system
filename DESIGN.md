@@ -681,6 +681,42 @@ ChartFrame은 플롯 컨테이너의 폭을 측정해 자식 차트에 전달한
 
 ---
 
+### 7.5.7 지표 타일 — StatTile (R41)
+
+대시보드 첫 줄의 단일 값과 전일·전월 대비 증감은 StatTile이다. 목표 대비 실적·달성률을
+여러 행으로 비교하면 BulletRow, 시간 추세와 범위는 TrendBand를 쓴다. 타일에 차트나
+스파크라인을 내장하지 않는다. 바탕·경계·모서리는 Card와 같은 surface·border-default·radius-lg다.
+
+값은 기존 KPI용 title 토큰(24px/32px, 600)과 고정폭 숫자를 쓴다. 200px 타일에서 경계 2px과
+좌우 여백 32px를 빼면 166px가 남는다. Pretendard Variable 600·tnum의 CoreText 계측에서
+`1,284,000,000원`은 24px에서도 194.23px, 29px에서는 234.69px로 넘친다.
+`128.4만건`은 24px에서 109.57px, `12.8억원`은 94.18px다(자간 적용 전 보수적 폭).
+따라서 글자를 줄이거나 값을 여러 줄로 나누는 대신 숫자는 절댓값 1만 이상을 한국어 만·억·조로
+축약하고 소수 첫째 자리까지 표시한다. 폭마다 표기가 바뀌지 않으므로 SSR·크기 변경에도 일관된다.
+원문은 title과 접근성 이름에 남는다. format은 ko-KR Intl 숫자 옵션, unit은 뒤 단위다.
+문자열은 의미를 추측해 파싱하지 않으며 앱이 compactValue로 짧은 표기를 준다. 명시적으로
+긴 원문 서식을 선택하거나 극단적인 수를 주면 한 줄 가로 스크롤로 보존하며 말줄임·잘라내기를 하지 않는다.
+
+delta는 부호 있는 숫자다. deltaFormat=percent(기본)는 12를 12%로 표시하며 absolute는
+deltaUnit(건·원·%p 등)을 붙인다. deltaLabel은 비교 기준이다. 양수·음수·0은 각각 ArrowUp·
+ArrowDown·Minus와 +·−·0을 쓴다. goodDirection=up(기본) 또는 down과 실제 방향이 같으면
+status-success-fg, 반대면 status-danger-fg다. none이나 0은 status-neutral-fg다.
+아이콘의 방향은 실제 증감이므로 반품률 하락이 좋더라도 아래 화살표를 유지한다.
+타일 접근성 이름은 “오늘 주문 1,284건, 전일 대비 12% 증가”처럼 원문·방향·크기·기준을 읽는다.
+
+여러 타일은 `grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr))`,
+gap 16px로 놓는다. min(100%, 200px)는 컨테이너가 200px보다 작아도 그리드 자체가 넘치지 않게 한다.
+별도 그리드 부품은 만들지 않는다. state=loading은 기존 Skeleton과 status, error는 ErrorState와
+onRetry를 사용하고 원래 값·증감을 숨긴다. 로딩 표시는 useDelayedLoading으로 지연할 수 있다.
+숫자 0은 실제 값이고 누락·NaN·Infinity는 오류다. href·asChild로 타일 전체를 상세 링크로
+만들며 로딩·오류에서는 링크를 렌더하지 않아 재시도 버튼 중첩을 막는다. 링크 라벨에는 밑줄과
+focus-visible 링을 제공한다. 문서 규칙은 매니페스트에서 렌더한다.
+
+stat-tile-render-verify.mjs는 작성만 하고 전체 QA에 등록한다. 라이트·다크의 증감 방향·부호·
+goodDirection 색·대비, 0 중립, 접근성 문장, 고정폭 숫자, 200px 값 보존, 그리드 줄바꿈,
+로딩·오류·재시도와 링크 포커스 링·콘솔 오류를 검사한다. 위 폭은 CoreText 계측이며
+브라우저 레이아웃 실측으로 주장하지 않는다.
+
 ## 8. 아직 결정하지 않은 것
 
 | 영역 | 상태 |

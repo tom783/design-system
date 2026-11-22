@@ -247,13 +247,22 @@ const intents = [
   entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
     "state로 loading·empty·error를 구분해 준다."
   ],['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),
-  entry('TrendBand','chart','시간 추세와 상하 범위를 보여준다.',['시계열 추세와 밴드를 비교할 때'],['텍스트 요약을 빼지 마라'],'7.5.3',[
+  entry('StatTile','chart','대시보드의 단일 지표 값과 비교 기간의 증감을 보여준다.',['대시보드 위에 주문·매출·반품률 요약 수치를 놓을 때'],['목표 달성 비교는 BulletRow, 시간 추세는 TrendBand를 쓴다','긴 문자열은 compactValue로 짧은 한국어 표기를 제공한다'],'7.5.7',[
+    'value는 문자열 또는 숫자다. 숫자는 ko-KR·만 이상 만/억/조·소수 첫째 자리로 축약하고 원문을 보존한다. format으로 숫자 서식을 정한다.',
+    'delta는 부호 있는 수다. 기본 percent에서 12는 12%, absolute는 deltaUnit을 쓴다. deltaLabel에 전일 대비 등 기준을 준다.',
+    'goodDirection 기본 up, 반품률은 down, 판단 없는 증감은 none이다. 방향 아이콘·부호·success/danger 색을 함께 쓰고 0은 중립이다.',
+    '값은 title 24px·고정폭 숫자다. 접근성 이름은 라벨·원문·증감 방향과 크기·비교 기준을 한 문장으로 읽는다.',
+    '그리드는 repeat(auto-fit, minmax(min(100%, 200px), 1fr))·gap 16px로 배치한다. 별도 그리드 부품은 없다.',
+    'state=loading은 스켈레톤, error는 ErrorState·onRetry다. 실패를 0으로 표시하지 않는다. 짧은 대기는 useDelayedLoading으로 지연한다.',
+    'href 또는 asChild의 단일 자식 링크로 상세 이동을 연결한다. 로딩·오류에서는 이동을 제공하지 않는다.'
+  ],['label','value','format','unit','compactValue','delta','deltaFormat','deltaUnit','deltaLabel','goodDirection','state','errorMessage','onRetry','href','asChild'],['stat-tile','stat-tile-label','stat-tile-value','stat-tile-delta','stat-tile-change','stat-tile-comparison','stat-tile-loading'],['Card','BulletRow','TrendBand','ErrorState'],['KPI','지표','대시보드 숫자','요약 수치','증감','전일 대비']),
+  entry('TrendBand','chart','시간 추세와 상하 범위를 보여준다.',['시계열 추세와 밴드를 비교할 때'],['텍스트 요약을 빼지 마라','단일 값과 증감만 필요하면 StatTile을 쓴다'],'7.5.3',[
     "summary는 추세 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다."
-  ],['data','x','y','yLow','yHigh','summary'],['trend-band'],['ChartFrame'],['추세','추이','시계열','밴드','선 그래프','변동 범위','상하한','편차']),
-  entry('BulletRow','chart','목표 대비 실적을 행으로 비교한다.',['KPI 목표 달성도를 비교할 때'],['달성 여부를 색만으로 표현하지 마라'],'7.5.3',[
+  ],['data','x','y','yLow','yHigh','summary'],['trend-band'],['ChartFrame','StatTile'],['추세','추이','시계열','밴드','선 그래프','변동 범위','상하한','편차']),
+  entry('BulletRow','chart','목표 대비 실적을 행으로 비교한다.',['KPI 목표 달성도를 비교할 때'],['달성 여부를 색만으로 표현하지 마라','단일 KPI 값·전일 대비 증감은 StatTile을 쓴다'],'7.5.3',[
     rule("summary는 실적 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.", "7.5.3"),
     rule("skeletonRows를 실제 지표 수와 맞춰 로딩 전후 높이를 유지한다.", "7.5.6")
-  ],['metrics','summary','skeletonRows'],['bullet-row'],['ChartFrame'],['실적','목표','KPI','불릿','달성률','목표 대비','실적 비교']),
+  ],['metrics','summary','skeletonRows'],['bullet-row'],['ChartFrame','StatTile'],['실적','목표','KPI 목표','불릿','달성률','목표 대비','실적 비교']),
   entry('CompositionArea','chart','시간별 구성비를 누적 면적으로 보여준다.',['구성 비중 변화를 비교할 때'],['텍스트 라벨을 생략하지 마라'],'7.5.3',[
     "summary는 구성비 결론의 접근성 이름이다. 화면에도 필요하면 별도 문장으로 표시한다.",
     "계열 색은 --status-{neutral,info,warning,success,danger}-fg를 쓴다. 목록 밖 이름은 그려지지 않고 검게 보인다."

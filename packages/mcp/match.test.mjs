@@ -4,6 +4,15 @@ import { readFile } from 'node:fs/promises';
 import { matchComponents } from './match.mjs';
 const { components } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
 
+test('R41: 단일 KPI·증감과 목표 달성·시간 추세의 갈림길을 구분한다', () => {
+  for (const query of ['KPI', '지표', '대시보드 숫자', '요약 수치', '증감', '전일 대비']) {
+    assert.equal(matchComponents(query, components)[0]?.name, 'StatTile', query);
+  }
+  for (const [query, name] of [['KPI 목표 달성도', 'BulletRow'], ['목표 대비 실적', 'BulletRow'], ['매출 시간 추세', 'TrendBand']]) {
+    assert.equal(matchComponents(query, components)[0]?.name, name, query);
+  }
+});
+
 test('정확한 이름은 독립 컴포넌트가 1위이며 부품은 선택 후보에서 제외', () => {
   for (const c of components.filter((c) => (c.kind ?? 'component') === 'component' && !c.partOf)) assert.equal(matchComponents(c.name, components)[0].name, c.name);
   for (const c of components.filter((c) => c.partOf && !c.keywords?.length)) assert.ok(!matchComponents(c.name, components, components.length).some((candidate) => candidate.name === c.name));

@@ -57,3 +57,4 @@ export * from './components/app-shell';
 export * from './components/pagination';
 export * from './components/sheet';
 export * from './components/file-upload';
+export { StatTile, type StatTileProps } from './components/stat-tile/stat-tile';

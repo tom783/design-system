@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ArrowUp, ArrowDown, Plus, Download } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardBody, CardFooter } from '../components/card';
 import { Button } from '../components/button';
 import { StatusChip } from '../components/status-chip';
 import { Input } from '../components/input';
+import { StatTileExample } from '../../docs/examples/stat-tile';
 
 const meta = {
   tags: ['autodocs'],
@@ -43,41 +44,7 @@ export const 기본: Story = {
   ),
 };
 
-const KPI = [
-  { label: '오늘 주문', value: '1,284', unit: '건', delta: '+8.4%', up: true },
-  { label: '결제 금액', value: '48,200', unit: '만원', delta: '+12.1%', up: true },
-  { label: '출고 대기', value: '312', unit: '건', delta: '+41건', up: false },
-  { label: '반품 요청', value: '27', unit: '건', delta: '-5건', up: true },
-];
-
-export const KPI타일: Story = {
-  name: 'KPI 타일',
-  render: () => (
-    <div className="grid max-w-[1000px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {KPI.map((k) => (
-        <Card key={k.label} className="flex min-w-0 flex-col gap-1.5 p-4">
-          <span className="text-fg-muted text-[length:var(--text-caption)] font-medium">
-            {k.label}
-          </span>
-          <span className="tabular flex items-baseline gap-1 text-[length:var(--text-title-lg)] leading-[var(--text-title-lg-lh)] font-semibold tracking-[-0.02em]">
-            {k.value}
-            <small className="text-fg-muted text-[length:var(--text-body)] font-medium">
-              {k.unit}
-            </small>
-          </span>
-          <span
-            className={`tabular flex items-center gap-1 font-sans text-[length:var(--text-caption)] font-medium ${
-              k.up ? 'text-success-ink' : 'text-danger-ink'
-            }`}
-          >
-            {k.up ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-            {k.delta}
-          </span>
-        </Card>
-      ))}
-    </div>
-  ),
-};
+export const KPI타일: Story = { name: 'KPI 타일 — StatTile 조합', render: () => <StatTileExample /> };
 
 const ORDERS = [
   ['ORD-24119-0841', '김서연', '무선 이어버드 프로 외 2건', '248,000', 'info', '결제완료'],
