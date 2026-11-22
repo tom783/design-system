@@ -1702,12 +1702,17 @@ Radix가 제공한다. 선택은 기존 브랜드 강조 토큰 `--action-primar
 포커스는 별도의 `--border-focus` outline으로 유지한다. 탭은 전역 2px 두께를 유지하되
 `outline-offset: calc(-1 * var(--focus-width))`(현재 -2px)로 안쪽에 그린다.
 목록 아래 여백을 0으로 줄여도 스크롤 영역 아래에서 링이 잘리지 않게 하기 위해서다.
-목록 기준선은 `border-bottom` 대신 `box-shadow: inset 0 -1px 0 var(--border-default)`로
-그린다. 이는 부유 장식 그림자가 아니라 치수를 차지하지 않는 1px 선(§12.2와 같은 기법)이다.
+목록 기준선은 `border-bottom` 대신 치수를 차지하지 않는 1px 선으로 그린다. 스크롤 내용 바닥에
+붙인 배경(`linear-gradient(var(--border-default)…) left bottom / 100% 1px`, `background-attachment: local`)이다.
 선택 트리거의 2px 밑줄이 기준선을 덮고 아래 끝이 일치한다. 상세 패널은 이 선 바로 아래에
 상단 경계선을 중복해서 그리지 않는다.
 
 TabsList는 줄바꿈하지 않고 `overflow-x:auto`와 얇은 스크롤바를 쓴다.
+처음에는 기준선을 `box-shadow: inset 0 -1px 0`(§12.2와 같은 기법)으로 그렸다. 그림자는 상자 바닥에
+그려지는데, 클래식 스크롤바(Windows, 마우스를 연결한 macOS)는 그 위에 자리를 차지한다(실측 10~11px).
+탭이 넘치면 스크롤바 트랙이 기준선을 덮어 **기준선이 사라졌다**(2026-11-22 픽셀 실측: 그림자를 꺼도
+화면이 같았다). 오버레이 스크롤바(트랙패드 macOS)에서만 보이던 결함이라 리눅스 CI 에서 처음 드러났다.
+`local` 배경은 스크롤 영역 바닥, 곧 스크롤바 위에 그려져 밑줄과 바닥이 맞고, 스크롤 폭 전체를 덮는다.
 
 가려진 탭을 끌어올 때 **`scrollIntoView`를 쓰지 않는다.** 스크롤 가능한 조상을 전부
 움직이기 때문에 `block:'nearest'`로도 문서가 세로로 밀렸다 — 실측 `scrollY` 244 → 266.

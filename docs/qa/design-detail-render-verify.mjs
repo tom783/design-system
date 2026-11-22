@@ -2,7 +2,7 @@
 // 기존 하네스의 위치 기대값은 바꾸지 않는다. 결과·실측값·캡처는 OUT에 남긴다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, decodePng } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/design-detail';
 mkdirSync(OUT, { recursive: true });
@@ -74,13 +74,21 @@ async function actions(selector, expectedCount) {
   assert.ok(await ev(`(() => { const el = ${q(selector)}, s = getComputedStyle(el); return el.matches(':focus-visible') && s.outlineStyle === 'solid' && parseFloat(s.outlineWidth) === 2; })()`));
   return { count: measurements.length, minContrast: Math.min(...measurements.map(m => m.contrast)), borderAlpha: 0 };
 }
+// 탭 목록의 밑줄·기준선·링. 스크롤바 두께는 환경마다 다르다 — 오버레이(트랙패드 macOS) 0,
+// 클래식(Windows·리눅스·마우스 연결 macOS) 10~11px. 상자 바닥이 아니라 **스크롤 영역 바닥**을
+// 기준으로 재고, 기준선은 계산 스타일이 아니라 실제로 그려진 픽셀로 확인한다(스크롤바가 선을
+// 덮어도 계산 스타일은 그대로라서다 — 2026-11-22 실측, DESIGN.md §16.1).
 async function tabs() {
   const m = await ev(`(() => {
     const list = document.querySelector('[role="tablist"]'), tab = list.querySelector('[aria-selected="true"]');
     const a = list.getBoundingClientRect(), b = tab.getBoundingClientRect(), s = getComputedStyle(tab), l = getComputedStyle(list);
     const outer = parseFloat(s.outlineOffset) + parseFloat(s.outlineWidth);
-    return { underlineBottom: b.bottom, baselineBottom: a.bottom, paddingBottom: l.paddingBottom,
-      borderBottom: l.borderBottomWidth, shadow: l.boxShadow, underlineWidth: s.borderBottomWidth,
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    ctx.fillStyle = l.getPropertyValue('--border-default'); ctx.fillRect(0, 0, 1, 1);
+    return { underlineBottom: b.bottom, boxBottom: a.bottom, portBottom: a.top + list.clientTop + list.clientHeight,
+      scrollbar: list.offsetHeight - list.clientHeight - list.clientTop - parseFloat(l.borderBottomWidth),
+      paddingBottom: l.paddingBottom, borderBottom: l.borderBottomWidth, underlineWidth: s.borderBottomWidth,
+      baselineColor: [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3), probeX: Math.floor(a.left + list.clientLeft) + 1, scrollX, scrollY,
       focused: document.activeElement === tab && tab.matches(':focus-visible'),
       outlineWidth: s.outlineWidth, outlineOffset: s.outlineOffset,
       ring: { left: b.left - outer, right: b.right + outer, top: b.top - outer, bottom: b.bottom + outer },
@@ -88,8 +96,18 @@ async function tabs() {
         top: a.top + list.clientTop, bottom: a.top + list.clientTop + list.clientHeight },
       scrollLeft: list.scrollLeft, overflow: list.scrollWidth > list.clientWidth };
   })()`);
-  assert.equal(m.paddingBottom, '0px'); assert.equal(m.borderBottom, '0px'); assert.match(m.shadow, /inset/);
-  assert.equal(m.underlineWidth, '2px'); assert.ok(Math.abs(m.underlineBottom - m.baselineBottom) <= .5, JSON.stringify(m));
+  // 목록 왼쪽 안쪽 여백(탭이 없는 자리)의 세로 한 줄을 캡처해 기준선이 실제로 보이는 행을 찾는다.
+  const top = Math.floor(m.portBottom) - 3;
+  // 캡처 영역은 문서 좌표다 — 뷰포트 좌표에 페이지 스크롤을 더한다.
+  const shot = await cdp('Page.captureScreenshot', { format: 'png', clip: { x: m.probeX + m.scrollX, y: top + m.scrollY, width: 1, height: Math.ceil(m.boxBottom) - top + 1, scale: 1 } });
+  const image = decodePng(Buffer.from(shot.data, 'base64'));
+  const near = (c) => c.every((v, i) => Math.abs(v - m.baselineColor[i]) <= 2);
+  m.baselineRows = [...Array(image.height).keys()].filter(y => near(image.pixel(0, y))).map(y => top + y);
+  assert.equal(m.paddingBottom, '0px'); assert.equal(m.borderBottom, '0px'); assert.equal(m.underlineWidth, '2px');
+  // 선택 밑줄은 스크롤 영역 바닥에 닿는다(오버레이에서는 상자 바닥과 같다).
+  assert.ok(Math.abs(m.underlineBottom - m.portBottom) <= .5, JSON.stringify(m));
+  // 기준선은 스크롤 영역 바로 위 한 줄에 실제로 보인다 — 스크롤바에 가려지지 않는다.
+  assert.deepEqual(m.baselineRows, [Math.round(m.portBottom) - 1], JSON.stringify(m));
   assert.ok(m.focused); assert.equal(m.outlineWidth, '2px'); assert.equal(m.outlineOffset, '-2px');
   assert.ok(m.ring.left >= m.clip.left - .5 && m.ring.right <= m.clip.right + .5 && m.ring.top >= m.clip.top - .5 && m.ring.bottom <= m.clip.bottom + .5, JSON.stringify(m));
   return m;
@@ -150,14 +168,21 @@ try {
       }
       await browser.shot(`${screen}-${theme}-${width}`);
     }
-    await check(`D2 가로 스크롤 탭 Home·End 밑줄·링 ${context}`, async () => {
-      await load('screens-detailscreen--탭넘침', theme);
-      await key('Home', 36); await wait(`document.activeElement?.textContent === '상세 탭 1'`);
-      await wait(`document.querySelector('[role="tablist"]').scrollLeft === 0`);
-      const first = await tabs(); assert.ok(first.overflow);
-      await key('End', 35); await wait(`document.activeElement?.textContent === '상세 탭 8'`);
-      await wait(`(() => { const l = document.querySelector('[role="tablist"]'), t = document.activeElement; return t.getBoundingClientRect().right <= l.getBoundingClientRect().right; })()`);
-      const last = await tabs(); assert.ok(last.scrollLeft > 0); return { first, last };
+    // 스크롤바 두 상태: 이 환경의 기본(리눅스·마우스 연결 macOS 는 클래식, 트랙패드 macOS 는 오버레이)과
+    // CDP 로 두께 0 을 강제한 상태(오버레이와 같은 배치). 어느 쪽에서도 밑줄·기준선이 맞아야 한다.
+    for (const [state, hidden] of [['기본', false], ['두께 0(CDP)', true]]) await check(`D2 가로 스크롤 탭 Home·End 밑줄·기준선·링 ${context} 스크롤바 ${state}`, async () => {
+      await cdp('Emulation.setScrollbarsHidden', { hidden });
+      try {
+        await load('screens-detailscreen--탭넘침', theme);
+        await key('Home', 36); await wait(`document.activeElement?.textContent === '상세 탭 1'`);
+        await wait(`document.querySelector('[role="tablist"]').scrollLeft === 0`);
+        const first = await tabs(); assert.ok(first.overflow);
+        if (hidden) assert.equal(first.scrollbar, 0);
+        await key('End', 35); await wait(`document.activeElement?.textContent === '상세 탭 8'`);
+        await wait(`(() => { const l = document.querySelector('[role="tablist"]'), t = document.activeElement; return t.getBoundingClientRect().right <= l.getBoundingClientRect().right; })()`);
+        const last = await tabs(); assert.ok(last.scrollLeft > 0);
+        return { scrollbar: first.scrollbar, portBottom: first.portBottom, boxBottom: first.boxBottom, baselineRows: [first.baselineRows, last.baselineRows] };
+      } finally { await cdp('Emulation.setScrollbarsHidden', { hidden: false }); }
     });
   }
   for (const theme of ['light', 'dark']) {
