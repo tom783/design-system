@@ -161,7 +161,7 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     name: 'SideNavGroup', kind: 'component', purpose: '사이드 메뉴 항목을 제목으로 묶는다.',
     import: "import { SideNavGroup } from '@s2life/ui';", partOf: 'SideNav',
   }, {
-    name: 'SideNavItem', kind: 'component', purpose: '아이콘·라벨·개수와 현재 위치 또는 준비 중 상태를 표시한다.',
+    name: 'SideNavItem', kind: 'component', purpose: '아이콘·라벨·개수와 현재 위치 또는 출시 예정 상태를 표시한다.',
     import: "import { SideNavItem } from '@s2life/ui';", partOf: 'SideNav',
   }, {
     name: 'PageHeader', kind: 'component', purpose: '페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',

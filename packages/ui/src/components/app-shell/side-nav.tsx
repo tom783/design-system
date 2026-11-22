@@ -6,6 +6,7 @@ import { Tooltip } from '../guide';
 import { ShellRailContext, ShellDrawerContext, useAutomaticRail } from './app-shell';
 
 const NavContext = React.createContext(false);
+const UNRELEASED = '출시 예정';
 
 export interface SideNavProps extends React.HTMLAttributes<HTMLElement> {
   brand: React.ReactNode;
@@ -79,13 +80,14 @@ export const SideNavItem = React.forwardRef<HTMLAnchorElement, SideNavItemProps>
   const content = <>
     <span className="ds-side-nav-icon" aria-hidden="true">{icon}</span>
     <span data-slot="side-nav-item-label" className="ds-side-nav-label">{label}</span>
-    {disabled ? <span className="ds-side-nav-meta">준비 중</span>
+    {/* "준비 중"은 주문 상태 칩(상품 준비 중)과 같은 말이라 한 화면에서 두 뜻이 된다. 메뉴는 "출시 예정"으로 쓴다. */}
+    {disabled ? <span className="ds-side-nav-meta">{UNRELEASED}</span>
       : badge != null && <span data-slot="side-nav-badge" className="ds-side-nav-meta ds-side-nav-badge tabular">{badge}</span>}
   </>;
   // 자식 라우터 링크도 렌더하지 않는다. href·핸들러·탭 순서를 남기면 비활성을 우회할 수 있다.
-  if (disabled) return <Tooltip content={`${label} (준비 중)`} disabled={!rail}>
+  if (disabled) return <Tooltip content={`${label} (${UNRELEASED})`} disabled={!rail}>
     <span data-slot="side-nav-item" className={classes} role="link" aria-disabled="true"
-      aria-label={`${label} (준비 중)`}>{content}</span>
+      aria-label={`${label} (${UNRELEASED})`}>{content}</span>
   </Tooltip>;
   const Component = asChild ? Slot : 'a';
   return <Tooltip content={label} disabled={!rail}>

@@ -151,7 +151,7 @@ try {
         return { expected, colors:['.ds-side-nav-icon', '.ds-side-nav-icon svg', '[data-slot="side-nav-item-label"]', '.ds-side-nav-meta']
           .map(selector => getComputedStyle(n.querySelector(selector)).color) };
       })()`);
-      assert.deepEqual(disabledColors.colors, Array(4).fill(disabledColors.expected), '아이콘·라벨·준비 중은 text-disabled');
+      assert.deepEqual(disabledColors.colors, Array(4).fill(disabledColors.expected), '아이콘·라벨·출시 예정은 text-disabled');
       await browser.shot(`shell-${theme}`);
     });
   }
@@ -176,12 +176,12 @@ try {
     assert.deepEqual(await ev(`(() => { const n=${q('a[href="#products"]')}; return {tag:n.tagName,label:n.textContent,icon:!!n.querySelector('svg'),slot:n.dataset.slot}; })()`),
       { tag: 'A', label: '상품 관리', icon: true, slot: 'side-nav-item' });
   });
-  await check('준비 중은 자식 링크 제거·클릭 이동 없음·실제 Tab 순서에서 제외', async () => {
+  await check('출시 예정은 자식 링크 제거·클릭 이동 없음·실제 Tab 순서에서 제외', async () => {
     await story('components-sidenav--비활성');
     await noTitles(nav);
     const disabled = `${item}[aria-disabled="true"]`;
     assert.deepEqual(await ev(`(() => { const n=${q(disabled)}; return {tag:n.tagName,tab:n.tabIndex,href:n.getAttribute('href'),child:n.querySelector('a'),text:n.textContent}; })()`),
-      { tag: 'SPAN', tab: -1, href: null, child: null, text: '프로모션준비 중' });
+      { tag: 'SPAN', tab: -1, href: null, child: null, text: '프로모션출시 예정' });
     const before = await ev('location.href'); await click(disabled); assert.equal(await ev('location.href'), before);
     await focus('a[href="#products"]');
     await ev(`${q(disabled)}.focus()`);
