@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Field } from '../components/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/select';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Input } from '../components/input';
 import { Mail, LockKeyhole } from 'lucide-react';
@@ -198,4 +199,15 @@ export const 아이콘과지우기: Story = {
 export const 아이콘비활성: Story = {
   name: '검색 아이콘 — 비활성',
   render: () => <div className="w-80"><Field label="게시글 검색"><Input type="search" defaultValue="검색할 수 없음" disabled /></Field></div>,
+};
+export const 검색툴바폭: Story = {
+  name: '검색 — 툴바 한 줄 폭',
+  parameters: { docs: { description: { story: '검색·비밀번호·앞 아이콘 Input 은 래퍼가 바깥 요소다. className 의 폭·배치 클래스(w-80·flex-1 등)는 래퍼에, 나머지는 input 에 붙는다. 그래서 감싸는 div 없이 `className="w-80"` 만으로 필터와 한 줄에 놓인다.' } } },
+  render: () => <div data-probe="search-toolbar" className="flex flex-wrap items-center gap-2">
+    <Input type="search" aria-label="주문 검색" placeholder="주문번호·수취인·상품명 검색" className="w-80 text-right" />
+    <Select defaultValue="all"><SelectTrigger aria-label="주문 상태" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value="all">전체 상태</SelectItem><SelectItem value="ready">출고 대기</SelectItem></SelectContent></Select>
+    <Select defaultValue="30d"><SelectTrigger aria-label="주문 기간" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value="7d">최근 7일</SelectItem><SelectItem value="30d">최근 30일</SelectItem></SelectContent></Select>
+  </div>,
 };

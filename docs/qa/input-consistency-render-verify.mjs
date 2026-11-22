@@ -103,6 +103,18 @@ try {
       assert.ok(await ev(`!!${q('[data-slot="input-leading-icon"]')}`));
       assert.equal(await ev(`${q('[aria-label="검색어 지우기"]')}`),null);
     });
+    await check(`검색 Input 폭 클래스는 래퍼에 붙어 툴바가 한 줄 ${theme}`, async () => {
+      // 2026-11-22 화면 시안: className="w-80" 이 안쪽 input 에만 붙어 래퍼(width:100%)가 줄을 차지했다.
+      await load('components-input--검색툴바폭', theme);
+      const m = await ev(`(() => { const bar=${q('[data-probe="search-toolbar"]')}, control=bar.querySelector('[data-slot="input-control"]'), input=control.querySelector('input');
+        const items=[...bar.children].map(el=>el.getBoundingClientRect());
+        return { wrapperClass:control.className, inputClass:input.className, wrapperWidth:control.getBoundingClientRect().width, inputWidth:input.getBoundingClientRect().width,
+          tops:items.map(r=>Math.round(r.top)), align:getComputedStyle(input).textAlign, items:items.length }; })()`);
+      assert.match(m.wrapperClass, /(^|\s)w-80(\s|$)/); assert.doesNotMatch(m.inputClass, /(^|\s)w-80(\s|$)/);
+      assert.match(m.inputClass, /text-right/); assert.equal(m.align, 'right');
+      assert.equal(m.wrapperWidth, 320); assert.equal(m.inputWidth, 320); assert.equal(m.items, 3);
+      assert.equal(new Set(m.tops).size, 1, JSON.stringify(m)); return m;
+    });
     await check(`CardBody 단독과 헤더 제목의 시작선 ±1px ${theme}`, async () => {
       await load('components-card--본문만',theme);
       const m=await ev(`['body-only','with-header'].map(probe=>{

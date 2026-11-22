@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Eye, EyeOff, Search, X } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { splitLayoutClassName } from '../lib/layout-class';
 
 /**
  * 입력 필드
@@ -13,6 +14,10 @@ import { cn } from '../lib/cn';
  *   (입력 중 레이아웃이 흔들리면 커서 위치를 잃는다).
  * - 에러는 색만으로 표시하지 않는다. `invalid` 가 켜지면 aria-invalid 와
  *   설명 연결(aria-describedby)이 함께 필요하다 — Field 컴포넌트가 묶어준다.
+ * - 검색·비밀번호·앞 아이콘이 있으면 래퍼(`.ds-input-control`)가 바깥 요소가 된다. 이때 className 의
+ *   폭·배치 클래스(w-·min-w-·max-w-·flex-1·basis·grow·shrink·self·m* 등)는 래퍼에, 나머지는 input 에
+ *   붙는다. 래퍼가 없을 때와 같은 결과를 내기 위해서다 — `w-80` 이 안쪽에만 붙으면 래퍼(width:100%)가
+ *   툴바 한 줄을 차지했다(2026-11-22 화면 시안).
  */
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean;
@@ -48,6 +53,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const hasIcon = icon != null && icon !== false;
     const clearable = search && !props.disabled && !props.readOnly &&
       (props.value !== undefined ? String(props.value).length > 0 : hasValue);
+    const wrapped = password || search || hasIcon;
+    const { outer, inner } = wrapped ? splitLayoutClassName(className) : { outer: undefined, inner: className };
     const input = <input
       {...props}
       type={password && visible ? 'text' : type}
@@ -55,7 +62,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       data-slot="input"
       aria-invalid={invalid || props['aria-invalid'] || undefined}
       className={cn(
-        'h-[var(--control-h-md)] w-full min-w-[var(--field-min-w)]',
+        // 래퍼 안에서는 최소 폭을 래퍼가 정한다. 소비자의 min-w-* 가 래퍼에 붙어도 안쪽이 버티지 않게 한다.
+        'h-[var(--control-h-md)] w-full', wrapped ? 'min-w-0' : 'min-w-[var(--field-min-w)]',
         'rounded-[var(--radius-md)] border bg-surface',
         'text-[length:var(--text-body-sm)] text-fg',
         'placeholder:text-fg-subtle',
@@ -66,7 +74,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         (password || search) && 'ds-input-with-action',
         hasIcon ? 'ds-input-with-leading' : 'ps-3',
         !password && !search && 'pe-3',
-        className,
+        inner,
       )}
       onChange={event => { setHasValue(Boolean(event.currentTarget.value)); onChange?.(event); }}
       onWheel={event => {
@@ -78,8 +86,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         }
       }}
     />;
-    if (!password && !search && !hasIcon) return input;
-    return <span data-slot="input-control" className="ds-input-control">
+    if (!wrapped) return input;
+    return <span data-slot="input-control" className={cn('ds-input-control', outer)}>
       {input}
       {/* 입력 뒤의 positioned 형제로 그려 바탕 위에 올린다. 포인터는 입력으로 통과한다. */}
       {hasIcon && <span data-slot="input-leading-icon" className="ds-input-leading-icon" aria-hidden="true">{icon}</span>}

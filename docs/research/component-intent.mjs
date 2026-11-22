@@ -226,7 +226,7 @@ const intents = [
   entry('Input','form','단일 값·비밀번호·검색어를 입력한다.',['텍스트·금액 한 칸을 입력할 때'],['금액·수량에 type=number를 쓰지 마라','네이티브 검증 메시지에 의존하지 마라','오류를 색만으로 표시하지 마라'],'17',[
     rule("금액·수량: type=text inputMode=numeric, numeric. 예상 자릿수로 폭을 좁혀 우측 숫자와 레이블이 멀어지지 않게 한다.", "17.1"),
     rule("number 휠 증감은 내장 차단하며 페이지 스크롤은 유지한다.", "17.1"),
-    rule('검색 칸은 type="search"를 쓴다. 돋보기·지우기가 내장되므로 아이콘을 따로 겹치지 않는다.', '17.1'),
+    rule('검색 칸은 type="search"를 쓴다. 돋보기·지우기가 내장되므로 아이콘을 따로 겹치지 않는다. 폭(w-80·flex-1)은 className에 주면 바깥 래퍼에 붙는다.', '17.1'),
     rule('앞쪽 장식은 leadingIcon, 검색 돋보기를 끄려면 leadingIcon={null}. password 보기는 내장 버튼을 쓴다.', '17.1'),
     rule("날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.", "17.1"),
     rule("앱 검증·Field 한국어 오류를 쓴다.", "17.1")

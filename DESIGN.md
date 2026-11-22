@@ -1949,6 +1949,12 @@ aria-hidden·pointer-events:none이므로 낭독하지 않고 클릭은 실제 �
 오른쪽 지우기·비밀번호 보기의 공간은 독립적이며 id·aria-*·ref는 실제 input에 남는다.
 폭·높이·아이콘 없는 일반 입력의 여백은 유지한다.
 
+래퍼가 있는 입력(search·password·leadingIcon)에서는 className의 **폭·배치 클래스만 래퍼에** 붙는다
+(w-·min-w-·max-w-·flex-1 등 flex 항목 값·basis·grow·shrink·order·self·col-/row- 배치·바깥 여백 m*).
+글자·테두리·안쪽 여백은 input에 남는다. 래퍼 없는 입력에서는 input이 바깥 요소라 폭이 그대로 먹는데,
+래퍼가 있을 때만 `w-80`이 안쪽에 붙어 래퍼(width:100%)가 툴바 한 줄을 차지했다(2026-11-22 화면 시안:
+검색 칸이 필터 Select를 다음 줄로 밀었다). 래퍼 안의 input은 `min-w-0`이고 최소 폭은 래퍼가 정한다.
+
 search는 값이 있고 편집 가능할 때만 자체 `검색어 지우기` 버튼을 표시한다.
 클릭하면 제어·비제어 입력 모두 input/onChange 경로로 비움을 알리고 입력에 포커스를
 돌려준다. 네이티브 지우기는 실측 헤드리스에서 나타나지 않아 존재를 가정하지 않았다.
