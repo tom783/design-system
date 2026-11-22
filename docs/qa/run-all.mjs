@@ -3,15 +3,15 @@
 //   pnpm qa            (빌드는 미리 되어 있어야 한다 — pnpm build-storybook)
 //   pnpm qa --build    (빌드부터)
 //   pnpm qa --only steps-render-verify,mcp-client-verify
-//   pnpm qa --timings .qa-shots/timings.json   (하네스마다 초·결과)
+//   pnpm qa --shard 1/4 --timings .qa-shots/timings-1.json
 //
-// 하네스 목록·인자 해석은 run-plan.mjs 에 있다.
+// 하네스 목록·인자·샤드 배분은 run-plan.mjs 에 있다.
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { resolveHeadlessShell } from './browser.mjs';
-import { USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
+import { BASELINE_FILE, NO_STORYBOOK, USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
 
 const root = new URL('../..', import.meta.url).pathname;
 const PORT = 6099;
@@ -31,6 +31,11 @@ try {
 }
 const HARNESSES = plan.harnesses;
 if (opts.only) console.log(`--only: ${HARNESSES.length}개 하네스`);
+if (plan.shard) {
+  const { index, total, seconds, unknown, fallback } = plan.shard;
+  console.log(`--shard ${index}/${total}: ${HARNESSES.length}개 하네스 · 예상 ${seconds}초 (기준선 ${BASELINE_FILE.pathname.split('/').pop()})`);
+  if (unknown.length) console.log(`  기준선에 없어 중간값 ${fallback}초로 계산: ${unknown.join(', ')}`);
+}
 
 // 브라우저부터 확인한다. 없으면 7개를 다 돌려놓고 마지막에 실패하는 것보다 낫다.
 try {
@@ -40,25 +45,32 @@ try {
   process.exit(1);
 }
 
+// pack-verify·mcp-client-verify 만 고른 샤드는 스토리북이 필요 없다.
+const needsStorybook = HARNESSES.some(([file]) => !NO_STORYBOOK.has(file));
+let stop = () => {};
 const tServer = performance.now();
-if (opts.build || !existsSync(`${root}storybook-static/index.json`)) {
-  console.log('스토리북 빌드…');
-  const b = spawnSync('pnpm', ['build-storybook', '--quiet'], { cwd: root, stdio: 'inherit' });
-  if (b.status !== 0) process.exit(b.status ?? 1);
-}
+if (needsStorybook) {
+  if (opts.build || !existsSync(`${root}storybook-static/index.json`)) {
+    console.log('스토리북 빌드…');
+    const b = spawnSync('pnpm', ['build-storybook', '--quiet'], { cwd: root, stdio: 'inherit' });
+    if (b.status !== 0) process.exit(b.status ?? 1);
+  }
 
-const server = spawn('npx', ['--yes', 'http-server', 'storybook-static', '-p', String(PORT), '-s'],
-  { cwd: root, stdio: 'ignore' });
-const stop = () => { try { server.kill(); } catch { /* 이미 내려감 */ } };
-process.on('exit', stop);
-process.on('SIGINT', () => { stop(); process.exit(130); });
+  const server = spawn('npx', ['--yes', 'http-server', 'storybook-static', '-p', String(PORT), '-s'],
+    { cwd: root, stdio: 'ignore' });
+  stop = () => { try { server.kill(); } catch { /* 이미 내려감 */ } };
+  process.on('exit', stop);
+  process.on('SIGINT', () => { stop(); process.exit(130); });
 
-let up = false;
-for (let i = 0; i < 60; i++) {
-  try { await fetch(`http://localhost:${PORT}/index.json`); up = true; break; } catch { /* 대기 */ }
-  await sleep(500);
+  let up = false;
+  for (let i = 0; i < 60; i++) {
+    try { await fetch(`http://localhost:${PORT}/index.json`); up = true; break; } catch { /* 대기 */ }
+    await sleep(500);
+  }
+  if (!up) { stop(); console.error(`스토리북 서버가 ${PORT} 에 뜨지 않았습니다.`); process.exit(1); }
+} else {
+  console.log('(스토리북이 필요 없는 하네스만 — 빌드·정적 서버 생략)\n');
 }
-if (!up) { stop(); console.error(`스토리북 서버가 ${PORT} 에 뜨지 않았습니다.`); process.exit(1); }
 const serverSeconds = secs(performance.now() - tServer);
 
 const failed = [];
@@ -92,7 +104,8 @@ if (failed.length) {
 }
 console.log('\n전부 통과');
 
-// harnesses 맵은 기준선(timings/ci-*.json)과 같은 이름 키를 쓴다 — CI 에서 받은 것이 다음 기준선이 된다.
+// 모양은 기준선(timings/ci-*.json)과 같다 — harnesses[이름].seconds 를 run-plan 이 그대로 읽는다.
+// 샤드별 파일을 harnesses 끼리 합치면 다음 기준선이 된다.
 function writeTimings(path) {
   const git = (...args) => {
     const r = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
@@ -112,10 +125,11 @@ function writeTimings(path) {
         ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
         : null,
       only: opts.only,
+      shard: opts.shard ? `${opts.shard.index}/${opts.shard.total}` : null,
       startedAt: startedAt.toISOString(),
       endedAt: new Date().toISOString(),
     },
-    serverSeconds,
+    serverSeconds: needsStorybook ? serverSeconds : 0,
     totalSeconds: Math.round(values.reduce((a, v) => a + v.seconds, 0) * 10) / 10,
     wallSeconds: secs(performance.now() - t0),
     passed: values.filter((v) => v.status === 'pass').length,
