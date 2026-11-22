@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "source": {
+    "kind": "ci-log",
+    "run": "https://github.com/tom783/design-system/actions/runs/45029564697",
+    "runId": 45029564697,
+    "job": "gate (137229929934)",
+    "sha": "f172d3004d16813043e9ab35983102c11617558f",
+    "branch": "main",
+    "conclusion": "success",
+    "runner": "ubuntu-latest",
+    "qaStartedAt": "2026-11-22T13:51:02.1886258Z",
+    "qaEndedAt": "2026-11-22T14:14:30.7453908Z"
+  },
+  "method": "gh run view --log 의 줄 시각. run-all 은 하네스가 끝날 때 결과 줄을 쓰므로 각 결과 줄 시각을 끝, 바로 앞 결과 줄 시각을 시작으로 쳤다. 첫 하네스(steps-render-verify)의 시작은 \"브라우저:\" 줄이라 정적 서버 기동 대기(npx http-server)가 섞여 있다.",
+  "totalSeconds": 1408.6,
+  "harnesses": {
+    "steps-render-verify": 52.5,
+    "pack-verify": 60.9,
+    "render-verify": 39.7,
+    "charts-render-verify": 25.3,
+    "segmented-control-render-verify": 48.3,
+    "stat-tile-render-verify": 47.1,
+    "dogfood3-render-verify": 50.3,
+    "loading-render-verify": 52,
+    "state-render-verify": 4,
+    "guide-render-verify": 7.6,
+    "form-render-verify": 6.2,
+    "date-time-render-verify": 51.1,
+    "file-upload-render-verify": 54.5,
+    "combobox-render-verify": 50.2,
+    "multi-select-render-verify": 51.6,
+    "collapse-render-verify": 52.4,
+    "media-viewer-render-verify": 52.4,
+    "carousel-render-verify": 97.2,
+    "pagination-render-verify": 49.8,
+    "sheet-render-verify": 60.7,
+    "app-shell-render-verify": 53.7,
+    "input-consistency-render-verify": 49.8,
+    "input-render-verify": 52,
+    "peek-render-verify": 4.3,
+    "mcp-client-verify": 0.8,
+    "list-screen-render-verify": 55.3,
+    "layer-detail-render-verify": 54,
+    "design-detail-render-verify": 60,
+    "detail-render-verify": 49.7,
+    "create-render-verify": 49.7,
+    "docs-render-verify": 65.5
+  },
+  "spans": [
+    {
+      "name": "steps-render-verify",
+      "start": "2026-11-22T13:51:02.1886258Z",
+      "end": "2026-11-22T13:51:54.6471518Z"
+    },
+    {
+      "name": "pack-verify",
+      "start": "2026-11-22T13:51:54.6471518Z",
+      "end": "2026-11-22T13:52:55.5893939Z"
+    },
+    {
+      "name": "render-verify",
+      "start": "2026-11-22T13:52:55.5893939Z",
+      "end": "2026-11-22T13:53:35.2814772Z"
+    },
+    {
+      "name": "charts-render-verify",
+      "start": "2026-11-22T13:53:35.2814772Z",
+      "end": "2026-11-22T13:54:00.6000736Z"
+    },
+    {
+      "name": "segmented-control-render-verify",
+      "start": "2026-11-22T13:54:00.6000736Z",
+      "end": "2026-11-22T13:54:48.9142379Z"
+    },
+    {
+      "name": "stat-tile-render-verify",
+      "start": "2026-11-22T13:54:48.9142379Z",
+      "end": "2026-11-22T13:55:36.0321358Z"
+    },
+    {
+      "name": "dogfood3-render-verify",
+      "start": "2026-11-22T13:55:36.0321358Z",
+      "end": "2026-11-22T13:56:26.3681102Z"
+    },
+    {
+      "name": "loading-render-verify",
+      "start": "2026-11-22T13:56:26.3681102Z",
+      "end": "2026-11-22T13:57:18.3517451Z"
+    },
+    {
+      "name": "state-render-verify",
+      "start": "2026-11-22T13:57:18.3517451Z",
+      "end": "2026-11-22T13:57:22.3832355Z"
+    },
+    {
+      "name": "guide-render-verify",
+      "start": "2026-11-22T13:57:22.3832355Z",
+      "end": "2026-11-22T13:57:30.0206148Z"
+    },
+    {
+      "name": "form-render-verify",
+      "start": "2026-11-22T13:57:30.0206148Z",
+      "end": "2026-11-22T13:57:36.2278228Z"
+    },
+    {
+      "name": "date-time-render-verify",
+      "start": "2026-11-22T13:57:36.2278228Z",
+      "end": "2026-11-22T13:58:27.3097526Z"
+    },
+    {
+      "name": "file-upload-render-verify",
+      "start": "2026-11-22T13:58:27.3097526Z",
+      "end": "2026-11-22T13:59:21.7852869Z"
+    },
+    {
+      "name": "combobox-render-verify",
+      "start": "2026-11-22T13:59:21.7852869Z",
+      "end": "2026-11-22T14:00:11.9385147Z"
+    },
+    {
+      "name": "multi-select-render-verify",
+      "start": "2026-11-22T14:00:11.9385147Z",
+      "end": "2026-11-22T14:01:03.5320356Z"
+    },
+    {
+      "name": "collapse-render-verify",
+      "start": "2026-11-22T14:01:03.5320356Z",
+      "end": "2026-11-22T14:01:55.9074301Z"
+    },
+    {
+      "name": "media-viewer-render-verify",
+      "start": "2026-11-22T14:01:55.9074301Z",
+      "end": "2026-11-22T14:02:48.3332543Z"
+    },
+    {
+      "name": "carousel-render-verify",
+      "start": "2026-11-22T14:02:48.3332543Z",
+      "end": "2026-11-22T14:04:25.5497446Z"
+    },
+    {
+      "name": "pagination-render-verify",
+      "start": "2026-11-22T14:04:25.5497446Z",
+      "end": "2026-11-22T14:05:15.3432245Z"
+    },
+    {
+      "name": "sheet-render-verify",
+      "start": "2026-11-22T14:05:15.3432245Z",
+      "end": "2026-11-22T14:06:16.0357859Z"
+    },
+    {
+      "name": "app-shell-render-verify",
+      "start": "2026-11-22T14:06:16.0357859Z",
+      "end": "2026-11-22T14:07:09.7779551Z"
+    },
+    {
+      "name": "input-consistency-render-verify",
+      "start": "2026-11-22T14:07:09.7779551Z",
+      "end": "2026-11-22T14:07:59.5298249Z"
+    },
+    {
+      "name": "input-render-verify",
+      "start": "2026-11-22T14:07:59.5298249Z",
+      "end": "2026-11-22T14:08:51.4808143Z"
+    },
+    {
+      "name": "peek-render-verify",
+      "start": "2026-11-22T14:08:51.4808143Z",
+      "end": "2026-11-22T14:08:55.7575720Z"
+    },
+    {
+      "name": "mcp-client-verify",
+      "start": "2026-11-22T14:08:55.7575720Z",
+      "end": "2026-11-22T14:08:56.5594717Z"
+    },
+    {
+      "name": "list-screen-render-verify",
+      "start": "2026-11-22T14:08:56.5594717Z",
+      "end": "2026-11-22T14:09:51.8145830Z"
+    },
+    {
+      "name": "layer-detail-render-verify",
+      "start": "2026-11-22T14:09:51.8145830Z",
+      "end": "2026-11-22T14:10:45.8394497Z"
+    },
+    {
+      "name": "design-detail-render-verify",
+      "start": "2026-11-22T14:10:45.8394497Z",
+      "end": "2026-11-22T14:11:45.8672901Z"
+    },
+    {
+      "name": "detail-render-verify",
+      "start": "2026-11-22T14:11:45.8672901Z",
+      "end": "2026-11-22T14:12:35.5729617Z"
+    },
+    {
+      "name": "create-render-verify",
+      "start": "2026-11-22T14:12:35.5729617Z",
+      "end": "2026-11-22T14:13:25.2517788Z"
+    },
+    {
+      "name": "docs-render-verify",
+      "start": "2026-11-22T14:13:25.2517788Z",
+      "end": "2026-11-22T14:14:30.7453908Z"
+    }
+  ]
+}
