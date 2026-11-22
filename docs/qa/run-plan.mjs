@@ -41,6 +41,7 @@ export const HARNESSES = [
   ['layer-detail-render-verify.mjs', '레이어 디테일·O1–O6 라이트·다크'],
   ['design-detail-render-verify.mjs', '디자인 디테일·D1–D6'],
   ['detail-render-verify.mjs', '상세 탭·경로·편집·삭제 확인'],
+  ['screens-render-verify.mjs', '대표 화면 목록·상세 D2·대시보드'],
   ['create-render-verify.mjs', '등록·Enter 계약·목록 왕복'],
   ['docs-render-verify.mjs', '사용 문서·매니페스트 일치'],
 ];

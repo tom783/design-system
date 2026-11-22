@@ -12,6 +12,8 @@
 
 ### 추가
 
+- 대표 화면 스토리(2026-11-22 디자인 검토 확정안): `Screens/OrderList`(제목 display 34/40·700, 검색·필터 한 줄 툴바·`N건 선택` 일괄 동작·DataTable 다중 선택·Pagination), `Screens/OrderDetail`(D2 — 머리 오른쪽 ⋯ 더보기·수정·출고 처리, 삭제는 더보기 메뉴의 destructive 항목 → AlertDialog 기본 포커스 취소·확정 채운 danger; 기본·메뉴 열림·삭제 확인), `Screens/Dashboard`(StatTile 4개·TrendBand·BulletRow·최근 주문). 정식 부품만 조립하고 스토리 전용 CSS는 없다. 라이트·다크 1440×900 하네스 `screens-render-verify`(14건)를 전체 QA에 등록했다.
+
 - 단계 표시(R43): Steps의 0 기준 현재 위치·완료/진행 중/예정 자동 계산·오류 덮어쓰기, 완료 단계 버튼, 640px 미만 요약과 전체 라벨 보존을 추가했다. 단계마다 FormFlow 하나를 사용하는 상품 등록·제목 포커스 예시, 매니페스트 문서·MCP 갈림길·작성 전용 하네스를 포함한다. 세로 배치·폼 상태 관리·버전 변경은 없다.
 
 - 세그먼트 컨트롤(R42): options 배열 기반 SegmentedControl의 제어·비제어 단일 선택, 아이콘·비활성·sm/md·fullWidth·한 줄 말줄임, 그룹 이름·라디오 의미·로빙 키보드를 추가했다. Tabs·RadioGroup 갈림길, 독립 사용 예시·다크·표/카드 조립 스토리·MCP·작성 전용 하네스를 포함한다. 새 색 토큰·다중 선택·버전 변경은 없다.
