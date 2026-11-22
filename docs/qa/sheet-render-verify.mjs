@@ -1,7 +1,7 @@
 // R36: 작성 전용. 실제 실행은 pnpm qa에서 browser.mjs의 headless shell로 수행한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/sheet';
 mkdirSync(OUT, { recursive: true });
@@ -35,11 +35,8 @@ async function story(name, theme = 'light', family = 'sheet') {
   await wait(`document.documentElement.dataset.theme === '${theme}'`);
   await ev('document.fonts.ready.then(() => true)');
 }
-async function pointer(x, y) {
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
-  await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
-}
+const act = actions(browser);
+const pointer = (x, y) => act.pointerAt(x, y);
 async function pointerOpen(selector = trigger) {
   // R24: 레이어 열기는 실제 포인터. 내부 버튼은 .click()으로 불필요한 스크롤을 피한다.
   const point = await ev(`(() => { const r=${q(selector)}.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()`);
@@ -47,11 +44,8 @@ async function pointerOpen(selector = trigger) {
   await wait(`${q(sheet)}.getAnimations().every(a => a.playState === 'finished')`);
   await wait(`${q(sheet)}.contains(document.activeElement)`);
 }
-async function key(key, code, shift = false) {
-  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: code, modifiers: shift ? 8 : 0 });
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code, modifiers: shift ? 8 : 0 });
-}
-async function click(selector) { await ev(`${q(selector)}.click()`); }
+const key = (name, keyCode, shift = false) => act.key(name, { keyCode, code: name, shift, text: null });
+const click = (selector) => act.click(selector);
 async function closed() { await wait(`!${q(sheet)}`); }
 async function restored(selector = trigger) { await wait(`document.activeElement === ${q(selector)}`); }
 async function geometry() {

@@ -1,7 +1,7 @@
 // R18: 브라우저 실행은 사용자 pnpm qa에 맡긴다. 기존 19·29건 하네스는 변경하지 않는다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/create';
 mkdirSync(OUT, { recursive: true });
@@ -26,17 +26,10 @@ async function focus(expression) {
   await ev(`${expression}.focus()`);
   await wait(`document.activeElement === ${expression}`);
 }
-async function enter(condition) {
-  // '\n'은 네이티브 Enter 클릭을 만들지 않는다. 실제 키 입력의 CR을 보낸다 (§17).
-  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
-  try { if (condition) await wait(condition); else await sleep(120); }
-  finally { await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 }); }
-}
-async function press(key, code, condition) {
-  await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key, code: key === ' ' ? 'Space' : key, windowsVirtualKeyCode: code });
-  try { if (condition) await wait(condition); else await sleep(120); }
-  finally { await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key === ' ' ? 'Space' : key, windowsVirtualKeyCode: code }); }
-}
+const act = actions(browser);
+// '\n'은 네이티브 Enter 클릭을 만들지 않는다. 실제 키 입력의 CR을 보낸다 (§17).
+const enter = (until) => act.press('Enter', { until, wait });
+const press = (name, keyCode, until) => act.press(name, { keyCode, raw: true, text: null, until, wait });
 async function setValue(name, value) {
   await ev(`(() => { const node = ${probe(name)};
     const prototype = node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;

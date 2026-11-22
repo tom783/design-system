@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/file-upload';
 mkdirSync(OUT, { recursive: true });
@@ -43,11 +43,9 @@ async function drop(files) {
     for (const f of ${JSON.stringify(files)}) dt.items.add(new File([new Uint8Array(f.size ?? 20)], f.name, {type:f.type ?? ''}));
     ${q(slot('dropzone'))}.dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:dt})); return true; })()`);
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); }
-async function key(key, code, number) {
-  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: number, ...(key === 'Enter' ? { text: '\r' } : {}) });
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: number });
-}
+const act = actions(browser);
+const click = (selector) => act.click(selector, { root: 'canvas' });
+const key = (name, code, keyCode) => act.key(name, { code, keyCode });
 async function expectText(selector, text) { await wait(`${q(selector)}?.textContent.includes(${JSON.stringify(text)})`); }
 async function focusTrigger() { await ev(`${q(slot('trigger'))}.focus()`); }
 const count = n => wait(`${all(slot('item'))}.length === ${n}`);

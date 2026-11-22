@@ -1,7 +1,7 @@
 // R21: 브라우저 실행은 사용자의 pnpm qa가 담당한다. 기존 하네스는 수정하지 않는다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/multi-select';
 mkdirSync(OUT, { recursive: true });
@@ -42,16 +42,11 @@ async function story(id) {
   assert.deepEqual(browser.errors(), [], '스토리 콘솔 오류');
 }
 async function focus(expression) { await ev(`${expression}.focus()`); await wait(`document.activeElement === ${expression}`); }
-async function press(key, code, condition) {
-  // 키마다 규칙이 다르다. 화살표는 rawKeyDown 이어야 Radix 의 keydown/keyup 추적이
-  // 살아 있고(R16), Enter 로 **버튼을 누르려면** keyDown + text:'\r' 이어야 한다 —
-  // rawKeyDown 은 text 를 줘도 문자 입력을 만들지 않아 클릭이 일어나지 않는다(실측).
-  await cdp('Input.dispatchKeyEvent', key === 'Enter'
-    ? { type: 'keyDown', key, code: key, windowsVirtualKeyCode: code, text: '\r', unmodifiedText: '\r' }
-    : { type: 'rawKeyDown', key, code: key, windowsVirtualKeyCode: code });
-  try { if (condition) await wait(condition); else await sleep(120); }
-  finally { await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code }); }
-}
+const act = actions(browser);
+// 키마다 규칙이 다르다. 화살표는 rawKeyDown 이어야 Radix 의 keydown/keyup 추적이
+// 살아 있고(R16), Enter 로 **버튼을 누르려면** keyDown + text:'\r' 이어야 한다 —
+// rawKeyDown 은 text 를 줘도 문자 입력을 만들지 않아 클릭이 일어나지 않는다(실측).
+const press = (name, keyCode, until) => act.press(name, { keyCode, code: name, raw: true, unmodifiedText: true, until, wait });
 async function count(n) {
   await ev(`${q(`[data-count="${n}"]`)}.click()`);
   await wait(`${chipCount} === ${n}`);

@@ -1,7 +1,7 @@
 // R22: 작성만 수행한다. 실제 브라우저 검증은 사용자의 pnpm qa에서 실행한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/collapse';
 mkdirSync(OUT, { recursive: true });
@@ -37,11 +37,12 @@ async function story(id) {
   await ev('document.fonts.ready.then(() => true)');
   assert.deepEqual(browser.errors(), [], '스토리 콘솔 오류');
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); }
+const act = actions(browser);
+const click = (selector) => act.click(selector, { root: 'canvas' });
 async function settled() { await ev('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))'); }
 async function noMotion(selector) {
-  assert.equal(await ev(`(() => { const css = getComputedStyle(${q(selector)});
-    return [css.animationDuration, css.transitionDuration].every(value => value.split(',').every(time => parseFloat(time) === 0)); })()`), true);
+  const durations = await act.computed(selector, ['animationDuration', 'transitionDuration'], { root: 'canvas' });
+  assert.equal(durations.every(value => value.split(',').every(time => parseFloat(time) === 0)), true);
 }
 // id 선택자를 사용하지 않고 슬롯으로 찾은 실재 요소와 ARIA 참조 값을 비교한다.
 async function wired(buttonSelector, textSelector, description = false) {

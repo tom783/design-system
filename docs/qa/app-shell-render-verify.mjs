@@ -1,7 +1,7 @@
 // R34·R34b: 작성만 수행한다. 실행과 브라우저 실측은 사용자의 pnpm qa에서 진행한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/app-shell';
 mkdirSync(OUT, { recursive: true });
@@ -47,13 +47,9 @@ async function focus(selector) {
   await ev(`${q(selector)}.focus()`);
   await wait(`document.activeElement === ${q(selector)}`);
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); }
-async function key(key, code) {
-  await cdp('Input.dispatchKeyEvent', key === 'Enter'
-    ? { type: 'keyDown', key, code: key, windowsVirtualKeyCode: code, text: '\r' }
-    : { type: 'rawKeyDown', key, code: key, windowsVirtualKeyCode: code });
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code });
-}
+const act = actions(browser);
+const click = (selector) => act.click(selector, { root: 'canvas' });
+const key = (name, keyCode) => act.key(name, { keyCode, code: name, raw: true });
 async function widthIs(width) { await wait(`Math.abs(${q(nav)}.getBoundingClientRect().width - ${width}) < .1`); }
 // 소비자가 슬롯에 넣은 부품(StatusChip 의 전체값 title 등)은 그 부품의 계약이다. 셸이 그린 요소만 센다.
 const consumerSlots = '[data-slot="page-header-breadcrumb"],[data-slot="page-header-status"],[data-slot="page-header-actions"],[data-slot="page-header-description"]';

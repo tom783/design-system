@@ -2,7 +2,7 @@
 // 기존 하네스의 위치 기대값은 바꾸지 않는다. 결과·실측값·캡처는 OUT에 남긴다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS, decodePng } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, decodePng, actions as browserActions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/design-detail';
 mkdirSync(OUT, { recursive: true });
@@ -24,11 +24,8 @@ async function check(label, run) {
     console.error(`✗ ${label}: ${error.message}`); await browser.shot(`failure-${results.length}`);
   }
 }
-async function key(name, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: name, code: name, windowsVirtualKeyCode: code });
-  await sleep(50);
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: name, code: name, windowsVirtualKeyCode: code });
-}
+const act = browserActions(browser);
+const key = (name, keyCode) => act.key(name, { keyCode, code: name, raw: true, text: null, hold: 50 });
 async function load(id, theme) {
   const result = await open(id, { extra: `&globals=theme:${theme}` });
   assert.equal(result.sbError, null); assert.deepEqual(result.errors, []);

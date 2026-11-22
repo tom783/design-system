@@ -1,7 +1,7 @@
 // R25: 작성만 수행한다. 브라우저 실행과 기존 457건 회귀 확인은 사용자 pnpm qa에서 한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/carousel';
 mkdirSync(OUT, { recursive: true });
@@ -52,16 +52,12 @@ async function story(name = '기본') {
   await ev('document.fonts.ready.then(() => true)');
   assert.deepEqual(browser.errors(), [], '스토리 콘솔 오류');
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); }
+const act = actions(browser);
+const click = (selector) => act.click(selector, { root: 'canvas' });
 async function focus(selector) { await ev(`${q(selector)}.focus()`); await wait(`document.activeElement === ${q(selector)}`); }
-async function key(key, code) {
-  // 화살표의 네이티브 스크롤은 keydown 동안 진행된다. Enter만 text를 포함한다.
-  await cdp('Input.dispatchKeyEvent', key === 'Enter'
-    ? { type: 'keyDown', key, code: key, windowsVirtualKeyCode: code, text: '\r' }
-    : { type: 'rawKeyDown', key, code: key, windowsVirtualKeyCode: code });
-  await ev('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))');
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code });
-}
+// 화살표의 네이티브 스크롤은 keydown 동안 진행된다 — 두 프레임 누르고 있는다. Enter만 text를 포함한다.
+const key = (name, keyCode) => act.key(name, { keyCode, code: name, raw: true,
+  hold: () => ev('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))') });
 async function snapped(index) {
   await wait(`${current} === '${index}' && Math.abs(${q(track)}.scrollLeft - ${q(track)}.clientWidth * ${index}) < 1`);
 }

@@ -1,7 +1,7 @@
 // R16: 작성만 수행. 사용자가 pnpm qa로 실행한다. 모든 실제 브라우저 조작은 browser.mjs를 거친다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/input';
 mkdirSync(OUT, { recursive: true });
@@ -30,9 +30,8 @@ async function focus(selector) {
   await ev(`${q(selector)}.focus()`);
   await wait(`document.activeElement === ${q(selector)}`);
 }
-async function click(selector) {
-  await ev(`${q(selector)}.click()`);
-}
+const act = actions(browser);
+const click = (selector) => act.click(selector, { root: 'canvas' });
 async function story(id, extra = '') {
   assert.deepEqual(browser.errors(), [], '직전 스토리 콘솔 오류');
   const result = await open(id, { extra });

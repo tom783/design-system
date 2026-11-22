@@ -1,7 +1,7 @@
 // R17: 작성만 수행한다. 사용자가 pnpm qa로 실제 IME·포커스·ARIA를 검증한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/combobox';
 mkdirSync(OUT, { recursive: true });
@@ -51,18 +51,10 @@ async function openList() {
   await wait(`${input} && document.activeElement === ${input}`);
   await wait(`${trigger}.getAttribute('aria-expanded') === 'true'`);
 }
-async function down(key, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key, code: key, windowsVirtualKeyCode: code });
-}
-async function up(key, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code });
-}
-async function press(key, code, condition) {
-  // 라이브러리가 keydown 중 세운 상태를 읽기 전에 keyup으로 지우지 않는다.
-  await down(key, code);
-  try { if (condition) await wait(condition); else await sleep(120); }
-  finally { await up(key, code); }
-}
+const act = actions(browser);
+// 라이브러리가 keydown 중 세운 상태를 읽기 전에 keyup으로 지우지 않는다. Enter 도 text 없이 keydown 만
+// 보낸다(콤보박스는 keydown 에서 고른다 — 이 하네스가 원래 그렇게 검사했다).
+const press = (name, keyCode, until) => act.press(name, { keyCode, code: name, raw: true, text: null, until, wait });
 async function compose(text) {
   await cdp('Input.imeSetComposition', { text, selectionStart: text.length, selectionEnd: text.length });
   await wait(`${input}.value === ${JSON.stringify(text)}`);

@@ -389,3 +389,80 @@ export function storybook(session, { base: fixedBase } = {}) {
 
 /** 캔버스 안에서만 찾아라. document.querySelector 는 스토리북 자체 UI 를 잡는다. */
 export const CANVAS = "(document.querySelector('#storybook-root')||document.querySelector('#root'))";
+
+// ══ 공용 조작 도우미 ══
+// 하네스 20여 개가 key·click·press·enter·pointer 를 저마다 다시 정의하고 있었다(31곳). 차이가 실제로
+// 필요한 것(raw 키다운·키 사이 대기·Enter 의 text 생략)은 옵션으로 남기고 몸통은 여기 하나로 둔다.
+// 하네스는 원래 서명을 지키는 한 줄 어댑터만 둔다 — 호출부와 동작은 그대로다.
+
+/** windowsVirtualKeyCode. */
+export const KEY_CODES = {
+  Backspace: 8, Tab: 9, Enter: 13, Escape: 27, ' ': 32, PageUp: 33, PageDown: 34,
+  End: 35, Home: 36, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Delete: 46,
+};
+
+/** 선택자 → 요소 표현식. root 'canvas' 는 스토리 루트 안에서 찾는다. CANVAS 를 선택자 문자열에 붙이지 않는다(함정). */
+export const qs = (selector, root = 'document') =>
+  `${root === 'canvas' ? CANVAS : 'document'}.querySelector(${JSON.stringify(selector)})`;
+
+/**
+ * 세션에 묶은 조작 도우미. const act = actions(browser)
+ *
+ * key(name, opts) — 키 하나를 누르고 뗀다.
+ *   Enter 는 keyDown + text '\r' 로 보낸다. 버튼의 Enter 활성화는 keypress(=text)에서 일어나서 text 없는
+ *   Enter 는 실제 키 입력을 재현하지 못한다(함정 린트가 막는다). keydown 만 봐야 하면 { text: null }.
+ *   raw: true    Enter 가 아닌 키를 rawKeyDown 으로(화살표가 Radix keydown/keyup 추적을 살리려면 필요)
+ *   keyCode·code 기본은 KEY_CODES[name]·name(' ' 은 'Space')
+ *   shift        modifiers 8
+ *   unmodifiedText  text 와 같은 값을 unmodifiedText 로도 보낸다
+ *   hold         keyDown 과 keyUp 사이: ms 이거나 async 함수(조건 대기). 라이브러리가 keydown 중 세운
+ *                상태를 keyup 이 지우기 전에 읽을 때 쓴다. 실패해도 keyUp 은 보낸다.
+ * press(name, { until, wait, ...key 옵션 }) — until 조건을 wait 로 기다리는 동안 누르고 있는다(없으면 120ms).
+ * enter(opts)            — key('Enter', opts)
+ * click(selector, { root })        — 요소의 .click(). 좌표를 쓰지 않는다(스크롤·애니메이션에 흔들림).
+ * pointerAt(x, y)                  — 진짜 포인터: 이동·누름·뗌(바깥 클릭처럼 꼭 필요할 때만).
+ * pointerClick(selector, { root }) — 요소를 nearest 로 끌어와 가운데를 진짜 포인터로 누른다(Radix pointerdown).
+ * computed(selector, props, { root }) — getComputedStyle 값 배열.
+ * findPortal(selector, { timeout })   — 캔버스 **밖**(document.body 포털)에 그 요소가 생길 때까지 기다린다.
+ */
+export function actions(session) {
+  const { cdp, ev } = session;
+  const sleep = session.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+  async function key(name, { keyCode = KEY_CODES[name], code = name === ' ' ? 'Space' : name, raw = false,
+    text = name === 'Enter' ? '\r' : null, unmodifiedText = false, shift = false, hold } = {}) {
+    const base = { key: name, code, windowsVirtualKeyCode: keyCode, ...(shift ? { modifiers: 8 } : {}) };
+    const typed = text != null ? { text, ...(unmodifiedText ? { unmodifiedText: text } : {}) } : {};
+    await cdp('Input.dispatchKeyEvent', { type: text != null || !raw ? 'keyDown' : 'rawKeyDown', ...base, ...typed });
+    try {
+      if (typeof hold === 'function') await hold();
+      else if (hold) await sleep(hold);
+    } finally {
+      await cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...base });
+    }
+  }
+  const pointerAt = async (x, y) => {
+    await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+    await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
+    await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
+  };
+  return {
+    key,
+    press: (name, { until, wait, ...opts } = {}) => key(name, { ...opts, hold: until ? () => wait(until) : 120 }),
+    enter: (opts) => key('Enter', opts),
+    click: (selector, { root } = {}) => ev(`${qs(selector, root)}.click()`),
+    pointerAt,
+    async pointerClick(selector, { root } = {}) {
+      await ev(`${qs(selector, root)}.scrollIntoView({ block: 'nearest' })`);
+      const p = await ev(`(() => { const r = ${qs(selector, root)}.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`);
+      await pointerAt(p.x, p.y);
+    },
+    computed: (selector, props, { root } = {}) =>
+      ev(`(() => { const s = getComputedStyle(${qs(selector, root)}); return ${JSON.stringify(props)}.map((p) => s[p]); })()`),
+    async findPortal(selector, { timeout = 3000 } = {}) {
+      const expr = `[...document.querySelectorAll(${JSON.stringify(selector)})].some((el) => !${CANVAS}?.contains(el))`;
+      const deadline = Date.now() + timeout;
+      while (Date.now() < deadline) { if (await ev(expr).catch(() => false)) return true; await sleep(50); }
+      throw new Error(`포털 대기 실패: ${selector} (${timeout}ms)`);
+    },
+  };
+}

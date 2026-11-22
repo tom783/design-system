@@ -1,7 +1,7 @@
 // R43 작성 전용. 실제 실행은 pnpm qa. 브라우저는 공통 headless-shell만 사용한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, actions } from './browser.mjs';
 const OUT = process.argv[2] || '.qa-shots/steps';
 mkdirSync(OUT, { recursive: true });
 const browser = await launchBrowser({ outDir: OUT });
@@ -26,13 +26,8 @@ async function check(label, run) {
   try { await run(); results.push({ label, pass: true }); console.log(`✓ ${label}`); }
   catch (error) { results.push({ label, pass: false, error: error.message }); console.error(`✗ ${label}: ${error.message}`); await browser.shot(`failure-${results.length}`); }
 }
-async function key(name) {
-  const code = { Tab: 9, Enter: 13, ' ': 32 }[name];
-  for (const type of ['keyDown', 'keyUp']) await cdp('Input.dispatchKeyEvent', {
-    type, key: name, code: name === ' ' ? 'Space' : name, windowsVirtualKeyCode: code,
-    ...(type === 'keyDown' && name === 'Enter' ? { text: '\r' } : {}),
-  });
-}
+const act = actions(browser);
+const key = (name) => act.key(name);
 async function indexIs(index) {
   await wait(`${q(`${item}[aria-current="step"]`)}?.getAttribute('aria-label').startsWith('${index + 1}단계 ')`);
   assert.equal(await ev(`${all(`${item}[aria-current="step"]`)}.length`), 1);

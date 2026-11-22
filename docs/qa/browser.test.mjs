@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { playwrightCaches, revisionsNewestFirst, resolveHeadlessShell, parityArgs, decodePng, cdpRequests, devToolsActivePort } from './browser.mjs';
+import { playwrightCaches, revisionsNewestFirst, resolveHeadlessShell, parityArgs, decodePng, cdpRequests, devToolsActivePort, actions, qs, CANVAS, PLAY_SETTLED } from './browser.mjs';
 
 test('macOS 캐시 경로', () => {
   assert.deepEqual(playwrightCaches({}, 'darwin', '/Users/x'), ['/Users/x/Library/Caches/ms-playwright']);
@@ -178,4 +178,77 @@ test('devToolsActivePort: 브라우저가 고른 CDP 포트(첫 줄)를 읽고, 
     writeFileSync(join(dir, 'DevToolsActivePort'), '');
     assert.equal(devToolsActivePort(dir), null);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+// ── 공용 조작 도우미 ──
+const fakeSession = (evResult = () => true) => {
+  const log = [];
+  return {
+    log,
+    cdp: async (method, params) => { log.push([method, params]); return {}; },
+    ev: async (expr) => { log.push(['ev', expr]); return evResult(expr); },
+    sleep: async (ms) => { log.push(['sleep', ms]); },
+  };
+};
+
+test('act.key: Enter 는 keyDown + text \\r — text 없는 Enter 는 버튼을 누르지 못한다', async () => {
+  const s = fakeSession(); await actions(s).key('Enter');
+  assert.deepEqual(s.log, [
+    ['Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' }],
+    ['Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 }],
+  ]);
+});
+
+test('act.key: raw 는 Enter 가 아닌 키만 rawKeyDown, text:null 은 명시적으로 keydown 만', async () => {
+  const a = fakeSession(); await actions(a).key('ArrowDown', { raw: true });
+  assert.equal(a.log[0][1].type, 'rawKeyDown'); assert.equal(a.log[0][1].windowsVirtualKeyCode, 40);
+  const b = fakeSession(); await actions(b).key('Enter', { raw: true });
+  assert.equal(b.log[0][1].type, 'keyDown'); assert.equal(b.log[0][1].text, '\r');
+  const c = fakeSession(); await actions(c).key('Enter', { text: null });
+  assert.equal(c.log[0][1].type, 'keyDown'); assert.equal('text' in c.log[0][1], false);
+  const d = fakeSession(); await actions(d).key(' ', { shift: true });
+  assert.deepEqual(d.log[0][1], { type: 'keyDown', key: ' ', code: 'Space', windowsVirtualKeyCode: 32, modifiers: 8 });
+  assert.equal(d.log[1][1].modifiers, 8);
+});
+
+test('act.press: 조건을 기다리는 동안 누르고 있고, 대기가 실패해도 keyUp 을 보낸다', async () => {
+  const s = fakeSession();
+  const wait = async (c) => { s.log.push(['wait', c]); throw new Error('시간 초과'); };
+  await assert.rejects(actions(s).press('ArrowDown', { raw: true, until: 'ok', wait }), /시간 초과/);
+  assert.deepEqual(s.log.map((x) => x[0] === 'wait' ? 'wait' : x[1].type), ['rawKeyDown', 'wait', 'keyUp']);
+  const t = fakeSession(); await actions(t).press('Tab');
+  assert.deepEqual(t.log.map((x) => x[0] === 'sleep' ? `sleep ${x[1]}` : x[1].type), ['keyDown', 'sleep 120', 'keyUp']);
+});
+
+test('act.click·pointerClick·computed: 선택자는 JSON 으로 감싸고 canvas 는 스토리 루트 안에서', async () => {
+  assert.equal(qs('[data-x="1"]', 'canvas'), `${CANVAS}.querySelector("[data-x=\\"1\\"]")`);
+  const a = fakeSession(); await actions(a).click('#b', { root: 'canvas' });
+  assert.deepEqual(a.log, [['ev', `${CANVAS}.querySelector("#b").click()`]]);
+  const b = fakeSession((e) => (/getBoundingClientRect/.test(e) ? { x: 5, y: 7 } : true));
+  await actions(b).pointerClick('#t');
+  assert.deepEqual(b.log.filter((x) => x[0] !== 'ev').map(([, p]) => [p.type, p.x, p.y]),
+    [['mouseMoved', 5, 7], ['mousePressed', 5, 7], ['mouseReleased', 5, 7]]);
+  const c = fakeSession(() => ['0s', '0s']);
+  assert.deepEqual(await actions(c).computed('#p', ['animationDuration', 'transitionDuration']), ['0s', '0s']);
+  assert.match(c.log[0][1], /getComputedStyle\(document\.querySelector\("#p"\)\)/);
+});
+
+test('act.findPortal: 캔버스 밖 요소를 기다리고, 끝내 없으면 선택자를 대며 실패한다', async () => {
+  let n = 0;
+  const a = fakeSession(() => ++n >= 3);
+  assert.equal(await actions(a).findPortal('[role="listbox"]'), true);
+  const b = fakeSession(() => false);
+  await assert.rejects(actions(b).findPortal('[role="dialog"]', { timeout: 120 }), /포털 대기 실패: \[role="dialog"\]/);
+});
+
+test('PLAY_SETTLED: 표식·오류 화면·play 없는 스토리의 finished 에서 끝난다', () => {
+  const run = (doc, render) => new Function('document', 'window', `return ${PLAY_SETTLED};`)(doc, { __STORYBOOK_PREVIEW__: render ? { currentRender: render } : undefined });
+  const doc = (flag = false, error = false) => ({ querySelector: () => (flag ? {} : null), body: { classList: { contains: () => error } } });
+  assert.equal(run(doc(true)), true);
+  assert.equal(run(doc(false, true)), true);
+  assert.equal(run(doc(), { phase: 'finished', story: {} }), true);
+  assert.equal(run(doc(), { phase: 'finished', story: { playFunction() {} } }), false); // play 가 표식을 세울 것이다
+  assert.equal(run(doc(), { phase: 'errored', story: { playFunction() {} } }), true);
+  assert.equal(run(doc(), { phase: 'rendering', story: {} }), false);
+  assert.equal(run(doc()), false);
 });

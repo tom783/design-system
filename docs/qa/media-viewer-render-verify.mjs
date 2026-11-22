@@ -1,7 +1,7 @@
 // R24: 작성만 수행한다. 실제 실행과 기존 429건 회귀 확인은 사용자의 pnpm qa에 맡긴다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/media-viewer';
 mkdirSync(OUT, { recursive: true });
@@ -41,7 +41,8 @@ async function story(name) {
   assert.deepEqual(browser.errors(), [], '스토리 콘솔 오류');
   await ev('document.fonts.ready.then(() => true)');
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); }
+const act = actions(browser);
+const click = (selector) => act.click(selector);
 async function focus(selector) {
   await ev(`${q(selector)}.focus({preventScroll:true})`);
   await wait(`document.activeElement === ${q(selector)}`);
@@ -67,8 +68,8 @@ async function noMotion(selector) {
   // 이 저장소의 전역 reduced-motion 은 0 이 아니라 .01ms 다 — animationend·transitionend 가
   // 계속 발화하게 하려는 의도적 관례다(styles.css). 그래서 "정확히 0" 이 아니라
   // "지각할 수 없는 길이" 로 단정한다. 1ms 를 넘으면 실패다.
-  assert.equal(await ev(`(() => { const css=getComputedStyle(${q(selector)}); return [css.animationDuration,css.transitionDuration]
-    .every(value => value.split(',').every(time => parseFloat(time) <= 0.001)); })()`), true);
+  const durations = await act.computed(selector, ['animationDuration', 'transitionDuration']);
+  assert.equal(durations.every(value => value.split(',').every(time => parseFloat(time) <= 0.001)), true);
 }
 async function pointerClick(selector) {
   const r = await rect(selector), x = r.x + r.width / 2, y = r.y + r.height / 2;

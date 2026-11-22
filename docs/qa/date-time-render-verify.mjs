@@ -1,7 +1,7 @@
 // R40: 작성 전용 하네스. 실행은 pnpm qa에서 수행한다. 레이어는 실제 포인터로 연다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/date-time';
 mkdirSync(OUT, { recursive: true });
@@ -34,18 +34,10 @@ async function story(name) {
   await wait(`${CANVAS}.dataset.playComplete === 'true' && !!${q(input)}`);
   await ev('document.fonts.ready');
 }
-async function key(name, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: name, code: name, windowsVirtualKeyCode: code, ...(name === 'Enter' ? { text: '\r' } : {}) });
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: name, code: name, windowsVirtualKeyCode: code });
-}
-async function pointer(selector) {
-  // 내부 버튼 조작은 .click() 또는 키보드로 한다. 실제 포인터는 레이어를 여는 트리거에만 사용한다.
-  await ev(`${q(selector)}.scrollIntoView({ block:'nearest' })`);
-  const point = await ev(`(() => { const r=${q(selector)}.getBoundingClientRect(); return { x:r.x+r.width/2, y:r.y+r.height/2 }; })()`);
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
-  await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 });
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 });
-}
+const act = actions(browser);
+const key = (name, keyCode) => act.key(name, { keyCode, code: name });
+// 내부 버튼 조작은 .click() 또는 키보드로 한다. 실제 포인터는 레이어를 여는 트리거에만 사용한다.
+const pointer = (selector) => act.pointerClick(selector);
 async function calendar() { await pointer(trigger); await wait(`!!${q(clock)} && ${q('[data-slot="popover-content"]')}.contains(document.activeElement)`); }
 async function enter(text, blur = false) {
   await ev(`${q(input)}.focus(); ${q(input)}.select()`);

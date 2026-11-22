@@ -2,7 +2,7 @@
 // 기존 하네스의 기대값은 고치지 않는다. O6의 지정 토큰과 대비 개선 목표 충돌은 별도 기록한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 const OUT = process.argv[2] || '.qa-shots/layer-detail';
 mkdirSync(OUT, { recursive: true });
 const browser = await launchBrowser({ windowSize: '1100,760', outDir: OUT }).catch(error => {
@@ -22,19 +22,10 @@ async function check(label, run) {
   try { const measurements = await run(); results.push({ label, pass: true, measurements }); console.log(`✓ ${label} — ${JSON.stringify(measurements)}`); }
   catch (e) { results.push({ label, pass: false, error: e.message }); console.error(`✗ ${label}: ${e.message}`); await browser.shot(`failure-${results.length}`); }
 }
-async function key(name, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: name, code: name, windowsVirtualKeyCode: code });
-  await sleep(50);
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: name, code: name, windowsVirtualKeyCode: code });
-}
-async function click(selector) {
-  // R24: Radix의 pointerdown도 보내야 열린다. 스크롤은 트리거만 명시적으로 가져온다.
-  await ev(`${q(selector)}.scrollIntoView({ block: 'nearest' })`);
-  const point = await ev(`(() => { const r = ${q(selector)}.getBoundingClientRect(); return { x:r.x+r.width/2, y:r.y+r.height/2 }; })()`);
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
-  await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 });
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 });
-}
+const act = actions(browser);
+const key = (name, keyCode) => act.key(name, { keyCode, code: name, raw: true, text: null, hold: 50 });
+// R24: Radix의 pointerdown도 보내야 열린다. 스크롤은 트리거만 명시적으로 가져온다.
+const click = (selector) => act.pointerClick(selector);
 async function load(theme) {
   const r = await open('qa-layerdetails--열린레이어', { extra: `&globals=theme:${theme}` });
   assert.equal(r.sbError, null); assert.deepEqual(r.errors, []);

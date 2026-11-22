@@ -1,7 +1,7 @@
 // R35: 하네스는 작성만 한다. 실행은 pnpm qa에서 수행한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/pagination';
 mkdirSync(OUT, { recursive: true });
@@ -40,12 +40,10 @@ async function story(name) {
   await ev('document.fonts.ready.then(() => true)');
   assert.deepEqual(browser.errors(), []);
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); }
+const act = actions(browser);
+const click = (selector) => act.click(selector, { root: 'canvas' });
 async function focus(selector) { await ev(`${q(selector)}.focus()`); await wait(`document.activeElement === ${q(selector)}`); }
-async function key(key, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: code, ...(key === 'Enter' ? { text: '\r' } : {}) });
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: code });
-}
+const key = (name, keyCode) => act.key(name, { keyCode, code: name });
 async function viewport(width) {
   await cdp('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false });
   await ev('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))');

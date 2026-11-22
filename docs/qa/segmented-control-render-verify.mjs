@@ -1,7 +1,7 @@
 // R42 작성 전용. 전체 실행은 pnpm qa. 브라우저는 공통 headless-shell 경로만 쓴다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, actions } from './browser.mjs';
 const OUT = process.argv[2] || '.qa-shots/segmented-control';
 mkdirSync(OUT, { recursive: true });
 const browser = await launchBrowser({ outDir: OUT });
@@ -26,14 +26,9 @@ async function check(label, run) {
   try { await run(); results.push({ label, pass: true }); console.log(`✓ ${label}`); }
   catch (error) { results.push({ label, pass: false, error: error.message }); console.error(`✗ ${label}: ${error.message}`); await browser.shot(`failure-${results.length}`); }
 }
-async function key(name, shiftKey = false) {
-  const code = { Tab: 9, ArrowLeft: 37, ArrowRight: 39, ArrowUp: 38, ArrowDown: 40, Home: 36, End: 35, Enter: 13, ' ': 32 }[name];
-  // 버튼의 Enter 활성화는 keypress(=text '\r')에서 일어난다. text 없는 keyDown 은 실제 키 입력을 재현하지 못한다.
-  for (const type of ['keyDown', 'keyUp']) await cdp('Input.dispatchKeyEvent', {
-    type, key: name, code: name === ' ' ? 'Space' : name, windowsVirtualKeyCode: code, modifiers: shiftKey ? 8 : 0,
-    ...(type === 'keyDown' && name === 'Enter' ? { text: '\r' } : {}),
-  });
-}
+const act = actions(browser);
+// 버튼의 Enter 활성화는 keypress(=text '\r')에서 일어난다 — act.key 가 Enter 에 text 를 붙인다.
+const key = (name, shift = false) => act.key(name, { shift });
 async function selected(label) {
   await wait(`${q(`${item}[aria-checked="true"]`)}?.getAttribute('aria-label') === ${JSON.stringify(label)}`);
   assert.equal(await ev(`${all(`${item}[aria-checked="true"]`)}.length`), 1);

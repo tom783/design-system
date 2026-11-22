@@ -2,7 +2,7 @@
 // play는 모든 창을 닫고 끝난다. 아래 상호작용은 완료 후 창을 다시 열어 만든 상태만 검사한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/detail';
 mkdirSync(OUT, { recursive: true });
@@ -32,27 +32,23 @@ async function check(label, run) {
     await browser.shot(`failure-${results.length}`);
   }
 }
-async function key(keyName, code) {
-  await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: keyName, code: keyName, windowsVirtualKeyCode: code });
-  await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: keyName, code: keyName, windowsVirtualKeyCode: code });
-}
+const act = actions(browser);
+// Enter 도 text 없이 keydown 만: Radix Tabs 수동 활성화가 keydown 에서 일어나는지를 본다.
+const key = (name, keyCode) => act.key(name, { keyCode, code: name, text: null });
 async function press(selector) {
   await wait(`!!document.querySelector(${JSON.stringify(selector)})`);
   await ev(`document.querySelector(${JSON.stringify(selector)}).click()`);
 }
 // 좌표 클릭은 바깥 클릭처럼 **진짜 포인터가 필요할 때만** 쓴다.
 // 내부 버튼에 쓰면 scrollIntoView 가 문서를 움직이고 좌표가 흔들린다.
+// 스크롤과 좌표 읽기를 한 번의 평가로 한다(공용 pointerClick 은 두 번) — 원래 동작 그대로 둔다.
 async function click(selector) {
   await wait(`!!document.querySelector(${JSON.stringify(selector)})`);
   const point = await ev(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); el.scrollIntoView({ block:'nearest' });
     const r = el.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2 }; })()`);
   await pointer(point.x, point.y);
 }
-async function pointer(x, y) {
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
-  await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
-  await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
-}
+const pointer = (x, y) => act.pointerAt(x, y);
 async function clickButton(text, scope = CANVAS) {
   // click()은 버튼의 onClick 경로이며 바깥 클릭 검사는 별도로 실제 CDP 포인터를 쓴다.
   const expression = `${scope}.querySelectorAll('button')`;

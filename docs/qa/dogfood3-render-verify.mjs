@@ -1,7 +1,7 @@
 // R29: 하네스 작성만 수행한다. 실행은 pnpm qa에서 기존 하네스와 함께 한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, actions } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/dogfood3';
 mkdirSync(OUT, { recursive: true });
@@ -39,7 +39,8 @@ async function story(id) {
   await frame();
   assert.deepEqual(browser.errors(), [], '스토리 콘솔 오류');
 }
-async function click(selector) { await ev(`${q(selector)}.click()`); await frame(); }
+const act = actions(browser);
+async function click(selector) { await act.click(selector, { root: 'canvas' }); await frame(); }
 async function inputValue(selector, value) {
   await ev(`(() => {
     const input = ${q(selector)};
