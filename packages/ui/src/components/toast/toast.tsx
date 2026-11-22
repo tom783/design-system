@@ -69,6 +69,8 @@ function restoreFocus(previous: HTMLElement | null) {
  * sonner 목록의 onBlur는 포커스가 목록을 떠나면 자기가 기억한 요소로 한 번 되돌리고 기억을 비운다.
  * 포커스를 가진 알림이 API로 사라지면 Chrome이 blur를 보내지 않아 그 기억이 낡는다
  * (실측: 메모 → 알림 닫기 → 앞서 쓴 트리거 버튼 → main). 한 번 빼앗긴 뒤에는 기억이 비었으므로 다시 놓는다.
+ * 한계: 포커스를 가진 알림이 toast.dismiss() 같은 API로 사라진 뒤 다른 알림을 닫으면, 최종 위치는 맞아도 그 낡은 요소에
+ * focus·blur가 한 번 지나간다(sonner 내부 ref라 막을 수 없다). 그 요소가 blur 검증 입력이면 오류가 먼저 뜰 수 있다.
  */
 function focusFirmly(element: HTMLElement) {
   for (let attempt = 0; attempt < 2 && document.activeElement !== element; attempt++) element.focus({ preventScroll: true });
