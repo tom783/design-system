@@ -46,7 +46,12 @@ test('정적 서버: 포트 0 은 빈 포트, 파일을 캐시 없이 주고 폴
     assert.ok(s.port > 0);
     const r = await fetch(`${s.url}/index.json`);
     assert.equal(r.status, 200);
-    assert.equal(r.headers.get('cache-control'), 'no-store');
+    // 출처 파일만 no-store. 나머지(글꼴 등)를 no-store 로 하면 스토리마다 글꼴을 다시 받아 play 도중
+    // 레이아웃이 바뀐다(peek '다녀온행' 리눅스 CI 실패, run 45052756950).
+    assert.equal(r.headers.get('cache-control'), 'public, max-age=3600');
+    writeFileSync(join(dir, NONCE_FILE), 'n');
+    assert.equal((await fetch(`${s.url}/${NONCE_FILE}`)).headers.get('cache-control'), 'no-store');
+    assert.equal((await fetch(`${s.url}/${BUILD_INFO_FILE}`)).headers.get('cache-control'), 'no-store');
     assert.match(r.headers.get('content-type'), /application\/json/);
     assert.equal((await fetch(`${s.url}/없음.js`)).status, 404);
     // URL 파서가 %2e%2e 는 정규화하므로 %2f 로 감싼 상위 경로로 시험한다.

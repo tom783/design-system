@@ -37,7 +37,15 @@ export function portTaken(port, hosts = ['127.0.0.1', '::1']) {
   }))).then((r) => r.some(Boolean));
 }
 
-/** 정적 파일 응답. 캐시하지 않는다 — nonce 파일을 매번 디스크에서 읽어야 한다. */
+// 출처 파일만 캐시하지 않는다 — 매번 디스크에서 읽어야 남의 서버·옛 빌드를 가린다.
+const NO_STORE = new Set(['/__qa-nonce.txt', '/build-info.json']);
+
+/**
+ * 정적 파일 응답. 출처 파일(NO_STORE)은 no-store, 나머지는 http-server 기본과 같은 1시간 캐시.
+ * 처음에 전부 no-store 로 했더니 스토리를 열 때마다 글꼴 서브셋을 다시 받아(81회 대 8회) play 도중
+ * 글꼴이 바뀌고, 셀 좌표 불변을 단정하는 peek '다녀온행' 이 리눅스 CI 에서 실패했다(run 45052756950,
+ * Docker 재현 3회 중 1회 실패·하네스 35~64초 → 캐시 4.5초·3회 통과).
+ */
 export function staticHandler(root) {
   const base = resolve(root);
   return (req, res) => {
@@ -52,7 +60,7 @@ export function staticHandler(root) {
     res.writeHead(200, {
       'content-type': TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream',
       'content-length': st.size,
-      'cache-control': 'no-store',
+      'cache-control': NO_STORE.has(path) ? 'no-store' : 'public, max-age=3600',
     });
     if (req.method === 'HEAD') { res.end(); return; }
     createReadStream(file).on('error', () => res.destroy()).pipe(res);
