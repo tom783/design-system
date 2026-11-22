@@ -53,13 +53,17 @@ try {
         const tops=[...bar.children].map(el => Math.round(el.getBoundingClientRect().top));
         const selected=[...document.querySelectorAll('[data-slot="data-table-row"][data-selected]')];
         const row=selected[0], surface=token('--bg-surface'), rowBg=rgb(getComputedStyle(row.querySelector('td')).backgroundColor);
-        return { tops, search:control.getBoundingClientRect().width, barHeight:bar.getBoundingClientRect().height,
+        // 툴바 아래 간격: Field 밖 DatePicker 의 오류는 입력 아래 20px 에 걸친다(2026-11-22 기준 변경). 툴바에
+        // DatePicker 가 있으면 아래 요소까지 20px 이상이어야 한다. 지금 목록의 기간은 Select 라 해당하지 않는다.
+        const below={ gap:bar.nextElementSibling.getBoundingClientRect().top - bar.getBoundingClientRect().bottom, datePicker:!!bar.querySelector('[data-slot="date-picker"]') };
+        return { tops, below, search:control.getBoundingClientRect().width, barHeight:bar.getBoundingClientRect().height,
           status:${q('[data-screen="bulk"] [role="status"]')}.textContent, selected:selected.map(r => r.dataset.rowId),
           range:${q('[data-slot="pagination-range"]')}?.textContent, rows:document.querySelectorAll('[data-slot="data-table-row"]').length,
           primary:[...document.querySelectorAll('button, a')].filter(el => same(rgb(getComputedStyle(el).backgroundColor), token('--action-primary-bg'))).map(el => el.textContent.trim()),
           selectedRow:{ background:rowBg, selectedToken:token('--bg-selected-row'), vsSurface:contrast(rowBg, surface) } }; })()`);
       assert.equal(new Set(m.tops).size, 1, `툴바가 한 줄이어야 한다 ${JSON.stringify(m.tops)}`);
       assert.equal(m.search, 320); assert.equal(m.status, '3건 선택');
+      if (m.below.datePicker) assert.ok(m.below.gap >= 20, `DatePicker 가 있는 툴바 아래 간격 ${m.below.gap}px < 20`);
       assert.deepEqual(m.selected, ['ORD-20480', 'ORD-20479', 'ORD-20475']);
       assert.equal(m.range, '1–20 / 1,284건'); assert.equal(m.rows, 20);
       assert.deepEqual(m.primary, ['주문 등록'], '주요 버튼은 화면당 하나');
