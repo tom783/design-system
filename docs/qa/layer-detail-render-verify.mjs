@@ -144,6 +144,25 @@ try {
       await browser.shot(`menu-${theme}`); await key('Escape',27); await key('Escape',27);
       return { padding,text,subPadding,subText };
     });
+    await check(`메뉴 파괴적 항목 글자·아이콘 대비 4.5:1 (평소·하이라이트) ${theme}`, async () => {
+      // 2026-11-22: 채움색(text-destructive)을 글자로 써서 다크 팝오버에서 2.73:1 이었다. 계산 색으로 잰다.
+      await click('[data-probe="menu"]'); await edge('[data-slot="dropdown-menu-content"]');
+      const item = '[data-slot="dropdown-menu-content"] [data-slot="dropdown-menu-item"]:has([data-slot="dropdown-menu-destructive-icon"])';
+      const measure = () => ev(`(() => { ${colorHelpers}
+        const item=${q(item)}, icon=item.querySelector('[data-slot="dropdown-menu-destructive-icon"]'), panel=${q('[data-slot="dropdown-menu-content"]')};
+        const own=rgb(getComputedStyle(item).backgroundColor), bg=own[3] === 0 ? rgb(getComputedStyle(panel).backgroundColor) : own;
+        const text=rgb(getComputedStyle(item).color), stroke=rgb(getComputedStyle(icon).stroke);
+        return { highlighted:item.hasAttribute('data-highlighted'), text, stroke, bg, text_contrast:contrast(text,bg), icon_contrast:contrast(stroke,bg) }; })()`);
+      const idle = await measure();
+      await ev(`${q(item)}.focus()`); await wait(`${q(item)}.hasAttribute('data-highlighted')`);
+      const highlighted = await measure();
+      for (const m of [idle, highlighted]) {
+        assert.ok(m.text_contrast >= 4.5 && m.icon_contrast >= 4.5, JSON.stringify(m));
+        assert.deepEqual(m.stroke, m.text, '아이콘은 글자와 같은 색');
+      }
+      assert.equal(idle.highlighted, false); assert.equal(highlighted.highlighted, true); assert.notDeepEqual(idle.bg, highlighted.bg);
+      await key('Escape',27); return { idle, highlighted };
+    });
     await check(`O4 아이콘 없는 메뉴 기존 여백 ${theme}`, async () => {
       await click('[data-probe="plain-menu"]'); await edge('[data-slot="dropdown-menu-content"]');
       const padding=await ev(`getComputedStyle(${q('[data-slot="dropdown-menu-item"]')}).paddingLeft`);

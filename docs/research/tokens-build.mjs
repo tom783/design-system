@@ -486,6 +486,16 @@ for (const theme of ['light', 'dark']) {
   }
 }
 
+// 메뉴의 파괴적 항목(DropdownMenuItem destructive) 글자·아이콘은 status-danger-fg 다.
+// 예전에는 채움색 action-danger-bg(danger-700)를 글자로 써서 다크 팝오버에서 2.73:1 이었다
+// (2026-11-22 화면 시안 실측). 평소 바탕(팝오버 = surface)과 하이라이트(accent = bg-hover)를 함께 본다.
+for (const theme of ['light', 'dark']) {
+  for (const [label, bg2] of [['팝오버', 'bg-surface'], ['하이라이트', 'bg-hover']]) {
+    check(`${theme} 메뉴 파괴적 항목 글자 on ${label}`,
+      contrast(resolveTok(SEMANTIC[theme]['status-danger-fg']), resolveTok(SEMANTIC[theme][bg2])), 4.5, 'text');
+  }
+}
+
 // 스켈레톤 대비. 양쪽 끝이 다 문제다 —
 //  · 너무 옅으면(바탕과 구별 안 되면) 아무것도 오지 않는 것처럼 보인다
 //  · 너무 진하면 실제 글자로 읽혀 사용자가 내용을 읽으려 한다

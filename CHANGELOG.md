@@ -54,6 +54,8 @@
 
 ### 고침
 
+- DropdownMenuItem `destructive`: 글자·삭제 아이콘 색을 채움용 `text-destructive`(danger-700 `#B42800`)에서 테마별 글자 토큰 `text-danger-ink`(`--status-danger-fg`)로 바꿨다. 다크 팝오버에서 2.73:1로 본문 하한 4.5:1에 못 미쳤다. 이제 라이트 6.47:1·하이라이트 5.51:1, 다크 7.63:1·하이라이트 6.79:1이다. 토큰 생성기에 메뉴 파괴적 항목 대비 4건, 레이어 하네스에 계산 색 대비 검사를 추가했다. 라이트 글자색은 같은 값이다.
+
 - 도그푸딩 5 보정(R38): PageHeader의 바깥 여백을 페이지의 gap 24px로 옮기고 기존 예시 간격을 보존했다. AppShell 내장 여백·필터 Select 폭 규칙을 안내한다. DataTable은 선택 기능 없이 선택 상태를 표시하지 않으며 부분 로드 내보내기를 짧은 버튼과 범위 안내로 나눈다. 추천은 떨어진 낱말과 검색 입력을 찾으며 전체 기존 질의의 1순위를 대조한다. 버전·공개 API·Select 기본 폭·카탈로그 상한은 유지한다.
 
 - Dialog·SheetContent `dismissible=false`: 확인 AlertDialog 를 형제로 두면 Escape·닫기 버튼 한 번에 `onDismissAttempt` 가 두 번 불렸다.

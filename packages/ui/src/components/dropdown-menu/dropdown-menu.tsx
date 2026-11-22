@@ -87,7 +87,10 @@ const DropdownMenuItem = React.forwardRef<
     className={cn(
       "relative flex cursor-default select-none items-center gap-2 rounded-[var(--radius-md)] pl-[var(--menu-item-inset,var(--space-8))] pr-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
       inset && "pl-8",
-      destructive && "text-destructive focus:text-destructive",
+      // 글자는 테마별 글자 토큰(status-danger-fg)을 쓴다. text-destructive 는 흰 라벨을 얹는
+      // 채움색(danger-700 #B42800)이라 다크 팝오버 바탕에서 2.73:1 로 본문 하한 4.5:1 에 못 미쳤다.
+      // 아이콘은 currentColor 라 같은 색을 따른다. 대비는 tokens-build 의 메뉴 검사가 막는다.
+      destructive && "text-danger-ink focus:text-danger-ink",
       className
     )}
     {...props}
