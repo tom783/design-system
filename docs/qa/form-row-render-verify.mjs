@@ -8,7 +8,7 @@ import { launchBrowser, storybook, CANVAS } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/form-row';
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9521, windowSize: '1440,900', outDir: OUT });
+const browser = await launchBrowser({ windowSize: '1440,900', outDir: OUT });
 const { ev, cdp, sleep } = browser;
 const { open } = storybook(browser);
 const results = [];

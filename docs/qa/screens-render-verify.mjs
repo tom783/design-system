@@ -1,13 +1,13 @@
 // 정식 Screens 스토리(주문 목록·주문 상세 D2·대시보드) 검증. 1440×900, 라이트·다크.
 // 2026-11-22 디자인 검토 확정안: 제목 display 34/40·700(T34), 상세 파괴적 액션 D2, 대시보드 타일 줄.
-// 실행: pnpm qa 또는 정적 Storybook 서버(:6099)에서 이 파일로 한다.
+// 실행: pnpm qa --only screens-render-verify (서버·출처 확인은 run-all 이 한다).
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchBrowser, storybook, CANVAS } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/screens';
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9520, windowSize: '1440,900', outDir: OUT });
+const browser = await launchBrowser({ windowSize: '1440,900', outDir: OUT });
 const { ev, cdp, sleep } = browser;
 const { open } = storybook(browser);
 const results = [];

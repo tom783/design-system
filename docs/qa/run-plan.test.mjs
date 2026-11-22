@@ -26,8 +26,11 @@ test('기준선: 45초 수정 뒤 리눅스 CI 실측(ci-734862c, 합계 384.7�
   assert.equal(BASE.get('mcp-client-verify'), 0.8);
 });
 
-test('기준선: 2샤드는 192.8 / 191.9초(DevOps 2샤드 계획의 전제)', () => {
-  assert.deepEqual(assignShards(NAMES, BASE, 2).map((s) => s.seconds), [192.8, 191.9]);
+test('기준선: 그 run 의 하네스 31개를 2샤드로 나누면 192.8 / 191.9초(DevOps 2샤드 계획의 전제)', () => {
+  // 지금 목록으로 나누면 기준선 뒤에 들어온 하네스(중간값으로 계산)가 섞인다. 전제는 기준선 집합으로 본다.
+  const measured = NAMES.filter((n) => BASE.has(n));
+  assert.equal(measured.length, 31);
+  assert.deepEqual(assignShards(measured, BASE, 2).map((s) => s.seconds), [192.8, 191.9]);
 });
 
 test('기준선: --timings 출력 모양({seconds})도 읽고, 이상한 값은 버린다', () => {
