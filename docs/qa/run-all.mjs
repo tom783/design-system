@@ -2,13 +2,31 @@
 //
 //   pnpm qa            (빌드는 미리 되어 있어야 한다 — pnpm build-storybook)
 //   pnpm qa --build    (빌드부터)
+//   pnpm qa --timings .qa-shots/timings.json   (하네스마다 초·결과)
+//
+// 하네스 목록·인자 해석은 run-plan.mjs 에 있다.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { performance } from 'node:perf_hooks';
 import { resolveHeadlessShell } from './browser.mjs';
+import { HARNESSES, USAGE, UsageError, harnessName, parseArgs } from './run-plan.mjs';
 
 const root = new URL('../..', import.meta.url).pathname;
 const PORT = 6099;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const t0 = performance.now(), startedAt = new Date();
+const secs = (ms) => Math.round(ms / 100) / 10;
+
+// 인자부터 본다. 틀린 인자로 서버를 띄우고 하네스를 돌기 시작하면 안 된다.
+let opts;
+try {
+  opts = parseArgs(process.argv.slice(2));
+} catch (e) {
+  if (!(e instanceof UsageError)) throw e;
+  console.error(`${e.message}\n\n${USAGE}`);
+  process.exit(2);
+}
 
 // 브라우저부터 확인한다. 없으면 7개를 다 돌려놓고 마지막에 실패하는 것보다 낫다.
 try {
@@ -18,7 +36,8 @@ try {
   process.exit(1);
 }
 
-if (process.argv.includes('--build') || !existsSync(`${root}storybook-static/index.json`)) {
+const tServer = performance.now();
+if (opts.build || !existsSync(`${root}storybook-static/index.json`)) {
   console.log('스토리북 빌드…');
   const b = spawnSync('pnpm', ['build-storybook', '--quiet'], { cwd: root, stdio: 'inherit' });
   if (b.status !== 0) process.exit(b.status ?? 1);
@@ -36,48 +55,22 @@ for (let i = 0; i < 60; i++) {
   await sleep(500);
 }
 if (!up) { stop(); console.error(`스토리북 서버가 ${PORT} 에 뜨지 않았습니다.`); process.exit(1); }
-
-const HARNESSES = [
-  ['steps-render-verify.mjs', '단계 표시·완료 이동·요약·폼 포커스'],
-  ['pack-verify.mjs', 'tarball 배포 리허설'],
-  ['render-verify.mjs', '기본 컴포넌트·테이블'],
-  ['charts-render-verify.mjs', '차트 로딩·오류'],
-  ['segmented-control-render-verify.mjs', '세그먼트·키보드·좁은 폭·대비'],
-  ['stat-tile-render-verify.mjs', 'KPI 값·증감·접근성·좁은 폭'],
-  ['dogfood3-render-verify.mjs', '필터 선택·기간 입력·중립 계열'],
-  ['loading-render-verify.mjs', '스켈레톤·진행률'],
-  ['state-render-verify.mjs', '상태·아바타·썸네일'],
-  ['guide-render-verify.mjs', 'Tooltip·Hint·Tour'],
-  ['form-render-verify.mjs', '폼·한글 IME'],
-  ['date-time-render-verify.mjs', '날짜+시각·직접 입력·분 칸·키보드'],
-  ['file-upload-render-verify.mjs', '파일 선택·검증·진행·미리보기·수명'],
-  ['combobox-render-verify.mjs', '검색 선택·한글 IME'],
-  ['multi-select-render-verify.mjs', '다중 선택·태그·키보드·IME'],
-  ['collapse-render-verify.mjs', '접고 펴기·글 넘침·내용 변화'],
-  ['media-viewer-render-verify.mjs', '미디어 팝업·플로팅·화면 속 화면'],
-  ['carousel-render-verify.mjs', '캐러셀·네이티브 스냅·자동 넘김 정지'],
-  ['pagination-render-verify.mjs', '페이지 이동·크기·포커스·표 조립'],
-  ['sheet-render-verify.mjs', '옆 패널·닫기 보호·서랍'],
-  ['app-shell-render-verify.mjs', '앱 셸·사이드 메뉴·페이지 머리'],
-  ['input-consistency-render-verify.mjs', '검색 아이콘·카드·선택 트리거·공개 유틸리티'],
-  ['input-render-verify.mjs', '입력 타입·Textarea·Radio·Switch'],
-  ['peek-render-verify.mjs', 'Peek·다녀온 행'],
-  ['mcp-client-verify.mjs', 'MCP 서버'],
-  ['list-screen-render-verify.mjs', '목록 필터·행 액션·알림'],
-  ['layer-detail-render-verify.mjs', '레이어 디테일·O1–O6 라이트·다크'],
-  ['design-detail-render-verify.mjs', '디자인 디테일·D1–D6'],
-  ['detail-render-verify.mjs', '상세 탭·경로·편집·삭제 확인'],
-  ['create-render-verify.mjs', '등록·Enter 계약·목록 왕복'],
-  ['docs-render-verify.mjs', '사용 문서·매니페스트 일치'],
-];
+const serverSeconds = secs(performance.now() - tServer);
 
 const failed = [];
+const timings = {};
 for (const [file, label] of HARNESSES) {
   process.stdout.write(`── ${label.padEnd(20)} `);
+  const t = performance.now();
   const out = spawnSync('node', [`docs/qa/${file}`, `.qa-shots/${file.replace('.mjs', '')}`],
     { cwd: root, encoding: 'utf8' });
+  const seconds = secs(performance.now() - t);
   const summary = (out.stdout ?? '').split('\n').reverse()
     .find((l) => l.includes('검사') && l.includes('통과')) ?? '';
+  timings[harnessName(file)] = {
+    seconds, status: out.status === 0 ? 'pass' : 'fail',
+    exitCode: out.status, signal: out.signal ?? null, summary: summary.trim() || null,
+  };
   if (out.status === 0) console.log(`✓ ${summary.trim()}`);
   else {
     console.log(`✗ ${summary.trim() || '실행 실패'}`);
@@ -86,9 +79,45 @@ for (const [file, label] of HARNESSES) {
 }
 stop();
 
+if (opts.timings) writeTimings(resolve(process.cwd(), opts.timings));
+
 if (failed.length) {
   for (const f of failed) console.log(`\n══ ${f.file} ══\n${f.tail}`);
   console.log(`\n${failed.length}개 하네스 실패`);
   process.exit(1);
 }
 console.log('\n전부 통과');
+
+// harnesses 맵은 기준선(timings/ci-*.json)과 같은 이름 키를 쓴다 — CI 에서 받은 것이 다음 기준선이 된다.
+function writeTimings(path) {
+  const git = (...args) => {
+    const r = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+    return r.status === 0 ? r.stdout.trim() : null;
+  };
+  const porcelain = git('status', '--porcelain');
+  const values = Object.values(timings);
+  const doc = {
+    version: 1,
+    source: {
+      kind: 'run-all',
+      sha: git('rev-parse', 'HEAD'),
+      dirty: porcelain === null ? null : porcelain.length > 0,
+      platform: `${process.platform}-${process.arch}`,
+      node: process.version,
+      ci: process.env.GITHUB_RUN_ID
+        ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+        : null,
+      startedAt: startedAt.toISOString(),
+      endedAt: new Date().toISOString(),
+    },
+    serverSeconds,
+    totalSeconds: Math.round(values.reduce((a, v) => a + v.seconds, 0) * 10) / 10,
+    wallSeconds: secs(performance.now() - t0),
+    passed: values.filter((v) => v.status === 'pass').length,
+    failed: values.filter((v) => v.status !== 'pass').length,
+    harnesses: timings,
+  };
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(doc, null, 2)}\n`);
+  console.log(`\n시간 기록: ${path} (하네스 ${values.length}개 · 합계 ${doc.totalSeconds}초)`);
+}
