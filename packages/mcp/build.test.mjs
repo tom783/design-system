@@ -96,10 +96,10 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R41: 카탈로그 83,668바이트 실측 + 232바이트 여유. 전송 상한 90KB는 유지한다.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 83_900);
-  // R41: 목록 19,309 + 191바이트, 최대 상세 DataTable 4,576 + 224바이트 여유.
-  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_500);
+  // R42: 카탈로그 86,203바이트 실측 + 297바이트 여유. 전송 상한 90KB는 유지한다.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 86_500);
+  // R42: 목록 19,506 + 244바이트, 최대 상세 DataTable 4,576 + 224바이트 여유.
+  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_750);
   assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);
 });
 test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
@@ -156,18 +156,19 @@ test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 �
   assert.deepEqual(button.extends, components.find((c) => c.name === 'Button').extends);
   assert.ok(manifest.components.every((c) => !Object.hasOwn(c, 'propNames')));
 });
-// 네 예산 모두 compact UTF-8 기준으로 정확한 경계와 +1바이트를 검사한다.
-test('크기 예산 네 개는 경계값을 허용하고 1바이트 초과를 차단', (t) => {
+// 다섯 응답 예산 모두 compact UTF-8 기준으로 정확한 경계와 +1바이트를 검사한다.
+test('크기 예산 다섯 개는 경계값을 허용하고 1바이트 초과를 차단', (t) => {
   t.mock.method(console, 'error', () => {});
   const fixture = () => {
     const resource = compactCatalog([{ name: '테스트', kind: 'component', purpose: '', source: 'packages/ui/src/test.tsx',
       props: [], extends: [], slots: [], import: "import { 테스트 } from '@s2life/ui';" }]);
-    return { resource, manifest: { ...resource, padding: '' } };
+    return { resource, manifest: { ...resource, tokens: [{}], principles: [{}] } };
   };
   const bytes = value => Buffer.byteLength(JSON.stringify(value));
   const scenarios = [
     [90_000, f => f.resource, f => f.resource, 'padding'],
-    [160_000, f => f.manifest, f => f.manifest, 'padding'],
+    [80_000, f => f.manifest.tokens, f => f.manifest.tokens[0], 'padding'],
+    [8_000, f => ({ rules: f.manifest.principles }), f => f.manifest.principles[0], 'padding'],
     [24_000, f => listComponents(f.manifest), f => f.manifest.components[0], 'purpose'],
     [6_000, f => getComponent(f.manifest, f.manifest.components[0]), f => f.manifest.components[0], 'detail'],
   ];
@@ -195,4 +196,22 @@ test('크기 예산 네 개는 경계값을 허용하고 1바이트 초과를 �
   f.resource.padding = f.resource.padding.slice(0, -2) + '가';
   assert.equal(bytes(f.resource), 90_001);
   assert.throws(() => assertSizeBudget(f.resource, f.manifest), /크기 예산 초과/);
+});
+
+test('전체 저장 크기는 응답 예산과 무관하며 토큰·규칙의 UTF-8 초과를 차단한다', t => {
+  t.mock.method(console, 'error', () => {});
+  const resource = compactCatalog([]);
+  const manifest = { ...resource, tokens: [], principles: [], padding: 'x'.repeat(160_001) };
+  assert.doesNotThrow(() => assertSizeBudget(resource, manifest));
+  const bytes = value => Buffer.byteLength(JSON.stringify(value));
+  for (const [key, limit, response] of [
+    ['tokens', 80_000, () => manifest.tokens],
+    ['principles', 8_000, () => ({ rules: manifest.principles })],
+  ]) {
+    manifest[key] = [{ text: '' }];
+    manifest[key][0].text = 'x'.repeat(limit - bytes(response()) - 2) + '가';
+    assert.equal(bytes(response()), limit + 1);
+    assert.throws(() => assertSizeBudget(resource, manifest), /크기 예산 초과/);
+    manifest[key] = [];
+  }
 });

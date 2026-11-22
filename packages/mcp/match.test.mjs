@@ -184,3 +184,9 @@ test('R38 기존 모든 keywords·useWhen·purpose의 1순위에 의도하지 �
   assert.equal(rows.length, 439);
   assert.deepEqual(rows.filter(row => row.after !== row.expected), []);
 });
+
+for (const query of ['보기 전환', '기간 단위', '일 주 월', '토글 그룹', '세그먼트', '차트 지표 전환']) {
+  test(`세그먼트 라우팅 1위: ${query}`, () => {
+    assert.equal(matchComponents(query, components)[0]?.name, 'SegmentedControl');
+  });
+}

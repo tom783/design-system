@@ -170,6 +170,26 @@ const t = async (name, args) => {
   check('모르는 도구는 JSON-RPC 에러 -32602', bad.error?.code === -32602, JSON.stringify(bad.error??bad.result).slice(0,100));
 }
 
+for (const query of ['보기 전환', '기간 단위', '일 주 월', '토글 그룹', '세그먼트', '차트 지표 전환']) {
+  const response = await t('which_component', { description: query });
+  check(`세그먼트 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'SegmentedControl');
+}
+{
+  const component = (await t('get_component', { name: 'SegmentedControl' })).structuredContent;
+  check('SegmentedControl은 options·제어·크기·이름·축약 규칙을 전달한다',
+    ['options', 'value', 'defaultValue', 'onValueChange', 'size', 'fullWidth', 'iconOnly', 'disabled'].every(name => component.props.some(p => p.name === name))
+    && component.rules.some(r => r.text.includes('aria-label')) && component.rules.some(r => r.text.includes('말줄임')));
+  for (const name of ['Tabs', 'RadioGroup']) {
+    const related = (await t('get_component', { name })).structuredContent;
+    check(`${name}와 세그먼트의 양방향 갈림길`, component.related.includes(name) && component.dont.some(s => s.includes(name))
+      && related.related.includes('SegmentedControl') && related.dont.some(s => s.includes('SegmentedControl')));
+  }
+  const tokens = (await call('resources/read', { uri: 'design://tokens' })).result.contents[0].text;
+  check('design://tokens 응답은 80,000바이트 이하', Buffer.byteLength(tokens) <= 80_000, `${Buffer.byteLength(tokens)}바이트`);
+  const rules = (await t('get_rules', {})).content[0].text;
+  check('get_rules 전체 응답은 8,000바이트 이하', Buffer.byteLength(rules) <= 8_000, `${Buffer.byteLength(rules)}바이트`);
+}
+
 for (const query of ['KPI', '지표', '대시보드 숫자', '요약 수치', '증감', '전일 대비']) {
   const response = await t('which_component', { description: query });
   check(`지표 타일 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'StatTile');

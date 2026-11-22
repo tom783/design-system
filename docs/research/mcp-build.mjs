@@ -199,7 +199,8 @@ export function assertSizeBudget(catalog, manifest) {
   const largest = details.reduce((max, item) => item[1] > max[1] ? item : max, ['없음', 0]);
   const sizes = [
     ['components (전송)', Buffer.byteLength(JSON.stringify(catalog)), 90_000],
-    ['전체 (전송)', Buffer.byteLength(JSON.stringify(manifest)), 160_000],
+    ['design://tokens (전송)', Buffer.byteLength(JSON.stringify(manifest.tokens)), 80_000],
+    ['get_rules 전체 (전송)', Buffer.byteLength(JSON.stringify({ rules: manifest.principles })), 8_000],
     ['list_components (전송)', Buffer.byteLength(JSON.stringify(listComponents(manifest))), 24_000],
     [`get_component 최대 ${largest[0]} (전송)`, largest[1], 6_000],
   ];

@@ -29,6 +29,17 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('SegmentedControl','navigation','화면 보기와 기간·지표 단위를 즉시 바꾸는 단일 선택이다.',
+    ['표·카드 보기 전환, 일·주·월 기간 단위, 차트 지표를 즉시 바꿀 때'],
+    ['패널 전환은 Tabs, 제출할 폼 값은 RadioGroup을 쓴다','다중 선택에는 쓰지 마라'],'17.7',[
+      '그룹에 aria-label 또는 보이는 라벨의 aria-labelledby를 준다. options의 value는 고유하고 label은 필수다.',
+      '항목은 value·label·선택 icon·disabled다. iconOnly에서도 label을 생략하지 않는다.',
+      'value·onValueChange는 제어형, defaultValue는 비제어형이다. 생략하면 첫 활성 항목이 선택된다.',
+      '화살표는 활성 항목을 순환하며 즉시 선택한다. Home·End는 처음·끝, Tab은 그룹에 한 번 도달한다.',
+      'size는 sm·md, fullWidth는 같은 폭으로 채운다. 좁으면 한 줄 말줄임하며 전체 라벨을 보존한다.'
+    ],['options','value','defaultValue','onValueChange','size','fullWidth','iconOnly','disabled','aria-label','aria-labelledby'],
+    ['segmented-control','segmented-control-item','segmented-control-icon','segmented-control-label'],
+    ['Tabs','RadioGroup'],['보기 전환','기간 단위','일 주 월','토글 그룹','세그먼트','차트 지표 전환']),
   entry('FileUpload','form','파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.',['CMS 대표 이미지·상품 이미지·엑셀 일괄 등록·첨부 파일을 고를 때'],['전송·재시도·취소는 앱이 맡는다','붙여넣기·폴더 업로드·이미지 편집에는 쓰지 마라'],'11.7',[
     'value·onValueChange에 항목 목록을 연결한다. 항목은 id·file과 선택 status·progress·error를 갖는다.',
     'status는 ready·uploading·success·error, progress는 0~1이다. error에는 실패 이유와 고치는 방법을 쓴다.',
@@ -111,10 +122,10 @@ const intents = [
     rule("선택 뒤에도 머문다. 앱이 닫거나 다음 입력으로 보내지 않는다.", "20.1"),
     rule("전체 해제·선택 개수를 중복 구현하지 않는다.", "20.1")
   ],['options','value','onValueChange','placeholder','summary','clearLabel','disabled','invalid','required','maxHeight'],['multi-select-trigger','multi-select-list','multi-select-option','multi-select-footer'],['Select','Combobox','Field'],['다중 선택','여러 개 선택','복수 선택','태그 선택','체크 목록','여러 사업장 고르기']),
-  entry("Tabs","navigation","상세 정보를 탭별 패널로 나눠 보여준다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라"],"16",[
+  entry("Tabs","navigation","상세 정보를 탭별 패널로 나눠 보여준다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라","화면 보기·기간 단위의 즉시 전환은 SegmentedControl을 쓴다"],"16",[
     rule("서버 데이터를 조회하는 패널에는 activationMode=manual을 준다.", "16.1"),
     rule("넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.", "16.1")
-  ],["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent"],["탭", "탭으로 나누기", "분류별 패널"]),
+  ],["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent", "SegmentedControl", "RadioGroup"],["탭", "탭으로 나누기", "분류별 패널"]),
   part("TabsList", "Tabs", "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.", ["aria-label"], ["tabs-list"]),
   part("TabsTrigger", "Tabs", "패널을 선택하는 탭 버튼이다.", ["value", "disabled"], ["tabs-trigger"]),
   part("TabsContent", "Tabs", "선택한 상세 패널을 표시한다.", ["value"], ["tabs-content"]),
@@ -213,11 +224,11 @@ const intents = [
     rule("autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.", "17.2"),
     rule("FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.", "17.2")
   ],['rows','autoGrow','maxHeight','invalid'],['textarea'],['Field','FormFlow','Input'],['여러 줄','메모','비고','긴 글']),
-  entry('RadioGroup','form','여러 선택지 중 하나만 선택한다.',['여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때'],["각 선택지에 연결된 레이블을 생략하지 마라"],'17',[
+  entry('RadioGroup','form','여러 선택지 중 하나만 선택한다.',['여러 옵션 중 하나만 선택하는 택일 항목을 모두 보여줄 때'],["각 선택지에 연결된 레이블을 생략하지 마라","제출값 없이 보기·필터 단위를 즉시 바꾸면 SegmentedControl, 패널 전환은 Tabs를 쓴다"],'17',[
     rule("묶음 제목: Field label. 항목은 Label htmlFor=RadioGroupItem id로 연결한다. aria-label·aria-labelledby 우선.", "17.3"),
     rule("화살표로 포커스와 선택을 함께 옮긴다.", "17.3"),
     rule("FormFlow 안 Enter는 다음 칸으로 이동한다. 별도 처리 금지.", "11.5")
-  ],['value','defaultValue','onValueChange','disabled'],['radio-group'],['RadioGroupItem','Label'],['라디오','하나만 선택','택일']),
+  ],['value','defaultValue','onValueChange','disabled'],['radio-group'],['RadioGroupItem','Label','SegmentedControl','Tabs'],['라디오','하나만 선택','택일']),
   part('RadioGroupItem','RadioGroup',"라디오 선택지 하나를 표시한다.",['value','disabled'],['radio-group-item','radio-group-indicator']),
   entry('Switch','form','켜기 끄기 설정을 즉시 적용한다.',['알림·자동 재고 차감처럼 저장 버튼 없이 즉시 적용할 때'],['주문 저장 대기 값에 Switch를 쓰지 마라','제출할 때 함께 적용하는 값은 Checkbox를 써라'],'17',[
     rule("Switch의 id에 Label htmlFor를 연결한다.", "17.4"),
