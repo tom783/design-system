@@ -122,6 +122,8 @@
 
 ### 문서
 
+- DESIGN.md에 2026-11-22 디자인 검토 문안을 넣었다: §6.1 선택·현재 표시 규칙 표, §6.2 상세 화면의 파괴적 액션(⋯ 더보기 안 삭제·확정 단계에서만 채운 danger), §11.9 폼 세로 리듬과 같은 줄 정렬(FormRow), §24.4 페이지 제목 34 단일, §25 문구(건/개·출시 예정·범위 오류·숫자 축약). 문안은 그대로 옮겼고 현 코드와 다른 곳은 고치지 않았다.
+
 - 앱의 Pretendard 설치·CSS import와 Next.js App Router·Vite 진입점 안내를 추가했다. 글꼴 파일은 앱이 호스팅하며, 배포 리허설이 기본·Tailwind 경로에서 실제 로드를 검사한다.
 - React 앱 설치 안내를 `npm install @s2life/ui pretendard`와 Pretendard·`@s2life/ui/styles.css` import 두 줄로 통일했다. 토큰 직접 접근도 ui 하위 경로를 사용하며, tokens는 ui가 같은 버전으로 고정해 가져온다.
   이전 "시작하기"가 안내하던 `import '@s2life/tokens/tokens.css'` 는 `styles.css` 와 중복이었고,
