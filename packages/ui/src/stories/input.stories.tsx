@@ -204,7 +204,7 @@ export const 검색툴바폭: Story = {
   name: '검색 — 툴바 한 줄 폭',
   parameters: { docs: { description: { story: '검색·비밀번호·앞 아이콘 Input 은 래퍼가 바깥 요소다. className 의 폭·배치 클래스(w-80·flex-1 등)는 래퍼에, 나머지는 input 에 붙는다. 그래서 감싸는 div 없이 `className="w-80"` 만으로 필터와 한 줄에 놓인다.' } } },
   render: () => <div data-probe="search-toolbar" className="flex flex-wrap items-center gap-2">
-    <Input type="search" aria-label="주문 검색" placeholder="주문번호·수취인·상품명 검색" className="w-80 text-right" />
+    <Input type="search" aria-label="주문 검색" placeholder="주문번호·수취인·상품명 검색" className="w-80 tabular" />
     <Select defaultValue="all"><SelectTrigger aria-label="주문 상태" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
       <SelectContent><SelectItem value="all">전체 상태</SelectItem><SelectItem value="ready">출고 대기</SelectItem></SelectContent></Select>
     <Select defaultValue="30d"><SelectTrigger aria-label="주문 기간" className="w-auto min-w-40"><SelectValue /></SelectTrigger>

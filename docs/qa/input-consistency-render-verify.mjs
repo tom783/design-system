@@ -109,9 +109,10 @@ try {
       const m = await ev(`(() => { const bar=${q('[data-probe="search-toolbar"]')}, control=bar.querySelector('[data-slot="input-control"]'), input=control.querySelector('input');
         const items=[...bar.children].map(el=>el.getBoundingClientRect());
         return { wrapperClass:control.className, inputClass:input.className, wrapperWidth:control.getBoundingClientRect().width, inputWidth:input.getBoundingClientRect().width,
-          tops:items.map(r=>Math.round(r.top)), align:getComputedStyle(input).textAlign, items:items.length }; })()`);
+          tops:items.map(r=>Math.round(r.top)), numeric:getComputedStyle(input).fontVariantNumeric, items:items.length }; })()`);
       assert.match(m.wrapperClass, /(^|\s)w-80(\s|$)/); assert.doesNotMatch(m.inputClass, /(^|\s)w-80(\s|$)/);
-      assert.match(m.inputClass, /text-right/); assert.equal(m.align, 'right');
+      // 폭이 아닌 입력칸 자체의 클래스(tabular)는 안쪽 input 에 남는다.
+      assert.match(m.inputClass, /(^|\s)tabular(\s|$)/); assert.match(m.numeric, /tabular-nums/);
       assert.equal(m.wrapperWidth, 320); assert.equal(m.inputWidth, 320); assert.equal(m.items, 3);
       assert.equal(new Set(m.tops).size, 1, JSON.stringify(m)); return m;
     });
