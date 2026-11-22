@@ -69,6 +69,6 @@ pnpm qa                     # 기존 QA + 배포 리허설
 
 JS는 기존 Vite 라이브러리 빌드로 ESM만 만들고, 기존 TypeScript로 `.d.ts`를 생성한다. 새 JS 빌드 도구 없이 현재 스택을 사용하며 React와 모든 런타임 의존성은 외부화한다. CSS 빌드에만 `@tailwindcss/cli`를 추가했다. `prepack`은 각 패키지를 다시 빌드하므로 낡은 산출물이 들어가지 않는다.
 
-`pnpm qa:pack`은 실행마다 새 임시 폴더에 tarball을 만들고 최소 앱을 구성한다(통과하면 지우고, 실패하면 경로를 알리고 남긴다). 경로를 고정하려면 `S2_PACK_DIR`, `S2_CONSUMER_DIR`를 준다. 미리보기 서버도 빈 포트를 쓴다. 헤드리스 브라우저는 기존 `docs/qa/browser.mjs`만 사용하며 없거나 실행할 수 없으면 렌더 검증 실패로 보고한다. npm 레지스트리 접근이 필요하다.
+`pnpm qa:pack`은 실행마다 새 임시 폴더에 tarball을 만들고 최소 앱을 구성한다(통과하면 지우고, 실패하면 경로를 알리고 남긴다). 경로를 고정하려면 `S2_PACK_DIR`, `S2_CONSUMER_DIR`를 준다. 미리보기 서버도 빈 포트를 쓴다. 소비 앱의 React는 기본으로 저장소와 같은 버전이고, `S2_PACK_REACT=19.0.0 pnpm qa:pack`처럼 정확한 버전을 주면 React·React DOM은 그 버전, `@types/react`·`@types/react-dom`은 같은 minor로 설치해 peer 하한을 확인한다. 어느 쪽이든 번들에 들어간 React 버전이 하나인지 검사한다. 헤드리스 브라우저는 기존 `docs/qa/browser.mjs`만 사용하며 없거나 실행할 수 없으면 렌더 검증 실패로 보고한다. npm 레지스트리 접근이 필요하다.
 
 `src/internal/`의 Radix 재export 모듈만 `@radix-ui/*`를 직접 참조한다. 컴포넌트 구현은 기존 위치를 유지하며 이 경계를 사용한다. MCP 생성기와 UI 빌드에서 경계 밖의 정적 import·재export·동적 import·require, JS에서의 CSS import를 차단한다.

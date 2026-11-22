@@ -49,14 +49,19 @@ for (const [i, name] of ['tokens', 'ui', 'mcp'].entries()) {
   tarballs.push(tarball);
 }
 const rootPkg = await json(join(root, 'package.json'));
+// peer 하한 확인용. 기본은 저장소 루트의 React 다. S2_PACK_REACT=19.0.0 이면 소비 앱이 그 React·React DOM 과
+// 같은 minor 의 @types 로 설치한다 — peer 범위를 넓히기 전에 가장 낮은 React 로 실제 렌더까지 돌려 보기 위해서다.
+const reactPin = process.env.S2_PACK_REACT;
+if (reactPin !== undefined) assert.match(reactPin, /^\d+\.\d+\.\d+$/, 'S2_PACK_REACT 는 정확한 버전(예: 19.0.0)이어야 한다');
+const reactTypes = (name) => reactPin ? `~${reactPin.split('.').slice(0, 2).join('.')}.0` : rootPkg.devDependencies[name];
 await save(join(consumer, 'package.json'), {
   name: 's2life-pack-consumer', private: true, type: 'module',
   // 앱은 안내대로 ui와 pretendard를 설치한다. MCP는 npx 검사, tokens는 ui의 전이 의존성이다.
   dependencies: Object.fromEntries(packages.map((p, i) => [p.name, `file:${tarballs[i]}`]).filter(([name]) => name !== '@s2life/tokens').concat([
-    ['react', rootPkg.dependencies.react], ['react-dom', rootPkg.dependencies['react-dom']],
+    ['react', reactPin ?? rootPkg.dependencies.react], ['react-dom', reactPin ?? rootPkg.dependencies['react-dom']],
     ['pretendard', rootPkg.devDependencies.pretendard],
   ])),
-  devDependencies: Object.fromEntries(['vite', 'typescript', '@types/react', '@types/react-dom'].map((name) => [name, rootPkg.devDependencies[name]])),
+  devDependencies: Object.fromEntries(['vite', 'typescript', '@types/react', '@types/react-dom'].map((name) => [name, name.startsWith('@types/') ? reactTypes(name) : rootPkg.devDependencies[name]])),
   // ui 가 의존하는 @s2life/tokens 는 격리 설치에서 레지스트리를 보므로
   // 아직 게시되지 않은 버전(배포 준비 중)에서
   // 리허설이 깨진다 — 정작 가장 필요한 순간이다. 트리 전체를 로컬 tarball 로 묶는다.
@@ -92,6 +97,18 @@ run('node', ['--input-type=module', '-e', `import assert from 'node:assert/stric
 run('npx', ['--no-install', 'tsc', '--noEmit', '--strict', '-p', 'tsconfig.json'], consumer);
 run('node', ['--input-type=module', '-e', `import assert from 'node:assert/strict'; import {Button,DataTable,Select} from '@s2life/ui'; assert(Button&&DataTable&&Select); assert.throws(()=>import.meta.resolve('@s2life/ui/internal'),{code:'ERR_PACKAGE_PATH_NOT_EXPORTED'});`], consumer);
 run('npx', ['--no-install', 'vite', 'build'], consumer);
+// 설치 버전만 보면 ui 쪽에 다른 React 가 따로 깔려도 모른다. 번들에 실제로 들어간 React 버전이 하나인지 본다.
+const reactVersion = (await json(join(consumer, 'node_modules/react/package.json'))).version;
+assert.equal((await json(join(consumer, 'node_modules/react-dom/package.json'))).version, reactVersion, 'react·react-dom 버전이 같아야 한다');
+if (reactPin) assert.equal(reactVersion, reactPin, 'S2_PACK_REACT 로 지정한 React 가 설치되어야 한다');
+const bundled = new Set();
+for (const file of await readdir(join(consumer, 'dist/assets'))) {
+  if (!file.endsWith('.js')) continue;
+  // 축소기가 문자열을 따옴표 대신 백틱으로 쓴다(실측: e.version=`19.0.0`).
+  for (const match of (await readFile(join(consumer, 'dist/assets', file), 'utf8')).matchAll(/\.version\s*=\s*["'`](\d+\.\d+\.\d+)["'`]/g)) bundled.add(match[1]);
+}
+assert.deepEqual([...bundled], [reactVersion], `번들 안 React 버전이 ${reactVersion} 하나여야 한다`);
+console.log(`소비 앱 React ${reactVersion}${reactPin ? ' (S2_PACK_REACT)' : ''} · 번들 안 React 버전 ${[...bundled].join(', ')}`);
 const installed = join(consumer, 'node_modules/@s2life');
 await access(join(installed, 'mcp/server.mjs'), constants.X_OK);
 assert((await readFile(join(installed, 'mcp/server.mjs'), 'utf8')).startsWith('#!/usr/bin/env node\n'));
@@ -239,6 +256,6 @@ if (!process.exitCode) {
     assert.deepEqual(browser.errors(), []);
     await browser.shot('consumer-tailwind');
 
-    console.log('배포 리허설 검사 전부 통과: 타입·ESM·CSS·MCP·기본/Tailwind 앱 실제 렌더·Pretendard 로드');
+    console.log(`배포 리허설 검사 전부 통과(React ${reactVersion}): 타입·ESM·CSS·MCP·기본/Tailwind 앱 실제 렌더·Pretendard 로드`);
   } finally { browser?.close(); server.kill(); }
 }
