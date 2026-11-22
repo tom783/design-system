@@ -145,6 +145,27 @@ export function normalizeTokens(data) {
   return tokens;
 }
 
+// DESIGN.md 의 번호 붙은 제목(## 12. · ### 12.2 · #### 13.3.1)을 모은다. 규칙 출처가
+// "DESIGN.md 11.4" 처럼 절 번호를 가리키므로 **같은 번호가 두 번 나오면 출처가 모호해진다.**
+// 실제로 R32(791772f)가 §12.2~§16.4.1 을 통째로 한 번 더 넣었고, 두 사본의 내용이 달랐는데도
+// 아무 검사도 잡지 못했다(R43b 까지 11커밋). 중복이면 줄 번호와 함께 실패한다.
+// 펜스 코드 블록 안의 줄은 제목이 아니다.
+export function designSections(markdown) {
+  const seen = new Map();
+  let fence = null;
+  markdown.split('\n').forEach((line, index) => {
+    const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+    if (marker && (!fence || (marker[0] === fence[0] && marker.length >= fence.length))) { fence = fence ? null : marker; return; }
+    if (fence) return;
+    const number = /^#{2,6}\s+(\d+(?:\.\d+)*)(?:\.|\s)/.exec(line)?.[1];
+    if (number) seen.set(number, [...(seen.get(number) ?? []), index + 1]);
+  });
+  const duplicates = [...seen].filter(([, lines]) => lines.length > 1);
+  if (duplicates.length) throw new Error(`DESIGN.md 절 번호 중복 ${duplicates.length}개 — 규칙 출처가 모호해진다:\n${
+    duplicates.map(([number, lines]) => `  §${number}: ${lines.join('·')}행`).join('\n')}`);
+  return new Set(seen.keys());
+}
+
 export function validate({ components, intents, sections, tokens, expectedNames, principles, bridgeTargets = [] }) {
   const errors = checkConsumerGuidance(intents).map(error => `[8 guidance] ${JSON.stringify(error)}`);
   const names = new Set(intents.map((item) => item.name));
@@ -277,7 +298,7 @@ export async function build() {
     // SVG·링·테두리도 같은 별칭을 쓸 수 있다. 역할을 소비자가 선택한다.
     token.tailwindAliases = { color: alias, examples: [`bg-${alias}`, `text-${alias}`, `border-${alias}`, `fill-${alias}`, `stroke-${alias}`] };
   }
-  const sections = new Set([...design.matchAll(/^#{2,6}\s+(\d+(?:\.\d+)*)(?:\.|\s)/gm)].map((m) => m[1]));
+  const sections = designSections(design);
   const errors = validate({ components, intents, sections, tokens, expectedNames: new Set(normalizeTokens(data).map((t) => t.name)), principles, bridgeTargets: mappings.map((m) => m[2]) });
   if (errors.length) throw new Error(`MCP 생성 검증 실패:\n${errors.join('\n')}`);
   const catalog = intents.map(({ props: _props, slots: _slots, ...intent }) => {

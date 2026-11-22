@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog } from '../../docs/research/mcp-build.mjs';
+import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog, designSections } from '../../docs/research/mcp-build.mjs';
 import { restoreComponent, listComponents, getComponent } from './catalog.mjs';
 import intents, { principles } from '../../docs/research/component-intent.mjs';
 const data = JSON.parse(await readFile(new URL('../../docs/research/tokens.json', import.meta.url), 'utf8'));
 const design = await readFile(new URL('../../DESIGN.md', import.meta.url), 'utf8');
 const components = extractComponents();
 const tokens = normalizeTokens(data);
-const sections = new Set([...design.matchAll(/^#{2,6}\s+(\d+(?:\.\d+)*)(?:\.|\s)/gm)].map((m) => m[1]));
+const sections = designSections(design);
 const fixture = () => ({ components: structuredClone(components), intents: structuredClone(intents), sections: new Set(sections), tokens: structuredClone(tokens), expectedNames: new Set(tokens.map((t) => t.name)), principles: structuredClone(principles) });
 const expectGate = (number, change) => { const input = fixture(); change(input); assert.ok(validate(input).some((message) => message.startsWith(`[${number} `))); };
 test('실제 공개 export·상속 props·export *·슬롯을 추출하고 메타데이터와 일치', () => {
@@ -216,4 +216,23 @@ test('전체 저장 크기는 응답 예산과 무관하며 토큰·규칙의 UT
     assert.throws(() => assertSizeBudget(resource, manifest), /크기 예산 초과/);
     manifest[key] = [];
   }
+});
+
+test('DESIGN.md 절 번호는 유일하다 — 실제 문서', () => {
+  const headings = [...design.matchAll(/^#{2,6}\s+(\d+(?:\.\d+)*)(?:\.|\s)/gm)].map((m) => m[1]);
+  assert.equal(sections.size, headings.length);
+  for (const number of ['12.2', '13.3.1', '15.9.1', '16.4.1']) assert.ok(sections.has(number), number);
+});
+test('DESIGN.md 절 번호가 두 번 나오면 줄 번호와 함께 실패한다', () => {
+  const doc = ['# 제목', '## 12. 요약', '### 12.1 가', '### 12.2 나', '본문', '### 12.2 나', '#### 13.3.1 다', '#### 13.3.1 다'].join('\n');
+  assert.throws(() => designSections(doc), (error) => {
+    assert.match(error.message, /절 번호 중복 2개/);
+    assert.match(error.message, /§12\.2: 4·6행/);
+    assert.match(error.message, /§13\.3\.1: 7·8행/);
+    return true;
+  });
+});
+test('DESIGN.md 절 번호 — 펜스 코드 안의 줄과 번호 없는 제목은 세지 않는다', () => {
+  const doc = ['## 1. 원칙', '```md', '## 1. 예시 속 제목', '```', '~~~', '### 1.1 예시', '~~~', '## 부록', '## 부록', '### 1.1 실제'].join('\n');
+  assert.deepEqual([...designSections(doc)], ['1', '1.1']);
 });
