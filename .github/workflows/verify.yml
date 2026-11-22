@@ -1,5 +1,5 @@
 # 검증 게이트. 로직은 전부 `pnpm gate` 안에 있고 그건 로컬에서 돌려 확인한 것이다
-# (147초, exit 0). 이 파일은 그걸 부르는 껍데기라 일부러 얇게 뒀다.
+# (당시 147초, exit 0). 이 파일은 그걸 부르는 껍데기라 일부러 얇게 뒀다.
 #
 # pre-commit 은 빠른 것만(약 1.5초), pre-push 는 전체를 돌린다 — .githooks/ 참고.
 # 여기는 --no-verify 로 건너뛴 푸시를 받아내는 마지막 그물이다.
@@ -13,7 +13,9 @@ on:
 jobs:
   gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 임시 상향(20→45분). 마지막 녹색 실행이 13.5~14.8분이었고 그 뒤 하네스가 10개 넘게
+    # 늘어 로컬 pnpm gate 가 약 25분이다. 샤딩·병렬화는 후속 작업에서 줄인다.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 

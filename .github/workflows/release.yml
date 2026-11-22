@@ -36,7 +36,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # 임시 상향(25→60분). pnpm gate 가 약 25분으로 늘었다(verify.yml 과 같은 이유) —
+    # 여기에 설치·배포 단계가 더해진다. 샤딩·병렬화는 후속 작업에서 줄인다.
+    timeout-minutes: 60
     # 필수 검토자를 걸어두면 여기서 사람 승인을 기다린다.
     # Settings → Environments → npm-publish → Required reviewers
     environment: npm-publish
