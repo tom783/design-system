@@ -304,7 +304,7 @@
     --status-info-bg          : var(--color-info-950)             ;  /* 안내 배경 */
     --status-info-fg          : var(--color-info-400)             ;  /* 안내 글자·아이콘 */
     --status-neutral-fg       : var(--color-neutral-200)          ;  /* 중립 상태 글자·아이콘·차트 계열 */
-    --status-neutral-bg       : #060505                           ;  /* 중립 상태 바탕. 기존 bg-sunken과 같은 값 */
+    --status-neutral-bg       : var(--color-neutral-950)          ;  /* 중립 상태 바탕. 다른 톤처럼 표면보다 한 단계 밝은 950 틴트 */
     --chart-grid              : var(--color-neutral-900)          ;  /* 격자선 */
     --chart-axis              : var(--color-neutral-600)          ;  /* 축선·눈금 레이블 */
     --chart-line              : var(--color-brand-500)            ;  /* 주 데이터 선·막대. 어두운 바탕에서 한 단계 밝게 */
@@ -361,7 +361,7 @@
     --status-info-bg          : var(--color-info-950)             ;  /* 안내 배경 */
     --status-info-fg          : var(--color-info-400)             ;  /* 안내 글자·아이콘 */
     --status-neutral-fg       : var(--color-neutral-200)          ;  /* 중립 상태 글자·아이콘·차트 계열 */
-    --status-neutral-bg       : #060505                           ;  /* 중립 상태 바탕. 기존 bg-sunken과 같은 값 */
+    --status-neutral-bg       : var(--color-neutral-950)          ;  /* 중립 상태 바탕. 다른 톤처럼 표면보다 한 단계 밝은 950 틴트 */
     --chart-grid              : var(--color-neutral-900)          ;  /* 격자선 */
     --chart-axis              : var(--color-neutral-600)          ;  /* 축선·눈금 레이블 */
     --chart-line              : var(--color-brand-500)            ;  /* 주 데이터 선·막대. 어두운 바탕에서 한 단계 밝게 */

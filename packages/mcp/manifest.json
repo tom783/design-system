@@ -2207,8 +2207,8 @@
         "ref": "neutral-100"
       },
       "dark": {
-        "value": "#060505",
-        "ref": "#060505"
+        "value": "#262222",
+        "ref": "neutral-950"
       },
       "tailwind": [
         "bg-neutral-tint"

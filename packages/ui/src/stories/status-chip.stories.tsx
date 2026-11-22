@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StatusChip } from '../components/status-chip';
+import { DataTable, createDataTableColumnHelper } from '../index';
 
 const meta = {
   tags: ['autodocs'],
@@ -35,6 +36,27 @@ export const 주문상태: Story = {
       <StatusChip tone="neutral">미결제</StatusChip>
     </div>
   ),
+};
+
+type Order = { id: string; product: string; status: string; tone: 'info' | 'warning' | 'success' | 'danger' | 'neutral' };
+const orders: Order[] = [
+  { id: 'ORD-20261114-001', product: '무선 바코드 스캐너', status: '결제완료', tone: 'info' },
+  { id: 'ORD-20261114-002', product: '업무용 라벨 프린터', status: '상품준비중', tone: 'warning' },
+  { id: 'ORD-20261114-003', product: '접이식 운반 카트', status: '배송중', tone: 'success' },
+  { id: 'ORD-20261114-004', product: '포장 테이프 50개입', status: '반품요청', tone: 'danger' },
+  { id: 'ORD-20261114-005', product: '산업용 태블릿 거치대', status: '미결제', tone: 'neutral' },
+  { id: 'ORD-20261114-006', product: '완충 에어캡 롤', status: '판매중지', tone: 'neutral' },
+];
+const order = createDataTableColumnHelper<Order>();
+const orderColumns = order.columns([
+  order.accessor('id', { header: '주문번호' }),
+  order.accessor('product', { header: '상품' }),
+  order.accessor('status', { header: '상태', cell: cell => <StatusChip tone={cell.row.original.tone}>{cell.getValue()}</StatusChip> }),
+]);
+// 중립 칩은 목록 표 안에서 다른 톤과 나란히 보일 때 무게가 드러난다. 칩만 늘어놓으면 표면·행 사이의 관계가 보이지 않는다.
+export const 목록표: Story = {
+  name: '목록 표 — 다섯 톤',
+  render: () => <DataTable data={orders} columns={orderColumns} getRowId={row => row.id} caption="주문 상태 목록" />,
 };
 
 export const 긴라벨: Story = {

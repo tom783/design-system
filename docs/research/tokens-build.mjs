@@ -246,7 +246,10 @@ const SEMANTIC = {
     'status-info-bg':     ['info',   950, '안내 배경'],
     'status-info-fg':     ['info',   400, '안내 글자·아이콘'],
     'status-neutral-fg':  ['neutral',200, '중립 상태 글자·아이콘·차트 계열'],
-    'status-neutral-bg':  ['#060505',null, '중립 상태 바탕. 기존 bg-sunken과 같은 값'],
+    // 예전 값 #060505(bg-sunken)는 표면보다 어두워(표면 대비 0.87) 칩이 구멍처럼 보였고, 글자 대비 14.99 로
+    // 다른 톤(6.97~7.26)보다 훨씬 높아 중립 칩이 오히려 가장 눈에 띄었다. 다른 톤과 같은 950 단계로 맞춘다
+    // — 표면보다 1.12 밝고(다른 톤 1.09~1.16) 글자 대비는 11.59. 글자색(200)은 차트 계열과 함께 쓰므로 두었다.
+    'status-neutral-bg':  ['neutral',950, '중립 상태 바탕. 다른 톤처럼 표면보다 한 단계 밝은 950 틴트'],
     // 차트 (다크) — 격자·축은 밝게 올리고, 목표선은 바탕과 반대로 밝은 쪽으로 간다.
     'chart-grid':         ['neutral', 900, '격자선'],
     'chart-axis':         ['neutral', 600, '축선·눈금 레이블'],
@@ -390,6 +393,10 @@ check('dark white on action-danger',  contrast('#FFFFFF', resolveTok(S.dark['act
 for (const k of ['danger', 'warning', 'success', 'info', 'neutral']) {
   check(`dark status-${k} fg on bg`, contrast(resolveTok(S.dark[`status-${k}-fg`]), resolveTok(S.dark[`status-${k}-bg`])), 4.5, 'text');
   check(`dark status-${k} fg on surface`, contrast(resolveTok(S.dark[`status-${k}-fg`]), Dbg), 4.5, 'text');
+  // 다크 상태 틴트는 표면 위로 살짝 떠야 한다. 표면보다 어두우면 칩이 구멍처럼 보인다
+  // (neutral 이 #060505 였을 때 0.87). 방향을 가진 비율로 본다 — 다른 톤 실측 1.10~1.16.
+  const tint = relLum(hexToRgb(resolveTok(S.dark[`status-${k}-bg`]))), surface = relLum(hexToRgb(Dbg));
+  check(`dark status-${k} bg가 표면보다 밝다`, (tint + 0.05) / (surface + 0.05), 1.05, 'ratio');
 }
 
 // 채움 버튼의 윤곽 대비. 다크 바탕에서 어두운 채움색이 바탕에 묻히는 것을
