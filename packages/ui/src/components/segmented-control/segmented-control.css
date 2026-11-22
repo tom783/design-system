@@ -8,10 +8,12 @@
   .ds-segmented-control[data-full-width] { display: flex; width: 100%; }
   .ds-segmented-control [data-slot="segmented-control-item"] {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--space-4);
-    flex: 1 1 0; min-width: 0; padding-inline: var(--space-12); border: 1px solid transparent;
+    /* 내용 폭을 기본으로 잡아 inline-flex 그룹이 여유 공간에서도 라벨을 줄이지 않게 한다. */
+    flex: 0 1 auto; min-width: 0; padding-inline: var(--space-12); border: 1px solid transparent;
     border-radius: var(--radius-sm); background: transparent; color: inherit;
     font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); font-weight: 400; cursor: pointer;
   }
+  .ds-segmented-control[data-full-width] [data-slot="segmented-control-item"] { flex: 1 1 0; }
   .ds-segmented-control [data-slot="segmented-control-item"]:hover:not(:disabled) { background: var(--bg-hover); }
   /* 선택 칸은 경계와 굵기로 구분한다. 평면 요소이므로 그림자를 추가하지 않는다. */
   .ds-segmented-control [aria-checked="true"] {

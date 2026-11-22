@@ -140,6 +140,31 @@ try {
     await ev(`${all(item)}[1].click()`); await selected('카드 보기');
     assert.equal(await ev(`document.querySelector('table[aria-label="주문 목록"]')===null && document.querySelectorAll('ul[aria-label="주문 목록"] > li').length===2`),true);
   });
+  await check('900px 기본·아이콘라벨·보기전환·다크에서 라벨 잘림 0·그룹 내용 폭 보장', async () => {
+    await cdp('Emulation.setDeviceMetricsOverride', { width: 900, height: 1000, deviceScaleFactor: 1, mobile: false });
+    try {
+      for (const name of ['기본','아이콘라벨','보기전환','다크']) {
+        await story(name);
+        const groups = await ev(`${all(group)}.map(g => ({width:g.getBoundingClientRect().width,items:[...g.children].map(n => {
+          const l=n.querySelector('[data-slot="segmented-control-label"]'),icon=n.querySelector('[data-slot="segmented-control-icon"]'),s=getComputedStyle(n);
+          // 라벨의 자연 폭을 재야 이미 줄어든 항목 폭의 합으로 결함을 놓치지 않는다.
+          const range=document.createRange();range.selectNodeContents(l);
+          const contentWidth=range.getBoundingClientRect().width+(icon ? icon.getBoundingClientRect().width+parseFloat(s.columnGap) : 0)
+            +parseFloat(s.paddingLeft)+parseFloat(s.paddingRight)+parseFloat(s.borderLeftWidth)+parseFloat(s.borderRightWidth);
+          return {text:l.textContent,width:l.clientWidth,scroll:l.scrollWidth,contentWidth};
+        })}))`);
+        assert.ok(groups.length>0, name);
+        for (const g of groups) {
+          assert.ok(g.items.length>0, name);
+          for (const i of g.items) assert.ok(i.scroll<=i.width, `${name}: ${JSON.stringify(i)}`);
+          assert.ok(g.width>=g.items.reduce((sum,i)=>sum+i.contentWidth,0), `${name}: ${JSON.stringify(g)}`);
+        }
+        measurements.push({ story:name, viewport:900, groups });
+      }
+    } finally {
+      await cdp('Emulation.clearDeviceMetricsOverride');
+    }
+  });
   await check('다크·Primary 렌더와 전 경로 콘솔 오류 0', async () => {
     await story('다크'); await wait("document.documentElement.dataset.theme==='dark'"); await browser.shot('dark');
     await story('사용법'); assert.equal(await ev(`${all(group)}.length`),1);
