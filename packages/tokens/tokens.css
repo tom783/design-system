@@ -125,7 +125,7 @@
     --border-subtle           : var(--color-neutral-200)          ;  /* 장식적 분리선. 대비 요구 없음 */
     --border-default          : var(--color-neutral-300)          ;  /* 카드·패널 윤곽 */
     --border-input            : var(--color-neutral-600)          ;  /* 입력 가능함을 알리는 경계. WCAG 1.4.11 로 3:1 필수 */
-    --border-focus            : var(--color-brand-600)            ;  /* 키보드 포커스 링. 2px + offset 2px */
+    --border-focus            : var(--color-neutral-950)          ;  /* 키보드 포커스 링. 2px + offset 2px · 중립 고대비 */
     --action-primary-bg       : var(--color-brand-600)            ;  /* 주요 버튼 바탕 */
     --action-primary-bg-hover : var(--color-brand-700)            ;  /* 주요 버튼 호버. 밝게가 아니라 어둡게 간다 */
     --action-danger-bg        : var(--color-danger-700)           ;  /* 삭제·반품 확정 등 파괴적 버튼 */
@@ -288,7 +288,7 @@
     --border-subtle           : var(--color-neutral-900)          ;  /* 장식적 분리선 */
     --border-default          : var(--color-neutral-800)          ;  /* 카드·패널 윤곽 */
     --border-input            : var(--color-neutral-600)          ;  /* 입력 경계. 3:1 필수 */
-    --border-focus            : var(--color-brand-400)            ;  /* 키보드 포커스 링 */
+    --border-focus            : var(--color-neutral-50)           ;  /* 키보드 포커스 링 · 중립 고대비 */
     --action-primary-bg       : var(--color-brand-600)            ;  /* 주요 버튼 바탕 */
     --action-primary-bg-hover : var(--color-brand-700)            ;  /* 주요 버튼 호버. 밝게가 아니라 어둡게 간다 */
     --action-danger-bg        : var(--color-danger-700)           ;  /* 파괴적 버튼 */
@@ -345,7 +345,7 @@
     --border-subtle           : var(--color-neutral-900)          ;  /* 장식적 분리선 */
     --border-default          : var(--color-neutral-800)          ;  /* 카드·패널 윤곽 */
     --border-input            : var(--color-neutral-600)          ;  /* 입력 경계. 3:1 필수 */
-    --border-focus            : var(--color-brand-400)            ;  /* 키보드 포커스 링 */
+    --border-focus            : var(--color-neutral-50)           ;  /* 키보드 포커스 링 · 중립 고대비 */
     --action-primary-bg       : var(--color-brand-600)            ;  /* 주요 버튼 바탕 */
     --action-primary-bg-hover : var(--color-brand-700)            ;  /* 주요 버튼 호버. 밝게가 아니라 어둡게 간다 */
     --action-danger-bg        : var(--color-danger-700)           ;  /* 파괴적 버튼 */

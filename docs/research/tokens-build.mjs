@@ -147,7 +147,11 @@ const SEMANTIC = {
     'border-subtle':    ['neutral', 200, '장식적 분리선. 대비 요구 없음'],
     'border-default':   ['neutral', 300, '카드·패널 윤곽'],
     'border-input':     ['neutral', 600, '입력 가능함을 알리는 경계. WCAG 1.4.11 로 3:1 필수'],
-    'border-focus':     ['brand',   600, '키보드 포커스 링. 2px + offset 2px'],
+    // R01 일부 변경(오너, 2026-11-22): 포커스 링은 브랜드가 아니라 중립 고대비다.
+    // 크림슨 링은 브랜드 채움·오류 빨강과 겹쳐 읽혔다(다크에서 brand-400 #FF8394 와
+    // 오류 글자 #FF896E 가 ΔE76 22.6). 본문색과 같은 neutral-950 으로 두면 오류와
+    // ΔE76 78.3 으로 벌어지고, 바탕 14.58:1·표면 15.74:1 로 어떤 면 위에서도 보인다.
+    'border-focus':     ['neutral', 950, '키보드 포커스 링. 2px + offset 2px · 중립 고대비'],
     // 액션
     'action-primary-bg':      ['brand', 600, '주요 버튼 바탕'],
     'action-primary-bg-hover':['brand', 700, '주요 버튼 호버. 밝게가 아니라 어둡게 간다'],
@@ -220,7 +224,8 @@ const SEMANTIC = {
     'border-subtle':    ['neutral', 900, '장식적 분리선'],
     'border-default':   ['neutral', 800, '카드·패널 윤곽'],
     'border-input':     ['neutral', 600, '입력 경계. 3:1 필수'],
-    'border-focus':     ['brand',   400, '키보드 포커스 링'],
+    // 다크 본문색과 같은 neutral-50. 바탕 18.33:1·표면 16.39:1, 오류 글자와 ΔE76 60.6.
+    'border-focus':     ['neutral', 50,  '키보드 포커스 링 · 중립 고대비'],
     // 액션 채움색은 라이트와 동일하게 유지한다. 다크에서 밝은 단계로 올리면
     // 흰 라벨 대비가 4.5:1 아래로 떨어지고, 브랜드와 에러의 ΔE 도 함께 줄어든다.
     // 대신 아래 경계 토큰으로 버튼 윤곽의 3:1 을 따로 보장한다.
@@ -506,6 +511,12 @@ const themeIssues = [
   ...lightOnly.map((k) => `라이트에만 정의됨 (다크에서 라이트 값 잔류): --${k}`),
 ];
 
+// 의미 토큰 → 원시 단계(lab 포함). ΔE 는 원시 단계의 OKLab 좌표로 잰다.
+const semPrim = (theme, tok) => {
+  const [ref, step] = S[theme][tok];
+  if (ref.startsWith('#')) throw new Error(`ΔE 검사는 원시 단계를 참조하는 토큰만 받는다: ${theme} ${tok} = ${ref}`);
+  return P[ref][step];
+};
 // ΔE — 의미 분리 검증. 실제로 쓰이는 단계끼리 비교해야 의미가 있다.
 // 라이트와 다크가 같은 채움색을 쓰므로 액션 분리는 한 번만 검증하면 된다.
 const dePairs = [
@@ -519,6 +530,11 @@ const dePairs = [
   // 링크를 info 블루로 분리한 효과 검증. 브랜드 레드였다면 ΔE 6 대였다.
   ['링크 글자 vs 에러 글자 (라이트)', P.info[700],   P.danger[700],  10],
   ['링크 글자 vs 에러 글자 (다크)',   P.info[300],   P.danger[400],  10],
+  // 포커스 링이 오류 테두리(border-danger-ink)와 함께 그려져도 "오류 강조"로 읽히지 않아야 한다.
+  // 원시 단계가 아니라 의미 토큰이 실제로 가리키는 색을 비교한다 — 토큰을 크림슨으로
+  // 되돌리면 다크(brand-400 vs danger-400 ΔE 5.4)에서 이 검사가 깨진다(R01 일부 변경, 2026-11-22).
+  ['포커스 링 vs 에러 글자 (라이트)', semPrim('light', 'border-focus'), semPrim('light', 'status-danger-fg'), 10],
+  ['포커스 링 vs 에러 글자 (다크)',   semPrim('dark', 'border-focus'),  semPrim('dark', 'status-danger-fg'),  10],
 ];
 const deResults = dePairs.map(([label, a, b, min]) => {
   const v = deltaE(a.lab, b.lab);

@@ -1766,14 +1766,14 @@
       "name": "border-focus",
       "cssVariable": "--border-focus",
       "category": "semantic",
-      "purpose": "키보드 포커스 링. 2px + offset 2px",
+      "purpose": "키보드 포커스 링. 2px + offset 2px · 중립 고대비",
       "light": {
-        "value": "#D33E58",
-        "ref": "brand-600"
+        "value": "#262222",
+        "ref": "neutral-950"
       },
       "dark": {
-        "value": "#FF8394",
-        "ref": "brand-400"
+        "value": "#F7F6F5",
+        "ref": "neutral-50"
       },
       "tailwind": [
         "outline-focus",

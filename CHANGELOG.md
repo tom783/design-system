@@ -37,6 +37,8 @@
 
 ### 바뀐 동작
 
+- **포커스 링 색이 크림슨에서 진한 회색(라이트 `#262222`)/밝은 회색(다크 `#F7F6F5`)으로 바뀌었다**(R01 일부 변경, 오너 결정 2026-11-22). `--border-focus` 가 brand-600/brand-400 대신 neutral-950/neutral-50(본문색과 같은 값)을 가리킨다. 크림슨 링이 브랜드 채움·오류 빨강과 겹쳐 읽혔기 때문이다(다크 포커스 `#FF8394` vs 오류 `#FF896E` ΔE76 22.6 → 새 값 60.6). 두께 2px·offset 2px·안쪽 링 예외(Tabs·팝오버 안 Combobox 검색 입력)는 그대로다. `--border-focus` 를 쓰는 전역 `:focus-visible`·shadcn `ring`(Select·Calendar)·DataTable 행·SegmentedControl·Steps·StatTile·Combobox 포커스와 **FileUpload 드래그 중 드롭존 테두리**가 함께 바뀐다. Tour·Hint 대상 링(`--hint-ring`)·선택 바탕(`--bg-selected`)은 크림슨 그대로다. 앱은 포커스 상태를 담은 시각 회귀 기준선을 갱신해야 하며, `--border-focus` 를 덮어쓰지 않았다면 코드 수정은 필요 없다. 생성기에 포커스 링 vs 오류 글자 ΔE 검사(양 테마)를 추가했다.
+
 - MCP 예산(R42): 한 번에 전송되지 않는 전체 매니페스트 160KB 상한을 실제 응답인 design://tokens 80KB·get_rules 전체 8KB로 바꿨다. 카탈로그 90KB·목록 24KB·상세 6KB는 유지하며 경계값·UTF-8 초과 테스트를 추가했다.
 
 - CSS 이름 공간(R39): loading·data-table·state·thumbnail·avatar의 내부 클래스 이름 37개를 `ds-<기존 이름>`으로 바꾸고 MediaViewer의 재사용 선택자도 맞췄다. 앱 CSS가 옛 이름을 덮어쓰고 있었다면 해당 선택자를 `ds-` 이름으로 바꿔야 한다. `data-slot`·공개 API·계산 스타일은 유지한다. `styles.css`의 앱 전체 preflight·유틸리티 계약과 앱 클래스 이름 규칙을 README·시작하기·MCP 원칙에 명시했다.
