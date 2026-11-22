@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within, waitFor } from 'storybook/test';
 import { Toaster, toast } from '../components/toast';
 import { Button } from '../components/button';
+import { Input } from '../components/input';
 const meta = {
   parameters: { manifest: ['Toaster'], },
   tags: ['autodocs'], title: 'Components/Toast' } satisfies Meta;
@@ -21,11 +22,16 @@ export const 성공오류: Story = { name: '토스트-성공오류', render: () 
 // 닫기 버튼 위치·여백 검사용(docs/qa/list-screen-render-verify.mjs). 알림을 하나씩만 띄운다 —
 // 쌓이면 sonner가 뒤 알림을 접어 앞 알림만 재게 되므로 매번 먼저 비운다.
 const LONG_ERROR = '저장 실패: 네트워크 연결이 끊겨 주문 3건의 배송지 변경을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도하세요.';
+// 닫은 뒤 포커스 복귀도 여기서 잰다: 입력 → 알림 → 닫기면 입력으로, 직전 요소가 사라졌으면 main으로 간다.
+// Toaster는 main 밖에 둔다 — 복귀 대상이 알림 영역이 아니라 본문이어야 한다.
 function CloseDemo() {
   return <><Toaster />
-    <Button onClick={() => { toast.dismiss(); toast.error('저장 실패'); }}>한 줄 오류</Button>
-    <Button onClick={() => { toast.dismiss(); toast.error(LONG_ERROR); }}>여러 줄 오류</Button>
-    <Button onClick={() => { toast.dismiss(); toast.success('저장했습니다', { closeButton: false, duration: Infinity }); }}>닫기 없는 알림</Button>
+    <main aria-label="알림 닫기 검사">
+      <Input aria-label="메모" defaultValue="입력 중" />
+      <Button onClick={() => { toast.dismiss(); toast.error('저장 실패'); }}>한 줄 오류</Button>
+      <Button onClick={() => { toast.dismiss(); toast.error(LONG_ERROR); }}>여러 줄 오류</Button>
+      <Button onClick={() => { toast.dismiss(); toast.success('저장했습니다', { closeButton: false, duration: Infinity }); }}>닫기 없는 알림</Button>
+    </main>
   </>;
 }
 export const 닫기위치: Story = { name: '토스트-닫기위치', render: () => <CloseDemo />, play: async ({ canvasElement: root }) => {
@@ -33,9 +39,13 @@ export const 닫기위치: Story = { name: '토스트-닫기위치', render: () 
   await userEvent.click(within(root).getByRole('button', { name: '한 줄 오류' }));
   await expect(await within(document.body).findByRole('alert')).toHaveTextContent('저장 실패');
   // Escape는 포커스가 알림 안에 있을 때 그 알림을 닫는다(sonner 기본은 접기만 한다).
+  // 포커스는 알림에 들어오기 직전 요소(방금 누른 버튼)로 돌아온다.
+  const trigger = within(root).getByRole('button', { name: '한 줄 오류' });
+  await expect(trigger).toHaveFocus();
   within(document.body).getByRole('button', { name: '알림 닫기' }).focus();
   await userEvent.keyboard('{Escape}');
   await waitFor(() => expect(document.querySelector('[data-sonner-toast][data-removed="false"]')).toBeNull());
+  await expect(trigger).toHaveFocus();
   root.dataset.playComplete = 'true';
 } };
 export const 다크: Story = { name: '토스트-다크', render: () => <Demo />, play: async ({ canvasElement: root }) => {

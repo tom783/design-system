@@ -53,13 +53,53 @@ function closeOnEscape(event: React.KeyboardEvent<HTMLDivElement>) {
   event.preventDefault();
   close.click();
 }
+/**
+ * 닫은 뒤 포커스는 알림에 들어오기 직전 요소로 돌아간다(Dialog가 트리거로 돌려주는 것과 같다).
+ * 그 요소가 사라졌거나 포커스를 받을 수 없으면 Toaster 영역이 아니라 main 랜드마크로 보낸다.
+ * main에 tabindex가 없으면 -1을 준다(AppShell main은 이미 -1). main도 없으면 그대로 둔다.
+ */
+function restoreFocus(previous: HTMLElement | null) {
+  if (previous?.isConnected && focusFirmly(previous)) return;
+  const main = document.querySelector<HTMLElement>('main, [role="main"]');
+  if (!main) return;
+  if (!main.hasAttribute('tabindex')) main.tabIndex = -1;
+  focusFirmly(main);
+}
+/**
+ * sonner 목록의 onBlur는 포커스가 목록을 떠나면 자기가 기억한 요소로 한 번 되돌리고 기억을 비운다.
+ * 포커스를 가진 알림이 API로 사라지면 Chrome이 blur를 보내지 않아 그 기억이 낡는다
+ * (실측: 메모 → 알림 닫기 → 앞서 쓴 트리거 버튼 → main). 한 번 빼앗긴 뒤에는 기억이 비었으므로 다시 놓는다.
+ */
+function focusFirmly(element: HTMLElement) {
+  for (let attempt = 0; attempt < 2 && document.activeElement !== element; attempt++) element.focus({ preventScroll: true });
+  return document.activeElement === element;
+}
 /** shadcn Sonner 래퍼에서 next-themes를 제거하고 3상태 테마와 의미 상태 토큰을 연결한다. */
 export function Toaster(props: React.ComponentProps<typeof Sonner>) {
   // §16 실측: sonner는 알림이 없으면 컨테이너를 제거하고 나중에 마운트한다.
   // 강제로 상주시키면 Dialog가 바깥을 aria-hidden으로 덮을 때 알림도 숨겨져 읽히지 않는다.
   // DOM 상주 최적화를 넣지 않는다. Dialog 안 저장 결과도 지연 마운트한 live region으로 읽힌다.
   const theme = useTheme();
-  return <div data-slot="toaster" onKeyDown={closeOnEscape}><Sonner {...props} theme={theme} className="ds-toaster toaster group" closeButton
+  // sonner도 직전 요소를 기억하지만 마지막 알림이 사라져 목록이 언마운트될 때만 되돌린다.
+  // 알림이 남아 있으면 포커스가 사라진 버튼과 함께 body로 떨어지고, 직전 요소가 없을 때의 출구도 없다.
+  const returnTo = React.useRef<HTMLElement | null>(null);
+  const remember = (event: React.FocusEvent<HTMLDivElement>) => {
+    const from = event.relatedTarget;
+    if (from instanceof Node && event.currentTarget.contains(from)) return; // 알림 사이 이동
+    returnTo.current = from instanceof HTMLElement ? from : null;
+  };
+  // 클릭과 Escape(닫기 버튼 click) 모두 여기로 온다. sonner의 onClick이 먼저 돌아 알림은 이미 닫히는 중이다.
+  // 포커스가 알림 안에 없으면(Safari는 버튼을 눌러도 포커스를 옮기지 않는다) 건드리지 않는다.
+  const restoreAfterClose = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!(event.target instanceof Element)) return;
+    const notification = event.target.closest('[data-close-button]')?.closest('[data-sonner-toast]');
+    if (!notification || notification.getAttribute('data-dismissible') === 'false') return;
+    if (!event.currentTarget.contains(document.activeElement)) return;
+    const previous = returnTo.current;
+    returnTo.current = null;
+    restoreFocus(previous);
+  };
+  return <div data-slot="toaster" onKeyDown={closeOnEscape} onFocus={remember} onClick={restoreAfterClose}><Sonner {...props} theme={theme} className="ds-toaster toaster group" closeButton
     containerAriaLabel="알림"
     icons={{ success: <CircleCheck aria-hidden="true" />, error: <CircleAlert aria-hidden="true" />,
       info: <Info aria-hidden="true" />, warning: <TriangleAlert aria-hidden="true" />, close: <X aria-hidden="true" /> }}

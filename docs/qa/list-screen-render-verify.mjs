@@ -65,7 +65,12 @@ try {
     const br = b?.getBoundingClientRect(), icon = b?.querySelector('svg')?.getBoundingClientRect();
     const overlaps = r => br && r.left < br.right && r.right > br.left && r.top < br.bottom && r.bottom > br.top;
     const s = b && getComputedStyle(b);
-    return { hasClose: !!b, label: b?.getAttribute('aria-label'),
+    // 첫 줄 중심 = 제목 상자 위 + 행간 / 2. 글자 사각형은 글꼴 높이라 줄 상자 중심과 다르다.
+    const title = t.querySelector('[data-title]'), status = t.querySelector('[data-icon] svg').getBoundingClientRect();
+    const firstLine = title.getBoundingClientRect().top - tr.top + parseFloat(getComputedStyle(title).lineHeight) / 2;
+    return { hasClose: !!b, label: b?.getAttribute('aria-label'), firstLine,
+      iconLeft: status.left - tr.left, iconTop: status.top - tr.top, iconCenter: status.top + status.height / 2 - tr.top,
+      closeCenter: br && br.top + br.height / 2 - tr.top,
       right: br && +(tr.right - br.right).toFixed(2), top: br && +(br.top - tr.top).toFixed(2),
       width: br?.width, height: br?.height, icon: icon && [icon.width, icon.height],
       lines: new Set(lines.map(r => Math.round(r.top))).size, overlap: lines.some(overlaps) || overlaps(cr),
@@ -74,6 +79,12 @@ try {
       toastHeight: tr.height, transform: s?.transform, bg: s?.backgroundColor, color: s?.color,
       toastColor: getComputedStyle(t).color };
   })()`;
+  async function escape() {
+    await browser.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await browser.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  }
+  const focused = `(() => { const a = document.activeElement;
+    return { tag: a.tagName.toLowerCase(), label: a.getAttribute('aria-label') ?? a.textContent.trim().slice(0, 20), inToaster: !!a.closest('[data-slot="toaster"]') }; })()`;
   const near = (actual, expected, label, tolerance = 1) =>
     assert.ok(Math.abs(actual - expected) <= tolerance, `${label}: ${expected}±${tolerance}px 이어야 하는데 ${actual}px`);
   for (const theme of ['light', 'dark']) {
@@ -96,9 +107,18 @@ try {
         near(g.inset, 48, '본문 오른쪽 여백');
         if (kind === '여러 줄') assert.ok(g.lines >= 2, `여러 줄이어야 한다: ${g.lines}줄`);
         else assert.equal(g.lines, 1);
+        // 상태 아이콘과 닫기 버튼은 같은 기준(첫 줄 글자 중심)이다. 닫기는 위 10 고정이라 0.75px 차이를 허용한다.
+        near(g.iconCenter, g.firstLine, '상태 아이콘 중심 = 첫 줄 중심', 0.5);
+        near(g.closeCenter, g.firstLine, '닫기 중심 = 첫 줄 중심', 1);
+        // 한 줄은 바뀌기 전(52f233a 실측: 높이 53.5 · 아이콘 왼쪽 13 · 위 16.75 = 상자 세로 가운데)과 같아야 한다.
+        if (kind === '한 줄') {
+          near(g.toastHeight, 53.5, '한 줄 높이', 0.5); near(g.iconLeft, 13, '아이콘 왼쪽', 0.25);
+          near(g.iconTop, 16.75, '아이콘 위', 0.25); near(g.iconCenter, g.toastHeight / 2, '아이콘 = 상자 세로 가운데', 0.25);
+        }
         assert.equal(g.bg, 'rgba(0, 0, 0, 0)', '별도 바탕색 없음');
         assert.equal(g.color, g.toastColor, '아이콘은 상자 글자색을 물려받는다');
-        return { right: g.right, top: g.top, size: `${g.width}×${g.height}`, lines: g.lines, textGap: g.textGap, inset: g.inset, height: g.toastHeight };
+        return { right: g.right, top: g.top, size: `${g.width}×${g.height}`, lines: g.lines, textGap: g.textGap, inset: g.inset, height: g.toastHeight,
+          firstLine: g.firstLine, iconCenter: g.iconCenter, closeCenter: g.closeCenter, iconLeft: g.iconLeft };
       });
     }
     await check(`Toast 닫기 ${theme}: 포커스 링·호버 틴트·Escape`, async () => {
@@ -146,19 +166,57 @@ try {
       assert.ok(hover.bg[3] > 0 && hover.bg[3] < 64, `호버 틴트는 옅어야 한다: 알파 ${hover.bg[3]}/255`);
       assert.ok(hover.contrast >= 3, `호버 중 아이콘 대비 3:1 이상: ${hover.contrast}`);
       // Escape: 포커스가 알림 안에 있으면 닫힌다. 닫기 버튼이 없는 알림은 닫히지 않는다.
+      // 닫은 뒤 포커스 위치는 아래 별도 검사가 본다. 여기서는 위 blur 때 sonner 가 목록을 떠나는
+      // 포커스를 기억한 요소로 되돌리므로(onBlur) 직전 요소가 매번 달라진다.
       await browser.ev(`${front}.querySelector('[data-close-button]').focus()`);
-      await browser.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-      await browser.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+      await escape();
       await until(`!${front}`, 'Escape 로 닫힘');
       await show('닫기 없는 알림');
       const plain = await browser.ev(geometry);
       assert.equal(plain.hasClose, false); near(plain.inset, 17, '닫기 없는 알림 오른쪽 여백(16 + 테두리 1)');
+      near(plain.iconTop, 16.75, '닫기 없는 알림 아이콘 위', 0.25); near(plain.iconLeft, 13, '닫기 없는 알림 아이콘 왼쪽', 0.25);
       await browser.ev(`${front}.focus()`);
-      await browser.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-      await browser.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+      await escape();
       await browser.sleep(300);
       assert.ok(await browser.ev(`!!${front}`), '닫기 버튼이 없는 알림은 Escape 로 닫히지 않는다');
       return { focus: focus.outline, hover: hover.tint, hoverContrast: +hover.contrast.toFixed(2), plainInset: plain.inset };
+    });
+    if (theme === 'light') await check('Toast 닫은 뒤 포커스: 클릭·Escape → 직전 입력, 직전 요소가 사라지면 main', async () => {
+      const input = `document.querySelector('#storybook-root input[aria-label="메모"]')`;
+      const gone = `!document.querySelector('[data-sonner-toast]')`; // 언마운트까지 기다린다(sonner 정리 효과 뒤에 본다)
+      await browser.ev(`window.__focusTrail = []; document.addEventListener('focusin', e => window.__focusTrail.push(e.target.getAttribute('aria-label') ?? e.target.tagName.toLowerCase()))`);
+      // ① 클릭: 실제 포인터로 눌러야 mousedown 이 버튼에 포커스를 옮긴다(Chrome). 진짜 포인터가 필요한 경우다.
+      //    직전 검사가 포커스를 가진 알림을 API 로 치웠으므로 sonner 의 기억이 낡은 상태다 — 그래도 메모로 돌아와야 한다.
+      await show('한 줄 오류');
+      await browser.ev(`window.__focusTrail = []; ${input}.focus()`);
+      const point = await browser.ev(`(() => { const r = ${front}.querySelector('[data-close-button]').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`);
+      await browser.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
+      await browser.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 });
+      await browser.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 });
+      await browser.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 2, y: 2 });
+      await until(gone, '클릭으로 닫힘');
+      const click = { trail: await browser.ev('window.__focusTrail.join(" → ")'), to: await browser.ev(focused) };
+      assert.match(click.trail, /^메모 → 알림 닫기 → /, `포커스가 알림에 들어갔어야 한다: ${click.trail}`);
+      assert.match(click.trail, / → 메모$/, `마지막은 메모여야 한다: ${click.trail}`);
+      assert.deepEqual(click.to, { tag: 'input', label: '메모', inToaster: false }, '클릭 뒤 직전 입력');
+      // ② Escape: 기억이 깨끗한 상태에서는 다른 요소를 거치지 않고 곧장 돌아온다.
+      await show('여러 줄 오류');
+      await browser.ev(`${input}.focus(); window.__focusTrail = []; ${front}.querySelector('[data-close-button]').focus()`);
+      await escape();
+      await until(gone, 'Escape 로 닫힘');
+      const esc = { trail: await browser.ev('window.__focusTrail.join(" → ")'), to: await browser.ev(focused) };
+      assert.equal(esc.trail, '알림 닫기 → 메모', '중간에 다른 요소에 포커스가 가면 안 된다');
+      assert.deepEqual(esc.to, { tag: 'input', label: '메모', inToaster: false }, 'Escape 뒤 직전 입력');
+      // ③ 직전 요소가 사라짐 → Toaster 가 아니라 main
+      await show('한 줄 오류');
+      await browser.ev(`(() => { const temp = document.createElement('button'); temp.textContent = '임시';
+        document.querySelector('#storybook-root main').append(temp); temp.focus();
+        ${front}.querySelector('[data-close-button]').focus(); temp.remove(); })()`);
+      await escape();
+      await until(gone, '사라진 직전 요소 뒤 닫힘');
+      const vanished = await browser.ev(focused);
+      assert.deepEqual(vanished, { tag: 'main', label: '알림 닫기 검사', inToaster: false }, '직전 요소가 없으면 main');
+      return { click: click.to, trail: click.trail, escape: esc, vanished };
     });
   }
   const total = stories.length + 2 + extra;
