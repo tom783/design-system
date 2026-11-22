@@ -2228,14 +2228,14 @@
       "name": "status-neutral-bg",
       "cssVariable": "--status-neutral-bg",
       "category": "semantic",
-      "purpose": "중립 상태 바탕",
+      "purpose": "중립 상태 바탕. 호버 행(neutral-100)보다 한 단계 어둡다",
       "light": {
-        "value": "#EFECEB",
-        "ref": "neutral-100"
+        "value": "#E1DCDB",
+        "ref": "neutral-200"
       },
       "dark": {
-        "value": "#262222",
-        "ref": "neutral-950"
+        "value": "#312D2C",
+        "ref": "#312D2C"
       },
       "tailwind": [
         "bg-neutral-tint"

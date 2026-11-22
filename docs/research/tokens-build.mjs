@@ -134,6 +134,16 @@ const SELECTED_ROW_DARK = { L: 0.35, C: 0.06, H: 12 };
 const selectedRowDark = { ...hex(SELECTED_ROW_DARK.L, SELECTED_ROW_DARK.C, SELECTED_ROW_DARK.H),
   lab: labOf(SELECTED_ROW_DARK.L, SELECTED_ROW_DARK.C, SELECTED_ROW_DARK.H) };
 
+// 다크 중립 칩 바탕(2026-11-23). 칩은 표 행 위에 놓이므로 표면(975 L21)·호버 행(950 L25.8)·표 선택 행(L35)
+// 셋 모두와 갈려야 한다. 래더 단계로는 자리가 없다 —
+//   950: 호버 행과 같은 값이라 호버하면 칩 모양이 사라진다(대비 1.00, 주문 목록 ORD-20478).
+//   900(L34.5): 호버는 1.36 으로 풀리지만 표 선택 행과 명도가 같아 그 위에서 1.006 · ΔE 5.2 로 사라진다.
+//   800(L42.3): 전부 통과하나 표면 대비 2.11 — 다른 톤 칩(1.09~1.16)보다 훨씬 진해 중립이 가장 튄다.
+// 그래서 호버와 선택 행 사이 L30 에 둔다(C 는 950·900 의 중립 채도 0.006·0.008 사이). 표면 1.30 · 호버 1.16 ·
+// 표 선택 행 1.17(ΔE 7.3) · 글자(neutral-200) 10.02. 선례: 다크 bg-sunken #060505 · bg-selected-row 도 래더 밖이다.
+const NEUTRAL_CHIP_DARK = { L: 0.30, C: 0.007, H: 30 };
+const neutralChipDark = hex(NEUTRAL_CHIP_DARK.L, NEUTRAL_CHIP_DARK.C, NEUTRAL_CHIP_DARK.H);
+
 const SEMANTIC = {
   light: {
     // R32: 본문색과 분리한 검정 막. 밝은 배경은 약 35%, 어두운 배경은 약 65%로 작업 맥락을 낮춘다.
@@ -180,9 +190,11 @@ const SEMANTIC = {
     'status-success-fg':  ['success',700, '성공·정상 글자·아이콘'],
     'status-info-bg':     ['info',   50,  '안내 배경'],
     'status-info-fg':     ['info',   700, '안내 글자·아이콘'],
-    // StatusChip neutral의 기존 text-secondary/bg-sunken과 같은 값. 시각 변화 없이 계열에도 쓴다.
+    // 글자는 StatusChip neutral의 기존 text-secondary와 같은 값이라 차트 계열에도 그대로 쓴다(바탕은 2026-11-23부터 bg-sunken과 다르다).
     'status-neutral-fg':  ['neutral',800, '중립 상태 글자·아이콘·차트 계열'],
-    'status-neutral-bg':  ['neutral',100, '중립 상태 바탕'],
+    // 예전 값 neutral-100 은 bg-hover 와 같은 #EFECEB 라 호버한 행에서 칩 바탕이 사라졌다(대비 1.00). 표 선택 행
+    // (brand-100) 위에서도 1.007 이었다. 한 단계 어둡게 — 표면 1.36 · 호버 1.16 · 표 선택 행 1.15 · 글자 6.18(다른 톤 5.25~5.96).
+    'status-neutral-bg':  ['neutral',200, '중립 상태 바탕. 호버 행(neutral-100)보다 한 단계 어둡다'],
     // 차트 — 역할 토큰. 새 색상을 만들지 않고 기존 원시색을 참조한다.
     // 격자·축은 데이터보다 반드시 약해야 한다. 격자가 데이터선보다 진하면
     // 눈이 격자를 먼저 읽는다.
@@ -259,9 +271,9 @@ const SEMANTIC = {
     'status-info-fg':     ['info',   400, '안내 글자·아이콘'],
     'status-neutral-fg':  ['neutral',200, '중립 상태 글자·아이콘·차트 계열'],
     // 예전 값 #060505(bg-sunken)는 표면보다 어두워(표면 대비 0.87) 칩이 구멍처럼 보였고, 글자 대비 14.99 로
-    // 다른 톤(6.97~7.26)보다 훨씬 높아 중립 칩이 오히려 가장 눈에 띄었다. 다른 톤과 같은 950 단계로 맞춘다
-    // — 표면보다 1.12 밝고(다른 톤 1.09~1.16) 글자 대비는 11.59. 글자색(200)은 차트 계열과 함께 쓰므로 두었다.
-    'status-neutral-bg':  ['neutral',950, '중립 상태 바탕. 다른 톤처럼 표면보다 한 단계 밝은 950 틴트'],
+    // 다른 톤(6.97~7.26)보다 훨씬 높아 중립 칩이 오히려 가장 눈에 띄었다. 그다음 값 950 은 bg-hover 와 같아
+    // 호버 행에서 사라졌다. 지금 값과 래더 밖인 이유는 위 NEUTRAL_CHIP_DARK. 글자색(200)은 차트 계열과 함께 쓰므로 두었다.
+    'status-neutral-bg':  [neutralChipDark.hex, null, '중립 상태 바탕. OKLCH 30% 0.007 H30 — 호버(950)와 표 선택 행(L35) 사이'],
     // 차트 (다크) — 격자·축은 밝게 올리고, 목표선은 바탕과 반대로 밝은 쪽으로 간다.
     'chart-grid':         ['neutral', 900, '격자선'],
     'chart-axis':         ['neutral', 600, '축선·눈금 레이블'],
@@ -484,6 +496,18 @@ for (const theme of ['light', 'dark']) {
   const row = resolveTok(SEMANTIC.dark['bg-selected-row']);
   check('dark 표 선택 행이 호버 행과 구별된다', contrast(row, resolveTok(SEMANTIC.dark['bg-hover'])), 1.2, 'ratio');
   check('dark danger 칩 바탕이 표 선택 행과 구별된다', contrast(resolveTok(SEMANTIC.dark['status-danger-bg']), row), 1.2, 'ratio');
+}
+
+// 중립 칩 바탕(status-neutral-bg, 2026-11-23). StatusChip 은 표 행 위에 놓인다 — 표면만 보면 호버·선택에서 조용히
+// 깨진다. 실제로 양 테마 모두 neutral 칩 바탕이 bg-hover 와 같은 값이어서 호버한 행에서 칩 모양이 사라졌고
+// (대비 1.00), 다크 후보 neutral-900 은 표 선택 행 위에서 1.006 이었다. 하한은 '보이는 면' 기준이다:
+// 표면 1.15(스켈레톤과 같은 하한), 호버 행·표 선택 행 1.1(칩 경계가 눈에 보이는 최소). 글자 4.5:1 은 위
+// status-neutral fg on bg 가 잰다. 다른 톤은 이번 결정 범위 밖이라 넣지 않았다 — 실측은 DESIGN.md §2.4.
+for (const theme of ['light', 'dark']) {
+  const chip = resolveTok(SEMANTIC[theme]['status-neutral-bg']);
+  check(`${theme} 중립 칩 바탕이 표면과 구별된다`, contrast(chip, resolveTok(SEMANTIC[theme]['bg-surface'])), 1.15, 'ratio');
+  check(`${theme} 중립 칩 바탕이 호버 행과 구별된다`, contrast(chip, resolveTok(SEMANTIC[theme]['bg-hover'])), 1.1, 'ratio');
+  check(`${theme} 중립 칩 바탕이 표 선택 행과 구별된다`, contrast(chip, resolveTok(SEMANTIC[theme]['bg-selected-row'])), 1.1, 'ratio');
 }
 
 // shadcn 브리지 대비 — 브리지는 이름만 바꾸는 게 아니라 **실제로 함께 렌더되는 쌍**을

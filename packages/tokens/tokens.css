@@ -142,7 +142,7 @@
     --status-info-bg          : var(--color-info-50)              ;  /* 안내 배경 */
     --status-info-fg          : var(--color-info-700)             ;  /* 안내 글자·아이콘 */
     --status-neutral-fg       : var(--color-neutral-800)          ;  /* 중립 상태 글자·아이콘·차트 계열 */
-    --status-neutral-bg       : var(--color-neutral-100)          ;  /* 중립 상태 바탕 */
+    --status-neutral-bg       : var(--color-neutral-200)          ;  /* 중립 상태 바탕. 호버 행(neutral-100)보다 한 단계 어둡다 */
     --chart-grid              : var(--color-neutral-200)          ;  /* 격자선. 데이터보다 약하게 */
     --chart-axis              : var(--color-neutral-600)          ;  /* 축선·눈금 레이블. 비텍스트 3:1 */
     --chart-line              : var(--color-brand-600)            ;  /* 주 데이터 선·막대 */
@@ -306,7 +306,7 @@
     --status-info-bg          : var(--color-info-950)             ;  /* 안내 배경 */
     --status-info-fg          : var(--color-info-400)             ;  /* 안내 글자·아이콘 */
     --status-neutral-fg       : var(--color-neutral-200)          ;  /* 중립 상태 글자·아이콘·차트 계열 */
-    --status-neutral-bg       : var(--color-neutral-950)          ;  /* 중립 상태 바탕. 다른 톤처럼 표면보다 한 단계 밝은 950 틴트 */
+    --status-neutral-bg       : #312D2C                           ;  /* 중립 상태 바탕. OKLCH 30% 0.007 H30 — 호버(950)와 표 선택 행(L35) 사이 */
     --chart-grid              : var(--color-neutral-900)          ;  /* 격자선 */
     --chart-axis              : var(--color-neutral-600)          ;  /* 축선·눈금 레이블 */
     --chart-line              : var(--color-brand-500)            ;  /* 주 데이터 선·막대. 어두운 바탕에서 한 단계 밝게 */
@@ -364,7 +364,7 @@
     --status-info-bg          : var(--color-info-950)             ;  /* 안내 배경 */
     --status-info-fg          : var(--color-info-400)             ;  /* 안내 글자·아이콘 */
     --status-neutral-fg       : var(--color-neutral-200)          ;  /* 중립 상태 글자·아이콘·차트 계열 */
-    --status-neutral-bg       : var(--color-neutral-950)          ;  /* 중립 상태 바탕. 다른 톤처럼 표면보다 한 단계 밝은 950 틴트 */
+    --status-neutral-bg       : #312D2C                           ;  /* 중립 상태 바탕. OKLCH 30% 0.007 H30 — 호버(950)와 표 선택 행(L35) 사이 */
     --chart-grid              : var(--color-neutral-900)          ;  /* 격자선 */
     --chart-axis              : var(--color-neutral-600)          ;  /* 축선·눈금 레이블 */
     --chart-line              : var(--color-brand-500)            ;  /* 주 데이터 선·막대. 어두운 바탕에서 한 단계 밝게 */
