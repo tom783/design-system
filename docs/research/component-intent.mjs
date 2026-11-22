@@ -61,7 +61,7 @@ const intents = [
     'DataTable 아래에 따로 둔다. 표에는 현재 페이지 data와 전체 totalCount를 전달한다.',
     'page는 1부터 시작한다. page·pageSize·totalCount와 변경 콜백은 앱 상태에 연결한다.',
     'pageSizeOptions와 onPageSizeChange를 함께 준다. 크기 변경은 새 크기와 1페이지를 함께 조회에 반영한다.',
-    '조회 중에는 disabled를 주고 표는 state="loading"으로 둔다. 새 응답 전까지 기존 선택은 유지된다.',
+    '조회 중에는 disabled를 주고 표는 state="loading"으로 둔다. 진행 표시는 표 스켈레톤이 맡는다. 새 응답 전까지 기존 선택은 유지된다.',
     '0건이면 숨고 한 페이지면 범위만 표시한다. 좁은 폭에서는 이전·다음과 현재 위치를 표시한다.',
     'URL 동기화와 서버 조회는 앱이 맡는다. 여러 페이지 일괄 처리는 서버의 조건 전체 선택으로 설계한다.'
   ],['page','pageSize','totalCount','onPageChange','pageSizeOptions','onPageSizeChange','disabled'],['pagination','pagination-range','pagination-controls','pagination-page','pagination-position','pagination-previous','pagination-next','pagination-size','pagination-pages','pagination-ellipsis'],['DataTable','Select','Button','EmptyState'],['페이지','페이징','페이지 이동','페이지 크기','몇 개씩']),

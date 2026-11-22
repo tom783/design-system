@@ -410,7 +410,9 @@ page(1부터)·pageSize·totalCount·onPageChange는 제어형이다. pageSizeOp
 서버 삭제 등으로 page가 범위를 벗어나면 표시 범위는 제한하지만 콜백으로 앱 상태를 바꾸지 않는다.
 
 페이지를 넘기면 data가 바뀌고 **빠진 행은 선택이 해제된다**(R29). 보이는 것만 처리한다.
-조회 중에는 DataTable state="loading"과 Pagination disabled를 함께 준다. 로딩 중 선택은 유지하며
+조회 중에는 DataTable state="loading"과 Pagination disabled를 함께 준다. **진행 표시는 표 스켈레톤이 맡고**
+Pagination은 이동·크기 변경만 막는다 — 그래서 Pagination 단독으로는 비활성과 같아 보이며, 예시도 표와 함께 둔다
+(2026-11-22 디자인 검수 A안). 로딩 중 선택은 유지하며
 새 data와 idle이 함께 들어오면 교집합으로 해제한다. 여러 페이지 일괄 처리는 앱·서버에서
 “조건 전체 선택”으로 별도 설계한다. 클라이언트에서 이전 페이지의 selectedIds를 누적하지 않는다.
 

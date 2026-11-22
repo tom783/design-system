@@ -117,8 +117,11 @@ try {
     await story('한페이지'); assert.equal(await ev(`${q(range)}.textContent`), '1–34 / 34건');
     assert.equal(await ev(`${all('[data-slot="pagination"] button')}.length`), 0);
   });
-  await check('로딩 중 모든 페이지 버튼·크기 변경 비활성·클릭 차단', async () => {
+  await check('로딩 중 진행은 표 스켈레톤·모든 페이지 버튼·크기 변경 비활성·클릭 차단', async () => {
     await story('로딩중');
+    // A안(디자인 검수 2026-11-22): Pagination 은 조작만 막고 진행 표시는 함께 놓인 표가 맡는다(DESIGN §4.1).
+    assert.equal(await ev(`${q('[data-slot="data-table-table"]')}.getAttribute('aria-busy')`), 'true');
+    assert.ok(await ev(`${all('[data-slot="data-table-skeleton-row"]')}.length`) > 0);
     assert.equal(await ev(`[...${all('[data-slot="pagination"] button:not([role="combobox"])')}].every(n => n.getAttribute('aria-disabled') === 'true' && n.tabIndex === -1)`), true);
     assert.equal(await ev(`${q(slot('size'))}.disabled`), true);
     await click(next); await click(previous); await click(number(25)); await currentIs(4);
