@@ -218,31 +218,38 @@ try {
     assert.equal(error.live, 'polite'); assert.equal(error.count, 1);
     measurements.field = { before, after: await geometry() };
   });
-  await check('G3: Field 안 순서·형식 오류는 최소 폭 306px 에서도 한 줄 — 아래 칸·상자 폭 불변', async () => {
+  await check('G3: Field 안 순서·형식 오류는 내용 폭·최소 폭 306px 모두 한 줄 — 아래 칸·상자 폭 불변', async () => {
     const geometry = () => ev(`(() => {
       const field = ${q('[data-slot="field"]')}, error = field.querySelector('[data-slot="field-error"]');
       return { nextTop: ${q(probe('after-date-field'))}.getBoundingClientRect().top, errorHeight: error.getBoundingClientRect().height,
         text: error.textContent, sectionWidth: ${q(probe('date-fields'))}.getBoundingClientRect().width };
     })()`);
-    await click(probe('clear-date')); await wait(`${q('[data-slot="field-error"]')}.textContent === ''`);
-    const base = await geometry(), seen = {};
+    const seen = {};
     // 오류 문구는 그 입력의 최소 폭에서 한 줄이다(DESIGN §11.3). 예전 기간 형식 문구(292px)는 306px 에서 두 줄이 되어
-    // 아래 칸을 20px 밀었고, w-fit 상자는 6px 넓혔다. 두 경우를 그대로 다시 잰다.
-    for (const [width, value, message] of [
-      ['', '2026-11-15 ~ 2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.'],
-      ['', '2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'],
-      ['306px', '2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'],
-    ]) {
-      await ev(`${q(probe('date-fields'))}.style.width = '${width}'`); await frame();
-      await inputValue(dateInput, value);
-      await wait(`${q('[data-slot="field-error"]')}.textContent === ${JSON.stringify(message)}`);
-      const after = await geometry(); seen[`${value}@${width || 'w-fit'}`] = after;
-      assert.equal(after.errorHeight, base.errorHeight, `${value}: 한 줄(예약 20px)`);
-      assert.equal(after.nextTop, base.nextTop, `${value}: 아래 칸 위치 불변`);
-      assert.equal(after.sectionWidth, base.sectionWidth, `${value}: 상자 폭 불변`);
+    // 아래 칸을 20px 밀었고, w-fit 상자는 6px 넓혔다. 두 폭 모드를 각각 잰다.
+    // 기준은 폭 모드마다 따로 잰다 — <input> 의 기본 내용 폭(size=20)이 플랫폼마다 달라(실측 macOS 264px·리눅스 302px)
+    // w-fit 상자가 306px·344px 로 갈린다. 오류가 상자를 바꾸는지만 본다(2026-11-23 리눅스 CI 306 !== 344).
+    for (const width of ['', '306px']) {
+      await ev(`${q(probe('date-fields'))}.style.width = '${width}'`);
+      await click(probe('clear-date')); await wait(`${q('[data-slot="field-error"]')}.textContent === ''`); await frame();
+      const base = await geometry(), mode = width || 'w-fit';
+      seen[`기준@${mode}`] = base;
+      for (const [value, message] of [
+        // 두 날짜가 실재하고 거꾸로면 순서만 말한다. 230px
+        ['2026-11-15 ~ 2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.'],
+        // 형식이 틀리면 형식만 말한다. 255px(리눅스 252px)
+        ['2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'],
+      ]) {
+        await inputValue(dateInput, value);
+        await wait(`${q('[data-slot="field-error"]')}.textContent === ${JSON.stringify(message)}`);
+        const after = await geometry(); seen[`${value}@${mode}`] = after;
+        assert.equal(after.errorHeight, base.errorHeight, `${value}@${mode}: 한 줄(예약 20px)`);
+        assert.equal(after.nextTop, base.nextTop, `${value}@${mode}: 아래 칸 위치 불변`);
+        assert.equal(after.sectionWidth, base.sectionWidth, `${value}@${mode}: 상자 폭 불변`);
+      }
     }
     await ev(`${q(probe('date-fields'))}.style.width = ''`); await frame();
-    measurements.fieldLines = { base, ...seen };
+    measurements.fieldLines = seen;
   });
   await check('G3: Field의 업무 오류 우선·정상 값 교체 후 자체 오류 제거', async () => {
     await click(probe('external-error'));
