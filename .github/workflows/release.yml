@@ -90,7 +90,19 @@ jobs:
             console.log('버전 ' + v[0] + ' 로 일치');
           "
 
+      # 실제 게시 중 뒤 패키지에서 실패하면 앞 패키지는 되돌릴 수 없다. 세 패키지를 먼저
+      # 포장해 npm의 자동 수정 경고와 패키지 자체 실패를 모두 확인한 뒤에만 게시한다.
+      - name: 게시 전 점검
+        env:
+          # 실제 배포와 같은 인증·보호 환경에서 prepublishOnly까지 확인한다.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          S2LIFE_PUBLISH: '1'
+          DRY: ${{ inputs.dry-run }}
+        run: bash .github/scripts/publish-preflight.sh
+
       - name: 배포
+        # dry-run은 바로 앞 점검이 같은 명령을 이미 실행했다. 실제 게시일 때만 다시 돈다.
+        if: inputs.dry-run == false
         env:
           # 신뢰 게시자를 등록했다면 비어 있어도 된다 — OIDC 로 인증한다.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
