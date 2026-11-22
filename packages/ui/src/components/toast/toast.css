@@ -8,4 +8,24 @@
 .ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] svg { width: 20px; height: 20px; }
 
 .ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description] { color: inherit; }
-.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] { background: inherit; color: inherit; border-color: currentColor; }
+/* 닫기 버튼은 오른쪽 위 안쪽에 둔다(DESIGN.md §16.5). sonner 기본값은 20px 원을 왼쪽 위
+   모서리에 놓고 translate(-35%, -35%)로 상자 밖에 반쯤 걸쳤다(실측 -7px, 상태 아이콘 바로 위).
+   - 치수는 Button ghost sm iconOnly와 같다: 누름 영역 --control-h-sm(32) · 아이콘 16px · --radius-md.
+   - 오른쪽 8px · 위 10px은 상자 바깥 경계에서 잰 값이다. absolute의 기준은 padding box라
+     테두리(sonner 1px = --border-width)를 뺀다. 위 10 = (한 줄 높이 약 52 − 32) / 2,
+     즉 첫 줄 세로 가운데다. top만 고정하므로 여러 줄이어도 첫 줄에 머문다.
+   - 바탕은 두지 않고 상자 글자색을 물려받는다(오류면 --status-danger-fg). 호버만 그 글자색의 옅은 틴트다.
+   - 포커스는 전역 :focus-visible(2px --border-focus) 링을 그대로 쓰고, sonner의 그림자 링은 끈다. */
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+  inset-inline: auto calc(var(--space-8) - var(--border-width)); top: calc(10px - var(--border-width));
+  width: var(--control-h-sm); height: var(--control-h-sm); transform: none;
+  background: transparent; color: inherit; border: 0; border-radius: var(--radius-md);
+}
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] svg { width: 16px; height: 16px; }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"]:hover [data-close-button]:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button]:focus-visible { box-shadow: none; }
+/* 본문이 닫기 버튼 밑으로 흐르지 않게 오른쪽 48px(오른쪽 8 + 버튼 32 + 글과 간격 8)를 비운다.
+   역시 바깥 경계 기준이라 테두리를 뺀다. 닫기가 없는 알림은 sonner 기본 16px를 그대로 둔다. */
+.ds-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"]:has(> [data-close-button]) {
+  padding-inline-end: calc(var(--space-8) + var(--control-h-sm) + var(--space-8) - var(--border-width));
+}

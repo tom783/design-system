@@ -212,7 +212,7 @@ const intents = [
     ['DropdownMenuSubTrigger', "하위 메뉴를 연다.", ['dropdown-menu-sub-trigger'], 'DropdownMenu'],
     ['DropdownMenuRadioGroup', "메뉴에서 하나만 고를 항목을 묶는다.", [], 'DropdownMenu'],
   ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', ['destructive 항목에는 삭제 아이콘을 함께 표시한다.', '행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.'], [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션'])),
-  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼을 누를 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림']),
+  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림']),
   entry('DatePicker', 'form', '한국어 단일 날짜·일시·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1',[
     "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
     rule('예약·발송·캠페인은 single 전용 time(기본 10분). 최근접 분 칸·동률 올림, 첫 시각 09:00. 브라우저 지역 시간이며 ISO·UTC 변환은 앱 몫이다.', '11.1.1'),

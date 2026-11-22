@@ -6523,7 +6523,7 @@
       ],
       "rules": [
         {
-          "text": "toast.error는 닫기 버튼을 누를 때까지 남는다. duration을 줘도 바뀌지 않는다.",
+          "text": "toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.",
           "source": "2.5"
         }
       ],

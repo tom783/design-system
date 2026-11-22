@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CircleCheck, CircleAlert, Info, TriangleAlert } from 'lucide-react';
+import { CircleCheck, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
 import { Toaster as Sonner, toast as sonnerToast, type ExternalToast } from 'sonner';
 
 /** 명시적 테마가 우선이며, 미지정이면 OS 설정을 따른다. 두 입력의 변경도 구독한다. */
@@ -40,16 +40,29 @@ export const toast: typeof sonnerToast = Object.assign((message: Message, option
       return { message: announcement(result as React.ReactNode, true), duration: Infinity, closeButton: true };
     } } : undefined),
 });
+/**
+ * sonner 2.0.8의 Escape는 펼친 알림 묶음을 접기만 하고 닫지 않는다(setExpanded(false)).
+ * 포커스가 알림 안에 있을 때만 그 알림의 닫기 버튼을 눌러 닫는다. 버튼을 거치므로
+ * dismissible·onDismiss가 그대로 지켜지고, 닫기 버튼이 없는 알림은 Escape로도 닫히지 않는다.
+ * 문서 전역 Escape는 쓰지 않는다 — Dialog·Sheet·팝오버의 Escape와 겹친다.
+ */
+function closeOnEscape(event: React.KeyboardEvent<HTMLDivElement>) {
+  if (event.key !== 'Escape' || event.defaultPrevented || !(event.target instanceof Element)) return;
+  const close = event.target.closest('[data-sonner-toast]')?.querySelector<HTMLButtonElement>(':scope > [data-close-button]');
+  if (!close) return;
+  event.preventDefault();
+  close.click();
+}
 /** shadcn Sonner 래퍼에서 next-themes를 제거하고 3상태 테마와 의미 상태 토큰을 연결한다. */
 export function Toaster(props: React.ComponentProps<typeof Sonner>) {
   // §16 실측: sonner는 알림이 없으면 컨테이너를 제거하고 나중에 마운트한다.
   // 강제로 상주시키면 Dialog가 바깥을 aria-hidden으로 덮을 때 알림도 숨겨져 읽히지 않는다.
   // DOM 상주 최적화를 넣지 않는다. Dialog 안 저장 결과도 지연 마운트한 live region으로 읽힌다.
   const theme = useTheme();
-  return <div data-slot="toaster"><Sonner {...props} theme={theme} className="ds-toaster toaster group" closeButton
+  return <div data-slot="toaster" onKeyDown={closeOnEscape}><Sonner {...props} theme={theme} className="ds-toaster toaster group" closeButton
     containerAriaLabel="알림"
     icons={{ success: <CircleCheck aria-hidden="true" />, error: <CircleAlert aria-hidden="true" />,
-      info: <Info aria-hidden="true" />, warning: <TriangleAlert aria-hidden="true" /> }}
+      info: <Info aria-hidden="true" />, warning: <TriangleAlert aria-hidden="true" />, close: <X aria-hidden="true" /> }}
     toastOptions={{ ...props.toastOptions, closeButtonAriaLabel: '알림 닫기', classNames: {
       toast: 'bg-background text-foreground border-border', description: 'text-muted-foreground',
       ...props.toastOptions?.classNames,
