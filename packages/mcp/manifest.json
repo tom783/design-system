@@ -9145,6 +9145,11 @@
     },
     {
       "topic": "간격",
+      "text": "앱 전체를 이 시스템으로 만든다. styles.css는 앱 전체 preflight를 포함하며 부품 전용 CSS는 없다.",
+      "source": "DESIGN.md 6"
+    },
+    {
+      "topic": "간격",
       "text": "앱 CSS 클래스는 ds-로 시작하지 않으며, .flex·.hidden 같은 유틸리티 이름을 다시 정의하지 않는다.",
       "source": "DESIGN.md 6"
     },

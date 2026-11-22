@@ -13,6 +13,7 @@ export const principles = [
   { topic: '타이포', ...rule('열로 정렬하는 숫자와 금액은 .tabular 고정폭 숫자를 쓴다.', '3.3') },
   { topic: '간격', ...rule('Tailwind 기본 --spacing 배수를 덮어쓰지 않는다. --space-*는 var()로 직접 쓴다. 값은 최소 너비 + 넘침 처리 + 전체값 보존으로 배치한다.', '4') },
   { topic: '간격', ...rule('평면 요소는 그림자 없이 경계선·여백으로 나눈다. 그림자는 떠 있는 레이어에만 쓴다. reduced-motion을 존중한다.', '5') },
+  { topic: '간격', ...rule('앱 전체를 이 시스템으로 만든다. styles.css는 앱 전체 preflight를 포함하며 부품 전용 CSS는 없다.', '6') },
   { topic: '간격', ...rule('앱 CSS 클래스는 ds-로 시작하지 않으며, .flex·.hidden 같은 유틸리티 이름을 다시 정의하지 않는다.', '6') },
   { topic: '폼', ...rule('입력 경계는 border-field. 주요 버튼은 화면당 하나, 아이콘 전용 버튼은 aria-label 필수다.', '6') },
   { topic: '폼', ...rule('IME 조합 중 값 변형·포커스 이동·검증 금지. 최초 검증은 blur, 오류 후 change에서 즉시 해제하고 제출 때만 첫 오류로 이동한다.', '11.2') },

@@ -28,7 +28,7 @@ import '@s2life/ui/styles.css';
 
 `styles.css`는 토큰·유틸리티·컴포넌트 스타일이 들어 있는 사전 컴파일 CSS입니다. **Tailwind 설치나 설정은 필요 없습니다.** 토큰 CSS를 따로 불러오지 않습니다.
 
-`styles.css`는 앱 전체에 적용되는 기본 초기화(Tailwind preflight)와 유틸리티를 포함합니다. 앱 전체를 이 디자인 시스템으로 만드는 것을 전제로 합니다. 우리 고유 클래스는 `ds-`로 시작합니다. 앱 CSS 클래스는 `ds-`로 시작하지 않으며, `.flex`·`.hidden` 같은 유틸리티 이름을 다시 정의하지 않습니다.
+`styles.css`는 앱 전체에 적용되는 기본 초기화(Tailwind preflight)와 유틸리티를 포함합니다. **앱 전체를 이 디자인 시스템으로 만드는 것을 전제로 합니다.** 기존 앱의 일부 화면에만 넣는 부품 전용 CSS(preflight 없는 파일)는 제공하지 않습니다 — `styles.css`든 `tailwind.css`든 불러오면 앱 전체의 기본 스타일이 함께 바뀝니다. 우리 고유 클래스는 `ds-`로 시작합니다. 앱 CSS 클래스는 `ds-`로 시작하지 않으며, `.flex`·`.hidden` 같은 유틸리티 이름을 다시 정의하지 않습니다.
 
 제공하는 유틸리티: `.sr-only`는 스크린리더용 문구를 화면에서 숨기고, `.tabular`는 숫자 열을 고정폭으로 정렬한다. `styles.css`·`tailwind.css` 두 경로에서 제공하며 `.truncate`는 공개 계약에 포함하지 않는다.
 
