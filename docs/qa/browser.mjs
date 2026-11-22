@@ -289,6 +289,20 @@ export async function launchBrowser({
   };
 }
 
+/**
+ * waitPlay 를 끝내도 되는가(브라우저에서 평가). 표식이 섰거나, Storybook 렌더 단계로 보아 더 기다려도
+ * 표식이 서지 않을 때 true. 2026-11-23 실측: 하네스 29개의 waitPlay 열기 273회는 전부 표식이 섰다
+ * (표식 없는 스토리는 waitPlay:false 로 연다). 새 하네스가 그걸 빠뜨려도 14초씩 잃지 않게 둔 방어다.
+ */
+export const PLAY_SETTLED = `(() => {
+  if (document.querySelector('[data-play-complete="true"]')) return true;
+  if (document.body?.classList.contains('sb-show-errordisplay')) return true; // 없는 스토리·렌더 오류 — 아래에서 보고한다
+  const r = window.__STORYBOOK_PREVIEW__?.currentRender;
+  if (!r) return false;
+  if (r.phase === 'errored' || r.phase === 'aborted') return true;
+  return r.phase === 'finished' && !r.story?.playFunction;
+})()`;
+
 const checked = new Map();
 /**
  * 검사할 스토리북 주소(DS_SB_URL, 없으면 6099). **처음 부를 때 서버가 이 작업 폴더의 HEAD 빌드인지
@@ -310,7 +324,10 @@ export function storybook(session, { base: fixedBase } = {}) {
   const { cdp, ev, sleep, errors, resetErrors } = session;
   return {
     /**
-     * @param waitPlay  play 가 data-play-complete 를 세울 때까지 기다린다.
+     * @param waitPlay  play 가 data-play-complete 를 세울 때까지 기다린다(최대 14초).
+     *                  play 가 **없는** 스토리가 렌더를 마쳤거나, play 가 오류로 끝났거나, 스토리가 없어
+     *                  오류 화면이 뜨면 바로 멈춘다 —
+     *                  그 표식은 영영 서지 않으므로 14초를 그냥 버리게 된다(PLAY_SETTLED).
      *                  **play 는 열었다가 전부 닫고 끝난다** — 사후 상태를
      *                  "열려 있다"고 가정하지 마라. 필요한 상태는 직접 만들어라.
      */
@@ -324,7 +341,7 @@ export function storybook(session, { base: fixedBase } = {}) {
       }
       if (waitPlay) {
         for (let i = 0; i < 70; i++) {
-          if (await ev('!!document.querySelector(\'[data-play-complete="true"]\')').catch(() => false)) break;
+          if (await ev(PLAY_SETTLED).catch(() => false)) break;
           await sleep(200);
         }
       }
