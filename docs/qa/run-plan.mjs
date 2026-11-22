@@ -220,3 +220,10 @@ export function selectHarnesses(opts, { harnesses = HARNESSES, baseline = null }
   }
   return { harnesses, shard: null };
 }
+
+/**
+ * pre-push 에서 브라우저 하네스를 건너뛸 수 있는가. 바뀐 파일이 전부 .github/** 이면 true.
+ * 워크플로만 고친 푸시는 하네스 결과를 바꾸지 않는다 — CI 가 그 워크플로로 어차피 돈다.
+ * 빈 목록은 false(판단할 근거가 없으면 돈다).
+ */
+export const githubOnly = (files) => files.length > 0 && files.every((f) => f.startsWith('.github/'));

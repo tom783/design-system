@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import {
-  EXCLUSIVE, HARNESSES, NO_STORYBOOK, UsageError, assignShards, harnessName, loadBaseline, median,
+  EXCLUSIVE, HARNESSES, NO_STORYBOOK, githubOnly, UsageError, assignShards, harnessName, loadBaseline, median,
   parseArgs, readBaseline, selectHarnesses,
 } from './run-plan.mjs';
 
@@ -174,4 +174,12 @@ test('인자: --jobs 는 1~16 정수, 기본 1', () => {
 
 test('단독 하네스(EXCLUSIVE)는 목록에 있는 이름이다', () => {
   for (const file of EXCLUSIVE) assert.ok(HARNESSES.some(([f]) => f === file), file);
+});
+
+test('pre-push 예외: 바뀐 파일이 .github/** 뿐일 때만 하네스를 건너뛴다', () => {
+  assert.equal(githubOnly(['.github/workflows/verify.yml']), true);
+  assert.equal(githubOnly(['.github/workflows/verify.yml', '.github/actions/x/action.yml']), true);
+  assert.equal(githubOnly(['.github/workflows/verify.yml', 'docs/qa/run-all.mjs']), false);
+  assert.equal(githubOnly(['.githooks/pre-push']), false); // .github 와 이름만 비슷하다
+  assert.equal(githubOnly([]), false); // 근거가 없으면 돈다
 });
