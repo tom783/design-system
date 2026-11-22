@@ -38,6 +38,7 @@
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
+import { inflateSync } from 'node:zlib';
 import { join } from 'node:path';
 
 const INSTALL_HINT =
@@ -100,6 +101,57 @@ export function revisionsNewestFirst(entries) {
 }
 
 /**
+ * 헤드리스에 마우스가 있는 데스크톱 조건을 준다.
+ * 리눅스 헤드리스는 포인터 장치가 없어 `(hover: hover)`·`(pointer: fine)` 이 false 다(2026-11-22,
+ * Debian 컨테이너에서 CI run 45005304379 의 실패를 같은 수치로 재현). Tailwind v4 의 `hover:` 는
+ * `@media (hover: hover)` 안이라 CDP 로 실제 포인터를 올려도 호버 색이 안 바뀐다(design-detail D1 10건).
+ * 마우스 사용자의 호버 피드백을 검사하는 것이 하네스의 의도이므로 그 장치 조건을 준다 —
+ * Playwright 도 데스크톱 컨텍스트에 같은 값을 넘긴다. macOS 는 원래 이 값이라 변화가 없다.
+ *
+ * 스크롤바·글꼴 힌팅은 일부러 건드리지 않는다. 실제 사용 환경(클래식 스크롤바, 리눅스 힌팅)을
+ * 가리면 그 환경의 결함을 놓친다 — 실제로 탭 기준선이 클래식 스크롤바에 가려지던 결함이 이 차이로
+ * 드러났다(DESIGN.md §16.1). 그런 차이는 하네스가 실측해서 단정한다.
+ */
+export function parityArgs() {
+  return ['--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4'];
+}
+
+/**
+ * PNG(8비트 RGB·RGBA, 비인터레이스 — Chrome 스크린샷 형식)를 행 단위 바이트로 푼다.
+ * 계산 스타일이 아니라 **실제로 그려진 픽셀**을 봐야 하는 단정(예: 선이 스크롤바에 가려졌는가)에 쓴다.
+ * 반환: { width, height, channels, pixel(x, y) → [r, g, b] }
+ */
+export function decodePng(buffer) {
+  if (buffer.readUInt32BE(0) !== 0x89504e47) throw new Error('PNG 가 아니다');
+  let pos = 8, width = 0, height = 0, channels = 0;
+  const idat = [];
+  while (pos < buffer.length) {
+    const length = buffer.readUInt32BE(pos), type = buffer.toString('latin1', pos + 4, pos + 8);
+    const body = buffer.subarray(pos + 8, pos + 8 + length);
+    if (type === 'IHDR') {
+      width = body.readUInt32BE(0); height = body.readUInt32BE(4);
+      const depth = body[8], color = body[9], interlace = body[12];
+      if (depth !== 8 || interlace !== 0 || ![2, 6].includes(color)) throw new Error(`지원하지 않는 PNG (depth ${depth}, color ${color}, interlace ${interlace})`);
+      channels = color === 6 ? 4 : 3;
+    } else if (type === 'IDAT') idat.push(body);
+    else if (type === 'IEND') break;
+    pos += 12 + length;
+  }
+  const raw = inflateSync(Buffer.concat(idat)), stride = width * channels, rows = [];
+  let prev = new Uint8Array(stride);
+  for (let y = 0, i = 0; y < height; y++, i += stride + 1) {
+    const filter = raw[i], line = Uint8Array.from(raw.subarray(i + 1, i + 1 + stride));
+    for (let x = 0; x < stride; x++) {
+      const a = x >= channels ? line[x - channels] : 0, b = prev[x], c = x >= channels ? prev[x - channels] : 0;
+      const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+      line[x] = (line[x] + [0, a, b, (a + b) >> 1, pa <= pb && pa <= pc ? a : pb <= pc ? b : c][filter]) & 255;
+    }
+    rows.push(line); prev = line;
+  }
+  return { width, height, channels, pixel: (x, y) => [...rows[y].subarray(x * channels, x * channels + 3)] };
+}
+
+/**
  * 브라우저를 띄우고 CDP 세션을 연다.
  *
  * 반환: { cdp, ev, shot, errors, resetErrors, close }
@@ -124,6 +176,7 @@ export async function launchBrowser({
     '--no-first-run', '--disable-gpu',
     `--window-size=${windowSize}`,
     `--force-device-scale-factor=${scale}`,
+    ...parityArgs(),
     'about:blank',
   ], { stdio: ['ignore', 'ignore', 'pipe'] });
   let launchLog = '';

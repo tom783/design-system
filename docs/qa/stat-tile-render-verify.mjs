@@ -84,8 +84,14 @@ try {
     assert.equal(values[2].text, '128.4만건'); assert.equal(values[4].title, '1,284,000,000원');
     measurements.push({ narrow: values });
     // 숫자의 실제 글리프 폭도 재서 속성 이름만 맞는 거짓 통과를 막는다.
-    const widths = await ev(`(() => { const n=${q('[data-slot="stat-tile-value"]')}, p=document.createElement('span'); p.style.font=getComputedStyle(n).font; p.style.fontVariantNumeric='tabular-nums'; p.style.display='inline-block'; n.append(p); const w=[...'0123456789'].map(x=>{p.textContent=x;return p.getBoundingClientRect().width;}); p.remove(); return w; })()`);
-    assert.ok(Math.max(...widths) - Math.min(...widths) < .1, widths.join(','));
+    // 리눅스는 글꼴 힌팅이 글리프마다 진행 폭을 정수 px 로 반올림해 같은 tnum 폭도 1px 까지 갈린다
+    // (CI run 45005304379 실측 14.77·15.77, macOS 는 15.16 균일). 허용 오차는 그 1px 이다. 대신 비례
+    // 숫자보다 확실히 고른지를 함께 봐서 tnum 이 실제로 적용됐다는 증거로 삼는다.
+    const widths = await ev(`(() => { const n=${q('[data-slot="stat-tile-value"]')}, p=document.createElement('span'); p.style.font=getComputedStyle(n).font; p.style.display='inline-block'; n.append(p); const measure = numeric => { p.style.fontVariantNumeric=numeric; return [...'0123456789'].map(x=>{p.textContent=x;return p.getBoundingClientRect().width;}); }; const w={ tabular: measure('tabular-nums'), proportional: measure('proportional-nums') }; p.remove(); return w; })()`);
+    const spread = list => Math.max(...list) - Math.min(...list);
+    assert.ok(spread(widths.tabular) <= 1.01, `tabular ${widths.tabular.join(',')}`);
+    assert.ok(spread(widths.proportional) > spread(widths.tabular) + 1, `tabular ${widths.tabular.join(',')} / proportional ${widths.proportional.join(',')}`);
+    measurements.push({ digitWidths: widths });
     await browser.shot('narrow');
   });
   await check('그리드 4개가 900px에서 한 줄, 500px에서 두 줄, 190px에서 한 열로 바뀐다', async () => {

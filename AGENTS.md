@@ -171,6 +171,19 @@ AppArmor 로 비특권 user namespace 를 막아 Chromium zygote 가 초기화�
 것이다. 증상만 비슷하다. 거기서도 `--no-sandbox` 를 쓰지 않고 워크플로에서
 커널 제한만 푼다 — 샌드박스는 켜둔다.
 
+**하네스를 쓴 macOS(트랙패드) 와 실제 사용 환경은 세 가지가 다르다.** 2026-11-22 첫 리눅스 CI 에서
+R31·R41 하네스가 15건 실패한 원인이다.
+- 리눅스 헤드리스는 포인터 장치가 없어 `(hover: hover)` 가 false 라 Tailwind v4 `hover:` 가 안 먹는다.
+  `browser.mjs` 의 `parityArgs()` 가 마우스 있는 데스크톱 조건을 준다(Playwright 와 같은 값).
+- 리눅스는 글꼴 힌팅으로 같은 tnum 숫자 폭이 1px 까지 갈린다. 폭 단정은 1px 허용 + 비례 숫자와 비교로 쓴다.
+- **클래식 스크롤바(Windows·리눅스·마우스를 연결한 macOS)는 10~11px 자리를 차지한다.** 이 차이로
+  탭 기준선이 스크롤바에 가려지던 제품 결함이 드러났다(DESIGN.md §16.1). 그래서 `--hide-scrollbars`
+  같은 인자로 가리지 않는다. 스크롤바가 결과를 바꾸는 단정은 두께(`offsetHeight − clientHeight`)를
+  실측하고, CDP `Emulation.setScrollbarsHidden` 으로 두께 0 상태도 함께 돌린다. 선이 실제로 보이는지는
+  계산 스타일로 알 수 없으니 `decodePng` 로 그려진 픽셀을 본다.
+리눅스 재현은 Docker(`node:22-bookworm` + headless shell, 일반 사용자, `--security-opt seccomp=unconfined`,
+`LANG=C.UTF-8`)로 된다 — `--no-sandbox` 는 쓰지 않는다. 컨테이너 안 6099 는 호스트와 겹치지 않는다.
+
 **브라우저 검증은 `docs/qa/browser.mjs` 를 거친다.** 거기서
 `chrome-headless-shell`(AppKit 을 링크하지 않는 별도 바이너리)을 찾아 띄우고,
 GUI 앱 번들 경로는 **거부**한다. 없으면 `npx playwright install chromium-headless-shell`.
