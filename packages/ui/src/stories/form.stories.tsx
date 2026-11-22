@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
-import { Field, FormFlow, FormRow, useComposition, shouldValidate } from '../components/form';
+import { Field, FormFlow, FormRow, useComposition } from '../components/form';
 import { Input } from '../components/input';
 import { Button } from '../components/button';
 
@@ -97,7 +97,8 @@ function ValidationDemo() {
   const composition = useComposition();
   // 검증 내용은 소비 앱의 예시다. 패키지는 검증 시점만 제공한다.
   const validate = (trigger: 'change' | 'blur', next: string) => {
-    if (!shouldValidate({ trigger, hasErrored: hasErrored.current, isComposing: composition.isComposing() })) return;
+    // 한글 조합 중에는 검증하지 않는다. 첫 오류는 blur에서 알리고, 이미 난 오류는 change에서 바로 푼다.
+    if (composition.isComposing() || (trigger === 'change' && !hasErrored.current)) return;
     const message = next.length < 3 ? '세 글자 이상 입력하세요' : '';
     if (message) hasErrored.current = true;
     setError(message);

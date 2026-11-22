@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { Button, Field, FormFlow, Input, Steps, shouldValidate, useComposition } from '../../src';
+import { Button, Field, FormFlow, Input, Steps, useComposition } from '../../src';
 
 const stages = [
   { label: '기본 정보', fields: [{ key: 'name', label: '상품명' }, { key: 'category', label: '상품 분류' }] },
@@ -19,7 +19,8 @@ export function ProductStepsExample() {
   const hasErrored = useRef(new Set<string>());
   const goTo = (index: number) => { setSaved(false); setCurrent(index); };
   const validate = (key: string, label: string, value: string, trigger: 'change' | 'blur') => {
-    if (!shouldValidate({ trigger, hasErrored: hasErrored.current.has(key), isComposing: composition.isComposing() })) return;
+    // 한글 조합 중에는 검증하지 않는다. 첫 오류는 blur에서 알리고, 이미 난 오류는 change에서 바로 푼다.
+    if (composition.isComposing() || (trigger === 'change' && !hasErrored.current.has(key))) return;
     const message = value.trim() ? '' : `${label}을 입력해 주세요.`;
     if (message) hasErrored.current.add(key);
     setErrors(previous => ({ ...previous, [key]: message }));

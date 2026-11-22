@@ -5,7 +5,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
   Button, Combobox, DataTable, dataTableFeatures, Field, FormFlow, Input, Label,
-  RadioGroup, RadioGroupItem, Switch, Textarea, shouldValidate, toast, useComposition,
+  RadioGroup, RadioGroupItem, Switch, Textarea, toast, useComposition,
   type ReturnRecord,
 } from '../index';
 
@@ -43,7 +43,8 @@ export function OrderCreateScreen({ onSave, onBack, restart = false, notificatio
     if (dirty) setDiscard(true); else onBack();
   };
   const validate = (key: keyof Draft, value: string, trigger: 'change' | 'blur') => {
-    if (shouldValidate({ trigger, hasErrored: Boolean(errors[key]), isComposing: composition.isComposing() })) {
+    // 한글 조합 중에는 검증하지 않는다. 첫 오류는 blur에서 알리고, 이미 난 오류는 change에서 바로 푼다.
+    if (!composition.isComposing() && (trigger !== 'change' || Boolean(errors[key]))) {
       setErrors(previous => ({ ...previous, [key]: errorFor(key, value) }));
     }
   };

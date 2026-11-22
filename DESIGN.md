@@ -1074,6 +1074,9 @@ shouldValidate({ trigger, hasErrored, isComposing })
   = !isComposing && (trigger !== 'change' || hasErrored)
 ```
 
+앱은 이 식을 직접 쓴다. `shouldValidate` 도우미는 0.4.0 에서 공개 API 제외를 예고했고(`@deprecated`),
+문서 예시·스토리도 식을 풀어 쓴다.
+
 | 시점 | 검증하나 | 왜 |
 |---|---|---|
 | 조합 중 | ✗ | 11.1 |
