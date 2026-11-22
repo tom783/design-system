@@ -23,6 +23,9 @@ const stored = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json
 // 절대경로를 박으면 내 기계에서만 돈다. 실제로 CI(리눅스)에서 initialize 타임아웃으로 죽었다.
 const SERVER = fileURLToPath(new URL('../../packages/mcp/server.mjs', import.meta.url));
 const proc = spawn('node', [SERVER], { stdio: ['pipe','pipe','pipe'] });
+// 한글 UTF-8 문자가 청크 경계에서 나뉘어도 대체 문자로 손상되지 않게 디코딩한다.
+proc.stdout.setEncoding('utf8');
+proc.stderr.setEncoding('utf8');
 let buf = '', stderrBuf = '';
 const pending = new Map(); const notifications = []; const badLines = [];
 let nextId = 1;
@@ -298,6 +301,35 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
     if (bytes > largest.bytes) largest = { name: entry.name, bytes };
   }
   check('get_component 한 건은 6,000바이트 이하', largest.bytes <= 6_000, `${largest.name} ${largest.bytes}바이트`);
+}
+// R43: 실제 응답 단위 회귀 상한. 실측 대비 여유는 각각 300B 이하다.
+{
+  for (const description of ['단계', '스텝', '진행 단계', '여러 단계 폼', '1단계 2단계']) {
+    const result = (await t('which_component', { description })).structuredContent;
+    check(`${description} 첫 후보는 Steps`, result.candidates[0]?.name === 'Steps');
+  }
+  const steps = (await t('get_component', { name: 'Steps' })).structuredContent;
+  check('Steps API·0 기준·완료 이동·제목 포커스 계약',
+    ['steps','current','onStepClick'].every(name => steps.props.some(prop => prop.name === name))
+    && steps.rules.some(rule => rule.text.includes('0 기준'))
+    && steps.rules.some(rule => rule.text.includes('완료 단계만'))
+    && steps.rules.some(rule => rule.text.includes('제목') && rule.text.includes('포커스')));
+  for (const name of ['FormFlow', 'TaskProgress']) {
+    const component = (await t('get_component', { name })).structuredContent;
+    check(`${name}와 Steps 양방향 갈림길`, component.dont.some(text => text.includes('Steps'))
+      && component.related.includes('Steps') && steps.related.includes(name));
+  }
+  const catalog = (await call('resources/read', { uri: 'design://components' })).result.contents[0].text;
+  const tokens = (await call('resources/read', { uri: 'design://tokens' })).result.contents[0].text;
+  const list = (await t('list_components', {})).content[0].text;
+  const rules = (await t('get_rules', {})).content[0].text;
+  for (const [name, text, limit] of [['카탈로그',catalog,88_450],['목록',list,19_950],['토큰',tokens,67_300],['규칙',rules,4_400]]) {
+    const bytes = Buffer.byteLength(text);
+    check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
+  }
+  const detailBytes = Math.max(...(await Promise.all(stored.components.map(async entry =>
+    Buffer.byteLength((await t('get_component', { name: entry.name })).content[0].text)))));
+  check('최대 상세 응답 크기 회귀 상한 4,800B', detailBytes <= 4_800, `${detailBytes}바이트`);
 }
 check('stdout 에 JSON 아닌 줄이 하나도 없다', badLines.length === 0, badLines.join(' | ').slice(0,150));
 console.log(`     stderr ${stderrBuf.length}자${stderrBuf?': "'+stderrBuf.slice(0,80)+'"':''}`);

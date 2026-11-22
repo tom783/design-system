@@ -4200,6 +4200,86 @@
   ],
   "components": [
     {
+      "name": "Steps",
+      "category": "form",
+      "purpose": "여러 단계 폼의 현재 위치와 완료·오류·예정을 표시한다.",
+      "useWhen": [
+        "상품 등록·캠페인 생성·입점 신청을 주제별로 나눌 때"
+      ],
+      "dont": [
+        "장기 작업 진행은 TaskProgress를 쓴다",
+        "폼 상태·검증·이동 버튼은 앱이 맡는다"
+      ],
+      "rules": [
+        {
+          "text": "current는 steps 배열의 0 기준 인덱스다. 라벨·선택 description과 status:error로 오류를 표시한다.",
+          "source": "11.8"
+        },
+        {
+          "text": "완료 단계만 onStepClick(index)으로 돌아간다. 예정·현재·오류 단계로 건너뛰지 않는다.",
+          "source": "11.8"
+        },
+        {
+          "text": "ol과 aria-current=step, 단계 이름의 상태 문구를 제공한다. 완료·오류는 다른 아이콘과 글자로 구분한다.",
+          "source": "11.8"
+        },
+        {
+          "text": "640px 미만은 현재 위치 요약이다. 앱의 이전 버튼을 제공한다. 긴 라벨은 전체값을 보존한다.",
+          "source": "11.8"
+        },
+        {
+          "text": "단계마다 FormFlow 하나를 렌더하고 이동 뒤 앱이 새 단계 제목에 포커스한다.",
+          "source": "11.8"
+        }
+      ],
+      "related": [
+        "FormFlow",
+        "TaskProgress"
+      ],
+      "keywords": [
+        "단계",
+        "스텝",
+        "진행 단계",
+        "여러 단계 폼",
+        "1단계 2단계"
+      ],
+      "source": "components/steps/steps.tsx",
+      "props": [
+        {
+          "name": "steps",
+          "type": "readonly StepItem[]",
+          "required": true
+        },
+        {
+          "name": "current",
+          "type": "number",
+          "required": true,
+          "doc": "steps 배열과 같은 0 기준 인덱스."
+        },
+        {
+          "name": "onStepClick",
+          "type": "((index: number) => void)"
+        }
+      ],
+      "extends": [
+        "Omit<ComponentProps<'div'>, 'children'>"
+      ],
+      "slots": [
+        "steps",
+        "steps-button",
+        "steps-content",
+        "steps-count",
+        "steps-description",
+        "steps-heading",
+        "steps-item",
+        "steps-label",
+        "steps-list",
+        "steps-marker",
+        "steps-static",
+        "steps-status"
+      ]
+    },
+    {
       "name": "SegmentedControl",
       "category": "navigation",
       "purpose": "화면 보기와 기간·지표 단위를 즉시 바꾸는 단일 선택이다.",
@@ -8499,11 +8579,13 @@
         "대량 내보내기·일괄 작업을 기다릴 때"
       ],
       "dont": [
-        "자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라"
+        "자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라",
+        "여러 단계 폼의 위치는 Steps를 쓴다"
       ],
       "rules": [],
       "related": [
-        "ProgressTrack"
+        "ProgressTrack",
+        "Steps"
       ],
       "keywords": [
         "대량",
@@ -8826,7 +8908,8 @@
       ],
       "dont": [
         "조합 중 Enter로 이동하지 마라",
-        "textarea Enter를 가로채지 마라"
+        "textarea Enter를 가로채지 마라",
+        "단계 위치는 Steps를 쓰고 폼을 중첩하지 마라"
       ],
       "rules": [
         {
@@ -8852,11 +8935,16 @@
         {
           "text": "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
           "source": "11.5"
+        },
+        {
+          "text": "여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.",
+          "source": "11.8"
         }
       ],
       "related": [
         "Field",
-        "Input"
+        "Input",
+        "Steps"
       ],
       "keywords": [
         "연속 입력",

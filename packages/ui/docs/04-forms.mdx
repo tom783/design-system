@@ -1,5 +1,6 @@
 import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks';
 import * as FormStories from '../src/stories/form.stories';
+import * as StepsStories from '../src/stories/steps.stories';
 import * as FileUploadStories from '../src/stories/file-upload.stories';
 import { Intent } from './_intent';
 import { DesignLink } from './_page';
@@ -55,6 +56,12 @@ FormFlow는 Enter를 Tab 순서의 다음 칸 이동으로 연결하며, 컨트�
 <Intent name="FileUpload" />
 
 <Canvas of={FileUploadStories.사용법} />
+
+## 여러 단계 폼
+
+<Intent name="Steps" />
+
+<Canvas of={StepsStories.상품등록} />
 
 ## 한글 IME
 

@@ -190,3 +190,9 @@ for (const query of ['보기 전환', '기간 단위', '일 주 월', '토글 �
     assert.equal(matchComponents(query, components)[0]?.name, 'SegmentedControl');
   });
 }
+
+for (const query of ['단계', '스텝', '진행 단계', '여러 단계 폼', '1단계 2단계', '상품 등록 단계를 표시']) {
+  test(`단계 표시 라우팅 1위: ${query}`, () => {
+    assert.equal(matchComponents(query, components)[0]?.name, 'Steps');
+  });
+}

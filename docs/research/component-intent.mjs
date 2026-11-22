@@ -29,6 +29,16 @@ export const principles = [
   { topic: '표', ...rule('재방문 행은 네 번째 배경색 대신 왼쪽 마커를 쓴다. 복원 기록은 일회성·10분 TTL이며 스크롤 복원은 앱이 맡는다.', '12.3') },
 ];
 const intents = [
+  entry('Steps','form','여러 단계 폼의 현재 위치와 완료·오류·예정을 표시한다.',
+    ['상품 등록·캠페인 생성·입점 신청을 주제별로 나눌 때'],
+    ['장기 작업 진행은 TaskProgress를 쓴다','폼 상태·검증·이동 버튼은 앱이 맡는다'],'11.8',[
+      'current는 steps 배열의 0 기준 인덱스다. 라벨·선택 description과 status:error로 오류를 표시한다.',
+      '완료 단계만 onStepClick(index)으로 돌아간다. 예정·현재·오류 단계로 건너뛰지 않는다.',
+      'ol과 aria-current=step, 단계 이름의 상태 문구를 제공한다. 완료·오류는 다른 아이콘과 글자로 구분한다.',
+      '640px 미만은 현재 위치 요약이다. 앱의 이전 버튼을 제공한다. 긴 라벨은 전체값을 보존한다.',
+      '단계마다 FormFlow 하나를 렌더하고 이동 뒤 앱이 새 단계 제목에 포커스한다.'
+    ],['steps','current','onStepClick'],['steps','steps-list','steps-item','steps-marker','steps-content','steps-heading','steps-count','steps-label','steps-status','steps-description','steps-button','steps-static'],
+    ['FormFlow','TaskProgress'],['단계','스텝','진행 단계','여러 단계 폼','1단계 2단계']),
   entry('SegmentedControl','navigation','화면 보기와 기간·지표 단위를 즉시 바꾸는 단일 선택이다.',
     ['표·카드 보기 전환, 일·주·월 기간 단위, 차트 지표를 즉시 바꿀 때'],
     ['패널 전환은 Tabs, 제출할 폼 값은 RadioGroup을 쓴다','다중 선택에는 쓰지 마라'],'17.7',[
@@ -301,7 +311,7 @@ const intents = [
     ['ChartSkeleton','차트','chart-skeleton',['height','legend','variant','rows'],'height·variant·legend를 완료 후 차트와 맞춘다.'],
   ].map(([name,label,slot,props,presetRule]) => entry(name,'loading',`${label} 형태의 로딩 자리 표시자다.`,[`${label}의 콘텐츠 배치와 치수를 알 때`],['실제 콘텐츠와 다른 치수로 쓰지 마라'],'9.2',presetRule,props,[slot],['Skeleton'],[label,`${label} 로딩`,`${label} 스켈레톤`,`${label} 불러오는 중`,`${label} 불러오기`])),
   entry('ProgressTrack','loading','진행률과 예상 시간을 표시한다.',['긴 작업의 진행 정도를 알릴 때'],['모르는 진행률을 지어내지 마라'],'9.1',['value와 etaSeconds로 진행률과 남은 시간을 함께 알린다.'],['value','label','etaSeconds'],['progress-track'],['TaskProgress'],['진행률','진행 표시','대기','남은 시간','예상 시간','진행 바']),
-  entry('TaskProgress','loading','드문 장기 작업의 단계와 진행을 표시한다.',['대량 내보내기·일괄 작업을 기다릴 때'],['자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라'],'9.3',[],['title','value','steps','etaSeconds','onDismiss'],['task-progress'],['ProgressTrack'],['대량','일괄','장기 작업','내보내기','오래 걸리는','진행 상황','진행률','작업 단계','백그라운드 작업']),
+  entry('TaskProgress','loading','드문 장기 작업의 단계와 진행을 표시한다.',['대량 내보내기·일괄 작업을 기다릴 때'],['자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라','여러 단계 폼의 위치는 Steps를 쓴다'],'9.3',[],['title','value','steps','etaSeconds','onDismiss'],['task-progress'],['ProgressTrack','Steps'],['대량','일괄','장기 작업','내보내기','오래 걸리는','진행 상황','진행률','작업 단계','백그라운드 작업']),
   entry('Tooltip','guide','컨트롤의 뜻을 한 줄로 설명한다.',['호버·키보드 포커스로 UI 의미를 확인할 때'],['데이터 요약이나 액션을 넣지 마라','여러 문장을 넣지 마라'],'10.4',[
     "Tooltip 안으로 포커스를 옮기지 않는다. 컨트롤에 그대로 둔다."
   ],['children','content','disabled'],['guide-tooltip'],['Hint','Tour','Peek'],['툴팁','호버','한 줄','컨트롤 설명','UI 설명']),
@@ -310,14 +320,15 @@ const intents = [
   entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],["Field가 입력값을 관리한다고 가정하지 마라"],'11.4',[
     "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다."
   ],['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사']),
-  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라'],'11.5',[
+  entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라','단계 위치는 Steps를 쓰고 폼을 중첩하지 마라'],'11.5',[
     "Enter는 Tab 순서로 이동한다. 별도 입력 순서를 만들지 않는다.",
     "단일 행 Shift+Enter를 제출로 바꾸지 않는다. 이전 칸 이동이다.",
     "자체 컨트롤의 포커스 요소에 data-form-control=advance로 Enter 이동을 지정한다.",
     "마지막 일반 입력의 Enter 제출은 data-form-control=advance 없이 유지한다.",
     "실제 액션 버튼에는 이동 표식을 붙이지 않는다. Enter 실행을 보존한다.",
-    "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다."
-  ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
+    "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
+    rule("여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.", "11.8")
+  ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input','Steps'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
   entry('Peek','overlay',"레코드를 열지 않고 핵심 내용을 요약해 보여준다.",['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제는 SheetContent를 쓴다'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable','SheetContent'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
 

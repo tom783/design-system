@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R42: 세그먼트 포함 실측 86,203바이트 + 여유 297바이트.
-      assert.ok(Buffer.byteLength(result.text) <= 86_500, '복원 규칙까지 포함한 전송량을 잰다');
+      // R43: Steps 포함 실측 88,161바이트 + 여유 289바이트.
+      assert.ok(Buffer.byteLength(result.text) <= 88_450, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -128,13 +128,21 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
         text: '페이지를 넘기면 선택이 해제된다. 서버 페이징은 표 아래에 Pagination을 조립한다.', source: 'DESIGN.md 4.1',
       }, expected.rules.at(-1)], related: [...expected.related, 'Pagination'],
     } : expected;
-    const adjusted = name === 'RadioGroupItem' ? { ...next, dont: [...next.dont,
+    let adjusted = name === 'RadioGroupItem' ? { ...next, dont: [...next.dont,
       '제출값 없이 보기·필터 단위를 즉시 바꾸면 SegmentedControl, 패널 전환은 Tabs를 쓴다'],
     } : next;
+    if (name === 'FormFlow') adjusted = { ...adjusted,
+      dont: [...adjusted.dont, '단계 위치는 Steps를 쓰고 폼을 중첩하지 마라'],
+      related: [...adjusted.related, 'Steps'],
+      rules: [...adjusted.rules, { text: '여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.', source: 'DESIGN.md 11.8' }],
+    };
     checkBaseline(await call(c, 'get_component', { name }), adjusted);
   }
-  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl만 명시적으로 더한다.
+  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl·R43 Steps만 명시적으로 더한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
+    name: 'Steps', kind: 'component', purpose: '여러 단계 폼의 현재 위치와 완료·오류·예정을 표시한다.',
+    import: "import { Steps } from '@s2life/ui';",
+  }, {
     name: 'SegmentedControl', kind: 'component', purpose: '화면 보기와 기간·지표 단위를 즉시 바꾸는 단일 선택이다.',
     import: "import { SegmentedControl } from '@s2life/ui';",
   }, {

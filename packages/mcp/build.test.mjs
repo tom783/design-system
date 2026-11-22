@@ -96,11 +96,13 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R42: 카탈로그 86,203바이트 실측 + 297바이트 여유. 전송 상한 90KB는 유지한다.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 86_500);
-  // R42: 목록 19,506 + 244바이트, 최대 상세 DataTable 4,576 + 224바이트 여유.
-  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_750);
+  // R43: 카탈로그 88,161B + 289B, 목록 19,679B + 271B. 운영 예산은 유지한다.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 88_450);
+  // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
+  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950);
   assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);
+  assert.ok(Buffer.byteLength(JSON.stringify(manifest.tokens)) <= 67_300);
+  assert.ok(Buffer.byteLength(JSON.stringify({ rules: manifest.principles })) <= 4_400);
 });
 test('R33b: 다른 부품 소스·접두어 없는 규칙·절 번호 충돌도 무손실로 복원한다', () => {
   const entry = (name, extra = {}) => {

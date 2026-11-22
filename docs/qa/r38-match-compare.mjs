@@ -4,6 +4,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { matchComponents } from '../../packages/mcp/match.mjs';
 
 export const intendedChanges = new Map([
+  // R43: 일반 단계 질의는 폼 위치 표시, 안내 투어는 Tour로 유지한다.
+  ['단계', 'Steps'],
   // R41: 단일 KPI는 새 지표 타일, 목표 달성 질의는 계속 BulletRow다.
   ['KPI', 'StatTile'],
   ['상태·정렬 필터에서 하나를 고른다.', 'Select'],

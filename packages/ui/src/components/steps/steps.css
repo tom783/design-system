@@ -1,0 +1,41 @@
+@layer components {
+  .ds-steps { container-type: inline-size; min-width: 0; width: 100%; color: var(--text-primary); }
+  .ds-steps [data-slot="steps-list"] { display: flex; gap: var(--space-16); padding: 0; margin: 0; list-style: none; }
+  .ds-steps [data-slot="steps-item"] { display: flex; align-items: flex-start; gap: var(--space-8); flex: 1 1 0; min-width: 0; }
+  .ds-steps [data-slot="steps-item"]:not(:last-child)::after {
+    content: ''; flex: 0 0 var(--space-16); margin-top: var(--space-16); border-top: 1px solid var(--border-subtle);
+  }
+  .ds-steps [data-slot="steps-static"], .ds-steps [data-slot="steps-button"] {
+    display: flex; align-items: flex-start; gap: var(--space-8); flex: 1 1 0; min-width: 0;
+    padding: var(--space-4); border: 0; border-radius: var(--radius-sm); background: transparent; color: inherit;
+    text-align: start; font: inherit;
+  }
+  .ds-steps [data-slot="steps-button"] { cursor: pointer; }
+  .ds-steps [data-slot="steps-button"]:hover { background: var(--bg-hover); }
+  .ds-steps [data-slot="steps-button"]:focus-visible { outline: var(--focus-width) solid var(--border-focus); outline-offset: 0; }
+  .ds-steps [data-slot="steps-marker"] {
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 var(--space-24);
+    height: var(--space-24); border: 1px solid var(--border-input); border-radius: var(--radius-full);
+    color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-variant-numeric: tabular-nums;
+  }
+  .ds-steps [data-slot="steps-marker"] svg { width: var(--space-16); height: var(--space-16); }
+  .ds-steps [data-slot="steps-content"] { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
+  .ds-steps [data-slot="steps-heading"] { display: flex; min-width: 0; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+  .ds-steps [data-slot="steps-label"], .ds-steps [data-slot="steps-description"] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ds-steps [data-slot="steps-label"] { min-width: 0; }
+  .ds-steps [data-slot="steps-count"] { display: none; flex-shrink: 0; white-space: pre; }
+  .ds-steps [data-slot="steps-status"], .ds-steps [data-slot="steps-description"] { font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); }
+  .ds-steps [aria-current="step"] [data-slot="steps-heading"] { font-weight: 600; }
+  .ds-steps [data-status="current"] [data-slot="steps-marker"] { background: var(--action-primary-bg); color: var(--text-on-brand); border-color: var(--action-primary-bg); }
+  .ds-steps [data-status="complete"] [data-slot="steps-marker"], .ds-steps [data-status="complete"] [data-slot="steps-status"] { color: var(--status-success-fg); }
+  .ds-steps [data-status="error"] [data-slot="steps-marker"], .ds-steps [data-status="error"] [data-slot="steps-status"] { color: var(--status-danger-fg); }
+  /* 4단계 라벨 영역을 측정해 선택한 경계. 근거는 docs/qa/r43-steps.md. */
+  @container (width < 640px) {
+    .ds-steps [data-slot="steps-item"]:not([aria-current="step"]) { display: none; }
+    .ds-steps [data-slot="steps-item"]::after { display: none; }
+    .ds-steps [data-slot="steps-marker"] { display: none; }
+    /* 오류 아이콘은 요약에서도 상태의 모양을 잃지 않도록 남긴다. */
+    .ds-steps [data-status="error"] [data-slot="steps-marker"], .ds-steps [data-status="complete"] [data-slot="steps-marker"] { display: inline-flex; }
+    .ds-steps [data-slot="steps-count"] { display: inline; }
+  }
+}
