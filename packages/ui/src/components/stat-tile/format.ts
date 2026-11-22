@@ -3,8 +3,10 @@ export function statValue(value: string | number, format?: Intl.NumberFormatOpti
   if (!Number.isFinite(value)) return null;
   const full = new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 20, ...format, notation: 'standard' }).format(value) + unit;
   // 200px 타일의 내용 폭은 166px. 십억 단위의 원문은 이를 넘으므로 만·억·조로 통일한다.
+  // compact 의 기본 useGrouping 은 'min2'라 네 자리 앞수에 쉼표를 빼서 38,420,000원이 '3842만원'이 됐다.
+  // 같은 줄의 '1,284건'과 맞추려 true(= 'always', Intl.NumberFormat v3)로 둔다. format 으로 덮을 수 있다.
   const display = new Intl.NumberFormat('ko-KR', {
-    maximumFractionDigits: 1, notation: Math.abs(value) >= 10_000 ? 'compact' : 'standard', ...format,
+    maximumFractionDigits: 1, notation: Math.abs(value) >= 10_000 ? 'compact' : 'standard', useGrouping: true, ...format,
   }).format(value) + unit;
   return { full, display };
 }

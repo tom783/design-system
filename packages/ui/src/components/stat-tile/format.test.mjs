@@ -9,6 +9,12 @@ test('지표 숫자는 한국어 단위 경계에서 축약하고 원문·부호
   assert.deepEqual(statValue(1284000, undefined, '건'), { full: '1,284,000건', display: '128.4만건' });
   assert.equal(statValue(1284000000).display, '12.8억');
   assert.equal(statValue(-1284000000000).display, '-1.3조');
+  // 축약 앞수가 네 자리여도 천 단위 쉼표를 쓴다(이전: '3842만원'). 같은 줄의 '1,284건'과 표기를 맞춘다.
+  assert.deepEqual(statValue(38420000, undefined, '원'), { full: '38,420,000원', display: '3,842만원' });
+  assert.equal(statValue(38425000).display, '3,842.5만');
+  assert.equal(statValue(99990000).display, '9,999만');
+  assert.equal(statValue(1234_5000_0000).display, '1,234.5억');
+  assert.equal(statValue(38420000, { useGrouping: false }).display, '3842만', 'format 이 우선한다');
   assert.deepEqual(statValue('1,284,000,000원', undefined, '', '12.8억원'), { full: '1,284,000,000원', display: '12.8억원' });
   assert.equal(statValue('주문 ID 0012').full, '주문 ID 0012', '문자열은 숫자로 추측하지 않는다');
   for (const value of [NaN, Infinity, -Infinity]) assert.equal(statValue(value), null, '실패를 0으로 표시하지 않는다');
