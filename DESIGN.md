@@ -1648,8 +1648,15 @@ eslint 를 쓰지 않는다 — 지금까지와 같은 생성기 게이트 방�
 - 두 경로 모두 한글이 있는 화면에서 `document.fonts.ready` 뒤 Pretendard Variable 면이
   하나 이상 `loaded`이고, 본문 계산 글꼴의 첫 항목도 Pretendard Variable인가
 - `npx @s2life/mcp` 가 `initialize` 에 응답하는가
+- 번들에 들어간 React 버전이 하나인가
 
-`pnpm qa` 에 들어 있다.
+`pnpm qa` 에 들어 있다. 기본 리허설은 저장소와 같은 React 로 돈다.
+
+**peer 하한도 리허설로 확인한다.** `@s2life/ui` 의 peer 는 `react`·`react-dom` `^19.0.0` 이다
+(0.4.0 에서 `^19.3.1` 을 넓혔다. React 18 은 지원하지 않는다). 쓰는 React API 는 19.0 에 모두 있고,
+런타임 의존성(Radix·sonner·cmdk·visx·TanStack·lucide·react-day-picker)의 peer 도 19.0 을 받는다.
+`S2_PACK_REACT=19.0.0 pnpm qa:pack` 이 소비 앱을 React·React DOM 19.0.0 과 `@types` 19.0.x 로 설치해
+위 검사를 그대로 돌린다. peer 범위를 바꾸거나 React 하한에 걸릴 API 를 쓰기 시작하면 배포 전에 한 번 돌린다.
 
 ---
 

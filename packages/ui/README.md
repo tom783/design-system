@@ -1,12 +1,12 @@
 # @s2life/ui
 
-B2B 커머스 SaaS용 React 디자인 시스템. React·React DOM 19.3 이상을 앱에서 제공한다.
+B2B 커머스 SaaS용 React 디자인 시스템. React·React DOM 19(19.0 이상)를 앱에서 제공한다.
 
 ```sh
 npm install @s2life/ui pretendard
 ```
 
-React·React DOM 19.3 이상은 peer 의존성이며, 앱에 없다면 `npm install @s2life/ui pretendard react react-dom`으로 함께 설치한다.
+React·React DOM 19(19.0 이상)는 peer 의존성이며 React 18은 지원하지 않는다. 앱에 없다면 `npm install @s2life/ui pretendard react react-dom`으로 함께 설치한다.
 앱에 `@s2life/tokens`를 따로 설치하지 않는다 — ui가 같은 버전을 고정해 가져오며, 따로 설치하면 버전이 어긋날 수 있다.
 
 ```tsx

@@ -8,7 +8,7 @@ B2B 커머스 SaaS용 토큰·React 컴포넌트·읽기 전용 MCP 서버를 �
 npm install @s2life/ui pretendard
 ```
 
-React·React DOM 19.3 이상은 peer 의존성이며, 앱에 없다면 `npm install @s2life/ui pretendard react react-dom`으로 함께 설치한다.
+React·React DOM 19(19.0 이상)는 peer 의존성이며 React 18은 지원하지 않는다. 앱에 없다면 `npm install @s2life/ui pretendard react react-dom`으로 함께 설치한다.
 앱에 `@s2life/tokens`를 따로 설치하지 않는다 — ui가 같은 버전을 고정해 가져오며, 따로 설치하면 버전이 어긋날 수 있다.
 
 앱의 공통 진입점에서 아래 두 줄의 CSS를 한 번 불러온다. Next.js App Router에서는 루트 `app/layout.tsx`, Vite에서는 `src/main.tsx`에 둔다. 상태·이벤트를 쓰는 Next.js 컴포넌트는 클라이언트 컴포넌트에서 사용한다.
