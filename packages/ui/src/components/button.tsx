@@ -2,6 +2,7 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../lib/cn';
 import { Slot, Slottable } from '../internal/slot';
+import { splitIconChildren } from '../lib/button-label';
 
 /**
  * 버튼
@@ -74,6 +75,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const Component = asChild ? Slot : 'button';
+    // children 앞뒤 아이콘은 말줄임 라벨 밖에 둔다(splitIconChildren). iconOnly 는 아이콘 하나가 전부라 그대로다.
+    const renderLabel = (content: React.ReactNode) => {
+      const { lead, label, trail } = iconOnly ? { label: content } : splitIconChildren(content);
+      return <>{lead}<span className="truncate">{label}</span>{trail}</>;
+    };
     return <Component
       ref={ref}
       type={asChild ? undefined : type}
@@ -84,8 +90,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       {leadingIcon}
       {/* Slot 대상은 링크 자체로 유지하고, 아이콘과 말줄임 라벨은 그 안에 배치한다. */}
       {asChild
-        ? <Slottable child={children}>{label => <span className="truncate">{label}</span>}</Slottable>
-        : children ? <span className="truncate">{children}</span> : null}
+        ? <Slottable child={children}>{renderLabel}</Slottable>
+        : children ? renderLabel(children) : null}
       {trailingIcon}
     </Component>;
   },

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button, DataTable, createDataTableColumnHelper, Select, SelectTrigger, SelectValue,
-  SelectContent, SelectItem, Field, Input, Tooltip, Peek, type ButtonProps } from '@s2life/ui';
+  SelectContent, SelectItem, Field, Input, Tooltip, Peek, Tabs, TabsList, TabsTrigger, TabsContent,
+  type ButtonProps } from '@s2life/ui';
 import { Check } from '@s2life/ui/icons';
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '@s2life/ui/styles.css';
@@ -16,6 +17,7 @@ const columns = helper.columns([helper.accessor('name', { header: '상품명' })
 function App() {
   const [open, setOpen] = useState(false);
   return <main style={{ padding: 32, maxWidth: 800 }}>
+    {/* 아이콘을 children 에 넣는 습관(shadcn)도 leadingIcon 과 같은 한 줄이어야 한다 — pack-verify 가 잰다. */}
     <Button {...typed} id="primary"><Check />패키지 소비</Button>
     <Field label="이름" description="회귀 검사" error="필수 입력입니다"><Input /></Field>
     <Tooltip content="스타일이 있는 툴팁"><Button id="tooltip-trigger">안내</Button></Tooltip>
@@ -25,6 +27,9 @@ function App() {
     <Select defaultValue="ready"><SelectTrigger aria-label="상태"><SelectValue /></SelectTrigger>
       <SelectContent><SelectItem value="ready">준비</SelectItem><SelectItem value="done">완료</SelectItem></SelectContent>
     </Select>
+    <Tabs defaultValue="basic"><TabsList aria-label="상세 구분"><TabsTrigger value="basic">기본 정보</TabsTrigger>
+      <TabsTrigger value="shipping">배송</TabsTrigger></TabsList>
+      <TabsContent value="basic">주문 기본 정보</TabsContent><TabsContent value="shipping">배송 정보</TabsContent></Tabs>
     <DataTable data={[{ id: '1', name: '포장 상자' }]} columns={columns} getRowId={(row) => row.id} caption="tarball 소비 표" />
   </main>;
 }

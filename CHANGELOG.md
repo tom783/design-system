@@ -168,6 +168,10 @@
 
 ### 고침
 
+- Button: children 맨 앞·뒤에 넣은 아이콘(`<Button><Check />저장</Button>`)이 라벨 위로 쌓이고 버튼 위로 1px 나가던 문제
+  (0.3.0 게시본부터). 라벨을 말줄임 span으로 감싸는데 preflight가 svg를 `display: block`으로 두었다. 앞뒤 아이콘 요소(svg·컴포넌트)를
+  라벨 밖 flex 항목으로 꺼내 `leadingIcon`·`trailingIcon`과 같은 자리(간격 8px·세로 가운데)에 둔다. 아이콘 하나뿐인 `iconOnly`와
+  `<strong>` 같은 글 요소는 그대로다.
 - ClampText가 `white-space: nowrap` 조상(예: DataTable 셀) 안에서 긴 글을 더보기 없이 자르던 문제(도그푸딩 2: 1210/576px,
   더보기 0/16). 내용이 `text-wrap-mode: wrap`과 `overflow-wrap: anywhere`를 소유한다. `white-space: normal`이 아니라서
   `pre-line`·`pre`로 보존한 사용자 개행은 그대로 남는다.
@@ -254,6 +258,8 @@
   1,080초가 그 대기였다). 새 하네스: 앱 셸·페이지네이션·옆 패널·파일 업로드·날짜+시각·StatTile·세그먼트·단계 표시·
   같은 줄 정렬(9건)·대표 화면(14건)·레이어 디테일·디자인 디테일·검색 입력 일관성·도그푸딩 3.
 - 배포 리허설: `S2_PACK_REACT=<x.y.z>`로 소비 앱 React를 지정한다(peer 하한 확인). 기본·지정 모두 번들 안 React 버전이 하나인지 검사한다.
+  소비 앱에 Tabs를 두고 기본·Tailwind 두 경로에서 '버튼 아이콘·라벨 한 줄'과 '탭 선택 밑줄이 기준선에 앉는다'를 위치로 잰다
+  (0.3.0의 Button이면 세로 중심 차 20px로 실패한다).
 - CI: 게이트 제한 시간 verify 20 → 45분·release 25 → 60분, 실행 기반과 액션 런타임 정리.
 - 개발 의존성 `pretendard` 1.3.9 — Storybook도 소비 앱과 같은 CSS import로 글꼴을 로드한다.
 

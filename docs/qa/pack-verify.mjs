@@ -221,9 +221,34 @@ if (!process.exitCode) {
       assert.equal(font.firstFamily, 'Pretendard Variable', `${path}: 본문의 첫 계산 글꼴`);
       console.log(`${path}: Pretendard Variable ${font.loaded}면 로드 · 본문 첫 글꼴 확인`);
     };
+    // 계산 스타일 몇 개로는 "모양"이 깨진 것을 못 본다(0.3.0 게시본: 버튼 높이 38 은 맞는데 아이콘이 라벨 위에 쌓였다).
+    // 아이콘·라벨이 한 줄인지, 탭 선택 밑줄이 기준선에 앉는지를 위치로 잰다.
+    const verifyShape = async (path) => {
+      const shape = await ev(`(() => {
+        const button = document.querySelector('#primary'), icon = button.querySelector('svg');
+        const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+        let node; while ((node = walker.nextNode()) && !node.textContent.trim());
+        const range = document.createRange(); range.selectNodeContents(node);
+        const b = button.getBoundingClientRect(), i = icon.getBoundingClientRect(), t = range.getBoundingClientRect();
+        const list = document.querySelector('[role=tablist]'), tab = list.querySelector('[role=tab][data-state=active]');
+        const l = list.getBoundingClientRect();
+        return {
+          iconDy: Math.abs((i.top + i.height / 2) - (t.top + t.height / 2)), iconBeforeLabel: i.right <= t.left,
+          iconInside: i.top >= b.top && i.bottom <= b.bottom,
+          baseline: getComputedStyle(list).backgroundImage, underline: getComputedStyle(tab).borderBottomWidth,
+          underlineGap: Math.abs(tab.getBoundingClientRect().bottom - (l.top + list.clientTop + list.clientHeight)),
+        };
+      })()`);
+      assert(shape.iconDy <= 1 && shape.iconBeforeLabel && shape.iconInside, `${path}: 버튼 아이콘과 라벨이 한 줄로 버튼 안에 있어야 한다 ${JSON.stringify(shape)}`);
+      assert.match(shape.baseline, /linear-gradient/, `${path}: 탭 목록 기준선(1px 배경)이 그려져야 한다`);
+      assert.equal(shape.underline, '2px', `${path}: 선택 탭 밑줄 2px`);
+      assert(shape.underlineGap <= 0.5, `${path}: 선택 밑줄 아래 끝이 기준선(스크롤 영역 바닥)과 같아야 한다 — 차 ${shape.underlineGap}px`);
+      console.log(`${path}: 버튼 아이콘·라벨 한 줄(세로 중심 차 ${shape.iconDy.toFixed(2)}px) · 탭 기준선·선택 밑줄 일치`);
+    };
     await cdp('Page.navigate', { url: app });
     for (let i = 0; i < 80 && !await ev('!!document.querySelector("#primary")'); i++) await sleep(100);
     await verifyFont('기본 CSS 앱');
+    await verifyShape('기본 CSS 앱');
     assert.equal(await ev('document.querySelector("#primary").getBoundingClientRect().height'), 38);
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=field]")).display'), 'flex');
     assert.equal(await ev('getComputedStyle(document.querySelector("[data-slot=field-error]")).minHeight'), '20px');
@@ -245,6 +270,7 @@ if (!process.exitCode) {
     await cdp('Page.navigate', { url: `${app}/tailwind/` });
     for (let i = 0; i < 80 && !await ev('location.pathname === "/tailwind/" && !!document.querySelector("#primary")'); i++) await sleep(100);
     await verifyFont('Tailwind 앱');
+    await verifyShape('Tailwind 앱');
     await ev('document.querySelector("#tooltip-trigger").focus()');
     await sleep(250);
     await ev('document.querySelector("#peek-trigger").click()');
