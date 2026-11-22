@@ -155,6 +155,7 @@ try {
         return { highlighted:item.hasAttribute('data-highlighted'), text, stroke, bg, text_contrast:contrast(text,bg), icon_contrast:contrast(stroke,bg) }; })()`);
       const idle = await measure();
       await ev(`${q(item)}.focus()`); await wait(`${q(item)}.hasAttribute('data-highlighted')`);
+      await sleep(250); // transition-colors 가 끝난 하이라이트 바탕을 잰다.
       const highlighted = await measure();
       for (const m of [idle, highlighted]) {
         assert.ok(m.text_contrast >= 4.5 && m.icon_contrast >= 4.5, JSON.stringify(m));
