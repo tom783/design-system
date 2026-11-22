@@ -222,7 +222,8 @@ export function DataTable<T extends RowData>({
           {selectable && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
             {partialSelectionNotice
               ? `로드된 ${rows.length.toLocaleString('ko-KR')}건이 선택됨 · 전체 ${totalCount.toLocaleString('ko-KR')}건`
-              : `${selectedCount}개 선택`}
+              // 행은 '건'으로 센다 — Pagination(1–20 / 1,284건)·부분 로드 안내와 같은 단위.
+              : `${selectedCount.toLocaleString('ko-KR')}건 선택`}
           </span>}
           {exportFileName && partiallyLoaded && !selectedCount && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
             {`전체 ${totalCount.toLocaleString('ko-KR')}건 중 ${rows.length.toLocaleString('ko-KR')}건`}

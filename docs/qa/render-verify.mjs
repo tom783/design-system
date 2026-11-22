@@ -178,7 +178,7 @@ for (const [name, label, range] of [
     return { text:bar.textContent, button:bar.querySelector('button').textContent.trim(),
       statuses:[...bar.querySelectorAll('[role="status"]')].map(node => node.textContent.trim()) };
   })()`);
-  check(`${name}: 선택 상태 줄 없음`, !/개 선택|건이 선택됨/.test(toolbar.text), toolbar.text);
+  check(`${name}: 선택 상태 줄 없음`, !/[건개] 선택|건이 선택됨/.test(toolbar.text), toolbar.text);
   check(`${name}: 짧은 내보내기 라벨`, toolbar.button === label, toolbar.button);
   check(`${name}: 부분 로드 범위 상태`, JSON.stringify(toolbar.statuses) === JSON.stringify(range ? [range] : []), JSON.stringify(toolbar.statuses));
 }

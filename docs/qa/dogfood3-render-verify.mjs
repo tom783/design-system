@@ -63,7 +63,7 @@ async function counts(expected, { mixed = false, checked = expected > 0 } = {}) 
       mixed: head.indeterminate, checked: head.checked,
     };
   })()`);
-  assert.deepEqual(actual, { app: expected, toolbar: `${expected}개 선택`, rows: expected, mixed, checked });
+  assert.deepEqual(actual, { app: expected, toolbar: `${expected.toLocaleString('ko-KR')}건 선택`, rows: expected, mixed, checked });
 }
 async function selectedStory(suffix) {
   await story(`components-datatable--선택자동해제${suffix}`);

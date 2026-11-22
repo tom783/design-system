@@ -54,6 +54,8 @@
 
 ### 고침
 
+- DataTable 내장 툴바의 선택 상태를 `N개 선택`에서 `N건 선택`으로 바꿨다(천 단위 쉼표 포함). Pagination(`1–20 / 1,284건`)·부분 로드 안내·전체 선택 라벨과 단위가 갈렸다. 선택 상태 줄을 찾던 스토리·하네스 단정도 함께 고쳤다. MultiSelect의 `N개 선택`(고른 값의 개수)은 그대로다.
+
 - StatTile 축약 값: 앞수가 네 자리일 때 천 단위 쉼표가 빠져 38,420,000원이 `3842만원`으로 나왔다. compact 서식의 기본 useGrouping(`min2`)을 `true`(always)로 바꿔 `3,842만원`으로 표시한다. 같은 줄의 `1,284건`과 표기가 맞는다. `format`으로 덮을 수 있고 원문(`full`)은 그대로다.
 
 - Input 검색·비밀번호·앞 아이콘: className의 폭·배치 클래스(w-·min-w-·max-w-·flex-1·basis·grow·shrink·order·self·col-/row-·m*)를 바깥 래퍼 `.ds-input-control`에 붙인다. 안쪽 input에만 붙어 `className="w-80"`을 줘도 래퍼(width:100%)가 툴바 한 줄을 차지했다. 글자·테두리·안쪽 여백은 input에 남고, 래퍼 없는 입력은 그대로다. 분리 규칙 단위 테스트와 툴바 한 줄 하네스 검사를 추가했다.

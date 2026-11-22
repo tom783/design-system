@@ -389,7 +389,7 @@ export const 무한스크롤: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('button', { name: '50건 내보내기' })).toBeVisible();
     await expect(canvas.getByText('전체 1,284건 중 50건')).toBeVisible();
-    await expect(canvas.queryByText(/개 선택/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText(/[건개] 선택/)).not.toBeInTheDocument();
     for (let count = 50; count < infiniteTotal; count = Math.min(count + 50, infiniteTotal)) {
       scrollToTableEnd(canvasElement);
       await waitFor(() => expect(canvas.getByText('불러오는 중')).toBeVisible());
