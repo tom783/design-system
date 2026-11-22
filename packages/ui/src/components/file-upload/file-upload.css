@@ -1,6 +1,8 @@
 .ds-file-upload { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .ds-file-upload-dropzone { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-8); min-width: 0; padding: var(--space-16); border: 1px dashed var(--border-input); border-radius: var(--radius-md); background: var(--bg-surface); cursor: pointer; }
-.ds-file-upload-dropzone[data-dragging] { border-color: var(--border-focus); background: var(--bg-selected); }
+/* 드래그 중 테두리는 포커스가 아니라 브랜드 강조다. 포커스 링이 중립색으로 바뀌어도(2026-11-22)
+   크림슨을 유지하도록 Checkbox·Switch 체크 테두리와 같은 브랜드 윤곽 토큰을 쓴다. */
+.ds-file-upload-dropzone[data-dragging] { border-color: var(--action-primary-border); background: var(--bg-selected); }
 .ds-file-upload-dropzone:has([aria-invalid="true"]) { border-color: var(--status-danger-fg); }
 .ds-file-upload-dropzone[aria-disabled="true"] { border-color: var(--border-default); cursor: not-allowed; }
 /* 오류는 드롭존 한 곳에 표시한다. Field의 공통 오류 규칙보다 구체적으로 버튼 기본 윤곽을 보존한다. */
