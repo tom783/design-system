@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchBrowser, storybook } from './browser.mjs';
 const OUT = process.argv[2] || '.qa-shots/steps';
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9491, outDir: OUT });
+const browser = await launchBrowser({ outDir: OUT });
 const { cdp, ev, sleep } = browser;
 const { open } = storybook(browser);
 const results = [], measurements = [], errors = [];

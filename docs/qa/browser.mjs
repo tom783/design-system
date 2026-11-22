@@ -36,7 +36,7 @@
 // 또는 환경변수로 직접 지정: DS_HEADLESS_SHELL=/path/to/chrome-headless-shell
 
 import { spawn } from 'node:child_process';
-import { existsSync, readdirSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { inflateSync } from 'node:zlib';
 import { join } from 'node:path';
@@ -190,28 +190,40 @@ export function cdpRequests(send, { timeout = 45000 } = {}) {
   return { call, settle, pending: () => pending.size };
 }
 
+/** user-data-dir/DevToolsActivePort 의 첫 줄(포트). 아직 없으면 null. */
+export function devToolsActivePort(userDataDir) {
+  try {
+    const port = Number(readFileSync(join(userDataDir, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+    return Number.isInteger(port) && port > 0 ? port : null;
+  } catch { return null; }
+}
+
 /**
  * 브라우저를 띄우고 CDP 세션을 연다.
+ *
+ * CDP 포트는 기본 0 — 브라우저가 빈 포트를 골라 user-data-dir/DevToolsActivePort 에 적고, 그걸 읽는다.
+ * 하네스마다 고정 포트(9476·9472 …)를 쓰던 때는 두 하네스가 같은 번호를 써서 병렬 실행
+ * (--jobs, 여러 작업 폴더)에서 남의 브라우저에 붙을 수 있었다. 디버깅용으로만 port 를 준다.
  *
  * 반환: { cdp, ev, shot, errors, resetErrors, close }
  *  - ev()   는 예외를 그대로 던진다. 삼키면 조용히 통과하는 검사가 생긴다.
  *  - errors() 는 console.error 와 페이지 예외를 모은 것. 노이즈는 호출부가 거른다.
  */
 export async function launchBrowser({
-  port,
+  port = 0,
   windowSize = '1440,1000',
   scale = 1,
   outDir = null,
   timeout = 45000,
 } = {}) {
-  if (!port) throw new Error('launchBrowser: port 가 필요합니다 (하네스마다 달라야 동시 실행이 가능).');
   if (outDir) mkdirSync(outDir, { recursive: true });
   const bin = resolveHeadlessShell();
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+  const userDataDir = mkdtempSync(join(tmpdir(), 'ds-qa-'));
   const proc = spawn(bin, [
     `--remote-debugging-port=${port}`,
-    `--user-data-dir=${mkdtempSync(join(tmpdir(), 'ds-qa-'))}`,
+    `--user-data-dir=${userDataDir}`,
     '--no-first-run', '--disable-gpu',
     `--window-size=${windowSize}`,
     `--force-device-scale-factor=${scale}`,
@@ -223,17 +235,19 @@ export async function launchBrowser({
   const kill = () => { try { proc.kill(); } catch { /* 이미 죽었으면 그만 */ } };
   process.on('exit', kill);
 
-  let ws;
+  let ws, cdpPort = port || null;
   for (let i = 0; i < 100; i++) {
     if (proc.exitCode !== null) throw new Error(`브라우저가 즉시 종료됨 (code ${proc.exitCode})\n${launchLog.slice(0, 500)}`);
     try {
-      const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+      cdpPort ??= devToolsActivePort(userDataDir);
+      if (!cdpPort) throw new Error('아직 포트 없음');
+      const list = await (await fetch(`http://127.0.0.1:${cdpPort}/json/list`)).json();
       const page = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
       if (page) { ws = new WebSocket(page.webSocketDebuggerUrl); break; }
     } catch { /* 아직 안 떴다 */ }
     await sleep(150);
   }
-  if (!ws) { kill(); throw new Error(`CDP 연결 실패 (port ${port})\n${launchLog.slice(0, 500)}`); }
+  if (!ws) { kill(); throw new Error(`CDP 연결 실패 (port ${cdpPort ?? '미정'})\n${launchLog.slice(0, 500)}`); }
   await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
 
   const requests = cdpRequests((data) => ws.send(data), { timeout });

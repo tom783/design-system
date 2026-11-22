@@ -5,7 +5,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { deflateSync } from 'node:zlib';
 import { spawnSync } from 'node:child_process';
-import { playwrightCaches, revisionsNewestFirst, resolveHeadlessShell, parityArgs, decodePng, cdpRequests } from './browser.mjs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { playwrightCaches, revisionsNewestFirst, resolveHeadlessShell, parityArgs, decodePng, cdpRequests, devToolsActivePort } from './browser.mjs';
 
 test('macOS 캐시 경로', () => {
   assert.deepEqual(playwrightCaches({}, 'darwin', '/Users/x'), ['/Users/x/Library/Caches/ms-playwright']);
@@ -163,4 +166,16 @@ test('cdpRequests: 응답을 받은 프로세스는 timeout 을 기다리지 않
   const out = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', timeout: 20000 });
   assert.equal(out.status, 0, out.stderr);
   assert.ok(Date.now() - t < 10000, `종료까지 ${Date.now() - t}ms`);
+});
+
+test('devToolsActivePort: 브라우저가 고른 CDP 포트(첫 줄)를 읽고, 아직 없으면 null', () => {
+  // 하네스마다 고정 포트를 쓰던 때는 9476·9472 를 두 하네스가 같이 써서 병렬 실행에서 부딪쳤다.
+  const dir = mkdtempSync(join(tmpdir(), 'ds-devtools-'));
+  try {
+    assert.equal(devToolsActivePort(dir), null);
+    writeFileSync(join(dir, 'DevToolsActivePort'), '55274\n/devtools/browser/8c51');
+    assert.equal(devToolsActivePort(dir), 55274);
+    writeFileSync(join(dir, 'DevToolsActivePort'), '');
+    assert.equal(devToolsActivePort(dir), null);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

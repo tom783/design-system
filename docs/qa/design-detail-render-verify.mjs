@@ -6,7 +6,7 @@ import { launchBrowser, storybook, CANVAS, decodePng } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/design-detail';
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9481, windowSize: '1440,1000', outDir: OUT });
+const browser = await launchBrowser({ windowSize: '1440,1000', outDir: OUT });
 const { ev, cdp, sleep } = browser;
 const { open } = storybook(browser);
 const results = [];

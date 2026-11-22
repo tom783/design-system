@@ -15,7 +15,7 @@ writeFileSync(`${OUT}/tailwind-input.css`, `@import "${root}/node_modules/tailwi
 @import "${root}/packages/ui/dist/tailwind.css";\n`);
 execFileSync('pnpm', ['exec', 'tailwindcss', '-i', `${OUT}/tailwind-input.css`, '-o', `${OUT}/tailwind-output.css`], { cwd: root, stdio: 'inherit' });
 const results = [];
-const browser = await launchBrowser({ port: 9483, windowSize: '1200,900', outDir: OUT });
+const browser = await launchBrowser({ windowSize: '1200,900', outDir: OUT });
 const { ev, cdp, sleep } = browser;
 const { open } = storybook(browser);
 const q = selector => `document.querySelector(${JSON.stringify(selector)})`;

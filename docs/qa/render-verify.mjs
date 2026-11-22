@@ -21,11 +21,11 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { launchBrowser, storybook, storybookBase } from './browser.mjs';
 
-const BASE = await storybookBase(), OUT = process.argv[2] || './shots', PORT = 9432;
+const BASE = await storybookBase(), OUT = process.argv[2] || './shots';
 mkdirSync(OUT, { recursive: true });
 // GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
 // 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.
-const session = await launchBrowser({ port: PORT, windowSize: '1440,1000', outDir: OUT });
+const session = await launchBrowser({ windowSize: '1440,1000', outDir: OUT });
 const { cdp, ev, shot, sleep } = session;
 const evalIn = ev;
 

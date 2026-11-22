@@ -31,7 +31,7 @@ const pages = Object.values(index.entries).filter(entry => entry.type === 'docs'
 const componentPages = Object.values(index.entries).filter(entry => entry.type === 'docs' && entry.title.startsWith('Components/'))
   .sort((a, b) => a.title.localeCompare(b.title));
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9469, outDir: OUT });
+const browser = await launchBrowser({ outDir: OUT });
 const { cdp, ev, sleep } = browser;
 const results = [], rendered = [];
 const selector = '[data-doc-page]';

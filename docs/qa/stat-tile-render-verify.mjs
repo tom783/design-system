@@ -5,7 +5,7 @@ import { launchBrowser, storybook } from './browser.mjs';
 
 const OUT = process.argv[2] || '.qa-shots/stat-tile';
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9487, outDir: OUT });
+const browser = await launchBrowser({ outDir: OUT });
 const { cdp, ev, sleep } = browser;
 const { open } = storybook(browser);
 const results = [], measurements = [], errors = [];

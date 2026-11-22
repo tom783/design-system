@@ -3,7 +3,7 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { launchBrowser } from './browser.mjs';
 const out = '.qa-shots/r42-measurement';
 mkdirSync(out, { recursive: true });
-const browser = await launchBrowser({ port: 9488, outDir: out });
+const browser = await launchBrowser({ outDir: out });
 try {
   const tokens = readFileSync('packages/tokens/tokens.css', 'utf8');
   const css = readFileSync('packages/ui/src/components/segmented-control/segmented-control.css', 'utf8');

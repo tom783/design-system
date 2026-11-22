@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchBrowser, storybook, CANVAS } from './browser.mjs';
 const OUT = process.argv[2] || '.qa-shots/layer-detail';
 mkdirSync(OUT, { recursive: true });
-const browser = await launchBrowser({ port: 9482, windowSize: '1100,760', outDir: OUT }).catch(error => {
+const browser = await launchBrowser({ windowSize: '1100,760', outDir: OUT }).catch(error => {
   writeFileSync(`${OUT}/results.json`, JSON.stringify([{ label: '브라우저 기동', pass: false, error: error.message }], null, 2));
   throw error;
 });

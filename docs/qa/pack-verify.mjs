@@ -165,7 +165,7 @@ if (!process.exitCode) {
       try { if ((await fetch('http://127.0.0.1:6107')).ok) break; } catch { /* 서버 기동 대기 */ }
       await new Promise((r) => setTimeout(r, 100));
     }
-    browser = await launchBrowser({ port: 9447, outDir: join(root, '.qa-shots/pack') });
+    browser = await launchBrowser({ outDir: join(root, '.qa-shots/pack') });
     const { cdp, ev, sleep } = browser;
     const verifyFont = async (path) => {
       // DOM 생성 직후는 첫 레이아웃 전일 수 있어, 먼저 본문 레이아웃을 확정한다.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { launchBrowser, storybook, storybookBase } from './browser.mjs';
-const browser = await launchBrowser({ port: 9463, outDir: '.qa-shots/r13' });
+const browser = await launchBrowser({ outDir: '.qa-shots/r13' });
 let failed = 0;
 try {
   const { open } = storybook(browser);

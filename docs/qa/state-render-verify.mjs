@@ -11,7 +11,7 @@
 //    캔버스가 비면 던지도록 해뒀다. 그 가드를 지우지 마라.
 import { launchBrowser, storybook, CANVAS } from './browser.mjs';
 const OUT = process.argv[2] || './shots';
-const s = await launchBrowser({ port: 9613, windowSize: '1200,900', outDir: OUT });
+const s = await launchBrowser({ windowSize: '1200,900', outDir: OUT });
 const sb = storybook(s);
 const { ev, shot } = s;
 const R=[]; const check=(l,p,d)=>{R.push({l,p});console.log(`  ${p?'✓':'✗'} ${l}${d?` — ${d}`:''}`)};

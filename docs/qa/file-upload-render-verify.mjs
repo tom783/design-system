@@ -11,7 +11,7 @@ const imagePath = resolve(OUT, '상품-이미지.png');
 const longName = '이름이-아주-길어서-좁은-목록에서-반드시-말줄임되어야-하는-상품-대표-이미지-2026.png';
 const longPath = resolve(OUT, longName);
 writeFileSync(imagePath, png); writeFileSync(longPath, png);
-const browser = await launchBrowser({ port: 9480, outDir: OUT });
+const browser = await launchBrowser({ outDir: OUT });
 const { cdp, ev, sleep } = browser;
 const { open } = storybook(browser);
 const results = [], measurements = [];
