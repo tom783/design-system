@@ -14,6 +14,15 @@ if [ -n "$refs" ] && ! printf '%s\n' "$refs" | awk '{print $3}' | grep -qv '^ref
   exit 0
 fi
 
+# 깨끗한 체크아웃(빌드 산출물 없음)에서 typecheck — 약 5초.
+# 로컬의 오래된 dist 덕에 통과하고 CI 에서만 깨지는 것을 여기서 막는다
+# (R31~R43b 원격 CI 11회 연속 실패의 원인). 보내는 커밋 그 자체를 검사한다.
+shas="$(printf '%s\n' "$refs" | awk '$3 !~ /^refs\/tags\// && $2 !~ /^0+$/ {print $2}' | sort -u)"
+[ -n "$shas" ] || shas="$(git rev-parse HEAD)"
+for sha in $shas; do
+  node scripts/typecheck-clean.mjs "$sha" || { printf '\n\033[31m✗ 깨끗한 체크아웃 typecheck 실패\033[0m\n'; exit 1; }
+done
+
 # verify 는 어떤 경우에도 돈다. 3초짜리를 건너뛸 이유가 없고,
 # 토큰 대비·MCP drift·타입이 여기서 걸린다.
 pnpm -s verify || { printf '\n\033[31m✗ pnpm verify 실패\033[0m\n'; exit 1; }

@@ -36,7 +36,7 @@ pnpm verify       # 위 세 개를 순서대로
 
 ```
 pre-commit  토큰·매니페스트 재생성 + 산출물 동기 확인 + 타입 + 단위 (약 1.5초)
-pre-push    pnpm verify + pnpm qa (약 147초)   SKIP_QA=1 로 건너뛸 수 있다
+pre-push    깨끗한 체크아웃 typecheck(약 5초) + pnpm verify + pnpm qa   SKIP_QA=1 로 qa 만 건너뛸 수 있다
 CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지막 그물
 ```
 
@@ -141,6 +141,13 @@ success는 3.89:1이다. "600단계는 안전하다"는 규칙은 없다. 실측
 **JS 에서 CSS 를 import 하지 마라.** 컴포넌트 CSS 는 `components.css` 한 곳에
 모은다. 섞여 있으면 앱이 JS 만 import 했을 때 일부 컴포넌트가 스타일 없이 렌더된다
 (실제로 guide·form·peek 이 그랬다).
+
+**패키지 안에서 자기 이름(`@s2life/ui`, `@s2life/ui/icons`)으로 import 하지 마라.** 자기 참조는
+exports 를 거쳐 `packages/ui/dist/` 로 해석된다. dist 는 빌드 뒤에만 생기는 .gitignore 대상이라
+오래된 dist 가 남은 로컬은 통과하고 깨끗한 CI 는 TS2307 로 깨진다(실측: R31~R43b 원격 CI 11회 연속
+실패를 로컬 게이트가 못 봤다). 소스 안에서는 `../icons`·`../index` 상대 경로를 쓴다.
+`scripts/check-boundaries.mjs` 가 pre-commit 에서 막고, pre-push 는 임시 git worktree 에서
+dist 없이 typecheck 한다(`pnpm typecheck:clean [커밋]`).
 
 **macOS 에서 `/Applications/*.app/Contents/MacOS/*` 를 직접 실행하지 마라.**
 에이전트 샌드박스(Orca/Codex 의 Seatbelt) 안에서 **크래시한다.** 실제 리포트:
