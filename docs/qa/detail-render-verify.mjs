@@ -76,9 +76,9 @@ try {
     const originalWarn = console.warn;
     console.warn = (...args) => { window.__detailWarnings.push(args.map(String).join(' ')); originalWarn.apply(console, args); };` });
   for (const name of ['상세화면', '탭넘침', '긴경로']) {
-    await check(`${name} play 완료·콘솔 오류 없음`, () => openStory(`screens-detailscreen--${name}`));
+    await check(`${name} play 완료·콘솔 오류 없음`, () => openStory(`qa-detailscreen--${name}`));
   }
-  await openStory('screens-detailscreen--상세화면');
+  await openStory('qa-detailscreen--상세화면');
   await check('Breadcrumb nav·ol·현재 페이지·링크 밑줄', async () => {
     assert.deepEqual(await ev(`(() => { const nav = ${CANVAS}.querySelector('nav[aria-label="경로"]');
       const page = nav.querySelector('[aria-current="page"]'), link = nav.querySelector('a');
@@ -232,7 +232,7 @@ try {
   });
   await check('상세 화면 상호작용 콘솔 오류·Radix 경고 0건', consoleClean);
 
-  await openStory('screens-detailscreen--긴경로');
+  await openStory('qa-detailscreen--긴경로');
   await check('긴 경로 첫 항목·생략 3개·마지막 두 항목', async () => {
     assert.equal(await ev(`${CANVAS}.querySelectorAll('[data-slot="breadcrumb-item"]').length`), 4);
     assert.equal(await ev(`(() => { const e = ${CANVAS}.querySelector('[data-slot="breadcrumb-ellipsis"]');
@@ -240,7 +240,7 @@ try {
   });
   for (const reduced of ['no-preference', 'reduce']) {
     await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: reduced }] });
-    await openStory('screens-detailscreen--탭넘침');
+    await openStory('qa-detailscreen--탭넘침');
     await check(`탭 끌어오기 모션 정책 (${reduced})`, async () => {
       // **포커스가 움직이는 경로로는 이 코드를 밟을 수 없다.** 브라우저가 포커스된
       // 요소를 알아서 가로로 긁어와서 delta 가 0 이 되고 reveal 이 조기 반환한다(실측).
@@ -296,7 +296,7 @@ try {
       assert.equal(await ev(`getComputedStyle(${CANVAS}.querySelector('[role="tablist"]')).overflowX`), 'auto');
     });
   }
-  await check('다크 상세 화면 play 완료·콘솔 오류 없음', () => openStory('screens-detailscreen--상세화면', '&globals=theme:dark'));
+  await check('다크 상세 화면 play 완료·콘솔 오류 없음', () => openStory('qa-detailscreen--상세화면', '&globals=theme:dark'));
 } catch (error) {
   results.push({ label: '하네스 실행', pass: false, error: error.message });
   console.error(error.stack);

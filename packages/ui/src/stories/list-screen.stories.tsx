@@ -12,7 +12,7 @@ import { Button } from '../components/button';
 import { StatusChip } from '../components/status-chip';
 import { Toaster, toast } from '../components/toast';
 import { quickRange } from '../components/date-picker/date-value';
-const meta = { title: 'Screens/ListScreen' } satisfies Meta;
+const meta = { title: 'QA/ListScreen' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const today = new Date(2026, 10, 15);

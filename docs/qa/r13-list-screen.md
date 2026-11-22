@@ -98,7 +98,7 @@ node docs/qa/list-screen-contract-verify.mjs
 pnpm qa
 ```
 
-`pnpm qa`가 정적 서버를 올리고 기존 하네스와 신규 R13 하네스를 순서대로 실행한다. R13 실패 시 스크린샷은 `.qa-shots/r13`에 저장된다. 스토리북에서 `Components/Select`, `Components/DropdownMenu`, `Components/Toast`, `Components/DatePicker`, `Screens/ListScreen`도 확인할 수 있다. 가상화 스토리 실행 후 `#storybook-root`의 `data-focus-after-unmount`를 확인해 DataTable 스크롤 영역으로 포커스가 돌아왔는지 판정한다. 충돌하면 기존 복구를 수정하지 말고 보고한다.
+`pnpm qa`가 정적 서버를 올리고 기존 하네스와 신규 R13 하네스를 순서대로 실행한다. R13 실패 시 스크린샷은 `.qa-shots/r13`에 저장된다. 스토리북에서 `Components/Select`, `Components/DropdownMenu`, `Components/Toast`, `Components/DatePicker`, `QA/ListScreen`도 확인할 수 있다. 가상화 스토리 실행 후 `#storybook-root`의 `data-focus-after-unmount`를 확인해 DataTable 스크롤 영역으로 포커스가 돌아왔는지 판정한다. 충돌하면 기존 복구를 수정하지 말고 보고한다.
 
 ## 의도적으로 하지 않은 것
 

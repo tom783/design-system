@@ -98,7 +98,7 @@ PageHeader가 h1을 제공하므로 기존 페이지의 main·제목을 중복�
 
 1. 저장소 루트에서 `pnpm qa`를 실행한다. 정적 서버와 브라우저는 공통 하네스가 관리한다.
 2. 새 하네스 결과는 `.qa-shots/app-shell-render-verify/`에서 확인한다.
-3. 화면 피드백은 `pnpm storybook` 실행 후 Storybook의 `Screens/AppShell` 라이트·다크와
+3. 화면 피드백은 `pnpm storybook` 실행 후 Storybook의 `QA/AppShell` 라이트·다크와
    `Components/SideNav`·`Components/PageHeader`에서 확인한다.
 
 화면 밖 서랍·전역 검색 동작·사용자 메뉴 동작·라우팅 의존성·버전 변경·커밋·푸시는 수행하지 않았다.

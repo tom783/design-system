@@ -1759,7 +1759,7 @@ aria-hidden true다. 링크는 밑줄을 쓰고 asChild로 앱의 라우터 링�
 Ellipsis의 `count`는 생략한 항목 수이며 `생략된 경로 N개`를 보조기기도 읽는다.
 컴포넌트가 경로나 라우터를 추측하지 않는다.
 
-Screens/DetailScreen에서 목록을 떠날 때 useReturnContext.capture로 행과 스크롤을
+QA/DetailScreen에서 목록을 떠날 때 useReturnContext.capture로 행과 스크롤을
 기록한다. 필터는 앱의 별도 상태로 보관한다. 상세의 주문 목록 링크가 consume을
 호출하고 필터·스크롤·DataTable.revisitedRowId를 적용한다. 기록은 일회성·10분 TTL이다.
 
@@ -2529,7 +2529,7 @@ PageHeader의 title은 유일한 h1이며 description·breadcrumb·status·actio
 경로는 Breadcrumb, 상태는 StatusChip 등을 넣는다. 넓으면 액션이 오른쪽, 좁으면 제목·설명
 아래에 배치되고 여러 버튼은 줄바꿈한다. 주요 버튼은 화면당 하나다 (§6).
 컴포넌트 문서의 규칙은 매니페스트에서 렌더한다. 사용법(Primary)은 테스트 장치 없는
-docs/examples의 독립 파일을 보여준다. Screens/AppShell은 기존 목록과 같은 주문 데이터·
+docs/examples의 독립 파일을 보여준다. QA/AppShell은 기존 목록과 같은 주문 데이터·
 기간·상태 필터·DataTable을 조립한 라이트·다크 화면이다. 셸 예시는 높이를 덮어쓰지 않고
 기본 100dvh를 쓴다. 셸 스토리는 fullBleed로 데코레이터 여백을 없애며,
 컴포넌트 문서 미리보기는 고정 높이 iframe으로 격리해 문서 본문으로 화면 높이가 새지 않게 한다.

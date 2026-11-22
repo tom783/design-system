@@ -12,7 +12,7 @@ import {
   Toaster, toast, useReturnContext, type ReturnRecord, type ReturnStorage,
 } from '../index';
 
-const meta = { title: 'Screens/DetailScreen' } satisfies Meta;
+const meta = { title: 'QA/DetailScreen' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const orderId = 'ORD-20481';

@@ -35,7 +35,7 @@ async function viewport(width) {
   await cdp('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false });
   await ev('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))');
 }
-async function story(id = 'screens-appshell--라이트') {
+async function story(id = 'qa-appshell--라이트') {
   assert.deepEqual(browser.errors(), [], '직전 스토리 콘솔 오류');
   const rendered = await open(id, { waitPlay: false });
   assert.equal(rendered.sbError, null);
@@ -101,7 +101,7 @@ try {
     await viewport(1440); await widthIs(64);
     await click(toggle); await widthIs(240);
   });
-  for (const id of ['screens-appshell--라이트', 'screens-appshell--다크', 'screens-appshell--긴메뉴와본문', 'components-appshell--사용법']) {
+  for (const id of ['qa-appshell--라이트', 'qa-appshell--다크', 'qa-appshell--긴메뉴와본문', 'components-appshell--사용법']) {
     await check(`${id}: 셸 사각형이 뷰포트와 일치`, async () => {
       for (const width of [1440, 1023]) {
         await viewport(width); await story(id);
@@ -125,7 +125,7 @@ try {
   });
   for (const theme of ['라이트', '다크']) {
     await check(`${theme}: 현재 위치·굵기 600·선택 배경·표면·본문·경계`, async () => {
-      await story(`screens-appshell--${theme}`);
+      await story(`qa-appshell--${theme}`);
       await wait(`document.documentElement.dataset.theme === '${theme === '다크' ? 'dark' : 'light'}'`);
       const values = await ev(`(() => {
         const n=${q(nav)}, a=${q(`${item}[aria-current="page"]`)}, m=${q(main)};
@@ -210,7 +210,7 @@ try {
       actionOverflow:a.scrollWidth > a.clientWidth }; })()`);
     assert.deepEqual(values, { below: true, overflow: false, width: 280, actionOverflow: false });
   });
-  for (const id of ['screens-appshell--라이트', 'screens-appshell--다크', 'components-appshell--사용법', 'screens-appshell--긴메뉴와본문']) {
+  for (const id of ['qa-appshell--라이트', 'qa-appshell--다크', 'components-appshell--사용법', 'qa-appshell--긴메뉴와본문']) {
     await check(`${id}: PageHeader 바깥 여백 0·기존 24px 간격과 화면 위치 불변`, async () => {
       for (const width of [1440, 800]) {
         await viewport(width); await story(id);
@@ -237,7 +237,7 @@ try {
     });
   }
   await check('메뉴와 본문 독립 스크롤·브랜드/접기 고정·선택 최대 폭', async () => {
-    await story('screens-appshell--긴메뉴와본문');
+    await story('qa-appshell--긴메뉴와본문');
     await noTitles('[data-slot="app-shell"]');
     assert.equal(await ev(`getComputedStyle(${q('[data-slot="app-shell-content"]')}).maxWidth`), '960px');
     assert.equal(await ev(`${q(menu)}.scrollHeight > ${q(menu)}.clientHeight && ${q(main)}.scrollHeight > ${q(main)}.clientHeight`), true);

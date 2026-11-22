@@ -5,7 +5,7 @@ let failed = 0;
 try {
   const { open } = storybook(browser);
   const index = await (await fetch('http://localhost:6099/index.json')).json();
-  const stories = Object.values(index.entries).filter(e => e.type === 'story' && /^(Components\/(Select|DropdownMenu|Toast|DatePicker)|Screens\/ListScreen)$/.test(e.title));
+  const stories = Object.values(index.entries).filter(e => e.type === 'story' && /^(Components\/(Select|DropdownMenu|Toast|DatePicker)|QA\/ListScreen)$/.test(e.title));
   // 이 가드의 뜻은 "스토리가 사라지지 않았는가" 다. 등식으로 두면 스토리를 **추가**할
   // 때마다 거짓 실패한다 — R19 에서 Select 에 툴바 필터 변형을 더하자 15→16 으로 깨졌다.
   // 아래 루프가 발견된 스토리를 전부 검증하므로 늘어나는 것은 그대로 이득이다.

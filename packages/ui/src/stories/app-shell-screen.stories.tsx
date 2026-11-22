@@ -3,7 +3,7 @@ import { AppShell, SideNav, SideNavGroup, SideNavItem, PageHeader, Button } from
 import { Building2, ClipboardList } from '../icons';
 import { AppShellExample } from '../../docs/examples/app-shell';
 
-const meta = { title: 'Screens/AppShell', parameters: { fullBleed: true } } satisfies Meta;
+const meta = { title: 'QA/AppShell', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
 type Story = StoryObj;
 export const 라이트: Story = { globals: { theme: 'light' }, render: () => <AppShellExample /> };

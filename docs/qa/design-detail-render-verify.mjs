@@ -121,9 +121,9 @@ try {
   for (const width of [1440, 1024]) for (const theme of ['light', 'dark']) {
     const context = `${theme} ${width}px`;
     await cdp('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false });
-    for (const [screen, id] of [['목록', 'listscreen--목록화면'], ['상세', 'detailscreen--상세화면'], ['등록', 'createscreen--등록화면']]) {
+    for (const [screen, id] of [['목록', 'qa-listscreen--목록화면'], ['상세', 'qa-detailscreen--상세화면'], ['등록', 'screens-createscreen--등록화면']]) {
       await check(`D6 ${screen} 루트 여백 ${context}`, async () => {
-        await load(`screens-${id}`, theme);
+        await load(id, theme);
         const m = await ev(`(() => { const root = ${CANVAS}.firstElementChild, s = getComputedStyle(root); return {
           padding: [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft], left: root.querySelector('main').getBoundingClientRect().left }; })()`);
         assert.deepEqual(m.padding, ['24px', '24px', '24px', '24px']);
@@ -173,7 +173,7 @@ try {
     for (const [state, hidden] of [['기본', false], ['두께 0(CDP)', true]]) await check(`D2 가로 스크롤 탭 Home·End 밑줄·기준선·링 ${context} 스크롤바 ${state}`, async () => {
       await cdp('Emulation.setScrollbarsHidden', { hidden });
       try {
-        await load('screens-detailscreen--탭넘침', theme);
+        await load('qa-detailscreen--탭넘침', theme);
         await key('Home', 36); await wait(`document.activeElement?.textContent === '상세 탭 1'`);
         await wait(`document.querySelector('[role="tablist"]').scrollLeft === 0`);
         const first = await tabs(); assert.ok(first.overflow);
