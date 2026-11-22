@@ -43,7 +43,8 @@ export const 시각오류: Story = { render: () => <TimeExample field />, play: 
   const input = within(canvasElement).getByRole('textbox');
   await userEvent.clear(input); await userEvent.type(input, '2026-11-15 25:00'); await userEvent.tab();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await expect(canvasElement).toHaveTextContent('YYYY-MM-DD HH:mm 형식으로 입력하세요.');
+  // 형식은 맞고 시각이 범위를 벗어났다 — 형식 문구가 아니라 고칠 범위를 말한다.
+  await expect(canvasElement).toHaveTextContent('시각은 00:00~23:59로 입력하세요.');
   canvasElement.dataset.playComplete = 'true';
 } };
 

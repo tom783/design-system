@@ -11,7 +11,7 @@ import { useComposition } from '../form';
 import { FieldErrorContext } from '../form/field-error-context';
 import { Calendar } from './calendar';
 import { Popover, PopoverTrigger, PopoverContent } from './popover';
-import { formatValue, parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate } from './date-value';
+import { formatValue, parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, outOfRange } from './date-value';
 import { cn } from '../../lib/cn';
 
 type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type'> & {
@@ -72,10 +72,16 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
         (onChange as (v: DateRange) => void)({ from, to }); setMonth(from); setError(''); return;
       }
     }
-    // 오류가 날 때는 입력에 글자가 있어 placeholder 가 보이지 않는다 — 문구가 고치는 법(형식·순서)을 말해야 한다.
+    // 오류가 날 때는 입력에 글자가 있어 placeholder 가 보이지 않는다 — 문구가 고치는 법(형식·범위·순서)을 말해야 한다.
     // 동시에 Field 의 20px 한 줄 예약 안에 들어가야 한다. 13px 실측: 단일 194px ≤ 220(240-아이콘·간격),
     // 범위 272px ≤ 286(306-아이콘·간격). "기간을 YYYY-MM-DD ~ YYYY-MM-DD 순서로 입력하세요." 는 313px 로 넘쳤다.
+    // 형식이 맞으면 범위 오류(달력에 없는 날짜·25시)를 먼저 말한다. 범위도 맞는데 실패한 일시는 DST로 없는 시각이다.
     setNotice(undefined);
+    const text = draft.trim();
+    const range = mode === 'single' ? outOfRange(text, hasTime)
+      : text.split('~').map(s => outOfRange(s.trim())).find(Boolean);
+    if (range) { setError(range); return; }
+    if (hasTime && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(text)) { setError('지역 시간에 없는 시각입니다.'); return; }
     setError(mode === 'single' ? (hasTime ? 'YYYY-MM-DD HH:mm 형식으로 입력하세요.' : 'YYYY-MM-DD 형식으로 입력하세요.') : '시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요.');
   };
   const publish = (next: Date | DateRange | undefined) => {

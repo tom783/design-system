@@ -61,6 +61,10 @@ async function focusIs(selector) { await wait(`document.activeElement === ${q(se
 async function preset(label) {
   await ev(`[...${q('[data-slot="date-picker-presets"]')}.querySelectorAll('button')].find(n => n.textContent === ${JSON.stringify(label)}).click()`);
 }
+async function errorLine() {
+  return ev(`(() => { const n=${q('[data-slot="date-picker-error"]')}, span=n.firstElementChild, r=span.getBoundingClientRect(); return {
+    width:n.clientWidth, scroll:n.scrollWidth, height:r.height, line:parseFloat(getComputedStyle(n).lineHeight) }; })()`);
+}
 async function day(date) { await ev(`${q(`button[data-slot="calendar-day"][data-day="${date}"]`)}.click()`); }
 async function dateColors() {
   return ev(`(() => {
@@ -139,12 +143,19 @@ try {
     await enter('2026-11-19 00:20', true); await valueIs('2026-11-19 00:20');
     assert.match(await ev(`getComputedStyle(${q(input)}).fontVariantNumeric`), /tabular-nums/);
   });
-  await check('잘못된 날짜·24시·60분·날짜만 입력은 형식 오류이며 확정값 보존', async () => {
+  await check('없는 날짜·24시·60분은 범위 오류, 날짜만 입력은 형식 오류이며 확정값 보존', async () => {
     await story('단일시각');
-    for (const text of ['2026-02-30 10:00', '2026-11-15 24:00', '2026-11-15 13:60', '2026-11-15']) {
+    // 형식이 맞는데 형식 문구를 보이면 사용자는 이미 맞는 형식을 다시 본다. 범위 오류는 고칠 범위를 말한다.
+    for (const [text, message] of [
+      ['2026-02-30 10:00', '2026년 2월은 01~28일로 입력하세요.'],
+      ['2026-13-01 10:00', '월은 01~12로 입력하세요.'],
+      ['2026-11-15 24:00', '시각은 00:00~23:59로 입력하세요.'],
+      ['2026-11-15 13:60', '시각은 00:00~23:59로 입력하세요.'],
+      ['2026-11-15', 'YYYY-MM-DD HH:mm 형식으로 입력하세요.'],
+    ]) {
       await enter(text);
-      await wait(`${q(input)}.getAttribute('aria-invalid') === 'true'`);
-      assert.equal(await ev(`${q('[data-slot="date-picker-error"]')}.textContent`), 'YYYY-MM-DD HH:mm 형식으로 입력하세요.');
+      await wait(`${q(input)}.getAttribute('aria-invalid') === 'true' && ${q('[data-slot="date-picker-error"]')}?.textContent === ${JSON.stringify(message)}`);
+      assert.equal(await ev(`${q('[data-slot="date-picker-error"]')}.textContent`), message);
       assert.equal(await ev(`${q(output)}.textContent`), '2026-11-15 13:30');
       assert.equal(await ev(`!!${q('[data-slot="date-picker-error"] svg')}`), true);
     }
@@ -204,7 +215,7 @@ try {
       invalid:n.getAttribute('aria-invalid'), ids:n.getAttribute('aria-describedby').split(/\\s+/), errorId:e.id, descriptionId:d.id,
       error:e.textContent, count:field.querySelectorAll('[data-slot="date-picker-error"]').length, live:e.getAttribute('aria-live') }; })()`);
     assert.equal(wiring.invalid, 'true'); assert.ok(wiring.ids.includes(wiring.errorId)); assert.ok(wiring.ids.includes(wiring.descriptionId));
-    assert.equal(wiring.count, 1); assert.equal(wiring.live, 'polite'); assert.equal(wiring.error, 'YYYY-MM-DD HH:mm 형식으로 입력하세요.');
+    assert.equal(wiring.count, 1); assert.equal(wiring.live, 'polite'); assert.equal(wiring.error, '시각은 00:00~23:59로 입력하세요.');
     await enter('2026-11-15 13:40'); await valueIs('2026-11-15 13:40');
     assert.notEqual(await ev(`${q(input)}.getAttribute('aria-invalid')`), 'true');
     assert.equal(await ev(`${q('[data-slot="field-error"]')}.textContent`), '');
@@ -220,10 +231,12 @@ try {
         inner:n.clientWidth-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight), value:measure(n.value,s), placeholder:measure(n.placeholder,s) }; })()`);
     measurements.push(dimensions); assert.equal(dimensions.min, '280px'); assert.equal(dimensions.root, 280);
     assert.ok(dimensions.inner >= dimensions.value); assert.ok(dimensions.inner >= dimensions.placeholder);
-    await enter('2026-11-15 25:00');
-    const error = await ev(`(() => { const n=${q('[data-slot="date-picker-error"]')}, span=n.firstElementChild, r=span.getBoundingClientRect(); return {
-      width:n.clientWidth, scroll:n.scrollWidth, height:r.height, line:parseFloat(getComputedStyle(n).lineHeight) }; })()`);
-    measurements.push(error); assert.ok(error.scroll <= error.width); assert.ok(error.height <= error.line + 1);
+    // 형식 오류(가장 긴 문구)·가장 긴 범위 오류(12월 말일)·시각 범위 오류가 모두 한 줄에 들어가야 한다.
+    for (const text of ['2026-11-15', '2026-12-32 10:00', '2026-11-15 25:00']) {
+      await enter(text); await wait(`!!${q('[data-slot="date-picker-error"] svg')}`);
+      measurements.push({ text, ...await errorLine() });
+      const error = measurements.at(-1); assert.ok(error.scroll <= error.width, text); assert.ok(error.height <= error.line + 1, text);
+    }
   });
   await check('다크에서 입력·달력·시/분 표면·오류 아이콘·문장 표시', async () => {
     await story('시각다크'); await wait(`document.documentElement.dataset.theme === 'dark'`);
@@ -235,13 +248,29 @@ try {
     await browser.shot('dark-time'); await key('Escape', 27);
     await enter('2026-11-15 25:00');
     assert.equal(await ev(`!!${q('[data-slot="date-picker-error"] svg')}`), true);
-    assert.match(await ev(`${q('[data-slot="field-error"]')}.textContent`), /YYYY-MM-DD HH:mm/);
+    assert.equal(await ev(`${q('[data-slot="field-error"]')}.textContent`), '시각은 00:00~23:59로 입력하세요.');
   });
   await check('날짜만 single은 240px·range는 기존 날짜 형식 유지', async () => {
     await story('단일날짜'); assert.equal(await ev(`getComputedStyle(${q('[data-slot="date-picker"]')}).minWidth`), '240px');
     assert.equal(await ev(`${q(input)}.value`), '2026-11-12'); assert.equal(await ev(`${q(clock)}`), null);
     await story('기간선택'); assert.equal(await ev(`${q(input)}.value`), '2026-11-10 ~ 2026-11-15');
     assert.equal(await ev(`${q(clock)}`), null);
+  });
+  await check('날짜만 single·range도 없는 날짜는 범위 오류이며 최소 폭에서 한 줄', async () => {
+    for (const [name, width, text, message] of [
+      ['단일날짜', 240, '2026-12-32', '2026년 12월은 01~31일로 입력하세요.'],
+      ['단일날짜', 240, '2026-13-01', '월은 01~12로 입력하세요.'],
+      ['기간선택', 306, '2026-02-30 ~ 2026-03-01', '2026년 2월은 01~28일로 입력하세요.'],
+      // 두 날짜가 실재하면 순서 오류는 기존 문구가 맡는다.
+      ['기간선택', 306, '2026-11-15 ~ 2026-11-10', '시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요.'],
+    ]) {
+      await story(name); await ev(`${q('[data-slot="date-picker"]')}.style.width='${width}px'`);
+      await enter(text);
+      await wait(`${q('[data-slot="date-picker-error"]')}?.textContent === ${JSON.stringify(message)}`);
+      assert.equal(await ev(`${q(input)}.getAttribute('aria-invalid')`), 'true');
+      const error = { name, text, ...await errorLine() }; measurements.push(error);
+      assert.ok(error.scroll <= error.width, text); assert.ok(error.height <= error.line + 1, text);
+    }
   });
   await check('모든 경로 콘솔 오류 0건', async () => assert.deepEqual([...seenErrors, ...browser.errors()], []));
 } finally {

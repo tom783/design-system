@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, formatValue } from './date-value.ts';
+import { parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, formatValue, outOfRange } from './date-value.ts';
 test('실재하는 날짜만 확정한다: 윤년·월말·미완성 입력', () => {
   for (const text of ['2026-02-29', '2026-02-30', '2026-13-01', '2026-1-01', '2026-11-', '한']) assert.equal(parseDate(text), undefined);
   assert.equal(formatValue(parseDate('2024-02-29')), '2024-02-29');
@@ -79,5 +79,31 @@ test('지역 시간은 UTC로 파싱하지 않고 DST에 없는 직접 입력은
   } finally {
     if (original === undefined) delete process.env.TZ;
     else process.env.TZ = original;
+  }
+});
+
+test('형식이 맞고 범위가 틀린 입력은 무엇을 고칠지 말한다 — 형식 오류와 구분', () => {
+  for (const [text, time, expected] of [
+    ['2026-11-15 25:00', true, '시각은 00:00~23:59로 입력하세요.'],
+    ['2026-11-15 24:00', true, '시각은 00:00~23:59로 입력하세요.'],
+    ['2026-11-15 13:60', true, '시각은 00:00~23:59로 입력하세요.'],
+    ['2026-02-30 10:00', true, '2026년 2월은 01~28일로 입력하세요.'],
+    ['2026-02-29', false, '2026년 2월은 01~28일로 입력하세요.'],
+    ['2026-11-00', false, '2026년 11월은 01~30일로 입력하세요.'],
+    ['2026-13-01', false, '월은 01~12로 입력하세요.'],
+    ['2026-00-10 09:00', true, '월은 01~12로 입력하세요.'],
+    // 날짜와 시각이 함께 틀리면 날짜부터 고친다.
+    ['2026-02-30 25:00', true, '2026년 2월은 01~28일로 입력하세요.'],
+  ]) assert.equal(outOfRange(text, time), expected, text);
+  // 윤년 규칙(4·100·400)과 4자리 연도를 그대로 쓴다. Date(24, …)는 1924년이 된다.
+  assert.equal(outOfRange('2024-02-29'), undefined);
+  assert.equal(outOfRange('1900-02-29'), '1900년 2월은 01~28일로 입력하세요.');
+  assert.equal(outOfRange('2000-02-29'), undefined);
+  assert.equal(outOfRange('0024-02-30'), '0024년 2월은 01~29일로 입력하세요.');
+  // DST로 없는 시각은 범위 문제가 아니다. 컴포넌트가 '지역 시간에 없는 시각'으로 따로 알린다.
+  assert.equal(outOfRange('2026-03-08 02:30', true), undefined);
+  // 형식이 틀리면 범위를 말하지 않는다. 형식 문구가 맡는다.
+  for (const [text, time] of [['2026-11-15', true], ['2026-11-15 9:00', true], ['2026-1-01', false], ['한', false], ['2026-11-15 23:59', true], ['2026-11-15', false]]) {
+    assert.equal(outOfRange(text, time), undefined, text);
   }
 });
