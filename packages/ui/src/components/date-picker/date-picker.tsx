@@ -11,7 +11,7 @@ import { useComposition } from '../form';
 import { FieldErrorContext } from '../form/field-error-context';
 import { Calendar } from './calendar';
 import { Popover, PopoverTrigger, PopoverContent } from './popover';
-import { formatValue, parseDate, parseDateTime, snapTime, withTime, quickRange, type QuickPeriod } from './date-value';
+import { formatValue, parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate } from './date-value';
 import { cn } from '../../lib/cn';
 
 type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type'> & {
@@ -29,6 +29,10 @@ export type DatePickerProps = Common & (
 export function DatePicker({ mode = 'range', value, onChange, today, defaultMonth, time, className,
   onBlur, onKeyDown, onCompositionStart, onCompositionEnd, disabled, ...inputProps }: DatePickerProps) {
   const hasTime = mode === 'single' && Boolean(time);
+  // 조회 기간·조회 날짜·예약 일시의 작업 방향에 맞는 빠른 선택만 제공한다.
+  const presets = mode === 'range'
+    ? (['오늘', '최근 7일', '이번 달', '지난 달'] as const).map(label => ({ label, getValue: () => quickRange(label, today) }))
+    : (['오늘', hasTime ? '내일' : '어제'] as const).map(label => ({ label, getValue: () => quickDate(label, today) }));
   const step = typeof time === 'object' ? time.step : 10;
   const [notice, setNotice] = React.useState<{ value: number; text: string }>();
   const noticeId = React.useId();
@@ -123,8 +127,8 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
       </div>
       <PopoverContent align="start" className="w-auto max-w-[calc(100vw-2rem)] p-0" aria-label="날짜 선택">
         <div data-slot="date-picker-presets" className="flex flex-wrap gap-1 border-b border-border p-2">
-          {(['오늘', '최근 7일', '이번 달', '지난 달'] as QuickPeriod[]).map(period => <Button key={period} size="sm" variant="ghost"
-            onClick={() => { const range = quickRange(period, today); pick(mode === 'single' ? range.to : range); setMonth(range.from!); if (!hasTime) setOpen(false); }}>{period}</Button>)}
+          {presets.map(({ label, getValue }) => <Button key={label} size="sm" variant="ghost"
+            onClick={() => { const next = getValue(); pick(next); setMonth(next instanceof Date ? next : next.from!); if (!hasTime) setOpen(false); }}>{label}</Button>)}
         </div>
         <Calendar locale={ko} month={month} onMonthChange={setMonth} today={today}
           formatters={{ formatCaption: date => format(date, 'yyyy년 M월', { locale: ko }), formatWeekdayName: date => format(date, 'EEEEE', { locale: ko }) }}

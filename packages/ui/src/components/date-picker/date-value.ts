@@ -2,6 +2,10 @@ import { endOfMonth, format, isValid, parse, startOfDay, startOfMonth, subDays, 
 import type { DateRange } from 'react-day-picker';
 export type TimeStep = 1 | 5 | 10 | 15 | 30;
 export type QuickPeriod = '오늘' | '최근 7일' | '이번 달' | '지난 달';
+/** 단일 날짜는 기간의 끝날로 대신하지 않는다. 자정·DST 경계도 달력 날짜로 이동한다. */
+export function quickDate(day: '오늘' | '어제' | '내일', now = new Date()): Date {
+  return subDays(startOfDay(now), day === '어제' ? 1 : day === '내일' ? -1 : 0);
+}
 /** 최근 7일은 오늘을 포함한 달력 날짜 7개다. 밀리초 차감은 DST에서 틀리므로 날짜 연산을 쓴다. */
 export function quickRange(period: QuickPeriod, now = new Date()): DateRange {
   const today = startOfDay(now);

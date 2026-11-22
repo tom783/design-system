@@ -62,8 +62,78 @@ async function preset(label) {
   await ev(`[...${q('[data-slot="date-picker-presets"]')}.querySelectorAll('button')].find(n => n.textContent === ${JSON.stringify(label)}).click()`);
 }
 async function day(date) { await ev(`${q(`button[data-slot="calendar-day"][data-day="${date}"]`)}.click()`); }
+async function dateColors() {
+  return ev(`(() => {
+    const calendar=${q('[data-slot="calendar"]')};
+    const token = name => {
+      const probe=document.createElement('span'); probe.style.color='var('+name+')'; calendar.append(probe);
+      const color=getComputedStyle(probe).color; probe.remove(); return color;
+    };
+    // 기간 스토리의 선택 범위(11/10–15)·오늘(11/15)과 겹치지 않는 일반 날짜다.
+    const days=['2026-11-01','2026-11-02','2026-12-05'].map(date => {
+      const n=calendar.querySelector('button[data-day="'+date+'"]');
+      return { date, color:getComputedStyle(n).color, outside:n.closest('td').dataset.outside === 'true' };
+    });
+    return { primary:token('--text-primary'), tertiary:token('--text-tertiary'),
+      background:getComputedStyle(${q('[data-slot="popover-content"]')}).backgroundColor, days };
+  })()`);
+}
+function contrast(foreground, background) {
+  const luminance = color => {
+    assert.match(color, /^rgb\(/, '불투명 sRGB 색으로 대비를 잰다');
+    const linear = color.match(/[\d.]+/g).map(Number).map(value => {
+      const channel=value / 255;
+      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  };
+  const a=luminance(foreground), b=luminance(background);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
 
 try {
+  await check('세 모드·라이트/다크에서 이번 달은 primary·이웃 달은 tertiary이며 서로 다르고 대비 4.5 이상', async () => {
+    for (const name of ['단일날짜', '기간선택', '단일시각']) {
+      await story(name); await pointer(trigger); await wait(`!!${q('[data-slot="calendar"]')}`);
+      for (const theme of ['light', 'dark']) {
+        await ev(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+        // 날짜 버튼의 색 전환이 끝난 실제 computed 값을 검사한다.
+        const deadline=Date.now() + 6000;
+        let colors;
+        do {
+          colors=await dateColors();
+          if (colors.days.every(day => day.color === (day.outside ? colors.tertiary : colors.primary))) break;
+          await sleep(30);
+        } while (Date.now() < deadline);
+        assert.deepEqual(colors.days.map(day => day.outside), [false, false, true]);
+        for (const day of colors.days) assert.equal(day.color, day.outside ? colors.tertiary : colors.primary, day.date);
+        assert.notEqual(colors.days[0].color, colors.days[2].color);
+        const ratio=contrast(colors.days[2].color, colors.background);
+        measurements.push({ story:name, theme, ...colors, outsideContrast:ratio });
+        assert.ok(ratio >= 4.5, `${name} ${theme}: ${ratio}:1`);
+      }
+    }
+  });
+  await check('모드별 빠른 선택은 range 4개·날짜 single 오늘/어제·시각 single 오늘/내일', async () => {
+    for (const [name, labels] of [
+      ['기간선택', ['오늘', '최근 7일', '이번 달', '지난 달']],
+      ['단일날짜', ['오늘', '어제']],
+      ['단일시각', ['오늘', '내일']],
+    ]) {
+      await story(name); await pointer(trigger); await wait(`!!${q('[data-slot="date-picker-presets"]')}`);
+      assert.deepEqual(await ev(`[...${q('[data-slot="date-picker-presets"]')}.querySelectorAll('button')].map(n => n.textContent)`), labels);
+    }
+    await story('단일날짜'); await pointer(trigger); await wait(`!!${q('[data-slot="date-picker-presets"]')}`);
+    await preset('어제'); await wait(`${q(input)}.value === '2026-11-14' && !${q('[data-slot="calendar"]')}`);
+    await pointer(trigger); await wait(`!!${q('[data-slot="date-picker-presets"]')}`);
+    await preset('오늘'); await wait(`${q(input)}.value === '2026-11-15' && !${q('[data-slot="calendar"]')}`);
+  });
+  await check('이웃 달 날짜도 선택할 수 있고 시각 모드에서는 기존 시각을 보존', async () => {
+    await story('단일날짜'); await pointer(trigger); await wait(`!!${q('[data-slot="calendar"]')}`);
+    await day('2026-12-05'); await wait(`${q(input)}.value === '2026-12-05' && !${q('[data-slot="calendar"]')}`);
+    await story('단일시각'); await calendar(); await day('2026-12-05'); await valueIs('2026-12-05 13:30');
+    assert.equal(await ev(`!!${q(clock)}`), true);
+  });
   await check('직접 입력·완성 문자열 붙여넣기 경로·blur/Enter는 지역 Date를 확정', async () => {
     await story('단일시각'); await enter('2026-11-18 21:40'); await valueIs('2026-11-18 21:40');
     await enter('2026-11-19 00:20', true); await valueIs('2026-11-19 00:20');
@@ -105,7 +175,7 @@ try {
   await check('달력 날짜만 바꾸면 13:30 유지·빠른 선택도 시각 유지', async () => {
     await story('단일시각'); await calendar(); await day('2026-11-18'); await valueIs('2026-11-18 13:30');
     await preset('오늘'); await valueIs('2026-11-15 13:30');
-    await preset('지난 달'); await valueIs('2026-10-31 13:30');
+    await preset('내일'); await valueIs('2026-11-16 13:30');
     assert.equal(await ev(`!!${q(clock)}`), true);
   });
   await check('키보드만으로 날짜→시→분 선택·24시간·완료 후 닫힘', async () => {

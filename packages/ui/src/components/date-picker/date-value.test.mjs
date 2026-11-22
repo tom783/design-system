@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseDate, parseDateTime, snapTime, withTime, quickRange, formatValue } from './date-value.ts';
+import { parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, formatValue } from './date-value.ts';
 test('실재하는 날짜만 확정한다: 윤년·월말·미완성 입력', () => {
   for (const text of ['2026-02-29', '2026-02-30', '2026-13-01', '2026-1-01', '2026-11-', '한']) assert.equal(parseDate(text), undefined);
   assert.equal(formatValue(parseDate('2024-02-29')), '2024-02-29');
@@ -12,6 +12,27 @@ test('빠른 선택은 윤년·지난해 12월·오늘을 달력 날짜로 계�
   assert.equal(formatValue(quickRange('지난 달', new Date(2026, 0, 15))), '2025-12-01 ~ 2025-12-31');
   assert.equal(formatValue(quickRange('이번 달', new Date(2024, 1, 15))), '2024-02-01 ~ 2024-02-29');
   assert.equal(formatValue(quickRange('오늘', new Date(2026, 10, 15, 23))), '2026-11-15 ~ 2026-11-15');
+});
+test('단일 빠른 선택의 어제·내일은 윤일·연도·DST 경계에서도 달력 날짜다', () => {
+  const original = process.env.TZ;
+  try {
+    process.env.TZ = 'America/New_York';
+    for (const [label, now, expected] of [
+      ['오늘', new Date(2026, 10, 15, 23), '2026-11-15'],
+      ['어제', new Date(2024, 2, 1, 23), '2024-02-29'],
+      ['내일', new Date(2026, 11, 31, 23), '2027-01-01'],
+      ['어제', new Date(2026, 2, 9, 23), '2026-03-08'],
+      ['내일', new Date(2026, 10, 1, 23), '2026-11-02'],
+    ]) {
+      const before = now.getTime(), date = quickDate(label, now);
+      assert.equal(formatValue(date), expected);
+      assert.equal(date.getHours(), 0);
+      assert.equal(now.getTime(), before, '기준일을 변경하지 않는다');
+    }
+  } finally {
+    if (original === undefined) delete process.env.TZ;
+    else process.env.TZ = original;
+  }
 });
 
 test('일시는 24시간·실제 날짜·시각만 지역 Date로 파싱한다', () => {
