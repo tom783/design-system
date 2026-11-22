@@ -2,12 +2,29 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile, copyFile, readdir, access, constants, rm } from 'node:fs/promises';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { launchBrowser, resolveHeadlessShell } from './browser.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const packDir = process.env.S2_PACK_DIR ?? '/tmp/s2';
-const consumer = process.env.S2_CONSUMER_DIR ?? '/tmp/s2-consumer';
+// 기본은 실행마다 새 임시 폴더다. 고정 /tmp/s2·/tmp/s2-consumer 는 병렬 실행(--jobs·여러 작업 폴더)에서
+// 서로의 tarball·node_modules 를 덮어썼다. 경로를 지정하면(S2_PACK_DIR·S2_CONSUMER_DIR) 그대로 두고,
+// 임시 폴더는 통과하면 지운다(실패하면 들여다볼 수 있게 남기고 경로를 알린다).
+const owned = [];
+const tempDir = (prefix) => { const dir = mkdtempSync(join(tmpdir(), prefix)); owned.push(dir); return dir; };
+const packDir = process.env.S2_PACK_DIR || tempDir('s2-pack-');
+const consumer = process.env.S2_CONSUMER_DIR || tempDir('s2-consumer-');
+process.on('exit', (code) => {
+  if (code === 0 && !process.exitCode) for (const dir of owned) rmSync(dir, { recursive: true, force: true });
+  else if (owned.length) console.error(`리허설 폴더를 남겼습니다: ${owned.join(' · ')}`);
+});
+// vite preview 포트도 고정(6107)이면 병렬 실행에서 부딪친다. 빈 포트를 받아 --strictPort 로 쓴다.
+const freePort = () => new Promise((resolve, reject) => {
+  const srv = createServer().once('error', reject);
+  srv.listen(0, '127.0.0.1', () => { const { port } = srv.address(); srv.close(() => resolve(port)); });
+});
 // 샌드박스에서도 홈 디렉터리에 쓰지 않도록 리허설 캐시를 임시 경로에 둔다.
 const env = { ...process.env, npm_config_cache: join(packDir, 'npm-cache') };
 const run = (command, args, cwd = root) => execFileSync(command, args, { cwd, env, stdio: 'inherit', timeout: 180000 });
@@ -158,11 +175,14 @@ try {
   process.exitCode = 1; // 렌더를 확인하지 못한 실행을 완료로 표시하지 않는다.
 }
 if (!process.exitCode) {
-  const server = spawn(join(consumer, 'node_modules/.bin/vite'), ['preview', '--host', '127.0.0.1', '--port', '6107', '--strictPort'], { cwd: consumer, stdio: 'ignore' });
+  const previewPort = await freePort();
+  const app = `http://127.0.0.1:${previewPort}`;
+  const server = spawn(join(consumer, 'node_modules/.bin/vite'), ['preview', '--host', '127.0.0.1', '--port', String(previewPort), '--strictPort'], { cwd: consumer, stdio: 'ignore' });
   let browser;
   try {
     for (let i = 0; i < 60; i++) {
-      try { if ((await fetch('http://127.0.0.1:6107')).ok) break; } catch { /* 서버 기동 대기 */ }
+      if (server.exitCode !== null) throw new Error(`vite preview 가 ${previewPort} 에 뜨지 못했습니다 (code ${server.exitCode})`);
+      try { if ((await fetch(app)).ok) break; } catch { /* 서버 기동 대기 */ }
       await new Promise((r) => setTimeout(r, 100));
     }
     browser = await launchBrowser({ outDir: join(root, '.qa-shots/pack') });
@@ -184,7 +204,7 @@ if (!process.exitCode) {
       assert.equal(font.firstFamily, 'Pretendard Variable', `${path}: 본문의 첫 계산 글꼴`);
       console.log(`${path}: Pretendard Variable ${font.loaded}면 로드 · 본문 첫 글꼴 확인`);
     };
-    await cdp('Page.navigate', { url: 'http://127.0.0.1:6107' });
+    await cdp('Page.navigate', { url: app });
     for (let i = 0; i < 80 && !await ev('!!document.querySelector("#primary")'); i++) await sleep(100);
     await verifyFont('기본 CSS 앱');
     assert.equal(await ev('document.querySelector("#primary").getBoundingClientRect().height'), 38);
@@ -205,7 +225,7 @@ if (!process.exitCode) {
     assert(await ev('!!document.querySelector("[role=listbox]")'), 'Radix Select가 소비 앱에서 열려야 한다');
     assert.deepEqual(browser.errors(), []);
     await browser.shot('consumer');
-    await cdp('Page.navigate', { url: 'http://127.0.0.1:6107/tailwind/' });
+    await cdp('Page.navigate', { url: `${app}/tailwind/` });
     for (let i = 0; i < 80 && !await ev('location.pathname === "/tailwind/" && !!document.querySelector("#primary")'); i++) await sleep(100);
     await verifyFont('Tailwind 앱');
     await ev('document.querySelector("#tooltip-trigger").focus()');
