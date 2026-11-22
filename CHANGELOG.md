@@ -261,6 +261,13 @@
 - 배포 리허설: `S2_PACK_REACT=<x.y.z>`로 소비 앱 React를 지정한다(peer 하한 확인). 기본·지정 모두 번들 안 React 버전이 하나인지 검사한다.
   소비 앱에 Tabs를 두고 기본·Tailwind 두 경로에서 '버튼 아이콘·라벨 한 줄'과 '탭 선택 밑줄이 기준선에 앉는다'를 위치로 잰다
   (0.3.0의 Button이면 세로 중심 차 20px로 실패한다).
+- QA 하네스 구조(3단계 2차): 하네스가 남의 서버·낡은 빌드를 검사하고 통과하지 못하게 했다. run-all이 내장 정적 서버
+  (`static-server.mjs`)를 빈 포트(`--port 0`, 지정 포트가 차 있으면 즉시 실패)에 띄우고, 빌드 폴더 nonce와 `build-info.json`의 sha가
+  HEAD와 같아야 진행한다(dirty 빌드는 pre-push·CI 엄격 모드에서 거부). 하네스는 `storybookBase()`(`DS_SB_URL`)로 같은 확인을
+  한 번 더 하고, CDP 포트는 브라우저가 고른다(`DevToolsActivePort`). `--jobs N`(서버 하나에 브라우저 N개)·`--group storybook|node`,
+  하네스 공통 입력 `actions()`, 함정 린트(`traps.test.mjs` — 고정 6099·고정 CDP 포트·`http-server` 등 AGENTS.md 함정 7가지),
+  배포 리허설의 실행마다 임시 폴더·빈 미리보기 포트, waitPlay가 표식 없는 스토리에서 14초를 버리던 것 제거, 리눅스 기준선
+  ci-734862c(하네스 31개 384.7초). pre-push는 origin/main 대비 `.github/**`만 바뀐 푸시면 브라우저 하네스를 건너뛴다.
 - CI: 게이트 제한 시간 verify 20 → 45분·release 25 → 60분, 실행 기반과 액션 런타임 정리.
 - 개발 의존성 `pretendard` 1.3.9 — Storybook도 소비 앱과 같은 CSS import로 글꼴을 로드한다.
 
