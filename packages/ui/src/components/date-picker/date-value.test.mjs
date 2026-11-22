@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, formatValue, outOfRange } from './date-value.ts';
+import { parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, formatValue, outOfRange, rangeInputError } from './date-value.ts';
 test('실재하는 날짜만 확정한다: 윤년·월말·미완성 입력', () => {
   for (const text of ['2026-02-29', '2026-02-30', '2026-13-01', '2026-1-01', '2026-11-', '한']) assert.equal(parseDate(text), undefined);
   assert.equal(formatValue(parseDate('2024-02-29')), '2024-02-29');
@@ -106,4 +106,25 @@ test('형식이 맞고 범위가 틀린 입력은 무엇을 고칠지 말한다 
   for (const [text, time] of [['2026-11-15', true], ['2026-11-15 9:00', true], ['2026-1-01', false], ['한', false], ['2026-11-15 23:59', true], ['2026-11-15', false]]) {
     assert.equal(outOfRange(text, time), undefined, text);
   }
+});
+
+test('기간 오류는 형식 → 없는 날짜(어느 쪽인지) → 순서 차례로 하나만 말한다', () => {
+  const format = 'YYYY-MM-DD ~ YYYY-MM-DD 형식으로 입력하세요.';
+  for (const [text, expected] of [
+    // 형식이 틀리면 형식만 — 날짜 하나, 구분자 없음, 세 부분, 한 자리 월, 빈 쪽
+    ['2026-11-01', format], ['2026-11-01 2026-11-05', format], ['2026-11-01 ~ 2026-11-02 ~ 2026-11-03', format],
+    ['2026-1-01 ~ 2026-11-05', format], ['2026-11-01 ~', format], ['~ 2026-11-05', format],
+    // 형식이 틀린 쪽이 있으면 다른 쪽이 없는 날짜여도 형식을 먼저 말한다
+    ['2026-02-30 ~ 2026-3-01', format],
+    // 없는 날짜는 단일 문구 앞에 어느 쪽인지 붙인다. 둘 다면 시작일부터
+    ['2026-02-30 ~ 2026-03-01', '시작일: 2026년 2월은 01~28일로 입력하세요.'],
+    ['2026-11-01 ~ 2026-11-31', '종료일: 2026년 11월은 01~30일로 입력하세요.'],
+    ['2026-11-01 ~ 2026-13-01', '종료일: 월은 01~12로 입력하세요.'],
+    ['2026-02-30 ~ 2026-02-31', '시작일: 2026년 2월은 01~28일로 입력하세요.'],
+    // 둘 다 실재하는데 거꾸로면 순서만
+    ['2026-11-15 ~ 2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.'],
+    ['2026-11-15~2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.'],
+  ]) assert.equal(rangeInputError(text), expected, text);
+  // 맞는 기간(같은 날 포함)은 오류가 없다
+  for (const text of ['2026-11-10 ~ 2026-11-15', '2026-11-15 ~ 2026-11-15', '2024-02-29 ~ 2024-03-01']) assert.equal(rangeInputError(text), undefined, text);
 });

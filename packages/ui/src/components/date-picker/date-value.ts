@@ -46,6 +46,27 @@ export function outOfRange(text: string, time = false): string | undefined {
   if (time && (hours > 23 || minutes > 59)) return '시각은 00:00~23:59로 입력하세요.';
   return undefined;
 }
+/**
+ * 기간 입력의 오류 문구를 하나만 돌려준다. 맞으면 undefined. 형식 → 날짜 실재 → 순서 차례로 본다.
+ * 형식이 틀리면 형식만, 형식이 맞으면 무엇이 틀렸는지만 말한다 — 두 가지를 한 문장에 섞으면
+ * 순서만 틀린 사용자가 형식을 다시 들여다본다(예전 "시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요.").
+ * 없는 날짜는 단일과 같은 문구 앞에 어느 쪽인지 붙인다. 문구는 디자인 총괄 확정안(2026-11-22).
+ * 13px 실측: 형식 292px 는 오류 폭 286px(306-아이콘·간격)를 넘어 두 줄이 된다 — 앞부분을 줄이지 않고 두 줄을
+ * 허용한다(확정안). 306px Field 에서 아래 칸이 20px 밀리고, w-fit 상자는 대신 6px 넓어진다(dogfood3 실측).
+ * 순서 문구 230px, 가장 긴 없는 날짜 "시작일: 2026년 11월은 01~30일로 입력하세요." 245px 는 한 줄.
+ */
+export function rangeInputError(text: string): string | undefined {
+  const format = 'YYYY-MM-DD ~ YYYY-MM-DD 형식으로 입력하세요.';
+  const [start = '', end = '', ...rest] = text.split('~').map(s => s.trim());
+  if (rest.length || ![start, end].every(part => /^\d{4}-\d{2}-\d{2}$/.test(part))) return format;
+  for (const [label, part] of [['시작일', start], ['종료일', end]] as const) {
+    const problem = outOfRange(part);
+    if (problem) return `${label}: ${problem}`;
+  }
+  const from = parseDate(start), to = parseDate(end);
+  if (!from || !to) return format;
+  return from > to ? '종료일을 시작일과 같거나 이후로 입력하세요.' : undefined;
+}
 /** 가장 가까운 분 칸, 동률은 올림: 예약을 동률에서 더 일찍 실행하지 않기 위해서다. 자정은 다음 날짜로 넘긴다. */
 export function snapTime(date: Date, step: TimeStep): Date {
   const next = new Date(date);
