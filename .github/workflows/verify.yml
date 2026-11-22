@@ -20,60 +20,211 @@ env:
   PLAYWRIGHT_VERSION: 1.65.1
 
 jobs:
-  gate:
+  build:
+    name: build
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
-    # 임시 상향(20→45분). 마지막 녹색 실행이 13.5~14.8분이었고 그 뒤 하네스가 10개 넘게
-    # 늘어 로컬 pnpm gate 가 약 25분이다. 샤딩·병렬화는 후속 작업에서 줄인다.
-    timeout-minutes: 45
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          # 범위(engines ">=22")를 넘기면 해석이 모호해서 명시한다. 로컬과 같은 메이저.
           node-version: 24
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-
       - run: pnpm install --frozen-lockfile
 
-      # 브라우저 바이너리만 실행 사이에 재사용한다. 빌드 산출물은 캐시하지 않는다(R8).
+      # dist와 Storybook은 실행 사이에 캐시하지 않는다. 깨끗한 러너에서 매번 만든다(R8).
+      - name: 패키지 빌드
+        run: pnpm build
+      - name: Storybook 정적 빌드
+        run: pnpm build-storybook --quiet
+
+      # 같은 run의 하네스만 이 산출물을 받는다. 다음 run의 캐시로는 쓰지 않는다.
+      - name: 빌드 산출물 전달
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-${{ github.sha }}
+          path: |
+            packages/ui/dist/
+            storybook-static/
+          if-no-files-found: error
+          retention-days: 1
+
+  checks:
+    name: checks
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      - name: 생성 산출물 동기화
+        run: |
+          pnpm tokens
+          pnpm mcp:build
+          git diff --exit-code -- packages/tokens docs/research/tokens.json packages/mcp/manifest.json
+      # 이 저장소는 ESLint를 도입하지 않는다. 소유한 의존 경계 검사가 정적 lint 역할을 한다.
+      - name: 정적 의존 경계 검사
+        run: >-
+          node --input-type=module -e
+          "import { checkBoundaries } from './scripts/check-boundaries.mjs'; await checkBoundaries();"
+      - name: 타입 검사
+        run: pnpm typecheck
+      - name: 단위 테스트
+        run: pnpm test
+
+  # Node 전용 하네스는 한 러너에서 순차 실행한다. pack-verify의 /tmp/s2와 생성 파일을
+  # 다른 하네스가 동시에 읽지 않게 하면서, run-plan의 그룹 분류를 단일 진실 원천으로 쓴다.
+  node:
+    name: node harnesses
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
       - name: Playwright 브라우저 캐시
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-
-      # GUI Chrome 을 쓰지 않는다 — 이유는 AGENTS.md "이미 밟은 함정" 참고.
-      # chromium 전체가 아니라 headless shell 만 받는다.
       - run: npx --yes playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium-headless-shell
-
-      # Ubuntu 23.10+ 는 AppArmor 로 비특권 user namespace 를 막는다.
-      # 그러면 Chromium 의 zygote 샌드박스가 초기화에 실패하고
-      # "No usable sandbox!" 로 죽는다 (실제로 첫 CI 에서 그랬다).
-      #
-      # --no-sandbox 로 끄지 않는다. Chromium 공식 문서가 안내하는 대로
-      # 커널 제한만 푼다 — 샌드박스는 켜진 채로 둔다.
-      # 러너는 일회용이고 우리가 띄우는 것은 로컬 스토리북뿐이지만,
-      # 보호를 끄는 것과 못 쓰게 막힌 것을 푸는 것은 다르다.
       - name: Chromium user namespace 허용 (샌드박스는 유지)
         run: |
           if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
             echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
-          else
-            echo "제한 파일이 없습니다 — 그대로 진행합니다."
           fi
-
-      - run: pnpm gate
-
-      # 실패했을 때 화면을 볼 수 없으므로 스크린샷을 남긴다.
+      - name: Node 전용 하네스 순차 실행
+        run: >-
+          node docs/qa/run-all.mjs
+          --group node
+          --jobs 1
+          --timings .qa-timings/node.json
+      - name: Node timings 업로드
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: qa-timings-node
+          path: .qa-timings/node.json
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: ignore
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: qa-shots
+          name: qa-shots-node
           path: .qa-shots/
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore
+
+  harness:
+    name: harness shard ${{ matrix.shard }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: 같은 run의 빌드 산출물 받기
+        uses: actions/download-artifact@v8
+        with:
+          name: build-${{ github.sha }}
+          path: .
+
+      # run-all도 CI 엄격 모드에서 대조하지만, 하네스 시작 전에 한 번 더 실패시킨다(R8).
+      - name: Storybook 빌드 출처 이중 확인
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: >-
+          node --input-type=module -e
+          "import { readFileSync } from 'node:fs';
+          const info = JSON.parse(readFileSync('storybook-static/build-info.json', 'utf8'));
+          if (info.sha !== process.env.EXPECTED_SHA) throw new Error('Storybook sha 불일치: ' + info.sha);
+          if (info.dirty !== false) throw new Error('CI에서 dirty Storybook 빌드를 거부합니다.');"
+
+      - name: Playwright 브라우저 캐시
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+      - run: npx --yes playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium-headless-shell
+      - name: Chromium user namespace 허용 (샌드박스는 유지)
+        run: |
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+          fi
+
+      - name: 하네스 샤드 실행
+        run: >-
+          node docs/qa/run-all.mjs
+          --group storybook
+          --shard ${{ matrix.shard }}/2
+          --timings .qa-timings/shard-${{ matrix.shard }}.json
+
+      # 빌드·서버 단계에서 실패하면 timings 파일이 없을 수 있다.
+      - name: 샤드 timings 업로드
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: qa-timings-${{ matrix.shard }}
+          path: .qa-timings/shard-${{ matrix.shard }}.json
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: ignore
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: qa-shots-${{ matrix.shard }}
+          path: .qa-shots/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # 브랜치 보호는 이 이름 하나만 필수 체크로 사용한다.
+  gate:
+    name: gate
+    if: always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository)
+    needs: [build, checks, node, harness]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: 모든 병렬 게이트 집계
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          NODE_RESULT: ${{ needs.node.result }}
+          HARNESS_RESULT: ${{ needs.harness.result }}
+        run: |
+          for result in "$BUILD_RESULT" "$CHECKS_RESULT" "$NODE_RESULT" "$HARNESS_RESULT"; do
+            if [ "$result" != success ]; then
+              echo "::error::필수 job 실패 또는 취소: $result"
+              exit 1
+            fi
+          done
