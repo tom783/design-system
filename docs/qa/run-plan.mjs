@@ -42,6 +42,7 @@ export const HARNESSES = [
   ['design-detail-render-verify.mjs', '디자인 디테일·D1–D6'],
   ['detail-render-verify.mjs', '상세 탭·경로·편집·삭제 확인'],
   ['screens-render-verify.mjs', '대표 화면 목록·상세 D2·대시보드'],
+  ['form-row-render-verify.mjs', '같은 줄 정렬·등록 화면 F98·(b)'],
   ['create-render-verify.mjs', '등록·Enter 계약·목록 왕복'],
   ['docs-render-verify.mjs', '사용 문서·매니페스트 일치'],
 ];

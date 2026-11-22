@@ -12,3 +12,24 @@
 [data-slot="field-error"] { min-height: var(--text-caption-lh); display: flex; align-items: start; gap: var(--space-4); }
 [data-slot="field-error"] > svg { width: var(--space-16); height: var(--space-16); flex-shrink: 0; margin-top: var(--space-2); }
 [data-slot="field"] [aria-invalid="true"] { border-color: var(--status-danger-fg); }
+
+/* FormRow — 같은 줄 Field 를 입력칸 기준으로 맞춘다(2026-11-22 등록 화면 시안 (b), 오너 확정).
+   좁은 폭(기본)에서는 Field 를 평소처럼 쌓는다. 12px 는 필드 피치 98 의 필드 간 여백이다.
+   컨테이너 폭 480px 이상이면 한 줄에 놓고, 네 행(레이블·설명·입력·오류)을 subgrid 로 함께 쓴다.
+   480px: 두 칸이 각각 232px 이상이어야 레이블·13자리 숫자 입력이 줄바꿈 없이 들어간다(내부 설계값). */
+.ds-form-row { container: ds-form-row / inline-size; min-width: 0; }
+.ds-form-row-grid { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
+@container ds-form-row (min-width: 480px) {
+  .ds-form-row-grid {
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(4, auto); column-gap: var(--space-16); row-gap: 0;
+  }
+  .ds-form-row-grid > * { grid-row: 1 / span 4; min-width: 0; }
+  /* 행 사이 간격을 0 으로 두고 Field 의 4px 는 여백으로 옮긴다. 빈 설명 행이 간격만 남기지 않게 하려는 것이다. */
+  .ds-form-row-grid > .ds-field { display: grid; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+  /* DOM 순서가 아니라 data-slot 으로 행을 고른다. 나머지(입력과 그 형제)는 모두 입력 행에 겹친다. */
+  .ds-form-row-grid > .ds-field > * { grid-column: 1; grid-row: 3; align-self: start; }
+  .ds-form-row-grid > .ds-field > [data-slot="field-label"] { grid-row: 1; margin-block-end: var(--space-4); }
+  .ds-form-row-grid > .ds-field > [data-slot="field-description"] { grid-row: 2; margin-block-end: var(--space-4); }
+  .ds-form-row-grid > .ds-field > [data-slot="field-error"] { grid-row: 4; margin-block-start: var(--space-4); }
+}

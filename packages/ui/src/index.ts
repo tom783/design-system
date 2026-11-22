@@ -28,8 +28,8 @@ export { nextPhase, type LoadingPhase, type LoadingInput } from './lib/loading-s
 export { Tooltip, Hint, Tour, useTour, placeFallback, resolveStep, useAnchored, supportsAnchor,
   type TooltipProps, type HintProps, type TourStep, type TourProps, type UseTourOptions,
   type Rect, type Placement } from './components/guide';
-export { Field, FormFlow, useFormFlow, focusNextFormStop, useComposition, nextFocusable, shouldValidate,
-  type FieldProps, type FormFlowOptions, type FormFlowProps, type FocusCandidate, type ValidationTiming } from './components/form';
+export { Field, FormRow, FormFlow, useFormFlow, focusNextFormStop, useComposition, nextFocusable, shouldValidate,
+  type FieldProps, type FormRowProps, type FormFlowOptions, type FormFlowProps, type FocusCandidate, type ValidationTiming } from './components/form';
 export * from './components/peek';
 
 export * from './components/state';

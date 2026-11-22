@@ -319,8 +319,10 @@ const intents = [
   entry('Hint','guide','새 기능·놓치기 쉬운 UI를 한 번 알린다.',['새 기능을 2~3줄과 액션으로 알릴 때'],['레코드 요약용으로 쓰지 마라'],'10.2','닫은 안내를 반복하지 않도록 앱이 기억한다.',['children','open','title','body','onDismiss','action'],['guide-hint'],['Tooltip','Tour','Peek'],['힌트','새 기능','한 번','맥락형 안내']),
   entry('Tour','guide','사용자가 요청한 UI 흐름을 단계로 안내한다.',['사용자가 전체 흐름 학습을 요청할 때'],['자동 실행하지 마라','닫기·Escape를 막지 마라'],'10.1','최대 3단계이며 항상 건너뛸 수 있다.',['steps','active','next','previous','skip'],['guide-hint'],['Tooltip','Hint','Peek'],['투어','온보딩','단계','단계별','단계별 안내','사용법','흐름 학습','기능 흐름','처음 온 사용자','둘러보기','시작 안내']),
   entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],["Field가 입력값을 관리한다고 가정하지 마라"],'11.4',[
-    "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다."
-  ],['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사']),
+    "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다.",
+    rule("같은 줄 Field는 FormRow로 묶어 입력칸을 맞춘다. 직접 그리드를 짜지 않는다.", "11.9")
+  ],['label','description','error','required','children'],['field','field-error'],['Input','FormFlow'],['필드','오류','레이블','폼 검증','입력값 검증','틀렸을 때','오류 문구','유효성 검사','같은 줄','두 칸']),
+  part('FormRow','Field','같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.',[],['form-row','form-row-grid']),
   entry('FormFlow','form','반복 입력 폼의 Enter 이동과 제출 흐름을 제공한다.',['반복 입력에서 마우스 이동을 줄일 때'],['조합 중 Enter로 이동하지 마라','textarea Enter를 가로채지 마라','단계 위치는 Steps를 쓰고 폼을 중첩하지 마라'],'11.5',[
     "Enter는 Tab 순서로 이동한다. 별도 입력 순서를 만들지 않는다.",
     "단일 행 Shift+Enter를 제출로 바꾸지 않는다. 이전 칸 이동이다.",

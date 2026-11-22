@@ -44,7 +44,7 @@ async function setValue(name, value) {
     node.dispatchEvent(new Event('input', { bubbles: true })); })()`);
   await wait(`${probe(name)}.value === ${JSON.stringify(value)}`);
 }
-async function story(id = 'screens-createscreen--등록화면') {
+async function story(id = 'qa-createscreen--등록화면') {
   // 다음 스토리에서 resetErrors 되기 전에 직전 오류도 검사한다.
   assert.deepEqual(browser.errors(), [], '직전 스토리 콘솔 오류');
   const result = await open(id);
@@ -198,7 +198,7 @@ try {
     await wait(`!!${probe('order-list')}`);
   });
   await check('연속 등록은 저장 뒤 첫 칸 복귀·횟수 증가', async () => {
-    await story('screens-createscreen--연속등록');
+    await story('qa-createscreen--연속등록');
     for (let count = 1; count <= 2; count++) {
       await fillValid(); await focus(probe('save'));
       await enter(`${probe('saved-count')}.textContent === '등록 ${count}건' && document.activeElement === ${probe('name')}`);
@@ -206,7 +206,7 @@ try {
     }
   });
   await check('목록→등록→저장→목록·토스트·새 행 재방문 마커·필터 보존', async () => {
-    await story('screens-flow--목록등록왕복');
+    await story('qa-flow--목록등록왕복');
     await setValue('list-filter', '상품');
     await ev(`${probe('new-order')}.click()`); await wait(`!!${form}`);
     await fillValid(); await focus(probe('save')); await enter(`!!${probe('order-list')}`);
@@ -215,7 +215,7 @@ try {
     assert.ok(await ev(`document.querySelector('[data-sonner-toast]').textContent.includes('주문을 저장했습니다')`));
   });
   await check('작성 중 Breadcrumb 이탈은 AlertDialog·취소 초기 포커스·계속 작성 보존', async () => {
-    await story('screens-flow--목록등록왕복');
+    await story('qa-flow--목록등록왕복');
     await ev(`${probe('new-order')}.click()`); await wait(`!!${form}`); await setValue('name', '작성 중');
     await ev(`${probe('back-to-list')}.click()`);
     await wait(`!!document.querySelector('[role="alertdialog"]') && document.activeElement === document.querySelector('[data-probe="keep-writing"]')`);
@@ -227,7 +227,7 @@ try {
     await ev(`document.querySelector('[data-probe="discard"]').click()`); await wait(`!!${probe('order-list')}`);
   });
   await check('깨끗한 이탈은 확인 없이 필터·스크롤·기존 행 마커 복원', async () => {
-    await story('screens-flow--목록등록왕복'); await setValue('list-filter', '기존');
+    await story('qa-flow--목록등록왕복'); await setValue('list-filter', '기존');
     const scroll = `${CANVAS}.querySelector('[data-slot="data-table-scroll"]')`;
     await wait(`${scroll}.scrollHeight > ${scroll}.clientHeight`);
     await ev(`${scroll}.scrollTop = 180`);
@@ -242,7 +242,7 @@ try {
     assert.ok(await ev(`!!${CANVAS}.querySelector('[data-slot="data-table-row"][data-revisited]')`));
   });
   await check('새 행과 불일치하는 필터도 보존하고 새 행 함께 표시', async () => {
-    await story('screens-flow--목록등록왕복'); await setValue('list-filter', '기존');
+    await story('qa-flow--목록등록왕복'); await setValue('list-filter', '기존');
     await ev(`${probe('new-order')}.click()`); await wait(`!!${form}`);
     await fillValid(); await focus(probe('save')); await enter(`!!${probe('order-list')}`);
     await wait(`${probe('list-filter')}.value === '기존' && ${CANVAS}.querySelector('[data-slot="data-table-row"][data-revisited]')?.textContent.includes('신규 상품')`);

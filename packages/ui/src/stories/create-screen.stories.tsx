@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { Combobox, Field, Label, RadioGroup, RadioGroupItem, Switch, Toaster } from '../index';
 import { CreatedOrdersList, OrderCreateScreen, type CreatedOrder } from './create-screen-example';
 
-const meta = { title: 'Screens/CreateScreen' } satisfies Meta;
+const meta = { title: 'QA/CreateScreen' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 function CreateScreen({ restart = false }: { restart?: boolean }) {

@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { Toaster, useReturnContext, type ReturnRecord, type ReturnStorage } from '../index';
 import { CreatedOrdersList, OrderCreateScreen, type CreatedOrder } from './create-screen-example';
 
-const meta = { title: 'Screens/Flow' } satisfies Meta;
+const meta = { title: 'QA/Flow' } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 const initialOrders: CreatedOrder[] = Array.from({ length: 36 }, (_, index) => ({

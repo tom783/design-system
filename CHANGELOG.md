@@ -12,6 +12,10 @@
 
 ### 추가
 
+- 같은 줄 정렬 FormRow(2026-11-22 오너 확정 — 폼 밀도 F98 · (b)): 같은 줄 Field들이 레이블·설명·입력·오류 네 행을 함께 쓴다(CSS subgrid). 한쪽만 설명이 있어도 입력칸 y 차이 0, 둘 다 없으면 높이 증가 0(Field 하나와 같은 86px), 오류 2개에도 입력칸 이동 0이다. 행은 Field 자식의 DOM 순서가 아니라 data-slot으로 배정하고, 컨테이너 480px 미만에서는 한 열로 접어 빈 설명 행을 남기지 않는다. 필드 피치 98px은 그대로다. Field의 부품으로 매니페스트·문서(Components/Form)에 올렸고 카탈로그는 88,651바이트(90KB 안)다. 하네스 `form-row-render-verify`(9건)를 전체 QA에 등록했다.
+
+- 등록 화면 스토리 `Screens/ProductCreate`(기본·오류 2개): 상품 등록 F98 · (b) — 카드 세 묶음, 같은 줄 여섯 곳을 FormRow로 정렬, 하단 고정 저장 줄. 폼 카드 묶음·하단 고정 줄 부품은 없어 Card와 sticky 유틸리티로 조립했다.
+
 - 대표 화면 스토리(2026-11-22 디자인 검토 확정안): `Screens/OrderList`(제목 display 34/40·700, 검색·필터 한 줄 툴바·`N건 선택` 일괄 동작·DataTable 다중 선택·Pagination), `Screens/OrderDetail`(D2 — 머리 오른쪽 ⋯ 더보기·수정·출고 처리, 삭제는 더보기 메뉴의 destructive 항목 → AlertDialog 기본 포커스 취소·확정 채운 danger; 기본·메뉴 열림·삭제 확인), `Screens/Dashboard`(StatTile 4개·TrendBand·BulletRow·최근 주문). 정식 부품만 조립하고 스토리 전용 CSS는 없다. 라이트·다크 1440×900 하네스 `screens-render-verify`(14건)를 전체 QA에 등록했다.
 
 - 단계 표시(R43): Steps의 0 기준 현재 위치·완료/진행 중/예정 자동 계산·오류 덮어쓰기, 완료 단계 버튼, 640px 미만 요약과 전체 라벨 보존을 추가했다. 단계마다 FormFlow 하나를 사용하는 상품 등록·제목 포커스 예시, 매니페스트 문서·MCP 갈림길·작성 전용 하네스를 포함한다. 세로 배치·폼 상태 관리·버전 변경은 없다.
@@ -138,7 +142,7 @@
 
 ### 내부
 
-- 테스트 장치 스토리를 `QA/`로 옮겼다: `Screens/ListScreen`·`Screens/DetailScreen`·`Screens/AppShell` → `QA/ListScreen`·`QA/DetailScreen`·`QA/AppShell`. 내용은 그대로이며 스토리 id를 쓰던 하네스(detail·design-detail·app-shell·list-screen)와 문서 참조를 함께 고쳤다. `Screens/`에는 디자인 검토를 거친 대표 화면만 둔다.
+- 테스트 장치 스토리를 `QA/`로 옮겼다: `Screens/ListScreen`·`Screens/DetailScreen`·`Screens/AppShell`·`Screens/CreateScreen`·`Screens/Flow` → `QA/ListScreen`·`QA/DetailScreen`·`QA/AppShell`·`QA/CreateScreen`·`QA/Flow`. 내용(폼 밖 사업장 선택 등 장치 포함)은 그대로이며 스토리 id를 쓰던 하네스(detail·design-detail·app-shell·list-screen·create)와 문서 참조를 함께 고쳤다. `Screens/`에는 디자인 검토를 거친 대표 화면만 둔다.
 
 - MCP 예산(R37)을 실제 소비 경로 기준으로 재설정했다. 카탈로그 80,000→90,000바이트, 전체 160,000바이트 유지, 복원된 목록 24,000바이트·부모 의도를 합친 상세 한 건 6,000바이트를 생성 시 차단한다. 네 경계값/+1바이트 검사와 실제 stdio 응답 검증을 추가했다. 카탈로그 실측은 R36b 76,925→79,416바이트이며 지침은 줄이지 않았다.
 

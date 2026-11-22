@@ -121,7 +121,7 @@ try {
   for (const width of [1440, 1024]) for (const theme of ['light', 'dark']) {
     const context = `${theme} ${width}px`;
     await cdp('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false });
-    for (const [screen, id] of [['목록', 'qa-listscreen--목록화면'], ['상세', 'qa-detailscreen--상세화면'], ['등록', 'screens-createscreen--등록화면']]) {
+    for (const [screen, id] of [['목록', 'qa-listscreen--목록화면'], ['상세', 'qa-detailscreen--상세화면'], ['등록', 'qa-createscreen--등록화면']]) {
       await check(`D6 ${screen} 루트 여백 ${context}`, async () => {
         await load(id, theme);
         const m = await ev(`(() => { const root = ${CANVAS}.firstElementChild, s = getComputedStyle(root); return {

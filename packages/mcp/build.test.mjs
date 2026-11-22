@@ -96,8 +96,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // R43: 카탈로그 88,161B + 289B, 목록 19,679B + 271B. 운영 예산은 유지한다.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 88_450);
+  // FormRow(2026-11-22): 카탈로그 88,651B + 299B, 목록 19,870B + 80B. 운영 예산은 유지한다.
+  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 88_950);
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
   assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950);
   assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);

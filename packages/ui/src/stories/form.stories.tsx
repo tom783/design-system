@@ -1,12 +1,12 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
-import { Field, FormFlow, useComposition, shouldValidate } from '../components/form';
+import { Field, FormFlow, FormRow, useComposition, shouldValidate } from '../components/form';
 import { Input } from '../components/input';
 import { Button } from '../components/button';
 
 const meta = {
-  tags: ['autodocs'], title: 'Components/Form', parameters: { manifest: ['Field', 'FormFlow', 'Label', 'Checkbox'], layout: 'padded' },
+  tags: ['autodocs'], title: 'Components/Form', parameters: { manifest: ['Field', 'FormRow', 'FormFlow', 'Label', 'Checkbox'], layout: 'padded' },
   decorators: [(Story) => <div style={{ maxWidth: 520 }}><Story /></div>],
 } satisfies Meta;
 export default meta;
@@ -35,6 +35,34 @@ export const 기본: Story = {
     done(root);
   },
 };
+/** 같은 줄 Field 는 FormRow 로 묶는다. 한쪽만 설명·오류가 있어도 입력칸 윗선이 같다(DESIGN §11.9). */
+function SameRow({ errors = false }: { errors?: boolean }) {
+  return <div data-probe="form-rows" className="flex flex-col gap-3">
+    <FormRow data-probe="row-description">
+      <Field label="판매자 상품 코드" description="영문·숫자·하이픈만 씁니다."><Input defaultValue="CAMP-CH-01" /></Field>
+      <Field label="바코드"><Input inputMode="numeric" defaultValue="8801234567893" /></Field>
+    </FormRow>
+    <FormRow data-probe="row-plain">
+      <Field label="재고 수량" required error={errors ? '재고 수량을 입력하세요' : undefined}><Input numeric inputMode="numeric" defaultValue={errors ? '' : '120'} /></Field>
+      <Field label="1인 최대 구매 수량"><Input numeric inputMode="numeric" defaultValue="5" /></Field>
+    </FormRow>
+    <Field data-probe="single" label="상품명"><Input defaultValue="경량 캠핑 의자" /></Field>
+  </div>;
+}
+export const 같은줄정렬: Story = {
+  name: '같은 줄 정렬 — FormRow',
+  render: () => <SameRow />,
+  play: async ({ canvasElement: root }) => {
+    const top = (probe: string) => [...root.querySelectorAll(`[data-probe="${probe}"] input`)].map(input => input.getBoundingClientRect().top);
+    const [left, right] = top('row-description');
+    await expect(Math.abs(left! - right!)).toBeLessThan(.5);
+    // 설명이 없는 줄은 Field 하나와 같은 높이다 — 빈 설명 행이 자리를 차지하지 않는다.
+    const height = (probe: string) => root.querySelector(`[data-probe="${probe}"]`)!.getBoundingClientRect().height;
+    await expect(Math.abs(height('row-plain') - height('single'))).toBeLessThan(.5);
+    done(root);
+  },
+};
+export const 같은줄정렬_오류: Story = { name: '같은 줄 정렬 — 오류', render: () => <SameRow errors />, play: ({ canvasElement: root }) => done(root) };
 function LayoutDemo() {
   const [error, setError] = React.useState(false);
   return <div data-testid="layout"><Field label="수취인" error={error ? '수취인을 입력하세요' : undefined}><Input /></Field>

@@ -8851,6 +8851,10 @@
         {
           "text": "값과 검증 결과는 앱이 관리하고 Field에 표시 문구를 준다.",
           "source": "11.4"
+        },
+        {
+          "text": "같은 줄 Field는 FormRow로 묶어 입력칸을 맞춘다. 직접 그리드를 짜지 않는다.",
+          "source": "11.9"
         }
       ],
       "related": [
@@ -8865,7 +8869,12 @@
         "입력값 검증",
         "틀렸을 때",
         "오류 문구",
-        "유효성 검사"
+        "유효성 검사",
+        "같은 줄",
+        "두 칸"
+      ],
+      "parts": [
+        "FormRow"
       ],
       "source": "components/form/field.tsx",
       "props": [
@@ -8901,6 +8910,19 @@
         "field-error",
         "field-label",
         "field-required"
+      ]
+    },
+    {
+      "name": "FormRow",
+      "partOf": "Field",
+      "purpose": "같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.",
+      "source": "components/form/form-row.tsx",
+      "extends": [
+        "React.HTMLAttributes<HTMLDivElement>"
+      ],
+      "slots": [
+        "form-row",
+        "form-row-grid"
       ]
     },
     {
