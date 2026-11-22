@@ -64,6 +64,36 @@ try {
       assert.equal(await ev(`${all(`${item}[data-status="upcoming"]`)}.length`), 3-index);
     }
   });
+  await check('1000px·4단계 연결선: 글 끝/다음 표식과 8px·표식 중앙·완료 색', async () => {
+    for (const name of ['기본', '중간단계', '완료단계클릭']) {
+      await story(name); await ev(`${q(root)}.style.width='1000px'`);
+      // ::after는 마지막 flex 항목이다. 계산된 선 폭과 칸의 오른쪽 끝으로 실제 선 상자를 복원한다.
+      const lines = await ev(`${all(item)}.slice(0,-1).map(n=>{
+        const line=getComputedStyle(n,'::after'),r=n.getBoundingClientRect(),width=parseFloat(line.width),
+          right=r.right-parseFloat(line.marginRight),top=r.top+parseFloat(line.marginTop),
+          marker=n.querySelector('[data-slot="steps-marker"]').getBoundingClientRect(),
+          next=n.nextElementSibling.querySelector('[data-slot="steps-marker"]').getBoundingClientRect(),
+          text=[...n.querySelectorAll('[data-slot="steps-label"],[data-slot="steps-description"]')];
+        return {status:n.dataset.status,leftGap:right-width-Math.max(...text.map(t=>t.getBoundingClientRect().right)),
+          rightGap:next.left-right,centerDelta:top+parseFloat(line.borderTopWidth)/2-(marker.top+marker.bottom)/2,width,
+          color:line.borderTopColor,statusColor:getComputedStyle(n.querySelector('[data-slot="steps-status"]')).color,
+          content:line.content,display:line.display};
+      })`);
+      assert.equal(lines.length, 3);
+      assert.equal(await ev(`getComputedStyle(${all(item)}.at(-1),'::after').content`), 'none');
+      for (const line of lines) {
+        assert.ok(Math.abs(line.leftGap-8)<=1, JSON.stringify(line));
+        assert.ok(Math.abs(line.rightGap-8)<=1, JSON.stringify(line));
+        assert.ok(Math.abs(line.centerDelta)<=1, JSON.stringify(line));
+        assert.ok(line.width>=16, JSON.stringify(line));
+        assert.equal(line.content, '""'); assert.notEqual(line.display, 'none');
+        if (line.status==='complete') assert.equal(line.color, line.statusColor);
+      }
+      assert.notEqual(lines.find(n=>n.status==='complete').color, lines.find(n=>n.status!=='complete').color);
+      measurements.push({ story:name, width:1000, lines });
+    }
+    await browser.shot('connectors-1000');
+  });
   await check('완료/오류는 다른 아이콘과 상태 글자·오류가 현재 위치를 지우지 않음', async () => {
     await story('오류단계'); await indexIs(1);
     assert.equal(await ev(`${q(`${item}[aria-current="step"]`)}.dataset.status`), 'error');
@@ -97,6 +127,7 @@ try {
       await wait(`(getComputedStyle(${q('[data-slot="steps-count"]')}).display!=='none')===${width<640}`);
       const m = await ev(`(() => {const n=${q(root)},p=n.parentElement;return {width:${width},root:[n.clientWidth,n.scrollWidth],parent:[p.clientWidth,p.scrollWidth],page:[document.documentElement.clientWidth,document.documentElement.scrollWidth],visible:[...n.querySelectorAll('li')].filter(n=>getComputedStyle(n).display!=='none').length,summary:n.querySelector('[aria-current] [data-slot="steps-count"]').textContent};})()`);
       assert.equal(m.visible, width<640?1:4); assert.equal(m.summary, '2 / 4 · ');
+      if (width<640) assert.equal(await ev(`${all(item)}.every(n=>getComputedStyle(n,'::after').display==='none')`), true);
       for (const [w,s] of [m.root,m.parent,m.page]) assert.ok(s<=w, JSON.stringify(m));
       measurements.push(m);
     }
@@ -108,11 +139,16 @@ try {
     await browser.shot('narrow');
   });
   await check('긴 라벨·설명 한 줄 축약과 title·DOM·전체 접근명 보존', async () => {
-    await story('긴라벨'); await ev(`${q(root)}.style.width='640px'`);
-    const rows = await ev(`${all(item)}.map(n=>{const l=n.querySelector('[data-slot="steps-label"]'),d=n.querySelector('[data-slot="steps-description"]');return {name:n.getAttribute('aria-label'),label:l.textContent,title:l.title,width:l.clientWidth,natural:l.scrollWidth,ellipsis:getComputedStyle(l).textOverflow,description:d.textContent,descriptionTitle:d.title};})`);
-    for (const row of rows) {
-      assert.ok(row.natural>row.width); assert.equal(row.ellipsis,'ellipsis');
-      assert.equal(row.title,row.label); assert.ok(row.name.includes(row.label)); assert.equal(row.descriptionTitle,row.description);
+    await story('긴라벨');
+    for (const width of [640,1000]) {
+      await ev(`${q(root)}.style.width='${width}px'`);
+      const rows = await ev(`${all(item)}.map(n=>{const l=n.querySelector('[data-slot="steps-label"]'),d=n.querySelector('[data-slot="steps-description"]'),line=getComputedStyle(n,'::after');return {name:n.getAttribute('aria-label'),label:l.textContent,title:l.title,width:l.clientWidth,natural:l.scrollWidth,ellipsis:getComputedStyle(l).textOverflow,description:d.textContent,descriptionTitle:d.title,lineWidth:line.content==='none'?null:parseFloat(line.width)};})`);
+      for (const row of rows) {
+        assert.ok(row.natural>row.width); assert.equal(row.ellipsis,'ellipsis');
+        assert.equal(row.title,row.label); assert.ok(row.name.includes(row.label)); assert.equal(row.descriptionTitle,row.description);
+        if (row.lineWidth!==null) assert.ok(row.lineWidth>=16, JSON.stringify(row));
+      }
+      measurements.push({ story:'긴라벨', width, rows });
     }
   });
   await check('상품 등록: 오류 첫 입력 포커스·앞뒤 이동 후 제목 포커스·초안 보존·중첩 폼 없음', async () => {

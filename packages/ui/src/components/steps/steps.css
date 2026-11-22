@@ -1,12 +1,17 @@
 @layer components {
   .ds-steps { container-type: inline-size; min-width: 0; width: 100%; color: var(--text-primary); }
-  .ds-steps [data-slot="steps-list"] { display: flex; gap: var(--space-16); padding: 0; margin: 0; list-style: none; }
-  .ds-steps [data-slot="steps-item"] { display: flex; align-items: flex-start; gap: var(--space-8); flex: 1 1 0; min-width: 0; }
+  /* 내용 패딩 4px + 칸 안팎 간격 4px로 선 양 끝의 간격을 각각 8px로 맞춘다. */
+  .ds-steps [data-slot="steps-list"] { display: flex; gap: var(--space-4); padding: 0; margin: 0; list-style: none; }
+  .ds-steps [data-slot="steps-item"] { display: flex; align-items: flex-start; gap: var(--space-4); flex: 1 1 0; min-width: 0; }
   .ds-steps [data-slot="steps-item"]:not(:last-child)::after {
-    content: ''; flex: 0 0 var(--space-16); margin-top: var(--space-16); border-top: 1px solid var(--border-subtle);
+    /* 긴 글보다 최소 16px 선을 먼저 확보하고, 4px 패딩 + 24px 표식의 중앙에 둔다. */
+    content: ''; flex: 1 0 var(--space-16); margin-top: calc(var(--space-16) - 0.5px); border-top: 1px solid var(--border-subtle);
   }
+  /* 상태는 아이콘·문장으로 이미 전달하므로 선 색은 보조 장식이며 대비 요건이 없다. */
+  /* 위 선 규칙(0,3,1)보다 우선순위가 같거나 높아야 border-top 색을 덮는다(이전 0,2,1 은 회색에 졌다). */
+  .ds-steps [data-slot="steps-item"][data-status="complete"]:not(:last-child)::after { border-top-color: var(--status-success-fg); }
   .ds-steps [data-slot="steps-static"], .ds-steps [data-slot="steps-button"] {
-    display: flex; align-items: flex-start; gap: var(--space-8); flex: 1 1 0; min-width: 0;
+    display: flex; align-items: flex-start; gap: var(--space-8); flex: 0 1 auto; min-width: 0;
     padding: var(--space-4); border: 0; border-radius: var(--radius-sm); background: transparent; color: inherit;
     text-align: start; font: inherit;
   }
@@ -31,6 +36,9 @@
   .ds-steps [data-status="error"] [data-slot="steps-marker"], .ds-steps [data-status="error"] [data-slot="steps-status"] { color: var(--status-danger-fg); }
   /* 4단계 라벨 영역을 측정해 선택한 경계. 근거는 docs/qa/r43-steps.md. */
   @container (width < 640px) {
+    .ds-steps [data-slot="steps-list"] { gap: var(--space-16); }
+    .ds-steps [data-slot="steps-item"] { gap: var(--space-8); }
+    .ds-steps [data-slot="steps-static"], .ds-steps [data-slot="steps-button"] { flex: 1 1 0; }
     .ds-steps [data-slot="steps-item"]:not([aria-current="step"]) { display: none; }
     .ds-steps [data-slot="steps-item"]::after { display: none; }
     .ds-steps [data-slot="steps-marker"] { display: none; }
