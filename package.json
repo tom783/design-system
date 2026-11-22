@@ -17,6 +17,7 @@
     "build": "pnpm --filter @s2life/tokens build && pnpm --filter @s2life/mcp build && pnpm --filter @s2life/ui build",
     "version:set": "node scripts/version-set.mjs",
     "qa:pack": "node docs/qa/pack-verify.mjs",
+    "publish:check": "node scripts/npm-publish-check.mjs",
     "test": "node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs packages/mcp/*.test.mjs docs/qa/*.test.mjs"
   },
   "devDependencies": {

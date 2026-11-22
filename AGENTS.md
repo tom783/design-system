@@ -60,6 +60,7 @@ pnpm qa --group storybook --shard 1/2 --timings out.json   # CI 샤드: 그룹 �
 pnpm qa --port 6099   # 포트를 고정할 때만. 차 있으면 즉시 실패한다 (기본 0 = 빈 포트)
 pnpm build        # 패키지 빌드 (ui dist + CSS)
 pnpm qa:pack      # 배포 리허설만 — tarball → 샘플 앱 설치 → 실제 렌더 (임시 폴더)
+pnpm publish:check # 세 패키지 npm publish --dry-run 의 자동 교정 경고 검사 (닫힌 레지스트리 — 올라가지 않는다)
 pnpm version:set  # 세 패키지 버전을 함께 올린다 (lockstep)
 
 # 하네스 하나를 손으로 (빌드는 HEAD 와 같아야 한다 — pnpm build-storybook)

@@ -174,6 +174,10 @@
 ### 고침
 
 - Button children 앞·뒤 아이콘이 라벨 위로 쌓이던 문제(0.3.0 게시본부터) → 바뀐 동작 참조.
+- `@s2life/mcp`의 실행 명령 경로를 `npm pkg fix` 형태(`"s2life-mcp": "server.mjs"`)로 맞췄다. npm 11.19가 게시하면서
+  `./server.mjs`를 고치고 `"bin[s2life-mcp]" script name server.mjs was invalid and removed`라고 경고했다(0.4.0 dry-run에서 발견).
+  실제로 명령이 빠지지는 않았다 — 같은 npm으로 게시한 0.3.0도 `s2life-mcp`로 설치·실행된다. 이제 경고가 없고, tarball과
+  레지스트리 메타데이터의 bin 값이 같다.
 - ClampText가 `white-space: nowrap` 조상(예: DataTable 셀) 안에서 긴 글을 더보기 없이 자르던 문제(도그푸딩 2: 1210/576px,
   더보기 0/16). 내용이 `text-wrap-mode: wrap`과 `overflow-wrap: anywhere`를 소유한다. `white-space: normal`이 아니라서
   `pre-line`·`pre`로 보존한 사용자 개행은 그대로 남는다.
@@ -263,6 +267,9 @@
 - 배포 리허설: `S2_PACK_REACT=<x.y.z>`로 소비 앱 React를 지정한다(peer 하한 확인). 기본·지정 모두 번들 안 React 버전이 하나인지 검사한다.
   소비 앱에 Tabs를 두고 기본·Tailwind 두 경로에서 '버튼 아이콘·라벨 한 줄'과 '탭 선택 밑줄이 기준선에 앉는다'를 위치로 잰다
   (0.3.0의 Button이면 세로 중심 차 20px로 실패한다).
+  세 tarball의 package.json이 원본과 같고 npm이 게시하며 고칠 필드가 0개인지(`npm pkg fix`), mcp tarball에 bin `s2life-mcp`가
+  있는지 보고, 소비 앱에서 `node_modules/.bin/s2life-mcp`와 `npx @s2life/mcp` 둘 다 stdio initialize를 주고받는다.
+  `pnpm publish:check`는 세 패키지를 `npm publish --dry-run`(닫힌 로컬 레지스트리·`--ignore-scripts`)으로 돌려 자동 교정 경고를 잡는다.
 - QA 하네스 구조(3단계 2차): 하네스가 남의 서버·낡은 빌드를 검사하고 통과하지 못하게 했다. run-all이 내장 정적 서버
   (`static-server.mjs`)를 빈 포트(`--port 0`, 지정 포트가 차 있으면 즉시 실패)에 띄우고, 빌드 폴더 nonce와 `build-info.json`의 sha가
   HEAD와 같아야 진행한다(dirty 빌드는 pre-push·CI 엄격 모드에서 거부). 하네스는 `storybookBase()`(`DS_SB_URL`)로 같은 확인을

@@ -1651,10 +1651,15 @@ eslint 를 쓰지 않는다 — 지금까지와 같은 생성기 게이트 방�
 - Tailwind 통합 경로에서도 같은 결과가 나오는가
 - 두 경로 모두 한글이 있는 화면에서 `document.fonts.ready` 뒤 Pretendard Variable 면이
   하나 이상 `loaded`이고, 본문 계산 글꼴의 첫 항목도 Pretendard Variable인가
-- `npx @s2life/mcp` 가 `initialize` 에 응답하는가
+- `npx @s2life/mcp` 와 설치된 실행 명령 `node_modules/.bin/s2life-mcp` 가 `initialize` 에 응답하는가
+- 세 tarball 의 `package.json` 이 저장소 원본과 같고, npm 이 게시하면서 고칠 필드가 0개인가(`npm pkg fix` 로 본다).
+  npm 은 고친 값을 레지스트리 메타데이터로만 보내 tarball 과 갈라진다. 0.4.0 dry-run 에서 npm 11.19 가 bin
+  `./server.mjs` 를 `server.mjs` 로 고치면서 "invalid and removed" 라고 경고했다(실제로 지우지는 않았다)
 - 번들에 들어간 React 버전이 하나인가
 
 `pnpm qa` 에 들어 있다. 기본 리허설은 저장소와 같은 React 로 돈다.
+게시 명령의 경고는 `pnpm publish:check` 가 따로 본다 — 세 패키지를 `npm publish --dry-run` 으로 돌리되
+레지스트리를 닫힌 로컬 포트로 돌려 올라가지 않는다.
 
 **peer 하한도 리허설로 확인한다.** `@s2life/ui` 의 peer 는 `react`·`react-dom` `^19.0.0` 이다
 (0.4.0 에서 `^19.3.1` 을 넓혔다. React 18 은 지원하지 않는다). 쓰는 React API 는 19.0 에 모두 있고,

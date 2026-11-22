@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { launchBrowser, resolveHeadlessShell } from './browser.mjs';
+import { npmFixChanges } from '../../scripts/npm-publish-check.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 // 기본은 실행마다 새 임시 폴더다. 고정 /tmp/s2·/tmp/s2-consumer 는 병렬 실행(--jobs·여러 작업 폴더)에서
 // 서로의 tarball·node_modules 를 덮어썼다. 경로를 지정하면(S2_PACK_DIR·S2_CONSUMER_DIR) 그대로 두고,
@@ -46,6 +47,18 @@ for (const [i, name] of ['tokens', 'ui', 'mcp'].entries()) {
   assert(!/\.test\.|\.stories\.|package\/src\//.test(listing), `${name}: 테스트·원본 소스는 배포에서 제외`);
   assert(!/\.(?:woff2?|ttf|otf)\b/i.test(listing), `${name}: 글꼴 파일은 앱이 제공한다`);
   if (name === 'mcp') assert(['match.mjs', 'catalog.mjs', 'manifest.json'].every(file => listing.includes(`package/${file}`)));
+  // npm publish 는 package.json 을 `npm pkg fix` 와 같은 함수로 고쳐 레지스트리 메타데이터로 보내고, tarball 안 파일은
+  // 그대로 둔다. 고칠 것이 있으면 저장소·tarball·메타데이터가 갈라진다(0.4.0 dry-run: bin "./server.mjs" → "server.mjs",
+  // 경고는 "was invalid and removed"). tarball 이 원본과 같고, npm 이 고칠 필드가 0개여야 한다.
+  const { packed, changes } = npmFixChanges(tarball, join(packDir, `npm-fix-${name}`), env);
+  assert.deepEqual(packed, packages[i], `${name}: tarball 의 package.json 이 저장소 원본과 같아야 한다`);
+  assert.deepEqual(changes, [], `${name}: npm 이 게시하면서 package.json 을 고친다 — \`npm pkg fix --workspace packages/${name}\` 로 맞춰라\n  ${changes.join('\n  ')}`);
+  if (name === 'mcp') {
+    // MCP 클라이언트 설정·README 의 실행 명령이다. 게시본에서 빠지면 `npx @s2life/mcp` 가 깨진다.
+    assert.deepEqual(Object.keys(packed.bin ?? {}), ['s2life-mcp'], 'mcp: tarball package.json 에 bin s2life-mcp 하나');
+    assert(listing.split('\n').includes(`package/${packed.bin['s2life-mcp']}`), `mcp: bin 이 가리키는 ${packed.bin['s2life-mcp']} 이 tarball 에 있어야 한다`);
+  }
+  console.log(`${name}: tarball package.json = 원본 · npm 자동 교정 0건${name === 'mcp' ? ` · bin s2life-mcp → ${packed.bin['s2life-mcp']}` : ''}`);
   tarballs.push(tarball);
 }
 const rootPkg = await json(join(root, 'package.json'));
@@ -161,28 +174,35 @@ try {
   run('npx', ['--no-install', 'vite', 'build', '--outDir', 'dist/tailwind', '--base', '/tailwind/'], consumer);
 } finally { await writeFile(join(consumer, 'index.html'), index); }
 
-// npm exec는 설치된 패키지의 단일 bin을 선택한다. 레지스트리의 미배포 버전은 요청하지 않는다.
-const proc = spawn('npx', ['--no-install', '@s2life/mcp'], { cwd: consumer, env, stdio: ['pipe', 'pipe', 'pipe'] });
-try {
-  const response = await new Promise((resolve, reject) => {
-    let output = '', stderr = '';
-    const timer = setTimeout(() => reject(new Error(`MCP initialize 타임아웃: ${stderr}`)), 10000);
-    proc.on('error', reject);
-    proc.on('exit', (code) => { if (code) reject(new Error(`MCP 종료 ${code}: ${stderr}`)); });
-    proc.stderr.on('data', (d) => { stderr += d; });
-    proc.stdout.on('data', (d) => {
-      output += d;
-      if (output.includes('\n')) {
-        clearTimeout(timer);
-        try { resolve(JSON.parse(output.split('\n')[0])); } catch (error) { reject(error); }
-      }
+// MCP 클라이언트 설정은 두 길로 서버를 부른다: `npx @s2life/mcp` 와 설치된 실행 명령 `s2life-mcp`.
+// 둘 다 stdio 로 initialize 한 번을 실제로 주고받는다. npx 는 --no-install 이라 레지스트리의 미배포 버전을 요청하지 않는다.
+const mcpInitialize = async (label, command, args) => {
+  const proc = spawn(command, args, { cwd: consumer, env, stdio: ['pipe', 'pipe', 'pipe'] });
+  try {
+    const response = await new Promise((resolve, reject) => {
+      let output = '', stderr = '';
+      const timer = setTimeout(() => reject(new Error(`${label}: MCP initialize 타임아웃: ${stderr}`)), 10000);
+      proc.on('error', reject);
+      proc.on('exit', (code) => { if (code) reject(new Error(`${label}: MCP 종료 ${code}: ${stderr}`)); });
+      proc.stderr.on('data', (d) => { stderr += d; });
+      proc.stdout.on('data', (d) => {
+        output += d;
+        if (output.includes('\n')) {
+          clearTimeout(timer);
+          try { resolve(JSON.parse(output.split('\n')[0])); } catch (error) { reject(error); }
+        }
+      });
+      proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'pack-verify', version: '1' } } }) + '\n');
     });
-    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'pack-verify', version: '1' } } }) + '\n');
-  });
-  assert.equal(response.id, 1);
-  assert.equal(response.result.serverInfo.version, packages[2].version);
-  console.log('npx @s2life/mcp initialize 통과');
-} finally { proc.stdin.end(); proc.kill(); }
+    assert.equal(response.id, 1, `${label}: initialize 응답 id`);
+    assert.equal(response.result.serverInfo.version, packages[2].version, `${label}: 서버 버전`);
+    console.log(`${label} initialize 통과 (${response.result.serverInfo.name} ${response.result.serverInfo.version})`);
+  } finally { proc.stdin.end(); proc.kill(); }
+};
+const mcpBin = join(consumer, 'node_modules/.bin/s2life-mcp');
+await access(mcpBin, constants.X_OK).catch(() => assert.fail('소비 앱에 node_modules/.bin/s2life-mcp 가 설치되어야 한다 — 게시본 bin 누락'));
+await mcpInitialize('node_modules/.bin/s2life-mcp', mcpBin, []);
+await mcpInitialize('npx @s2life/mcp', 'npx', ['--no-install', '@s2life/mcp']);
 
 try {
   if (process.argv.includes('--no-browser')) throw new Error('요청 옵션으로 실제 렌더를 확인하지 않았습니다.');
