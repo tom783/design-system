@@ -1,4 +1,4 @@
-// 모든 검증 하네스를 순서대로 돌린다. 스토리북 정적 서버는 여기서 띄우고 내린다.
+// 모든 검증 하네스를 돌린다. 스토리북 정적 서버는 여기서(같은 프로세스) 띄우고 내린다.
 //
 //   pnpm qa            (빌드는 미리 되어 있어야 한다 — pnpm build-storybook)
 //   pnpm qa --build    (빌드부터)
@@ -6,16 +6,22 @@
 //   pnpm qa --shard 1/4 --timings .qa-shots/timings-1.json
 //
 // 하네스 목록·인자·샤드 배분은 run-plan.mjs 에 있다.
+//
+// 남의 서버를 검사하지 않는다 — 2026-11-22 에 다른 작업 폴더의 6099 를 검사하고 통과한 적이 있다.
+//  · 포트는 기본 0(OS 가 빈 포트), --port n 이 차 있으면 즉시 실패(static-server.mjs)
+//  · 빌드 폴더에 무작위 nonce 를 쓰고 서버에서 같은 값을 읽어야 진행
+//  · 서버의 build-info.json sha 가 HEAD 와 다르면 거부, dirty 는 CI·pre-push 에서 거부
+// 하네스에는 DS_SB_URL·DS_SB_NONCE 로 넘기고, 하네스도 같은 확인을 한 번 더 한다(storybook-target.mjs).
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { resolveHeadlessShell } from './browser.mjs';
 import { BASELINE_FILE, NO_STORYBOOK, USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
+import { startStaticServer } from './static-server.mjs';
+import { STATIC_DIR, checkStorybook, writeNonce } from './storybook-target.mjs';
 
 const root = new URL('../..', import.meta.url).pathname;
-const PORT = 6099;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const t0 = performance.now(), startedAt = new Date();
 const secs = (ms) => Math.round(ms / 100) / 10;
 
@@ -47,39 +53,60 @@ try {
 
 // pack-verify·mcp-client-verify 만 고른 샤드는 스토리북이 필요 없다.
 const needsStorybook = HARNESSES.some(([file]) => !NO_STORYBOOK.has(file));
-let stop = () => {};
+let stop = async () => {};
+const harnessEnv = { ...process.env };
 const tServer = performance.now();
 if (needsStorybook) {
-  if (opts.build || !existsSync(`${root}storybook-static/index.json`)) {
+  if (opts.build || !existsSync(`${STATIC_DIR}/index.json`)) {
     console.log('스토리북 빌드…');
     const b = spawnSync('pnpm', ['build-storybook', '--quiet'], { cwd: root, stdio: 'inherit' });
     if (b.status !== 0) process.exit(b.status ?? 1);
   }
 
-  const server = spawn('npx', ['--yes', 'http-server', 'storybook-static', '-p', String(PORT), '-s'],
-    { cwd: root, stdio: 'ignore' });
-  stop = () => { try { server.kill(); } catch { /* 이미 내려감 */ } };
-  process.on('exit', stop);
-  process.on('SIGINT', () => { stop(); process.exit(130); });
-
-  let up = false;
-  for (let i = 0; i < 60; i++) {
-    try { await fetch(`http://localhost:${PORT}/index.json`); up = true; break; } catch { /* 대기 */ }
-    await sleep(500);
+  const nonce = writeNonce(STATIC_DIR);
+  let server;
+  try {
+    server = await startStaticServer({ root: STATIC_DIR, port: opts.port });
+  } catch (e) {
+    console.error(e.message);
+    process.exit(1);
   }
-  if (!up) { stop(); console.error(`스토리북 서버가 ${PORT} 에 뜨지 않았습니다.`); process.exit(1); }
+  stop = server.close;
+  process.on('SIGINT', () => { server.close(); process.exit(130); });
+  try {
+    const { warning, buildInfo } = await checkStorybook({ base: server.url, env: { ...process.env, DS_SB_NONCE: nonce } });
+    console.log(`스토리북: ${server.url} · 빌드 ${buildInfo.sha.slice(0, 7)}${buildInfo.dirty ? '(dirty)' : ''} · nonce 확인`);
+    if (warning) console.log(warning);
+  } catch (e) {
+    await stop();
+    console.error(e.message);
+    process.exit(1);
+  }
+  Object.assign(harnessEnv, { DS_SB_URL: server.url, DS_SB_NONCE: nonce });
 } else {
   console.log('(스토리북이 필요 없는 하네스만 — 빌드·정적 서버 생략)\n');
 }
 const serverSeconds = secs(performance.now() - tServer);
+
+// 정적 서버가 이 프로세스 안에 있어 spawnSync 로 기다리면 서버가 응답하지 못한다. 비동기로 돌린다.
+function runHarness(file) {
+  return new Promise((done) => {
+    const child = spawn('node', [`docs/qa/${file}`, `.qa-shots/${file.replace('.mjs', '')}`],
+      { cwd: root, env: harnessEnv, stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '', stderr = '';
+    child.stdout.setEncoding('utf8').on('data', (d) => { stdout += d; });
+    child.stderr.setEncoding('utf8').on('data', (d) => { stderr += d; });
+    child.on('error', (e) => { stderr += String(e); });
+    child.on('close', (status, signal) => done({ status, signal, stdout, stderr }));
+  });
+}
 
 const failed = [];
 const timings = {};
 for (const [file, label] of HARNESSES) {
   process.stdout.write(`── ${label.padEnd(20)} `);
   const t = performance.now();
-  const out = spawnSync('node', [`docs/qa/${file}`, `.qa-shots/${file.replace('.mjs', '')}`],
-    { cwd: root, encoding: 'utf8' });
+  const out = await runHarness(file);
   const seconds = secs(performance.now() - t);
   const summary = (out.stdout ?? '').split('\n').reverse()
     .find((l) => l.includes('검사') && l.includes('통과')) ?? '';
@@ -93,7 +120,7 @@ for (const [file, label] of HARNESSES) {
     failed.push({ file, tail: ((out.stdout ?? '') + (out.stderr ?? '')).trim().split('\n').slice(-12).join('\n') });
   }
 }
-stop();
+await stop();
 
 if (opts.timings) writeTimings(resolve(process.cwd(), opts.timings));
 

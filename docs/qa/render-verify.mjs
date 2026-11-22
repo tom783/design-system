@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 //  쓰는 법
 //    pnpm build-storybook
-//    python3 -m http.server 6099 --directory storybook-static &
+//    node docs/qa/static-server.mjs     → 나온 주소를 DS_SB_URL 로 (또는 pnpm qa --only render-verify)
 //    node docs/qa/render-verify.mjs ./shots
 //
 //  두 축으로 본다
@@ -19,9 +19,9 @@
 //  2026-11-14 에 실제로 이것 때문에 멀쩡한 포커스 복구 코드를 버그로 오판했다.
 // ============================================================================
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, storybookBase } from './browser.mjs';
 
-const BASE = 'http://localhost:6099', OUT = process.argv[2] || './shots', PORT = 9432;
+const BASE = await storybookBase(), OUT = process.argv[2] || './shots', PORT = 9432;
 mkdirSync(OUT, { recursive: true });
 // GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
 // 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.

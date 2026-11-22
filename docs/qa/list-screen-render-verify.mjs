@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, storybookBase } from './browser.mjs';
 const browser = await launchBrowser({ port: 9463, outDir: '.qa-shots/r13' });
 let failed = 0;
 try {
   const { open } = storybook(browser);
-  const index = await (await fetch('http://localhost:6099/index.json')).json();
+  const index = await (await fetch(`${await storybookBase()}/index.json`)).json();
   const stories = Object.values(index.entries).filter(e => e.type === 'story' && /^(Components\/(Select|DropdownMenu|Toast|DatePicker)|QA\/ListScreen)$/.test(e.title));
   // 이 가드의 뜻은 "스토리가 사라지지 않았는가" 다. 등식으로 두면 스토리를 **추가**할
   // 때마다 거짓 실패한다 — R19 에서 Select 에 툴바 필터 변형을 더하자 15→16 으로 깨졌다.

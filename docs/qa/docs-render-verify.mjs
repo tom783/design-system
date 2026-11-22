@@ -1,12 +1,12 @@
 // R26: 실행은 사용자 pnpm qa에 맡긴다. docs는 story 캔버스와 진입 경로가 다르다.
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { launchBrowser } from './browser.mjs';
+import { launchBrowser, storybookBase } from './browser.mjs';
 import { restoreComponent } from '../../packages/mcp/catalog.mjs';
 import { resolveIntent } from '../../packages/ui/docs/_intent-data.ts';
 
 const OUT = process.argv[2] || '.qa-shots/docs';
-const BASE = 'http://localhost:6099';
+const BASE = await storybookBase();
 const expectedPages = ['시작하기', '컴포넌트 고르기', '표 만들기', '폼 만들기', '토큰', '차트'];
 const manifest = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
 const catalog = new Map(manifest.components.map(component => {

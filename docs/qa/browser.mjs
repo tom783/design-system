@@ -40,6 +40,9 @@ import { existsSync, readdirSync, mkdirSync, mkdtempSync, writeFileSync } from '
 import { homedir, tmpdir } from 'node:os';
 import { inflateSync } from 'node:zlib';
 import { join } from 'node:path';
+import { checkStorybook, sbUrl } from './storybook-target.mjs';
+
+export { sbUrl, DEFAULT_SB_URL } from './storybook-target.mjs';
 
 const INSTALL_HINT =
   'npx playwright install chromium-headless-shell\n' +
@@ -272,8 +275,24 @@ export async function launchBrowser({
   };
 }
 
+const checked = new Map();
+/**
+ * 검사할 스토리북 주소(DS_SB_URL, 없으면 6099). **처음 부를 때 서버가 이 작업 폴더의 HEAD 빌드인지
+ * 확인한다** — nonce·build-info(storybook-target.mjs). 아니면 던진다. 남의 서버를 검사하고 통과하는 것을 막는다.
+ * 고정 주소를 하네스에 쓰지 말고 이것을 쓴다(함정 린트가 6099 를 막는다).
+ */
+export function storybookBase(base = sbUrl()) {
+  if (!checked.has(base)) {
+    checked.set(base, checkStorybook({ base }).then((r) => {
+      if (r.warning) console.error(r.warning);
+      return r.base;
+    }));
+  }
+  return checked.get(base);
+}
+
 /** 스토리북 iframe 탐색 헬퍼. 하네스마다 복사하던 부분이다. */
-export function storybook(session, { base = 'http://localhost:6099' } = {}) {
+export function storybook(session, { base: fixedBase } = {}) {
   const { cdp, ev, sleep, errors, resetErrors } = session;
   return {
     /**
@@ -282,6 +301,7 @@ export function storybook(session, { base = 'http://localhost:6099' } = {}) {
      *                  "열려 있다"고 가정하지 마라. 필요한 상태는 직접 만들어라.
      */
     async open(id, { extra = '', waitPlay = true, stable = false } = {}) {
+      const base = await storybookBase(fixedBase);
       resetErrors();
       await cdp('Page.navigate', { url: `${base}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story${extra}` });
       for (let i = 0; i < 80; i++) {

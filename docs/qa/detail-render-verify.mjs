@@ -1,4 +1,4 @@
-// R15 상세 화면 검증. 실행은 pnpm qa 또는 정적 Storybook 서버(:6099)에서 이 파일로 한다.
+// R15 상세 화면 검증. 실행은 pnpm qa --only detail-render-verify (서버·출처 확인은 run-all 이 한다).
 // play는 모든 창을 닫고 끝난다. 아래 상호작용은 완료 후 창을 다시 열어 만든 상태만 검사한다.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';

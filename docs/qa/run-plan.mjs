@@ -6,6 +6,7 @@
 //   --only a,b       하네스 파일 이름(.mjs 있어도 없어도)으로 일부만. 모르는 이름이면 실패
 //   --shard i/N      기준선 시간으로 N 등분한 것 중 i 번째(1부터). --only 와 같이 못 쓴다
 //   --timings <json> 실행한 하네스마다 초·결과를 남긴다
+//   --port <n>       정적 서버 포트. 기본 0 = OS 가 빈 포트를 준다. 차 있으면 즉시 실패
 //   --build          스토리북을 다시 빌드한다
 import { readFileSync } from 'node:fs';
 
@@ -60,20 +61,21 @@ export const harnessName = (file) => file.replace(/\.mjs$/, '');
 
 export class UsageError extends Error {}
 
-export const USAGE = `사용법: node docs/qa/run-all.mjs [--build] [--only a,b | --shard i/N] [--timings <out.json>]
+export const USAGE = `사용법: node docs/qa/run-all.mjs [--build] [--only a,b | --shard i/N] [--port n] [--timings <out.json>]
   --only a,b        이 하네스만 (파일 이름, .mjs 생략 가능)
   --shard i/N       기준선 시간으로 N 등분한 것 중 i 번째 (1 ≤ i ≤ N)
   --timings <파일>   하네스마다 소요 시간(초)·결과를 JSON 으로 남긴다
+  --port <n>        정적 서버 포트 (기본 0 = 빈 포트). 차 있으면 즉시 실패한다
   --build           스토리북을 다시 빌드한다`;
 
-const VALUE_FLAGS = new Set(['--only', '--shard', '--timings']);
+const VALUE_FLAGS = new Set(['--only', '--shard', '--timings', '--port']);
 
 /**
  * argv(process.argv.slice(2)) 를 해석한다. 틀리면 UsageError 를 던진다.
  * 오타(--shards)를 무시하면 샤드 4개가 전부를 4번 돌리므로 모르는 인자도 실패시킨다.
  */
 export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) {
-  const opts = { build: false, only: null, shard: null, timings: null };
+  const opts = { build: false, only: null, shard: null, timings: null, port: 0 };
   const seen = new Set();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -93,6 +95,7 @@ export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) 
     }
     if (flag === '--only') opts.only = parseOnly(value, names);
     else if (flag === '--shard') opts.shard = parseShard(value, names.length);
+    else if (flag === '--port') opts.port = parseInteger('--port', value, 0, 65535);
     else {
       if (!value) throw new UsageError('--timings 에 파일 경로가 없습니다.');
       opts.timings = value;
@@ -100,6 +103,13 @@ export function parseArgs(argv, names = HARNESSES.map(([f]) => harnessName(f))) 
   }
   if (opts.only && opts.shard) throw new UsageError('--only 와 --shard 는 같이 쓸 수 없습니다.');
   return opts;
+}
+
+function parseInteger(flag, value, min, max) {
+  if (!/^\d+$/.test(value) || Number(value) < min || Number(value) > max) {
+    throw new UsageError(`${flag} 는 ${min}~${max} 정수여야 합니다: "${value}"`);
+  }
+  return Number(value);
 }
 
 function parseOnly(value, names) {

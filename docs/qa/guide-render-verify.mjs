@@ -1,7 +1,8 @@
 // 안내(Tooltip·Hint·Tour) 렌더 검증 — CDP 직결, 의존성 없음.
 //
 //   pnpm build-storybook
-//   npx http-server storybook-static -p 6099 -s &
+//   pnpm qa --only <이 파일 이름>          (run-all 이 서버를 띄우고 출처를 확인한다)
+//   또는 node docs/qa/static-server.mjs 로 띄우고 DS_SB_URL=<주소> node docs/qa/<이 파일>
 //   node docs/qa/guide-render-verify.mjs ./shots
 //
 // 이 파일을 고칠 사람에게 — 여기서 실제로 틀렸던 것들이다.
@@ -17,9 +18,9 @@
 //  5. React 는 mouseover/mouseout 위임으로 enter/leave 를 합성한다.
 //     mouseleave 만 보내면 React 핸들러가 안 돈다.
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, storybookBase } from './browser.mjs';
 
-const BASE = 'http://localhost:6099', OUT = process.argv[2] || './shots3', PORT = 9495;
+const BASE = await storybookBase(), OUT = process.argv[2] || './shots3', PORT = 9495;
 mkdirSync(OUT, { recursive: true });
 // GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
 // 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.

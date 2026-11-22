@@ -104,7 +104,7 @@ test('배분: 샤드 수가 하네스 수보다 많거나 1 미만이면 실패'
 const parse = (s) => parseArgs(s ? s.split(' ') : []);
 
 test('인자: 없으면 전부, --build 는 그대로', () => {
-  assert.deepEqual(parse(''), { build: false, only: null, shard: null, timings: null });
+  assert.deepEqual(parse(''), { build: false, only: null, shard: null, timings: null, port: 0 });
   assert.equal(parse('--build').build, true);
   assert.equal(selectHarnesses(parse('')).harnesses.length, HARNESSES.length);
 });
@@ -155,4 +155,12 @@ test('선택: --shard i/N 을 1~N 모두 모으면 전체와 같다', () => {
     all.push(...harnesses.map(([f]) => f));
   }
   assert.deepEqual(all.sort(), HARNESSES.map(([f]) => f).sort());
+});
+
+test('인자: --port 는 0~65535 정수, 기본 0(빈 포트)', () => {
+  assert.equal(parse('').port, 0);
+  assert.equal(parse('--port 6099').port, 6099);
+  assert.equal(parseArgs(['--port=0']).port, 0);
+  for (const bad of ['-1', '65536', 'abc', '60.5', '']) assert.throws(() => parseArgs([`--port=${bad}`]), UsageError, bad);
+  assert.throws(() => parse('--port'), UsageError);
 });

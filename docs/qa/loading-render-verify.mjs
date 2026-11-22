@@ -1,7 +1,7 @@
 // ============================================================================
 //  로딩 렌더 검증 — docs/qa/render-verify.mjs 와 같은 CDP 방식
 // ----------------------------------------------------------------------------
-//  pnpm build-storybook && python3 -m http.server 6099 --directory storybook-static &
+//  pnpm qa --only loading-render-verify   (run-all 이 서버를 띄우고 출처를 확인한다)
 //  node docs/qa/loading-render-verify.mjs ./shots
 //
 //  ※ 스크린샷은 play 가 끝난 "이후" 상태다 ※
@@ -14,9 +14,9 @@
 //  스토리의 play 가 MutationObserver 로 더 정확히 검증한다.
 // ============================================================================
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, storybookBase } from './browser.mjs';
 
-const BASE = 'http://localhost:6099', OUT = process.argv[2] || './loading-shots', PORT = 9477;
+const BASE = await storybookBase(), OUT = process.argv[2] || './loading-shots', PORT = 9477;
 mkdirSync(OUT, { recursive: true });
 // GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
 // 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.

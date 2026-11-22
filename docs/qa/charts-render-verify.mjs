@@ -1,7 +1,8 @@
 // 차트 렌더 검증 — CDP 직결. 브라우저는 browser.mjs 가 해석한다.
 //
 //   pnpm build-storybook
-//   npx http-server storybook-static -p 6099 -s &
+//   pnpm qa --only <이 파일 이름>          (run-all 이 서버를 띄우고 출처를 확인한다)
+//   또는 node docs/qa/static-server.mjs 로 띄우고 DS_SB_URL=<주소> node docs/qa/<이 파일>
 //   node docs/qa/charts-render-verify.mjs ./shots
 //
 // 확인하는 것: 16개 스토리 play, 로딩/완료 치수 일치(13쌍), 로딩 중 summary 가
@@ -13,9 +14,9 @@
 //  · getComputedStyle 은 라이브 객체다. 상태를 바꾸기 전에 값을 복사해라.
 
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { launchBrowser, storybook, CANVAS } from './browser.mjs';
+import { launchBrowser, storybook, CANVAS, storybookBase } from './browser.mjs';
 
-const BASE = 'http://localhost:6099', OUT = process.argv[2] || './shots', PORT = 9499;
+const BASE = await storybookBase(), OUT = process.argv[2] || './shots', PORT = 9499;
 mkdirSync(OUT, { recursive: true });
 // GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
 // 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.

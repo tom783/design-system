@@ -1,7 +1,8 @@
 // 폼 렌더 검증 — CDP 직결, 의존성 없음.
 //
 //   pnpm build-storybook
-//   npx http-server storybook-static -p 6099 -s &
+//   pnpm qa --only <이 파일 이름>          (run-all 이 서버를 띄우고 출처를 확인한다)
+//   또는 node docs/qa/static-server.mjs 로 띄우고 DS_SB_URL=<주소> node docs/qa/<이 파일>
 //   node docs/qa/form-render-verify.mjs ./shots
 //
 // 스토리 play 는 합성 CompositionEvent 로 "가드 조건문이 막는가"를 본다.
@@ -19,9 +20,9 @@
 //  5. 검증 시점 검사는 play 가 끝난 뒤라 hasErrored 가 이미 true 다.
 //     "첫 오류 전 침묵"은 스토리 play 가 깨끗한 마운트에서 단언한다.
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { launchBrowser, storybook } from './browser.mjs';
+import { launchBrowser, storybook, storybookBase } from './browser.mjs';
 
-const BASE = 'http://localhost:6099', OUT = process.argv[2] || './shots', PORT = 9503;
+const BASE = await storybookBase(), OUT = process.argv[2] || './shots', PORT = 9503;
 mkdirSync(OUT, { recursive: true });
 // GUI Chrome 을 직접 띄우지 않는다 — 샌드박스에서 TransformProcessType 으로
 // 크래시한다. 이유와 대안은 browser.mjs 머리말에 있다.
