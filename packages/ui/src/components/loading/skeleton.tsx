@@ -14,7 +14,7 @@ export interface SkeletonProps {
 
 export function Skeleton({ variant = 'block', width, height, textStyle = 'body-sm', animation = 'pulse', className }: SkeletonProps) {
   return <span data-slot="skeleton" data-variant={variant} data-animation={animation} aria-hidden="true"
-    className={cn('loading-skeleton', className)} style={{
+    className={cn('ds-loading-skeleton', className)} style={{
       width, height: variant === 'text' ? `calc(var(--text-${textStyle}) * 0.65)` : height,
     }} />;
 }
@@ -28,9 +28,9 @@ export interface SkeletonTextProps {
 
 export function SkeletonText({ lines = 3, textStyle = 'body-sm', lastLineWidth = '60%', className }: SkeletonTextProps) {
   const count = Number.isFinite(lines) ? Math.max(0, Math.floor(lines)) : 3;
-  return <div data-slot="skeleton-text" aria-hidden="true" className={cn('loading-text', className)}
+  return <div data-slot="skeleton-text" aria-hidden="true" className={cn('ds-loading-text', className)}
     style={{ '--loading-line-height': `var(--text-${textStyle}-lh)` } as CSSProperties}>
-    {Array.from({ length: count }, (_, index) => <div data-slot="skeleton-text-line" key={index} className="loading-text-line">
+    {Array.from({ length: count }, (_, index) => <div data-slot="skeleton-text-line" key={index} className="ds-loading-text-line">
       <Skeleton variant="text" textStyle={textStyle} width={index === count - 1 ? lastLineWidth : '100%'} />
     </div>)}
   </div>;

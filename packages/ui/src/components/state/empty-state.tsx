@@ -19,7 +19,7 @@ export interface ErrorStateProps {
 }
 
 export function EmptyState({ title, description, graphic, action, className }: EmptyStateProps) {
-  return <div data-slot="empty-state" role="status" className={cn('state', className)}>
+  return <div data-slot="empty-state" role="status" className={cn('ds-state', className)}>
     <div data-slot="state-graphic" aria-hidden="true">{graphic ?? <Inbox size={20} />}</div>
     <p data-slot="state-title">{title}</p>
     {description && <p data-slot="state-description">{description}</p>}
@@ -28,7 +28,7 @@ export function EmptyState({ title, description, graphic, action, className }: E
 }
 
 export function ErrorState({ title, description, graphic, onRetry, className }: ErrorStateProps) {
-  return <div data-slot="error-state" role="alert" className={cn('state state-error', className)}>
+  return <div data-slot="error-state" role="alert" className={cn('ds-state ds-state-error', className)}>
     <div data-slot="state-graphic" aria-hidden="true">{graphic ?? <CircleAlert size={20} />}</div>
     <p data-slot="state-title">{title}</p>
     {description && <p data-slot="state-description">{description}</p>}

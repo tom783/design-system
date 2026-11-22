@@ -123,7 +123,7 @@ const pin = `(() => {
   const scroll = root.querySelector('[data-slot="data-table-scroll"]');
   const sb = scroll.getBoundingClientRect();
   const row = root.querySelector('[data-slot="data-table-row"]');
-  const pinned = [...row.querySelectorAll('td')].filter(c => c.className.includes('data-table-pinned'));
+  const pinned = [...row.querySelectorAll('td')].filter(c => c.className.includes('ds-data-table-pinned'));
   return {
     scrollLeft: Math.round(scroll.scrollLeft),
     offsets: pinned.map(c => Math.round(c.getBoundingClientRect().left - sb.left)),

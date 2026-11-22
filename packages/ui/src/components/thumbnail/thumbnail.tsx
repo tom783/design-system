@@ -17,7 +17,7 @@ export function Thumbnail({ src, alt, ratio = '1/1', className }: ThumbnailProps
   const setStatus = (status: 'loaded' | 'error') => setRequest({ src, status });
   const present = Boolean(src?.trim());
   const fallback = !present || status === 'error';
-  return <div data-slot="thumbnail" data-state={fallback ? 'error' : status} className={cn('thumbnail', className)} style={{ aspectRatio: ratio }} aria-busy={present && status === 'loading'}>
+  return <div data-slot="thumbnail" data-state={fallback ? 'error' : status} className={cn('ds-thumbnail', className)} style={{ aspectRatio: ratio }} aria-busy={present && status === 'loading'}>
     {fallback ? <span data-slot="thumbnail-fallback" role="img" aria-label={alt}><ImageOff aria-hidden="true" size={20} /></span> : <>
       {status === 'loading' && <Skeleton height="100%" />}
       <img data-slot="thumbnail-image" src={src} alt={alt} loading="lazy" decoding="async" style={{ visibility: status === 'loaded' ? 'visible' : 'hidden' }}

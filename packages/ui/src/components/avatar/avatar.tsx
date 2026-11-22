@@ -15,7 +15,7 @@ export function Avatar({ name, src, size = 'md', decorative = false, className }
   const [previousSrc, setPreviousSrc] = useState(src);
   if (previousSrc !== src) { setPreviousSrc(src); setFailedSrc(undefined); }
   const failed = previousSrc === src && failedSrc === src;
-  return <span data-slot="avatar" data-size={size} className={cn('avatar', className)} aria-hidden={decorative || undefined}>
+  return <span data-slot="avatar" data-size={size} className={cn('ds-avatar', className)} aria-hidden={decorative || undefined}>
     {src?.trim() && !failed ? <img data-slot="avatar-image" src={src} alt={decorative ? '' : name} onError={() => setFailedSrc(src)} />
       : <span data-slot="avatar-fallback" role="img" aria-label={decorative ? undefined : name}>{initials(name)}</span>}
   </span>;

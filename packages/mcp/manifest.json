@@ -8725,6 +8725,11 @@
       "source": "DESIGN.md 5"
     },
     {
+      "topic": "간격",
+      "text": "앱 CSS 클래스는 ds-로 시작하지 않으며, .flex·.hidden 같은 유틸리티 이름을 다시 정의하지 않는다.",
+      "source": "DESIGN.md 6"
+    },
+    {
       "topic": "폼",
       "text": "입력 경계는 border-field. 주요 버튼은 화면당 하나, 아이콘 전용 버튼은 aria-label 필수다.",
       "source": "DESIGN.md 6"

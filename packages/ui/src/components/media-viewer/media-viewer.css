@@ -41,11 +41,11 @@
     aspect-ratio: var(--media-viewer-ratio);
     overflow: hidden;
   }
-  .ds-media-viewer-stage > :is(img, video, .loading-skeleton, .state) { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ds-media-viewer-stage > :is(img, video, .ds-loading-skeleton, .ds-state) { position: absolute; inset: 0; width: 100%; height: 100%; }
   .ds-media-viewer-stage > :is(img, video) { object-fit: contain; }
-  .ds-media-viewer-stage > .loading-skeleton { pointer-events: none; }
+  .ds-media-viewer-stage > .ds-loading-skeleton { pointer-events: none; }
   .ds-media-viewer-stage[data-state="loading"] > img { visibility: hidden; }
-  .ds-media-viewer-stage > .state { min-block-size: 0; overflow: auto; justify-content: safe center; }
+  .ds-media-viewer-stage > .ds-state { min-block-size: 0; overflow: auto; justify-content: safe center; }
   .ds-media-viewer-pip-error { min-block-size: 0; }
   @keyframes ds-media-viewer-enter { from { opacity: 0; } to { opacity: 1; } }
   /* reduced-motion 은 styles.css 의 전역 규칙(.01ms !important)이 덮는다. 여기서 0s 로

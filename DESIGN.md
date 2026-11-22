@@ -510,6 +510,12 @@ ChevronDown은 text-tertiary·불투명도 1·16px를 공통 CSS로 사용한다
 styles.css에서 직접 정의하고 tailwind.css에도 같은 규칙을 동봉한다. 내부 Tailwind 스캔에
 수명을 의존하지 않는다. `.truncate`는 내부 생성물이며 공개 계약에 포함하지 않는다.
 
+`styles.css`는 앱 전체에 적용되는 기본 초기화(Tailwind preflight)와 접두어 없는 유틸리티를
+포함한다. 앱 전체를 이 디자인 시스템으로 만드는 것이 전제다. 고유 클래스는 `ds-`로
+시작한다. 앱 CSS 클래스는 `ds-`로 시작하지 않으며, `.flex`·`.hidden` 같은 유틸리티 이름을
+다시 정의하지 않는다. 컴포넌트와 앱의 흔한 이름이 겹치면 레이어 밖 앱 CSS가 이기므로
+이름 공간으로 충돌을 막는다. 공개 `.sr-only`·`.tabular`는 고유 클래스 접두어의 예외다.
+
 Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·trailingIcon을 모두
 그 링크 안에 보존한다. 앱은 공개 export를 사용한다. SELECTION_COLUMN_ID도
 내부 문자열을 복사하는 대신 공개된 선택 열 식별자를 가져다 쓴다.

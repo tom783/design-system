@@ -80,7 +80,7 @@ await access(join(installed, 'mcp/server.mjs'), constants.X_OK);
 assert((await readFile(join(installed, 'mcp/server.mjs'), 'utf8')).startsWith('#!/usr/bin/env node\n'));
 const css = await readFile(join(installed, 'ui/dist/styles.css'), 'utf8');
 // 모든 컴포넌트 CSS 목록이 진입점에 있으며, 각각의 고유 선택자가 최종 CSS에도 남아야 한다.
-const markers = { avatar: '.avatar', 'data-table': '[data-slot=data-table', form: '.ds-field', guide: '[data-slot=guide-tooltip]', loading: '.loading-skeleton', peek: '[data-slot=peek]', state: '.state', thumbnail: '.thumbnail', toast: '.ds-toaster' };
+const markers = { avatar: '.ds-avatar', 'data-table': '[data-slot=data-table', form: '.ds-field', guide: '[data-slot=guide-tooltip]', loading: '.ds-loading-skeleton', peek: '[data-slot=peek]', state: '.ds-state', thumbnail: '.ds-thumbnail', toast: '.ds-toaster' };
 const components = await readFile(join(root, 'packages/ui/src/components.css'), 'utf8');
 const imports = [...components.matchAll(/@import "(.+?)";/g)].map((m) => m[1]);
 const actualFiles = [];

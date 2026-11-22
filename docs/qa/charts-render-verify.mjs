@@ -98,8 +98,8 @@ const bl=await ev(`(()=>{
   const rows=[...sk.querySelectorAll('[data-slot="chart-skeleton-bullet-row"]')];
   return {variant:sk.dataset.variant, 줄수:rows.length,
     줄높이:rows.map(r=>Math.round(r.getBoundingClientRect().height)),
-    축상자있음: !!sk.querySelector('.loading-chart-axis'),
-    범례있음: !!sk.querySelector('.loading-chart-legend')};
+    축상자있음: !!sk.querySelector('.ds-loading-chart-axis'),
+    범례있음: !!sk.querySelector('.ds-loading-chart-legend')};
 })()`);
 await shot('d-bullet');
 check('variant=bullet', bl.variant==='bullet');

@@ -14,7 +14,7 @@
   --data-table-row-height: var(--row-h-comfortable);
   --data-table-cell-padding: 16px;
 }
-[data-slot="data-table"] .data-table-cell {
+[data-slot="data-table"] .ds-data-table-cell {
   position: relative;
   height: var(--data-table-row-height);
   min-width: var(--cell-min-w-text);
@@ -22,34 +22,34 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-[data-slot="data-table"] .data-table-numeric {
+[data-slot="data-table"] .ds-data-table-numeric {
   min-width: var(--cell-min-w-money);
   text-align: right;
 }
-[data-slot="data-table"] .data-table-selection {
+[data-slot="data-table"] .ds-data-table-selection {
   width: 44px;
   min-width: 44px;
   max-width: 44px;
   padding: 0;
   text-align: center;
 }
-[data-slot="data-table"] .data-table-value {
+[data-slot="data-table"] .ds-data-table-value {
   /* 내용에 맞춰 너비를 잡되 긴 문자열은 말줄임한다. 전체 값은 title에 남긴다. */
   max-width: 36rem;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-[data-slot="data-table"] .data-table-selection .data-table-value {
+[data-slot="data-table"] .ds-data-table-selection .ds-data-table-value {
   /* 입력의 포커스 링을 자르지 않는다. */
   overflow: visible;
 }
-[data-slot="data-table"] .data-table-value:focus-within { overflow: visible; }
+[data-slot="data-table"] .ds-data-table-value:focus-within { overflow: visible; }
 [data-slot="data-table-row"] { --data-table-row-bg: var(--bg-surface); }
 [data-slot="data-table-row"]:hover { --data-table-row-bg: var(--bg-hover); }
 [data-slot="data-table-row"][data-selected] { --data-table-row-bg: var(--bg-selected); }
 [data-slot="data-table-cell"] { background: var(--data-table-row-bg); }
-[data-slot="data-table"] .data-table-pinned { z-index: 1; }
-[data-slot="data-table"] th.data-table-pinned { background: var(--bg-surface); z-index: 2; }
+[data-slot="data-table"] .ds-data-table-pinned { z-index: 1; }
+[data-slot="data-table"] th.ds-data-table-pinned { background: var(--bg-surface); z-index: 2; }
 /* 고정 셀 배경 앞쪽, 스크롤 경계 안쪽에 링을 그린다. */
 [data-slot="data-table-row"]:focus-visible {
   outline-offset: calc(-1 * var(--focus-width));
@@ -69,7 +69,7 @@
   z-index: 3;
   outline-offset: var(--focus-offset);
 }
-[data-slot="data-table-skeleton-row"] .data-table-cell { display: flex; align-items: center; }
+[data-slot="data-table-skeleton-row"] .ds-data-table-cell { display: flex; align-items: center; }
 /* 스페이서는 테이블 레이아웃에 남기되 기본 셀 여백이 가상 높이를 늘리지 않게 한다. */
 [data-slot="data-table-spacer"] > td { padding: 0; border: 0; }
 

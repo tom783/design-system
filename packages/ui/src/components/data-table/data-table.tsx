@@ -174,12 +174,12 @@ export function DataTable<T extends RowData>({
   function cellClass(column: Column<DataTableFeatures, T>) {
     const pinned = column.getIsPinned();
     return cn(
-      'data-table-cell',
-      column.id === SELECTION_COLUMN_ID && 'data-table-selection',
-      columnAlign.get(column.id) === 'end' && 'data-table-numeric tabular text-right',
+      'ds-data-table-cell',
+      column.id === SELECTION_COLUMN_ID && 'ds-data-table-selection',
+      columnAlign.get(column.id) === 'end' && 'ds-data-table-numeric tabular text-right',
       columnAlign.get(column.id) === 'start' && 'text-left',
       columnAlign.get(column.id) === 'center' && 'text-center',
-      pinned && 'data-table-pinned',
+      pinned && 'ds-data-table-pinned',
       pinned === 'start' && column.id === startColumns.at(-1)?.id && 'border-r border-line-strong',
       pinned === 'end' && column.id === endColumns[0]?.id && 'border-l border-line-strong',
     );
@@ -205,7 +205,7 @@ export function DataTable<T extends RowData>({
     focusedRow.current = row?.dataset.rowId ? { id: row.dataset.rowId, element: row } : null;
     const container = scrollRef.current;
     const cell = event.target.closest('td, th');
-    if (!container || !(cell instanceof HTMLElement) || cell.classList.contains('data-table-pinned')) return;
+    if (!container || !(cell instanceof HTMLElement) || cell.classList.contains('ds-data-table-pinned')) return;
     const bounds = container.getBoundingClientRect();
     const target = cell.getBoundingClientRect();
     const left = bounds.left + startWidth + container.clientLeft;
@@ -329,7 +329,7 @@ export function DataTable<T extends RowData>({
                       event.stopPropagation();
                       if (!(event.target instanceof Element && event.target.closest('input'))) row.toggleSelected();
                     } : undefined}>
-                    <div className={cn('data-table-value', cell.column.id === SELECTION_COLUMN_ID && 'flex items-center justify-center')}
+                    <div className={cn('ds-data-table-value', cell.column.id === SELECTION_COLUMN_ID && 'flex items-center justify-center')}
                       title={cell.column.accessorFn ? String(cell.getValue() ?? '') : undefined}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </div>

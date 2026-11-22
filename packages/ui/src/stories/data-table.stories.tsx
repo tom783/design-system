@@ -142,12 +142,12 @@ export const 정렬지정: Story = {
     const inferred = tables[0]!;
     const declared = tables[1]!;
     for (const cell of inferred.querySelectorAll('[data-column-id]')) {
-      await expect(cell).toHaveClass('data-table-numeric', 'tabular', 'text-right');
+      await expect(cell).toHaveClass('ds-data-table-numeric', 'tabular', 'text-right');
     }
     for (const [id, alignment] of [['orderNo', 'text-left'], ['count', 'text-center']] as const) {
       for (const cell of declared.querySelectorAll(`[data-column-id="${id}"]`)) {
         await expect(cell).toHaveClass(alignment);
-        await expect(cell).not.toHaveClass('data-table-numeric');
+        await expect(cell).not.toHaveClass('ds-data-table-numeric');
         await expect(cell).not.toHaveClass('tabular');
       }
     }

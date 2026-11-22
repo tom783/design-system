@@ -29,6 +29,8 @@
 
 ### 바뀐 동작
 
+- CSS 이름 공간(R39): loading·data-table·state·thumbnail·avatar의 내부 클래스 이름 37개를 `ds-<기존 이름>`으로 바꾸고 MediaViewer의 재사용 선택자도 맞췄다. 앱 CSS가 옛 이름을 덮어쓰고 있었다면 해당 선택자를 `ds-` 이름으로 바꿔야 한다. `data-slot`·공개 API·계산 스타일은 유지한다. `styles.css`의 앱 전체 preflight·유틸리티 계약과 앱 클래스 이름 규칙을 README·시작하기·MCP 원칙에 명시했다.
+
 - 기본 글꼴을 Pretendard Variable로 바꿨다. 차트 숫자·진행률 퍼센트와 숫자 정렬 스토리는 본문 글꼴의 `tabular-nums`를 쓰며, `--font-mono`는 코드 표시용 시스템 고정폭이다.
   이전 IBM Plex 는 Storybook 에서만 로드되고 소비 앱에는 오지 않았다(도그푸딩 3 G7: 로드된 웹폰트 0개).
   글꼴 파일은 패키지에 넣지 않는다 — 앱이 `pretendard` 를 불러오지 않으면 시스템 글꼴로 그려진다.

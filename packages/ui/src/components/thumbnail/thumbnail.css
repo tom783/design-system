@@ -1,5 +1,5 @@
 /* 이미지가 도착하기 전에 비율을 예약한다. 자식은 레이아웃 높이를 바꾸지 않는다. */
-.thumbnail { position: relative; min-inline-size: 0; overflow: hidden; border-radius: var(--radius-sm); background: var(--bg-sunken); color: var(--text-secondary); }
-.thumbnail > * { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
+.ds-thumbnail { position: relative; min-inline-size: 0; overflow: hidden; border-radius: var(--radius-sm); background: var(--bg-sunken); color: var(--text-secondary); }
+.ds-thumbnail > * { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
 [data-slot="thumbnail-image"] { object-fit: cover; }
 [data-slot="thumbnail-fallback"] { display: flex; align-items: center; justify-content: center; }

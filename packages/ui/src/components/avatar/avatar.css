@@ -1,4 +1,4 @@
-.avatar { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; inline-size: var(--control-h-md); block-size: var(--control-h-md); border-radius: var(--radius-full); overflow: hidden; background: var(--avatar-bg); color: var(--avatar-fg); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
-.avatar[data-size="sm"] { inline-size: var(--control-h-sm); block-size: var(--control-h-sm); }
-.avatar[data-size="lg"] { inline-size: var(--control-h-lg); block-size: var(--control-h-lg); }
+.ds-avatar { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; inline-size: var(--control-h-md); block-size: var(--control-h-md); border-radius: var(--radius-full); overflow: hidden; background: var(--avatar-bg); color: var(--avatar-fg); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+.ds-avatar[data-size="sm"] { inline-size: var(--control-h-sm); block-size: var(--control-h-sm); }
+.ds-avatar[data-size="lg"] { inline-size: var(--control-h-lg); block-size: var(--control-h-lg); }
 [data-slot="avatar-image"] { inline-size: 100%; block-size: 100%; object-fit: cover; }

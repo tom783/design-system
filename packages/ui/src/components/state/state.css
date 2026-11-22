@@ -1,4 +1,4 @@
-.state {
+.ds-state {
   min-block-size: var(--state-min-h);
   block-size: 100%;
   display: flex;
@@ -11,11 +11,11 @@
   color: var(--text-secondary);
   overflow-wrap: anywhere;
 }
-.state-error { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+.ds-state-error { background: var(--status-danger-bg); color: var(--status-danger-fg); }
 [data-slot="state-title"] { margin: 0; font-size: var(--text-body); line-height: var(--text-body-lh); }
 [data-slot="state-description"] { margin: 0; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-secondary); }
 [data-slot="state-graphic"] { flex-shrink: 0; }
 /* 차트는 짧은 불릿 한 줄도 가능하다. 상태가 플롯을 밀지 않고 내부에서 스크롤된다. */
 [data-slot="chart-plot"] > :is([data-slot="chart-empty"], [data-slot="chart-error"]) { block-size: 100%; overflow: auto; }
-[data-slot="chart-plot"] .state { min-block-size: 0; block-size: 100%; justify-content: safe center; }
+[data-slot="chart-plot"] .ds-state { min-block-size: 0; block-size: 100%; justify-content: safe center; }
 [data-slot="chart-error"] { background: var(--status-danger-bg); }

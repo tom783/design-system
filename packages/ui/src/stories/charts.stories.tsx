@@ -211,8 +211,8 @@ export const 로딩_불릿: Story = {
     const rows = canvasElement.querySelectorAll('[data-slot="chart-skeleton-bullet-row"]');
     await expect(rows).toHaveLength(metrics.length);
     for (const row of rows) await expect(row.getBoundingClientRect().height).toBe(44);
-    await expect(canvasElement.querySelector('.loading-chart-axis')).toBeNull();
-    await expect(canvasElement.querySelector('.loading-chart-legend')).toBeNull();
+    await expect(canvasElement.querySelector('.ds-loading-chart-axis')).toBeNull();
+    await expect(canvasElement.querySelector('.ds-loading-chart-legend')).toBeNull();
     await expect(within(canvasElement).getByRole('list', { name: '범례' })).toBeVisible();
   },
 };
