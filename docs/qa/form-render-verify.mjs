@@ -79,12 +79,14 @@ await go('components-form--한글-enter');
 const enter=await ev(`(()=>{const f=[...${CANVAS}.querySelectorAll('input')];f[0].focus();return f.length})()`);
 // '한' 을 조합 중인 상태로 만든 뒤 Enter
 for (const s of S['한']) { await cdp('Input.imeSetComposition',{text:s,selectionStart:s.length,selectionEnd:s.length}); await sleep(45); }
+// 함정 예외: IME 조합 중 Enter 는 keydown(isComposing) 경로만 본다 — text 를 주면 조합이 아니라 입력이 된다.
 await cdp('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
 await sleep(150);
 const during=await ev(`(()=>{const f=[...${CANVAS}.querySelectorAll('input')];return {포커스:f.indexOf(document.activeElement), 값:f.map(i=>i.value)}})()`);
 check('조합 중 Enter 로는 칸이 바뀌지 않는다', during.포커스===0, `포커스 index ${during.포커스} · 값 ${JSON.stringify(during.값)}`);
 // 커밋한 뒤 Enter
 await cdp('Input.insertText',{text:'한'}); await sleep(80);
+// 함정 예외: 조합을 커밋한 뒤 Enter 도 같은 keydown 경로(칸 이동)를 본다.
 await cdp('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
 await sleep(150);
 const after=await ev(`(()=>{const f=[...${CANVAS}.querySelectorAll('input')];return {포커스:f.indexOf(document.activeElement), 값:f.map(i=>i.value)}})()`);
@@ -165,6 +167,7 @@ const ta=await ev(`(async()=>{
   setV('첫줄'); await w(80);
   return {포커스전:document.activeElement===t};
 })()`);
+// 함정 예외: textarea 줄바꿈은 아래 char 이벤트로 따로 넣는다(keydown 처리와 나눠 본다).
 await cdp('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
 await cdp('Input.dispatchKeyEvent',{type:'char',text:'\n'});
 await sleep(150);

@@ -50,7 +50,7 @@ export const HARNESSES = [
   ['docs-render-verify.mjs', '사용 문서·매니페스트 일치'],
 ];
 
-// 스토리북 정적 서버(:6099)를 쓰지 않는 하네스. 이것만 고르면 빌드·서버를 건너뛴다.
+// 스토리북 정적 서버를 쓰지 않는 하네스. 이것만 고르면 빌드·서버를 건너뛴다.
 // pack-verify 는 tarball 로 만든 자기 앱을 렌더하고, mcp-client-verify 는 브라우저가 없다.
 export const NO_STORYBOOK = new Set(['pack-verify.mjs', 'mcp-client-verify.mjs']);
 

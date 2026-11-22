@@ -186,6 +186,7 @@ try {
     await cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 8, text: '\r' });
     await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 8 });
     await wait(`${probe('memo')}.value === '첫 줄\\n\\n' && document.activeElement === ${probe('memo')}`);
+    // 함정 예외: Ctrl+Enter 단축키는 keydown 에서 처리된다 — 문자 입력(text)을 만들지 않아야 줄바꿈이 섞이지 않는다.
     await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 2 });
     await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 2 });
     await wait(`!!${probe('order-list')}`);
