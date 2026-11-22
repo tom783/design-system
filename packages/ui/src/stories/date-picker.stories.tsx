@@ -6,6 +6,8 @@ import { formatValue } from '../components/date-picker/date-value';
 import { Field } from '../components/form';
 import { Input } from '../components/input';
 import { Button } from '../components/button';
+import { ScheduledPublishExample } from '../../docs/examples/date-picker';
+import primarySource from '../../docs/examples/date-picker.tsx?raw';
 import { MultiSelect } from '../components/multi-select';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/select';
 const meta = {
@@ -14,6 +16,36 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 const today = new Date(2026, 10, 15);
+
+export const 사용법: Story = {
+  parameters: { docs: { source: { code: primarySource.replace("from '../../src'", "from '@s2life/ui'"), language: 'tsx', type: 'code' } } },
+  render: () => <ScheduledPublishExample />,
+  play: ({ canvasElement }) => { canvasElement.dataset.playComplete = 'true'; },
+};
+
+function TimeExample({ step, field = false, empty = false }: { step?: 1 | 5 | 10 | 15 | 30; field?: boolean; empty?: boolean }) {
+  const [date, setDate] = React.useState<Date | undefined>(empty ? undefined : new Date(2026, 10, 15, 13, 30));
+  const picker = <DatePicker mode="single" time={step ? { step } : true} today={today} defaultMonth={today}
+    value={date} onChange={setDate} aria-label="예약 발행일시" />;
+  return <section className="flex w-fit flex-col gap-8">
+    {field ? <Field label="예약 발행일시" description="브라우저 지역 시간으로 입력하세요.">{picker}</Field> : picker}
+    <output data-probe="date-time-value">{formatValue(date, true)}</output>
+    <Button onClick={() => setDate(new Date(2026, 10, 15, 13, 30))}>시각 초기화</Button>
+  </section>;
+}
+const timeReady = ({ canvasElement }: { canvasElement: HTMLElement }) => { canvasElement.dataset.playComplete = 'true'; };
+export const 단일시각: Story = { render: () => <TimeExample />, play: timeReady };
+export const 삼십분간격: Story = { name: '시각-step 30', render: () => <TimeExample step={30} />, play: timeReady };
+export const 시각첫선택: Story = { render: () => <TimeExample empty />, play: timeReady };
+export const 시각필드: Story = { render: () => <TimeExample field />, play: timeReady };
+export const 시각다크: Story = { globals: { theme: 'dark' }, render: () => <TimeExample field />, play: timeReady };
+export const 시각오류: Story = { render: () => <TimeExample field />, play: async ({ canvasElement }) => {
+  const input = within(canvasElement).getByRole('textbox');
+  await userEvent.clear(input); await userEvent.type(input, '2026-11-15 25:00'); await userEvent.tab();
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await expect(canvasElement).toHaveTextContent('YYYY-MM-DD HH:mm 형식으로 입력하세요.');
+  canvasElement.dataset.playComplete = 'true';
+} };
 
 function ToolbarExample() {
   const [range, setRange] = React.useState<DateRange>();

@@ -101,8 +101,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       const catalog = JSON.parse(result.text);
       assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // R37: R36b 76,925 → 79,416바이트. FileUpload 추가 실측에 284바이트 여유.
-      assert.ok(Buffer.byteLength(result.text) < 79_700, '복원 규칙까지 포함한 전송량을 잰다');
+      // R40: 변경 전 79,679 → 80,286바이트. 날짜+시각 추가 실측에 214바이트 여유.
+      assert.ok(Buffer.byteLength(result.text) <= 80_500, '복원 규칙까지 포함한 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -130,7 +130,7 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     } : expected;
     checkBaseline(await call(c, 'get_component', { name }), next);
   }
-  // 기존 99개는 R28의 purpose만 갱신했다. 순서·구조와 text 직렬화 비교는 유지한다.
+  // 기존 99개의 순서·구조·직렬화를 보존하고 R40 DatePicker의 일시 안내 문장만 갱신한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
     name: 'FileUpload', kind: 'component', purpose: '파일을 고르고 검증하며 미리보기·목록·전송 상태를 표시한다.',
     import: "import { FileUpload } from '@s2life/ui';",
@@ -161,7 +161,8 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }, {
     name: 'MediaViewer', kind: 'component', purpose: '이미지 확대와 동영상 팝업·플로팅 표시를 제공한다.',
     import: "import { MediaViewer } from '@s2life/ui';",
-  }, ...baseline.__list.flatMap(entry => entry.name === 'DialogHeader' ? [{
+  }, ...baseline.__list.map(entry => entry.name === 'DatePicker'
+    ? { ...entry, purpose: '한국어 단일 날짜·일시·기간 입력과 빠른 선택을 제공한다.' } : entry).flatMap(entry => entry.name === 'DialogHeader' ? [{
     name: 'SheetContent', kind: 'component', purpose: '목록 맥락을 유지하는 모달 옆 패널이다. side는 right·left, size는 sm 400·md 560·lg 720px다.',
     import: "import { SheetContent } from '@s2life/ui';", partOf: 'Dialog',
   }, {

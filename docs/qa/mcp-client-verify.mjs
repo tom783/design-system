@@ -170,6 +170,19 @@ const t = async (name, args) => {
   check('모르는 도구는 JSON-RPC 에러 -32602', bad.error?.code === -32602, JSON.stringify(bad.error??bad.result).slice(0,100));
 }
 
+for (const query of ['날짜 시간', '시각', '예약 발행', '일시']) {
+  const response = await t('which_component', { description: query });
+  check(`날짜+시각 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'DatePicker');
+}
+{
+  const response = await t('get_component', { name: 'DatePicker' });
+  const component = response.structuredContent;
+  const time = component?.props.find(prop => prop.name === 'time');
+  check('DatePicker 상세는 시각 API·분 간격·지역 시간 규칙을 제공한다',
+    !!time && /true/.test(time.type) && ['1', '5', '10', '15', '30'].every(step => time.type.includes(step))
+      && component.rules.some(rule => /single/.test(rule.text) && /지역 시간/.test(rule.text)));
+}
+
 console.log('\n── E. 리소스 ──');
 for (const [query, name] of [['사이드바', 'SideNav'], ['메뉴', 'SideNav'], ['내비게이션', 'SideNav'], ['페이지 제목', 'PageHeader'], ['화면 머리', 'PageHeader']]) {
   const result = await t('which_component', { description: query });

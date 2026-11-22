@@ -46,6 +46,7 @@ const HARNESSES = [
   ['state-render-verify.mjs', '상태·아바타·썸네일'],
   ['guide-render-verify.mjs', 'Tooltip·Hint·Tour'],
   ['form-render-verify.mjs', '폼·한글 IME'],
+  ['date-time-render-verify.mjs', '날짜+시각·직접 입력·분 칸·키보드'],
   ['file-upload-render-verify.mjs', '파일 선택·검증·진행·미리보기·수명'],
   ['combobox-render-verify.mjs', '검색 선택·한글 IME'],
   ['multi-select-render-verify.mjs', '다중 선택·태그·키보드·IME'],

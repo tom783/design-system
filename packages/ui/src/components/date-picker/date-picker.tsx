@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarIcon, CircleAlert } from 'lucide-react';
+import { CalendarIcon, CircleAlert, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
 import { Input } from '../input';
 import { Button } from '../button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../select';
 import { useComposition } from '../form';
 import { FieldErrorContext } from '../form/field-error-context';
 import { Calendar } from './calendar';
 import { Popover, PopoverTrigger, PopoverContent } from './popover';
-import { formatValue, parseDate, quickRange, type QuickPeriod } from './date-value';
+import { formatValue, parseDate, parseDateTime, snapTime, withTime, quickRange, type QuickPeriod } from './date-value';
 import { cn } from '../../lib/cn';
 
 type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type'> & {
@@ -19,14 +20,21 @@ type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' 
   today?: Date;
 };
 export type DatePickerProps = Common & (
-  { mode: 'single'; value?: Date; onChange: (value: Date | undefined) => void } |
-  { mode?: 'range'; value?: DateRange; onChange: (value: DateRange | undefined) => void }
+  { mode: 'single'; value?: Date; onChange: (value: Date | undefined) => void;
+    /** 단일 날짜의 지역 시각 입력. true는 10분, step은 분 단위다. */
+    time?: true | { step: 1 | 5 | 10 | 15 | 30 } } |
+  { mode?: 'range'; value?: DateRange; onChange: (value: DateRange | undefined) => void; time?: never }
 );
 /** 기간 필터를 우선한다. 입력 초안과 확정값을 분리해 IME 조합·미완성 날짜가 필터를 망가뜨리지 않는다. */
-export function DatePicker({ mode = 'range', value, onChange, today, defaultMonth, className,
+export function DatePicker({ mode = 'range', value, onChange, today, defaultMonth, time, className,
   onBlur, onKeyDown, onCompositionStart, onCompositionEnd, disabled, ...inputProps }: DatePickerProps) {
+  const hasTime = mode === 'single' && Boolean(time);
+  const step = typeof time === 'object' ? time.step : 10;
+  const [notice, setNotice] = React.useState<{ value: number; text: string }>();
+  const noticeId = React.useId();
+  const noticeText = value instanceof Date && notice?.value === value.getTime() ? notice.text : '';
   const [open, setOpen] = React.useState(false);
-  const [draft, setDraft] = React.useState(() => formatValue(value));
+  const [draft, setDraft] = React.useState(() => formatValue(value, hasTime));
   const [error, setError] = React.useState('');
   const [month, setMonth] = React.useState(defaultMonth ?? (value instanceof Date ? value : value?.from) ?? today ?? new Date());
   const composition = useComposition();
@@ -34,16 +42,25 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
   const fieldError = React.useContext(FieldErrorContext);
   const describedBy = [...new Set([
     error ? fieldError?.id ?? errorId : '',
+    noticeText ? noticeId : '',
     ...(inputProps['aria-describedby']?.split(/\s+/) ?? []),
   ].filter(Boolean))].join(' ') || undefined;
   const errorMessage = <span className="flex items-start gap-1"><CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" />{error}</span>;
-  React.useEffect(() => { setDraft(formatValue(value)); setError(''); }, [value]);
+  React.useEffect(() => { setDraft(formatValue(value, hasTime)); setError(''); }, [value, hasTime]);
   const commit = () => {
     if (composition.isComposing()) return;
-    if (!draft.trim()) { (onChange as (v: undefined) => void)(undefined); setError(''); return; }
+    // Enter로 이미 확정한 값을 blur에서 재발행하면 방금 읽어야 할 보정 알림까지 지워진다.
+    if (hasTime && draft === formatValue(value, true)) { setError(''); return; }
+    if (!draft.trim()) { pick(undefined); return; }
     if (mode === 'single') {
-      const date = parseDate(draft.trim());
-      if (date) { (onChange as (v: Date) => void)(date); setMonth(date); setError(''); return; }
+      const date = hasTime ? parseDateTime(draft.trim()) : parseDate(draft.trim());
+      if (date) {
+        const next = hasTime ? snapTime(date, step) : date;
+        publish(next);
+        setNotice(next.getTime() !== date.getTime()
+          ? { value: next.getTime(), text: `${step}분 단위로 ${formatValue(next, true)}에 맞췄습니다.` } : undefined);
+        setMonth(next); return;
+      }
     } else {
       const parts = draft.split('~').map(s => s.trim());
       const from = parseDate(parts[0] ?? ''); const to = parseDate(parts[1] ?? '');
@@ -54,21 +71,46 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
     // 오류가 날 때는 입력에 글자가 있어 placeholder 가 보이지 않는다 — 문구가 고치는 법(형식·순서)을 말해야 한다.
     // 동시에 Field 의 20px 한 줄 예약 안에 들어가야 한다. 13px 실측: 단일 194px ≤ 220(240-아이콘·간격),
     // 범위 272px ≤ 286(306-아이콘·간격). "기간을 YYYY-MM-DD ~ YYYY-MM-DD 순서로 입력하세요." 는 313px 로 넘쳤다.
-    setError(mode === 'single' ? 'YYYY-MM-DD 형식으로 입력하세요.' : '시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요.');
+    setNotice(undefined);
+    setError(mode === 'single' ? (hasTime ? 'YYYY-MM-DD HH:mm 형식으로 입력하세요.' : 'YYYY-MM-DD 형식으로 입력하세요.') : '시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요.');
+  };
+  const publish = (next: Date | DateRange | undefined) => {
+    (onChange as (v: Date | DateRange | undefined) => void)(next);
+    setDraft(formatValue(next, hasTime)); setError(''); setNotice(undefined);
   };
   const pick = (next: Date | DateRange | undefined) => {
-    (onChange as (v: Date | DateRange | undefined) => void)(next);
-    setDraft(formatValue(next)); setError('');
-    if (mode === 'single') setOpen(false);
+    if (hasTime && next instanceof Date) {
+      const dated = withTime(next, value as Date | undefined);
+      if (value instanceof Date && (dated.getHours() !== value.getHours() || dated.getMinutes() !== value.getMinutes())) {
+        setNotice(undefined); setError('지역 시간에 없는 시각입니다.'); return;
+      }
+      publish(dated);
+    } else publish(next);
+    // 시각 입력이 남아 있으므로 달력을 고른 뒤에도 레이어와 포커스를 유지한다.
+    if (mode === 'single' && !hasTime) setOpen(false);
+  };
+  const clock = value instanceof Date ? value : withTime(today ?? new Date());
+  const changeTime = (part: 'hours' | 'minutes', text: string) => {
+    const next = new Date(clock);
+    if (part === 'hours') next.setHours(Number(text), next.getMinutes(), 0, 0);
+    else next.setMinutes(Number(text), 0, 0);
+    // DST 전환으로 없는 시각을 Date가 조용히 다음 시각으로 바꾸면 예약 의도가 달라진다.
+    if ((part === 'hours' && next.getHours() !== Number(text)) ||
+        (part === 'minutes' && next.getMinutes() !== Number(text))) {
+      setNotice(undefined); setError('지역 시간에 없는 시각입니다.'); return;
+    }
+    publish(next); setMonth(next);
   };
   // 도그푸딩 G2: 시스템 대체 글꼴에서 범위 값 216px·placeholder 238px, Pretendard 에서는 placeholder 185px (R30).
   // 입력 264px = 더 넓은 대체 글꼴 238 + 좌우 padding 24 + border 2 — 앱이 글꼴을 못 불러와도 잘리지 않는다.
   // 루트는 버튼 38 + gap 4를 더한다.
-  return <div data-slot="date-picker" className={cn('relative', mode === 'single' ? 'min-w-[240px]' : 'min-w-[306px]', className)}>
+  // R40 CoreText 계측(렌더 실측 아님): 시각 placeholder 최대 144.46px + 입력 여백·경계 26 + 버튼·gap 42 = 212.46px.
+  // 오류 최대 249.88px + 아이콘·gap 20 + caption 자간 여유 <5px를 280px에 담는다. 브라우저 검사는 신규 하네스에 둔다.
+  return <div data-slot="date-picker" className={cn('relative', hasTime ? 'min-w-[280px]' : mode === 'single' ? 'min-w-[240px]' : 'min-w-[306px]', className)}>
     <Popover open={open} onOpenChange={setOpen}>
       <div className="flex items-center gap-1">
         <Input {...inputProps} disabled={disabled} value={draft} className={cn('tabular flex-1', mode === 'single' ? 'min-w-0' : 'min-w-[264px]')}
-          placeholder={mode === 'single' ? 'YYYY-MM-DD' : 'YYYY-MM-DD ~ YYYY-MM-DD'}
+          placeholder={mode === 'single' ? (hasTime ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD') : 'YYYY-MM-DD ~ YYYY-MM-DD'}
           invalid={Boolean(error) || inputProps.invalid}
           aria-invalid={error ? true : inputProps['aria-invalid'] ?? inputProps.invalid}
           aria-describedby={describedBy}
@@ -82,15 +124,37 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
       <PopoverContent align="start" className="w-auto max-w-[calc(100vw-2rem)] p-0" aria-label="날짜 선택">
         <div data-slot="date-picker-presets" className="flex flex-wrap gap-1 border-b border-border p-2">
           {(['오늘', '최근 7일', '이번 달', '지난 달'] as QuickPeriod[]).map(period => <Button key={period} size="sm" variant="ghost"
-            onClick={() => { const range = quickRange(period, today); pick(mode === 'single' ? range.to : range); setMonth(range.from!); setOpen(false); }}>{period}</Button>)}
+            onClick={() => { const range = quickRange(period, today); pick(mode === 'single' ? range.to : range); setMonth(range.from!); if (!hasTime) setOpen(false); }}>{period}</Button>)}
         </div>
         <Calendar locale={ko} month={month} onMonthChange={setMonth} today={today}
           formatters={{ formatCaption: date => format(date, 'yyyy년 M월', { locale: ko }), formatWeekdayName: date => format(date, 'EEEEE', { locale: ko }) }}
           {...(mode === 'single' ? { mode: 'single' as const, selected: value as Date | undefined, onSelect: pick } :
             { mode: 'range' as const, selected: value as DateRange | undefined, onSelect: pick })} />
+        {hasTime && <div data-slot="date-picker-time" className="flex items-end gap-2 border-t border-border p-3">
+          <label className="flex min-w-0 flex-1 flex-col gap-1 text-[length:var(--text-caption)]">시
+            <Select value={String(clock.getHours())} onValueChange={text => changeTime('hours', text)} disabled={disabled}>
+              <SelectTrigger aria-describedby={describedBy} aria-invalid={error ? true : inputProps['aria-invalid']} aria-label="시" className="tabular min-w-20"><SelectValue /></SelectTrigger>
+              <SelectContent>{Array.from({ length: 24 }, (_, hour) => <SelectItem key={hour} value={String(hour)}>{String(hour).padStart(2, '0')}</SelectItem>)}</SelectContent>
+            </Select>
+          </label>
+          <span aria-hidden="true" className="pb-2">:</span>
+          <label className="flex min-w-0 flex-1 flex-col gap-1 text-[length:var(--text-caption)]">분
+            <Select value={String(clock.getMinutes())} onValueChange={text => changeTime('minutes', text)} disabled={disabled}>
+              <SelectTrigger aria-describedby={describedBy} aria-invalid={error ? true : inputProps['aria-invalid']} aria-label="분" className="tabular min-w-20"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {clock.getMinutes() % step !== 0 && <SelectItem value={String(clock.getMinutes())} disabled>{String(clock.getMinutes()).padStart(2, '0')}</SelectItem>}
+                {Array.from({ length: 60 / step }, (_, index) => index * step).map(minute => <SelectItem key={minute} value={String(minute)}>{String(minute).padStart(2, '0')}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </label>
+        </div>}
         <div className="border-t border-border p-2 text-right"><Button size="sm" onClick={() => setOpen(false)}>완료</Button></div>
       </PopoverContent>
     </Popover>
+    {hasTime && <div id={noticeId} data-slot="date-picker-notice" role="status" aria-live="polite" aria-atomic="true"
+      className="text-[length:var(--text-caption)] text-fg-subtle">
+      {noticeText && <span className="flex items-start gap-1"><Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />{noticeText}</span>}
+    </div>}
     {fieldError ? fieldError.container && !fieldError.hasError && error && createPortal(
       <div data-slot="date-picker-error">{errorMessage}</div>, fieldError.container,
     ) : <div id={errorId} data-slot="date-picker-error" aria-live="polite" aria-atomic="true"

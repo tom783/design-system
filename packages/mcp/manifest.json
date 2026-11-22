@@ -6333,7 +6333,7 @@
     {
       "name": "DatePicker",
       "category": "form",
-      "purpose": "한국어 단일 날짜·기간 입력과 빠른 선택을 제공한다.",
+      "purpose": "한국어 단일 날짜·일시·기간 입력과 빠른 선택을 제공한다.",
       "useWhen": [
         "주문·물류 목록의 기간 필터가 필요할 때"
       ],
@@ -6344,6 +6344,10 @@
         {
           "text": "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
           "source": "11.1"
+        },
+        {
+          "text": "예약·발송·캠페인은 single 전용 time(기본 10분). 최근접 분 칸·동률 올림, 첫 시각 09:00. 브라우저 지역 시간이며 ISO·UTC 변환은 앱 몫이다.",
+          "source": "11.1.1"
         }
       ],
       "related": [
@@ -6352,7 +6356,11 @@
       "keywords": [
         "날짜",
         "기간 필터",
-        "달력"
+        "달력",
+        "날짜 시간",
+        "시각",
+        "예약 발행",
+        "일시"
       ],
       "source": "components/date-picker/date-picker.tsx",
       "props": [
@@ -6391,6 +6399,11 @@
           "name": "onChange",
           "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)",
           "required": true
+        },
+        {
+          "name": "time",
+          "type": "true | { step: 1 | 5 | 10 | 15 | 30; }",
+          "doc": "단일 날짜의 지역 시각 입력. true는 10분, step은 분 단위다."
         }
       ],
       "extends": [
@@ -6401,12 +6414,22 @@
         "calendar",
         "date-picker",
         "date-picker-error",
+        "date-picker-notice",
         "date-picker-presets",
+        "date-picker-time",
         "input",
         "input-action",
         "input-control",
         "input-leading-icon",
-        "popover-content"
+        "popover-content",
+        "select-content",
+        "select-icon",
+        "select-item",
+        "select-scroll-down-button",
+        "select-scroll-up-button",
+        "select-trigger",
+        "select-value",
+        "select-viewport"
       ]
     },
     {

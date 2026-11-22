@@ -46,6 +46,7 @@ test('대소문자·공백 차이를 흡수하고 입력을 변경하지 않는�
 // 사용자 표현을 그대로 유지해 키워드 데이터가 실제 선택 질문을 지원하는지 검증한다.
 const routingCases = [
   ['사이드바', 'SideNav'], ['메뉴', 'SideNav'], ['내비게이션', 'SideNav'],
+  ...['날짜 시간', '시각', '예약 발행', '일시'].map(query => [query, 'DatePicker']),
   ['페이지 제목', 'PageHeader'], ['화면 머리', 'PageHeader'], ['앱 셸', 'AppShell'],
   ['이미지 크게 보기', 'MediaViewer'],
   ['영상 보면서 작업', 'MediaViewer'],
