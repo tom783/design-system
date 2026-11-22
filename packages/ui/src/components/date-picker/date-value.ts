@@ -51,12 +51,13 @@ export function outOfRange(text: string, time = false): string | undefined {
  * 형식이 틀리면 형식만, 형식이 맞으면 무엇이 틀렸는지만 말한다 — 두 가지를 한 문장에 섞으면
  * 순서만 틀린 사용자가 형식을 다시 들여다본다(예전 "시작일 ~ 종료일 순서, YYYY-MM-DD로 입력하세요.").
  * 없는 날짜는 단일과 같은 문구 앞에 어느 쪽인지 붙인다. 문구는 디자인 총괄 확정안(2026-11-22).
- * 13px 실측: 형식 292px 는 오류 폭 286px(306-아이콘·간격)를 넘어 두 줄이 된다 — 앞부분을 줄이지 않고 두 줄을
- * 허용한다(확정안). 306px Field 에서 아래 칸이 20px 밀리고, w-fit 상자는 대신 6px 넓어진다(dogfood3 실측).
- * 순서 문구 230px, 가장 긴 없는 날짜 "시작일: 2026년 11월은 01~30일로 입력하세요." 245px 는 한 줄.
+ * 오류 문구는 최소 폭(306px)의 오류 폭 286px(306-아이콘·간격) 한 줄에 든다(DESIGN §11.3). 13px 실측:
+ * 형식 "YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요." 255px, 순서 230px, 가장 긴 없는 날짜
+ * "시작일: 2026년 11월은 01~30일로 입력하세요." 245px. "… 형식으로 입력하세요."는 292px 로 두 줄이 되어
+ * Field 아래 칸을 20px 밀었다 — 두 줄을 허용하지 않고 말을 줄였다(디자인 검수 2026-11-22).
  */
 export function rangeInputError(text: string): string | undefined {
-  const format = 'YYYY-MM-DD ~ YYYY-MM-DD 형식으로 입력하세요.';
+  const format = 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.';
   const [start = '', end = '', ...rest] = text.split('~').map(s => s.trim());
   if (rest.length || ![start, end].every(part => /^\d{4}-\d{2}-\d{2}$/.test(part))) return format;
   for (const [label, part] of [['시작일', start], ['종료일', end]] as const) {

@@ -182,6 +182,20 @@ try {
     assert.ok(error.visible && error.icon);
     assert.equal(error.text, '시작일: 2026년 2월은 01~28일로 입력하세요.');
     assert.equal(before.rootHeight, 38);
+    // 그 자리 바탕 그대로(투명) 입력 아래 20px 에 걸친다. 흰 상자는 툴바·카드 바탕과 달라 떠 보였다.
+    // 조립 규칙: 필터 툴바 아래에 20px 이상 간격 — 오류 아래 끝이 다음 내용 위 끝을 넘지 않는다(DESIGN §11.3).
+    const layer = await ev(`(() => {
+      const input = ${q(toolbarInput)}, node = document.getElementById(input.getAttribute('aria-describedby').split(/\\s+/)[0]);
+      const toolbar = ${q(probe('date-toolbar'))}, next = toolbar.nextElementSibling;
+      return { background: getComputedStyle(node).backgroundColor, height: node.getBoundingClientRect().height,
+        errorBottom: node.getBoundingClientRect().bottom, gapBelowToolbar: next.getBoundingClientRect().top - toolbar.getBoundingClientRect().bottom,
+        nextTop: next.getBoundingClientRect().top };
+    })()`);
+    measurements.toolbarError = layer;
+    assert.equal(layer.background, 'rgba(0, 0, 0, 0)');
+    assert.equal(layer.height, 20);
+    assert.ok(layer.gapBelowToolbar >= 20, `툴바 아래 간격 ${layer.gapBelowToolbar}px < 20px`);
+    assert.ok(layer.errorBottom <= layer.nextTop, '오류가 다음 내용과 겹친다');
   });
 
   await story('components-datepicker--필드오류공유');
@@ -204,32 +218,31 @@ try {
     assert.equal(error.live, 'polite'); assert.equal(error.count, 1);
     measurements.field = { before, after: await geometry() };
   });
-  await check('G3: Field 안 순서 오류는 한 줄(위치 불변)·형식 오류는 최소 폭 306px 에서 두 줄로 아래 칸을 한 줄만큼 민다', async () => {
+  await check('G3: Field 안 순서·형식 오류는 최소 폭 306px 에서도 한 줄 — 아래 칸·상자 폭 불변', async () => {
     const geometry = () => ev(`(() => {
       const field = ${q('[data-slot="field"]')}, error = field.querySelector('[data-slot="field-error"]');
       return { nextTop: ${q(probe('after-date-field'))}.getBoundingClientRect().top, errorHeight: error.getBoundingClientRect().height,
-        text: error.textContent, width: error.getBoundingClientRect().width, sectionWidth: ${q(probe('date-fields'))}.getBoundingClientRect().width };
+        text: error.textContent, sectionWidth: ${q(probe('date-fields'))}.getBoundingClientRect().width };
     })()`);
     await click(probe('clear-date')); await wait(`${q('[data-slot="field-error"]')}.textContent === ''`);
-    const base = await geometry();
-    // 두 날짜가 실재하고 거꾸로면 순서만 말한다. 230px 라 Field 예약 한 줄(20px) 안에 든다.
-    await inputValue(dateInput, '2026-11-15 ~ 2026-11-10');
-    await wait(`${q('[data-slot="field-error"]')}.textContent === '종료일을 시작일과 같거나 이후로 입력하세요.'`);
-    const order = await geometry();
-    assert.equal(order.errorHeight, base.errorHeight); assert.equal(order.nextTop, base.nextTop);
-    // 형식 문구는 292px 로 286px 를 넘는다(디자인 확정안: 앞부분을 줄이지 않고 두 줄 허용).
-    // 이 스토리의 상자는 w-fit 이라 먼저 그대로 잰다 — 줄을 바꾸는 대신 상자가 문구 폭만큼 넓어질 수 있다.
-    await inputValue(dateInput, '2026-11-15');
-    await wait(`${q('[data-slot="field-error"]')}.textContent === 'YYYY-MM-DD ~ YYYY-MM-DD 형식으로 입력하세요.'`);
-    const fit = await geometry();
-    // 실제 폼처럼 폭이 정해진 칸(최소 폭 306px)에서는 두 줄이 되고 아래 칸이 늘어난 높이만큼 밀린다.
-    await ev(`${q(probe('date-fields'))}.style.width = '306px'`); await frame();
-    const format = await geometry();
+    const base = await geometry(), seen = {};
+    // 오류 문구는 그 입력의 최소 폭에서 한 줄이다(DESIGN §11.3). 예전 기간 형식 문구(292px)는 306px 에서 두 줄이 되어
+    // 아래 칸을 20px 밀었고, w-fit 상자는 6px 넓혔다. 두 경우를 그대로 다시 잰다.
+    for (const [width, value, message] of [
+      ['', '2026-11-15 ~ 2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.'],
+      ['', '2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'],
+      ['306px', '2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'],
+    ]) {
+      await ev(`${q(probe('date-fields'))}.style.width = '${width}'`); await frame();
+      await inputValue(dateInput, value);
+      await wait(`${q('[data-slot="field-error"]')}.textContent === ${JSON.stringify(message)}`);
+      const after = await geometry(); seen[`${value}@${width || 'w-fit'}`] = after;
+      assert.equal(after.errorHeight, base.errorHeight, `${value}: 한 줄(예약 20px)`);
+      assert.equal(after.nextTop, base.nextTop, `${value}: 아래 칸 위치 불변`);
+      assert.equal(after.sectionWidth, base.sectionWidth, `${value}: 상자 폭 불변`);
+    }
     await ev(`${q(probe('date-fields'))}.style.width = ''`); await frame();
-    const shift = format.nextTop - base.nextTop;
-    measurements.fieldLines = { base, order, fit, format, shift, fitWidening: fit.sectionWidth - base.sectionWidth };
-    assert.equal(format.errorHeight, base.errorHeight * 2, '306px 에서 두 줄 = 예약 한 줄의 두 배');
-    assert.equal(shift, format.errorHeight - base.errorHeight, '아래 칸은 늘어난 오류 높이만큼만 밀린다');
+    measurements.fieldLines = { base, ...seen };
   });
   await check('G3: Field의 업무 오류 우선·정상 값 교체 후 자체 오류 제거', async () => {
     await click(probe('external-error'));

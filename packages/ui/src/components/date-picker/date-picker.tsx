@@ -74,11 +74,11 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
     }
     // 오류가 날 때는 입력에 글자가 있어 placeholder 가 보이지 않는다 — 문구가 고치는 법(형식·범위·순서)을 말해야 한다.
     // Field 는 20px 한 줄을 예약한다. 13px 실측: 단일 형식 194px ≤ 220(240-아이콘·간격), 일시 형식 241px ≤ 260.
-    // 기간 형식 292px 만 286(306-아이콘·간격)을 넘어 두 줄이다(확정안) — 기간 오류 규칙은 rangeInputError.
+    // 기간 형식 255px·순서 230px·없는 날짜 최대 245px ≤ 286(306-아이콘·간격) — 기간 오류 규칙은 rangeInputError.
     // 단일은 형식이 맞으면 범위 오류(달력에 없는 날짜·25시)를 먼저 말한다. 범위도 맞는데 실패한 일시는 DST로 없는 시각이다.
     setNotice(undefined);
     const text = draft.trim();
-    if (mode !== 'single') { setError(rangeInputError(text) ?? 'YYYY-MM-DD ~ YYYY-MM-DD 형식으로 입력하세요.'); return; }
+    if (mode !== 'single') { setError(rangeInputError(text) ?? 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'); return; }
     const range = outOfRange(text, hasTime);
     if (range) { setError(range); return; }
     if (hasTime && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(text)) { setError('지역 시간에 없는 시각입니다.'); return; }
@@ -165,10 +165,12 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
       className="text-[length:var(--text-caption)] text-fg-subtle">
       {noticeText && <span className="flex items-start gap-1"><Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />{noticeText}</span>}
     </div>}
+    {/* Field 밖 오류는 그 자리 바탕 그대로(투명) 입력 아래 20px 에 걸친다. 흰 상자는 툴바·카드 바탕과 달라 떠 보였다.
+        겹침은 조립이 막는다 — 필터 툴바 아래 20px 이상 간격(DESIGN §11.3). */}
     {fieldError ? fieldError.container && !fieldError.hasError && error && createPortal(
       <div data-slot="date-picker-error">{errorMessage}</div>, fieldError.container,
     ) : <div id={errorId} data-slot="date-picker-error" aria-live="polite" aria-atomic="true"
-      className="absolute inset-x-0 top-full bg-surface text-[length:var(--text-caption)] leading-[var(--text-caption-lh)] text-danger-ink">
+      className="absolute inset-x-0 top-full text-[length:var(--text-caption)] leading-[var(--text-caption-lh)] text-danger-ink">
       {error && errorMessage}
     </div>}
   </div>;

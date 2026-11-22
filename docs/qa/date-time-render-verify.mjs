@@ -256,26 +256,25 @@ try {
     await story('기간선택'); assert.equal(await ev(`${q(input)}.value`), '2026-11-10 ~ 2026-11-15');
     assert.equal(await ev(`${q(clock)}`), null);
   });
-  await check('없는 날짜·기간 순서·기간 형식을 구분하고 최소 폭에서 줄 수를 지킨다', async () => {
-    // lines: 최소 폭에서 허용하는 줄 수. 기간 형식 문구(13px 292px)만 286px를 넘어 두 줄이다 — 디자인 확정안.
-    for (const [name, width, text, message, lines] of [
-      ['단일날짜', 240, '2026-12-32', '2026년 12월은 01~31일로 입력하세요.', 1],
-      ['단일날짜', 240, '2026-13-01', '월은 01~12로 입력하세요.', 1],
-      ['기간선택', 306, '2026-02-30 ~ 2026-03-01', '시작일: 2026년 2월은 01~28일로 입력하세요.', 1],
-      ['기간선택', 306, '2026-11-01 ~ 2026-11-31', '종료일: 2026년 11월은 01~30일로 입력하세요.', 1],
+  await check('없는 날짜·기간 순서·기간 형식을 구분하고 최소 폭에서 모두 한 줄', async () => {
+    // 오류 문구는 그 입력의 최소 폭에서 한 줄이다(DESIGN §11.3). 넘으면 두 줄을 허용하지 않고 말을 줄인다.
+    for (const [name, width, text, message] of [
+      ['단일날짜', 240, '2026-12-32', '2026년 12월은 01~31일로 입력하세요.'],
+      ['단일날짜', 240, '2026-13-01', '월은 01~12로 입력하세요.'],
+      ['기간선택', 306, '2026-02-30 ~ 2026-03-01', '시작일: 2026년 2월은 01~28일로 입력하세요.'],
+      ['기간선택', 306, '2026-11-01 ~ 2026-11-31', '종료일: 2026년 11월은 01~30일로 입력하세요.'],
       // 두 날짜가 실재하고 거꾸로면 순서만 말한다. 형식을 섞지 않는다.
-      ['기간선택', 306, '2026-11-15 ~ 2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.', 1],
+      ['기간선택', 306, '2026-11-15 ~ 2026-11-10', '종료일을 시작일과 같거나 이후로 입력하세요.'],
       // 형식이 틀리면 형식만 말한다.
-      ['기간선택', 306, '2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD 형식으로 입력하세요.', 2],
+      ['기간선택', 306, '2026-11-15', 'YYYY-MM-DD ~ YYYY-MM-DD로 입력하세요.'],
     ]) {
       await story(name); await ev(`${q('[data-slot="date-picker"]')}.style.width='${width}px'`);
       await enter(text);
       await wait(`${q('[data-slot="date-picker-error"]')}?.textContent === ${JSON.stringify(message)}`);
       assert.equal(await ev(`${q(input)}.getAttribute('aria-invalid')`), 'true');
-      const error = { name, text, lines, ...await errorLine() }; measurements.push(error);
+      const error = { name, text, ...await errorLine() }; measurements.push(error);
       assert.ok(error.scroll <= error.width, text);
-      assert.ok(error.height <= error.line * lines + 1, `${text}: ${error.height}px > ${lines}줄`);
-      if (lines > 1) assert.ok(error.height > error.line + 1, `${text}: 두 줄 예상인데 ${error.height}px — 폭 가정이 바뀌었다`);
+      assert.ok(error.height <= error.line + 1, `${text}: ${error.height}px — 한 줄을 넘었다`);
     }
   });
   await check('모든 경로 콘솔 오류 0건', async () => assert.deepEqual([...seenErrors, ...browser.errors()], []));
