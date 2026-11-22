@@ -26,7 +26,7 @@ React 19.3.1 · Storybook 10.6.7 · Tailwind CSS **4**.3.5 · TypeScript **7**.0
 ## 검증
 
 ```bash
-pnpm tokens       # 토큰 재생성 + 대비 74건 · 의미분리 8건 · 테마 3상태 검증
+pnpm tokens       # 토큰 재생성 + 대비 · 의미분리 · 테마 3상태 검증
 pnpm typecheck
 pnpm build-storybook
 pnpm verify       # 위 세 개를 순서대로
@@ -35,9 +35,10 @@ pnpm verify       # 위 세 개를 순서대로
 ### 게이트는 자동으로 돈다
 
 ```
-pre-commit  토큰·매니페스트 재생성 + 산출물 동기 확인 + 타입 + 단위 (약 1.5초)
-pre-push    깨끗한 체크아웃 typecheck(약 5초) + pnpm verify + pnpm qa   SKIP_QA=1 로 qa 만 건너뛸 수 있다
-CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지막 그물
+pre-commit  토큰·매니페스트 재생성 + 산출물 동기 확인 + 타입 + 단위·함정 린트
+pre-push    깨끗한 체크아웃 typecheck + pnpm verify + pnpm qa(엄격 — dirty 빌드 거부)
+            origin/main 대비 .github/** 만 바뀌었으면 qa 를 건너뛴다 · SKIP_QA=1 로 qa 만 건너뛸 수 있다
+CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지막 그물 (CI=true 라 엄격)
 ```
 
 훅은 `.githooks/` 에 있고 `pnpm install` 이 `core.hooksPath` 를 걸어준다
@@ -51,28 +52,25 @@ CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지�
 ### 브라우저 하네스
 
 ```bash
-pnpm qa           # 아래를 전부 — 빌드·서버 기동·10개 하네스 (배포 리허설 포함)
+pnpm qa           # 전부(배포 리허설 포함) — 빈 포트에 정적 서버를 띄우고 출처를 확인한 뒤 돈다
+pnpm qa --build   # 스토리북부터 다시 빌드 — 빌드가 HEAD 와 다르면 qa 가 거부한다
 pnpm qa --only steps-render-verify,mcp-client-verify   # 일부만. 모르는 이름·틀린 인자는 서버 띄우기 전 exit 2
-pnpm qa --shard 1/4 --timings out.json  # 리눅스 CI 기준선(docs/qa/timings/)으로 4등분한 1번째 + 하네스별 초·결과 JSON
+pnpm qa --jobs 2  # 서버 하나에 브라우저 2개로 병렬 (pack-verify 는 혼자 먼저)
+pnpm qa --group storybook --shard 1/2 --timings out.json   # CI 샤드: 그룹 안에서 기준선 시간으로 등분 + 하네스별 초·결과
+pnpm qa --port 6099   # 포트를 고정할 때만. 차 있으면 즉시 실패한다 (기본 0 = 빈 포트)
 pnpm build        # 패키지 빌드 (ui dist + CSS)
-pnpm qa:pack      # 배포 리허설만 — tarball → 샘플 앱 설치 → 실제 렌더
+pnpm qa:pack      # 배포 리허설만 — tarball → 샘플 앱 설치 → 실제 렌더 (임시 폴더)
 pnpm version:set  # 세 패키지 버전을 함께 올린다 (lockstep)
 
-# 개별 실행
-pnpm build-storybook
-npx http-server storybook-static -p 6099 -s &
-node docs/qa/render-verify.mjs         # 기본 컴포넌트·테이블   10건
-node docs/qa/charts-render-verify.mjs  # 차트 로딩·오류         22건
-node docs/qa/loading-render-verify.mjs # 스켈레톤·진행률        42건
-node docs/qa/state-render-verify.mjs   # 상태·아바타·썸네일      26건
-node docs/qa/guide-render-verify.mjs   # Tooltip·Hint·Tour      30건
-node docs/qa/form-render-verify.mjs    # 폼·한글 IME            19건
-node docs/qa/peek-render-verify.mjs    # Peek·다녀온 행         22건
-node docs/qa/mcp-client-verify.mjs     # MCP 서버 (브라우저 없음) 36건
+# 하네스 하나를 손으로 (빌드는 HEAD 와 같아야 한다 — pnpm build-storybook)
+node docs/qa/static-server.mjs                       # 빈 포트에 storybook-static 을 띄우고 주소를 알려 준다
+DS_SB_URL=<그 주소> node docs/qa/render-verify.mjs     # DS_SB_URL 이 없으면 6099 를 보되, 출처 확인은 똑같이 한다
 ```
 
 하네스 목록·인자·샤드 배분은 `docs/qa/run-plan.mjs` 에 있다. 새 하네스는 거기 `HARNESSES` 에 넣는다
-(기준선에 없으면 중간값으로 배분된다).
+(기준선 `docs/qa/timings/` 에 없으면 중간값으로 배분된다). 키·클릭은 하네스마다 다시 쓰지 말고
+`browser.mjs` 의 `actions(browser)`(key·press·enter·click·pointerClick·pointerAt·computed·findPortal)를 쓴다.
+기계로 잡히는 함정은 `docs/qa/traps.test.mjs` 가 막는다.
 
 전부 `docs/qa/browser.mjs` 를 거친다. **GUI Chrome 을 직접 띄우지 마라** —
 이유는 "이미 밟은 함정" 절에 있다.
@@ -187,7 +185,18 @@ R31·R41 하네스가 15건 실패한 원인이다.
   실측하고, CDP `Emulation.setScrollbarsHidden` 으로 두께 0 상태도 함께 돌린다. 선이 실제로 보이는지는
   계산 스타일로 알 수 없으니 `decodePng` 로 그려진 픽셀을 본다.
 리눅스 재현은 Docker(`node:22-bookworm` + headless shell, 일반 사용자, `--security-opt seccomp=unconfined`,
-`LANG=C.UTF-8`)로 된다 — `--no-sandbox` 는 쓰지 않는다. 컨테이너 안 6099 는 호스트와 겹치지 않는다.
+`LANG=C.UTF-8`)로 된다 — `--no-sandbox` 는 쓰지 않는다. 포트는 run-all 이 빈 포트를 받으니 호스트와 겹치지 않는다.
+
+**하네스가 남의 서버를 검사하고 통과할 수 있다.** 2026-11-22 작업 폴더 여럿이 6099 를 번갈아 쓰다가
+run-all 이 다른 폴더의 서버를 자기 것으로 받아들였다 — `npx http-server` 는 바인드 실패를 조용히 넘겼고,
+준비 확인은 그 포트에서 응답하는 아무 서버나 받았다. 지금은 구조로 막는다.
+- run-all 은 내장 정적 서버(`static-server.mjs`)를 **빈 포트**(`--port 0`)에 띄운다. 지정한 포트가 차 있으면
+  즉시 실패한다(macOS 는 127.0.0.1 bind 가 남의 `*:port` 를 가로챌 수 있어 bind 전에 접속해 본다).
+- 빌드 폴더에 무작위 `__qa-nonce.txt` 를 쓰고 서버에서 같은 값을 읽어야 진행한다.
+- `pnpm build-storybook` 이 남기는 `build-info.json` 의 sha 가 HEAD 와 다르면 거부한다. dirty 빌드는 로컬에서
+  경고, pre-push(`DS_QA_STRICT=1`)·CI(`CI=true`)에서 거부한다.
+- 하네스는 고정 주소 대신 `storybookBase()`(`DS_SB_URL`)를 쓰고 같은 확인을 한 번 더 한다. CDP 포트도
+  브라우저가 고른다(`DevToolsActivePort`). 고정 6099·고정 CDP 포트·`http-server` 는 함정 린트가 막는다.
 
 **브라우저 검증은 `docs/qa/browser.mjs` 를 거친다.** 거기서
 `chrome-headless-shell`(AppKit 을 링크하지 않는 별도 바이너리)을 찾아 띄우고,

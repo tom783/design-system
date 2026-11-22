@@ -1,6 +1,6 @@
 #!/bin/sh
 # 빠른 게이트 — 약 1.5초. 느려지면 사람들이 --no-verify 로 끄기 시작한다.
-# 느린 검증(스토리북 빌드·브라우저 207건)은 pre-push 에 있다.
+# 느린 검증(스토리북 빌드·브라우저 하네스)은 pre-push 에 있다.
 set -e
 
 cd "$(git rev-parse --show-toplevel)"
