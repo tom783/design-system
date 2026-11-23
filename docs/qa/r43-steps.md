@@ -30,10 +30,10 @@
 
 `docs/qa/browser.mjs`의 headless-shell로 폭별 렌더 계측을 시도했다. macOS 샌드박스 초기화에서
 `FATAL:content/browser/sandbox_parameters_mac.mm:87 ... Input/output error (5)`가 나고 CDP 연결에 실패했다.
-GUI Chrome이나 샌드박스 해제로 우회하지 않았다. 재현 코드는 `r43-steps-measure.mjs`다.
+GUI Chrome이나 샌드박스 해제로 우회하지 않았다. 재현 코드는 `docs/qa/measure/r43-steps-measure.mjs`다.
 
 대체 사전 측정은 저장소의 PretendardVariable.ttf를 CoreText에 등록한 실제 글꼴 폭이다.
-`r43-steps-measure.swift`로 재현하며 결과는 `.qa-shots/r43-measurement/coretext.txt`에 있다.
+`docs/qa/measure/r43-steps-measure.swift`로 재현하며 결과는 `.qa-shots/r43-measurement/coretext.txt`에 있다.
 이 수치는 브라우저 렌더·실제 넘침·키보드 검증 통과를 뜻하지 않는다.
 
 | 측정 대상 | 크기·굵기 | 폭 |
@@ -102,7 +102,7 @@ GUI Chrome이나 샌드박스 해제로 우회하지 않았다. 재현 코드는
 - `packages/ui/src/stories/steps.stories.tsx`
 - `packages/ui/docs/examples/steps.tsx`·`product-steps.tsx`
 - `docs/qa/steps-render-verify.mjs`
-- `docs/qa/r43-steps-measure.mjs`·`r43-steps-measure.swift`·`r43-steps.md`
+- `docs/qa/measure/r43-steps-measure.mjs`·`docs/qa/measure/r43-steps-measure.swift`·`docs/qa/r43-steps.md`
 
 수정:
 

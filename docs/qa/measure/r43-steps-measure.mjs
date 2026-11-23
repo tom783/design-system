@@ -1,6 +1,6 @@
 // 폭 경계만 사전 계측한다. Steps 상호작용 하네스는 실행하지 않는다.
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser } from './browser.mjs';
+import { launchBrowser } from '../browser.mjs';
 const out = '.qa-shots/r43-measurement';
 mkdirSync(out, { recursive: true });
 const browser = await launchBrowser({ outDir: out });

@@ -1,5 +1,5 @@
 // R41 사전 글꼴 계측(macOS CoreText). 브라우저 레이아웃 검증을 대신하지 않는다.
-// 저장소 루트에서 swift -module-cache-path .qa-shots/r41-measurement/module-cache docs/qa/r41-stat-tile-measure.swift
+// 저장소 루트에서 swift -module-cache-path .qa-shots/r41-measurement/module-cache docs/qa/measure/r41-stat-tile-measure.swift
 // 변수 글꼴의 기본 이름은 Thin이다. 아래 wght 축을 본문 400·오류 500으로 명시한다.
 import Foundation
 import CoreText

@@ -1,6 +1,6 @@
 // 좁은 폭 후보만 사전 계측한다. 상호작용 하네스의 실행을 대신하지 않는다.
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { launchBrowser } from './browser.mjs';
+import { launchBrowser } from '../browser.mjs';
 const out = '.qa-shots/r42-measurement';
 mkdirSync(out, { recursive: true });
 const browser = await launchBrowser({ outDir: out });

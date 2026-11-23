@@ -1,5 +1,5 @@
 // 브라우저 시작이 차단될 때 Pretendard 글꼴 폭으로 경계 후보를 계산한다.
-// swift -module-cache-path .qa-shots/r43-measurement/module-cache docs/qa/r43-steps-measure.swift
+// swift -module-cache-path .qa-shots/r43-measurement/module-cache docs/qa/measure/r43-steps-measure.swift
 import Foundation
 import CoreText
 let url = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("node_modules/pretendard/dist/public/variable/PretendardVariable.ttf")

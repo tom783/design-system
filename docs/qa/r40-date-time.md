@@ -70,7 +70,7 @@ Select는 두 자리 최대 17.34+여백 24+아이콘 16+간격 8+경계 2=67.34
 
 ```sh
 mkdir -p .qa-shots/r40-measurement
-swift -module-cache-path .qa-shots/r40-measurement/module-cache docs/qa/r40-date-time-measure.swift
+swift -module-cache-path .qa-shots/r40-measurement/module-cache docs/qa/measure/r40-date-time-measure.swift
 ```
 
 ## MCP 예산
@@ -107,7 +107,7 @@ DatePicker 키워드에 날짜 시간·시각·예약 발행·일시, 규칙 한
 - `packages/mcp/build.test.mjs`·`packages/mcp/server.test.mjs`·`packages/mcp/match.test.mjs`: 크기·직렬화 기준선·검색 회귀 검사.
 - `docs/qa/mcp-client-verify.mjs`: 새 검색·시각 API의 독립 MCP 검사.
 - `docs/qa/date-time-render-verify.mjs`(신규)·`run-all.mjs`·`docs-render-verify.mjs`: 하네스·실행 등록·Primary 코드 검사.
-- `docs/qa/r40-date-time-measure.swift`·이 문서(신규): 재현 가능한 치수 계측과 결정 근거.
+- `docs/qa/measure/r40-date-time-measure.swift`·이 문서(신규): 재현 가능한 치수 계측과 결정 근거.
 - `DESIGN.md`·`CHANGELOG.md`: 날짜 절과 0.3.1 미게시 항목.
 
 range+시각·시간대 변환·새 의존성·버전 범프·커밋·푸시는 수행하지 않았다.

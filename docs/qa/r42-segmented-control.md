@@ -26,10 +26,10 @@ Tabs는 패널, RadioGroup은 제출할 폼 값, SegmentedControl은 같은 화�
 공통 `docs/qa/browser.mjs`로 폭 계측을 시도했으나 macOS headless-shell의
 `FATAL:content/browser/sandbox_parameters_mac.mm:87 ... Input/output error (5)`와 CDP 연결 실패로
 렌더 계측은 불가능했다. GUI Chrome·샌드박스 해제로 우회하지 않았다.
-재현 코드는 `docs/qa/r42-segmented-measure.mjs`다. 전체 상호작용 하네스는 실행하지 않았다.
+재현 코드는 `docs/qa/measure/r42-segmented-measure.mjs`다. 전체 상호작용 하네스는 실행하지 않았다.
 
 대체 측정은 저장소 PretendardVariable.ttf를 CoreText에 등록한 14px/400·600 글꼴 폭이다.
-`docs/qa/r42-segmented-measure.swift`로 재현하며 `.qa-shots/r42-measurement/coretext.txt`에 기록했다.
+`docs/qa/measure/r42-segmented-measure.swift`로 재현하며 `.qa-shots/r42-measurement/coretext.txt`에 기록했다.
 브라우저 레이아웃 실측이나 키보드 통과를 뜻하지 않는다.
 
 | 항목 | 400 | 600 |
@@ -83,8 +83,8 @@ fullWidth는 같은 폭으로 채운다. 너무 많은 항목은 각 라벨이 �
 - `packages/ui/src/stories/segmented-control.stories.tsx`
 - `packages/ui/docs/examples/segmented-control.tsx`
 - `docs/qa/segmented-control-render-verify.mjs`
-- `docs/qa/r42-segmented-measure.mjs`
-- `docs/qa/r42-segmented-measure.swift`
+- `docs/qa/measure/r42-segmented-measure.mjs`
+- `docs/qa/measure/r42-segmented-measure.swift`
 - `docs/qa/r42-segmented-control.md`
 
 수정 파일:

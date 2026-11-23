@@ -11,7 +11,9 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const qaDir = join(root, 'docs/qa');
 const read = (path) => readFileSync(path, 'utf8');
 const rel = (path) => relative(root, path);
-const qaFiles = readdirSync(qaDir).filter((f) => f.endsWith('.mjs') && !f.endsWith('.test.mjs')).map((f) => join(qaDir, f));
+// 일회성 측정 스크립트는 measure/ 에 모아 두었다. 브라우저를 띄우므로 하네스와 같은 함정 검사를 받는다.
+const scripts = (dir) => readdirSync(dir).filter((f) => f.endsWith('.mjs') && !f.endsWith('.test.mjs')).map((f) => join(dir, f));
+const qaFiles = [...scripts(qaDir), ...scripts(join(qaDir, 'measure'))];
 // 하네스와 측정 스크립트 — 도우미(browser·storybook-target·static-server)는 함정을 설명·거부하느라 문자열을 품는다.
 const HELPERS = new Set(['browser.mjs', 'storybook-target.mjs', 'static-server.mjs']);
 const harnessFiles = qaFiles.filter((f) => !HELPERS.has(f.split('/').pop()));

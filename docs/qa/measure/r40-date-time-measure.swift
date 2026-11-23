@@ -1,5 +1,5 @@
 // R40 사전 글꼴 계측(macOS CoreText). 브라우저 레이아웃·키보드 검증을 대신하지 않는다.
-// 저장소 루트에서 swift -module-cache-path .qa-shots/r40-measurement/module-cache docs/qa/r40-date-time-measure.swift
+// 저장소 루트에서 swift -module-cache-path .qa-shots/r40-measurement/module-cache docs/qa/measure/r40-date-time-measure.swift
 // 변수 글꼴의 기본 이름은 Thin이다. 아래 wght 축을 본문 400·오류 500으로 명시한다.
 import Foundation
 import CoreText

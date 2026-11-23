@@ -1,5 +1,5 @@
 // 브라우저 계측이 차단될 때의 글꼴 폭·치수 산술. 렌더 검증은 별도 하네스에 남긴다.
-// swift -module-cache-path .qa-shots/r42-measurement/module-cache docs/qa/r42-segmented-measure.swift
+// swift -module-cache-path .qa-shots/r42-measurement/module-cache docs/qa/measure/r42-segmented-measure.swift
 import Foundation
 import CoreText
 let fontURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("node_modules/pretendard/dist/public/variable/PretendardVariable.ttf")

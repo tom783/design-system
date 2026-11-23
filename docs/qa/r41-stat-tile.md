@@ -57,7 +57,7 @@ StatTile을 추가했다. 버전은 유지하며 단일 지표는 StatTile, 목�
 재현: 저장소 루트에서 추가 설치 없이 실행한다.
 
 ```sh
-swift -module-cache-path .qa-shots/r41-measurement/module-cache docs/qa/r41-stat-tile-measure.swift
+swift -module-cache-path .qa-shots/r41-measurement/module-cache docs/qa/measure/r41-stat-tile-measure.swift
 ```
 
 ## 색·대비 계산
@@ -121,7 +121,7 @@ Storybook 빌드에는 기존 대형 청크 안내가 있으며 종료 코드는
 |---|---|
 | 추가: 구현·서식·단위 | packages/ui/src/components/stat-tile/stat-tile.tsx · stat-tile.css · format.ts · format.test.mjs |
 | 추가: 스토리·독립 예시 | packages/ui/src/stories/stat-tile.stories.tsx · packages/ui/docs/examples/stat-tile.tsx |
-| 추가: 하네스·계측·보고 | docs/qa/stat-tile-render-verify.mjs · docs/qa/r41-stat-tile-measure.swift · docs/qa/r41-stat-tile.md |
+| 추가: 하네스·계측·보고 | docs/qa/stat-tile-render-verify.mjs · docs/qa/measure/r41-stat-tile-measure.swift · docs/qa/r41-stat-tile.md |
 | 수정: 공개 진입점·CSS·기존 조립 | packages/ui/src/index.ts · packages/ui/src/components.css · packages/ui/src/stories/card.stories.tsx |
 | 수정: 규칙·변경 기록 | DESIGN.md · CHANGELOG.md · docs/research/component-intent.mjs |
 | 수정: MCP 생성물·회귀 | packages/mcp/manifest.json · packages/mcp/build.test.mjs · packages/mcp/match.test.mjs · packages/mcp/server.test.mjs |
