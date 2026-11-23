@@ -17,6 +17,10 @@ import { cn } from '../lib/cn';
  *   전체 값을 남긴다. 고정 너비를 주지 않는다.
  * - 아이콘은 `aria-hidden` 이다. 의미는 라벨 텍스트가 전달하므로 스크린리더에
  *   중복 낭독될 필요가 없다.
+ * - **칩의 기준선은 라벨 글자의 기준선이다.** inline-flex 는 기준선 정렬에 참여하는 항목이 없으면 첫 항목의
+ *   기준선을 내보내는데, 첫 항목이 아이콘(svg)이라 아이콘 아래 끝이 칩 기준선이 됐다 — 옆 글자(표 셀·설명 목록
+ *   라벨)가 칩 글자보다 약 3px 아래에 섰다(목표 49 설명 목록 검수 D1). 라벨 span 만 `self-baseline` 으로 기준선
+ *   정렬에 넣는다. 줄 높이를 정하는 것이 그 span(행간 20px)이라 칩 안의 위치는 그대로다.
  */
 const chipVariants = cva(
   [
@@ -80,7 +84,7 @@ export function StatusChip({
       {...props}
     >
       {hideIcon ? null : (icon ?? <Icon className="size-3.5 shrink-0" aria-hidden="true" />)}
-      <span className="truncate">{children}</span>
+      <span className="truncate self-baseline">{children}</span>
     </span>
   );
 }

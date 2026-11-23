@@ -53,6 +53,15 @@ const HELPERS = `
 `;
 const inPage = body => ev(`(() => { ${HELPERS} ${body} })()`);
 
+// 검수 D1 합격 기준: 모든 쌍의 라벨 글자 기준선과 값 글자 기준선(칩 안 글자·링크 글자 포함) 차이 0~1px,
+// 한 줄 쌍은 모두 24px 이고 라벨 기준선이 행 위에서 같은 거리(= 쌍 피치 32px 가 칩·버튼 줄을 포함해 같다).
+function rhythm(rows, context) {
+  const out = rows.map((p, i) => ({ label: p.label, top: +(p.pair.y - p.list.y).toFixed(2), h: +p.pair.h.toFixed(2),
+    labelBaseline: +(p.dtBase - p.pair.y).toFixed(2), valueMinusLabel: +(p.ddBase - p.dtBase).toFixed(2),
+    pitch: i ? +(p.dtBase - rows[i - 1].dtBase).toFixed(2) : null }));
+  for (const r of out) assert.ok(Math.abs(r.valueMinusLabel) <= 1, `${context} ${r.label} 라벨·값 기준선 차이 ${r.valueMinusLabel}`);
+  return out;
+}
 // 측정 예시 6쌍의 순서. 두 열에서는 앞 3개가 왼쪽 열, 뒤 3개가 오른쪽 열이다(위→아래, 가로 지그재그 금지).
 const ORDER = ['주문번호', '주문 상태', '주문자', '연락처', '배송지', '메모'];
 
@@ -72,7 +81,7 @@ try {
   sha = (await ev(`fetch('/build-info.json').then(r => r.ok ? r.json() : {}).then(i => (i.sha ?? 'nosha').slice(0, 7) + (i.dirty ? '-dirty' : '')).catch(() => 'nosha')`));
 
   for (const theme of THEMES) {
-    await check(`가로형 720 ${theme}: 라벨 88px·값 시작 112px·간격 24/8·행 24px(칩 24·버튼 32)·기준선`, async () => {
+    await check(`가로형 720 ${theme}: 라벨 88px·값 시작 112px·간격 24/8·모든 행 24px·라벨=값 글자 기준선(칩·링크)·피치 32`, async () => {
       await story('가로형', theme);
       const g = await inPage(`return geometry(document.querySelector(${JSON.stringify(LIST)}));`);
       assert.deepEqual(g.map(p => p.label), ORDER);
@@ -80,16 +89,15 @@ try {
       for (const [i, p] of g.entries()) {
         near(p.dt.x - p.list.x, 0, `${p.label} 라벨 시작`); near(p.dt.w, 88, `${p.label} 라벨 열 5.5rem`);
         near(p.dd.x - p.list.x, 112, `${p.label} 값 시작 = 88 + 24`);
-        // 칩 줄: StatusChip 은 inline-flex 라 상자 기준선이 첫 항목(아이콘) 아래 끝이다. 라벨은 그 기준선을 따라 행 위에서 4px
-        // 아래에 선다 — 측정 예시(Figma 190:2)의 칩 줄 라벨 y=4 와 같다. 칩 글자 기준선과는 3px 차이가 난다(칩 소유 영역).
-        if (p.label === '주문 상태') near(p.dt.y - p.pair.y, 4, '칩 줄 라벨 위치(측정 예시 y=4)');
-        else near(p.dtBase, p.ddBase, `${p.label} 라벨·값 기준선`, 0.6);
         if (i > 0) near(p.pair.y - g[i - 1].pair.b, 8, `${p.label} 쌍 사이 8px`);
       }
-      near(g[0].pair.h, 32, '주문번호 + 복사(ghost sm 32px) 행');
-      for (const p of g.slice(1)) near(p.pair.h, 24, `${p.label} 행 24px(칩 높이로 통일)`);
-      near(g[1].dd.h, 24, '칩 높이 24px');
-      return { theme, rows: g.map(p => ({ label: p.label, y: Math.round(p.pair.y - p.list.y), h: p.pair.h, dtX: p.dt.x - p.list.x, ddX: p.dd.x - p.list.x })) };
+      const r = rhythm(g, `가로형 ${theme}`);
+      // 버튼(32)·칩(24) 줄도 24px 행이다. 글자 줄은 위아래 2px, 라벨 기준선은 모든 줄에서 같은 높이 → 피치 32.
+      for (const row of r) near(row.h, 24, `${row.label} 행 24px(칩·버튼 줄 포함)`);
+      for (const row of r) near(row.labelBaseline, r[2].labelBaseline, `${row.label} 라벨 기준선 높이`, 1);
+      for (const row of r.slice(1)) near(row.pitch, 32, `${row.label} 쌍 피치`, 1);
+      near(g[2].dt.y - g[2].pair.y, 2, '글자 줄 위 여백 2px');
+      return { theme, rhythm: r, columns: g.map(p => ({ label: p.label, dtX: p.dt.x - p.list.x, ddX: p.dd.x - p.list.x })) };
     });
     await check(`글자·색·대비 ${theme}: 라벨 secondary·값 primary·빈 값 tertiary·링크 밑줄, body-sm 14/20·400`, async () => {
       await story('가로형', theme);
@@ -128,7 +136,7 @@ try {
   });
 
   for (const theme of THEMES) {
-    await check(`두 열 720 ${theme}: 카드 640 이상 — 왼쪽 열 위→아래 다음 오른쪽 열, 열 간격 24, 같은 줄 위 맞춤`, async () => {
+    await check(`두 열 720 ${theme}: 카드 640 이상 — 왼쪽 열 위→아래 다음 오른쪽 열, 열 간격 24, 같은 줄 위·라벨 기준선 맞춤`, async () => {
       await story('두열', theme);
       const g = await inPage(`return geometry(document.querySelector(${JSON.stringify(LIST)}));`);
       assert.deepEqual(g.map(p => p.label), ORDER, 'DOM·읽는 순서는 그대로');
@@ -138,17 +146,24 @@ try {
       for (const p of right) near(p.dt.x - p.list.x, 88 + 24 + valueWidth + 24, `${p.label} 오른쪽 열 라벨`);
       for (const p of g) near(p.dd.w, valueWidth, `${p.label} 값 열 폭 같음`);
       for (let i = 0; i < 3; i++) near(left[i].pair.y, right[i].pair.y, `${i + 1}행 위 맞춤`);
-      // 3행: 배송지(오른쪽)가 길어도 메모·주문자 쌍은 늘어나지 않는다.
-      near(left[2].pair.h, 24, '옆 쌍 높이로 늘어나지 않음');
-      return { theme, valueWidth, rightLabelX: right[0].dt.x - right[0].list.x, rows: g.map(p => [p.label, Math.round(p.pair.y - p.list.y), Math.round(p.dt.x - p.list.x)]) };
+      // 2행: 배송지(오른쪽, 두 줄)가 길어도 옆 주문 상태 쌍은 늘어나지 않는다.
+      near(left[1].pair.h, 24, '옆 쌍 높이로 늘어나지 않음');
+      const rl = rhythm(left, `두 열 왼쪽 ${theme}`), rr = rhythm(right, `두 열 오른쪽 ${theme}`);
+      // 같은 줄의 두 라벨은 기준선이 같다(버튼 줄·칩 줄 옆 글자 줄). 1→2행 피치는 32(둘 다 한 줄).
+      for (let i = 0; i < 3; i++) near(left[i].dtBase, right[i].dtBase, `${i + 1}행 왼쪽·오른쪽 라벨 기준선`, 1);
+      near(rl[1].pitch, 32, '1→2행 피치', 1); near(rr[1].pitch, 32, '1→2행 피치(오른쪽)', 1);
+      return { theme, valueWidth, rightLabelX: right[0].dt.x - right[0].list.x, left: rl, right: rr };
     });
-    await check(`접힘 600 ${theme}: columns=2 여도 카드 640 미만은 한 열 가로형`, async () => {
+    await check(`접힘 600 ${theme}: columns=2 여도 카드 640 미만은 한 열 가로형·기준선·피치 32`, async () => {
       await story('접힘', theme);
       const g = await inPage(`return geometry(document.querySelector(${JSON.stringify(LIST)}));`);
       near(g[0].list.w, 600 - 34, '카드 본문 폭');
       for (const [i, p] of g.entries()) { near(p.dt.x - p.list.x, 0, `${p.label} 한 열`); near(p.dd.x - p.list.x, 112, `${p.label} 값 시작`);
         if (i > 0) near(p.pair.y - g[i - 1].pair.b, 8, `${p.label} 쌍 사이`); }
-      return { theme, rows: g.map(p => [p.label, Math.round(p.pair.y - p.list.y), p.pair.h]) };
+      const r = rhythm(g, `접힘 ${theme}`);
+      for (const row of r) near(row.h, 24, `${row.label} 행 24px`);
+      for (const row of r.slice(1)) near(row.pitch, 32, `${row.label} 쌍 피치`, 1);
+      return { theme, rhythm: r };
     });
     await check(`세로형 320 ${theme}: 카드 360 미만 — 라벨 위·값 아래 4px·쌍 사이 12px·긴 주소 줄바꿈(말줄임 없음)`, async () => {
       await story('세로형', theme);
@@ -231,7 +246,7 @@ try {
         for (const [i, p] of rows.entries()) {
           near(p.dt.x - card.x, 17, `${p.label} 라벨 x(손 조합과 같음)`); near(p.dt.w, 88, `${p.label} 라벨 88`);
           near(p.dd.x - card.x, 129, `${p.label} 값 x(17 + 88 + 24)`);
-          if (i === 0) near(p.pair.y - card.y, 51, '첫 쌍 y(손 조합과 같음)');
+          if (i === 0) { near(p.pair.y - card.y, 51, '첫 쌍 y(손 조합과 같음)'); near(p.dt.y - p.pair.y, 2, '글자는 행 위 2px — 손 조합(행간 24)과 같은 글자 위치'); }
           else near(p.pair.y - rows[i - 1].pair.b, 8, `${p.label} 쌍 사이 8`);
         }
       }

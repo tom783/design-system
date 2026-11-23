@@ -33,12 +33,23 @@
     grid-template-columns: subgrid;
     /* 값이 여러 줄이어도 라벨은 값 첫 줄 기준선에 선다(가운데로 내려가지 않는다). */
     align-items: baseline;
-    /* 행 최소 높이 = StatusChip 높이(행간 20 + 위아래 2 = 24px). 상태 줄만 쌍 간격이 늘어 보이지 않게 모든 행을 맞춘다.
-       한 줄 글자는 행 위에 붙는다(칩 줄의 라벨은 기준선을 따라 4px 아래 — 측정 예시와 같다). 가운데로 내리지 않는 이유:
-       Chrome 은 subgrid 의 align-content 를 무시해(실측 0px, subgrid 를 빼면 2px) 브라우저마다 2px 가 갈린다.
+    /* 행 = StatusChip 높이 24px. 글자 줄(행간 20)은 위아래 2px 여백으로 가운데에 둔다 — 칩 글자 기준선(칩 위 2 + 글자 줄)과
+       같은 높이가 되어 글자·칩·링크 줄의 라벨 기준선이 모두 행 위에서 같은 거리에 선다(쌍 피치 24 + 8 = 32, 검수 D1).
+       align-content: center 를 쓰지 않는 이유: Chrome 은 subgrid 의 align-content 를 무시한다(실측 0px, subgrid 를 빼면 2px).
        두 열에서 옆 쌍이 길어져도 늘어나지 않도록 행에 붙인다(start). */
+    padding-block: var(--space-2);
     min-block-size: var(--space-24);
     align-self: start;
+  }
+  /* 글자 줄보다 큰 값(칩 24·작은 버튼 32)은 줄 높이 계산에서 뺀다. 줄 안 인라인 상자의 세로 음수 여백은 기준선 위치를
+     바꾸지 않고 줄 높이에만 빠지므로, 칩·링크 글자는 라벨과 같은 기준선에 서고 줄은 글자 줄 20px 로 남는다(행 24px).
+     칩은 행 여백 2px 를, 버튼은 그 바깥 쌍 사이 간격 4px 까지 겹쳐 그린다(ghost 라 바탕이 없다). 칩 글자(13px)가 라벨
+     글자(14px)보다 기준선이 1px 낮아 칩 상자가 행 아래로 1px 나온다 — 그래서 필요량(칩 2·버튼 6)보다 2px 씩 크게 뺀다. */
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] [data-slot="status-chip"] {
+    margin-block: calc(var(--space-4) * -1);
+  }
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] [data-slot="button"] {
+    margin-block: calc(var(--space-8) * -1);
   }
   .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-term"] {
     min-inline-size: 0;
@@ -96,6 +107,11 @@
       grid-column: 1 / -1;
       grid-template-columns: minmax(0, 1fr);
       row-gap: var(--space-4);
+      padding-block: 0;
+    }
+    /* 세로형은 값이 라벨 아래 제 줄에 있어 칩·버튼이 제 높이를 쓴다(겹치면 라벨–값 4px 를 침범한다). */
+    .ds-description-list:not([data-align="end"]) > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] :is([data-slot="status-chip"], [data-slot="button"]) {
+      margin-block: 0;
     }
     .ds-description-list:not([data-align="end"]) > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-term"] {
       max-inline-size: none;
