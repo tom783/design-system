@@ -47,9 +47,11 @@ export function extractComponents() {
         d.resolve()?.getSourceFile().fileName.startsWith(uiRoot),
       )).map((prop) => {
         const nodes = (prop.declarations ?? []).map((d) => d.resolve());
-        const doc = nodes.flatMap((node) => (node?.jsDoc ?? []).map((comment) =>
+        // 합집합 갈래마다 같은 선언이 다시 잡힌다(제네릭 Handlers<T> 를 두 모드로 펼친 DatePicker, aria-label 을
+        // 두 갈래에 둔 SegmentedControl). 같은 문장을 이어 붙이지 않고 한 번만 남긴다(목표 49 1b).
+        const doc = [...new Set(nodes.flatMap((node) => (node?.jsDoc ?? []).map((comment) =>
           ast.getTextOfJSDocComment(comment.comment),
-        )).filter(Boolean).join('\n');
+        )).filter(Boolean))].join('\n');
         return {
           name: prop.name,
           type: checker.typeToString(checker.getTypeOfSymbolAtLocation(prop, declaration)),

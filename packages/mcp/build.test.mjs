@@ -142,6 +142,12 @@ test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 �
   assert.deepEqual(manifest.tokens.map(({ name, light, dark }) => ({ name, light, dark })), tokens.map(({ name, light, dark }) => ({ name, light, dark })));
 });
 
+// 합집합 갈래마다 같은 선언이 다시 잡혀 doc 이 두 번 이어 붙던 결함(목표 49 1b에서 발견).
+test('합집합 갈래마다 다시 잡히는 같은 JSDoc은 한 번만 남긴다', () => {
+  const doc = (name, prop) => components.find((c) => c.name === name).props.find((p) => p.name === prop).doc;
+  assert.equal(doc('DatePicker', 'onValueChange'), '확정한 값을 받는다. 입력 중 초안은 보내지 않는다.');
+  assert.equal(doc('SegmentedControl', 'aria-label'), 'Defines a string value that labels the current element.');
+});
 test('자체 prop은 선언 원점으로 보존하고 DOM prop은 상속 이름으로 요약', () => {
   const button = components.find((c) => c.name === 'Button');
   assert.deepEqual(button.props.map((p) => p.name).sort(), ['asChild', 'iconOnly', 'leadingIcon', 'size', 'trailingIcon', 'variant']);

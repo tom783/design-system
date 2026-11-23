@@ -595,7 +595,7 @@ Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·traili
 - `onChange`는 DOM `change` 이벤트 전용이다. Input·Textarea·Checkbox처럼 네이티브 요소를 그대로 노출하는 부품이
   상속으로 갖고, 부품이 자체 prop으로 다시 정의하지 않는다.
 - 근거: DatePicker가 `onChange(date)`였다. 내부에서 감싼 Input의 `onChange(event)`와 이름은 같고 인자가 달라,
-  `onChange`를 이벤트로 가정하는 코드(폼 라이브러리 어댑터 등)에 그대로 넘기면 깨진다. 0.4.0에서 `onValueChange`로
+  `onChange`를 이벤트로 가정하는 코드(폼 라이브러리 어댑터 등)에 그대로 넘기면 깨진다. 목표 49에서 `onValueChange`로
   바꾸고 옛 이름은 별칭으로 남겼다(규칙 5).
 
 **3. ref — prop으로 받고, DOM을 펼치면 그 요소 타입으로.** `forwardRef`를 쓰지 않는다. peer가 React `^19.0.0`(§15.7)
@@ -613,7 +613,7 @@ Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·traili
 내보내는 순간 그것까지 공개 API가 된다 — `initials`·`encodeRecord`·`decodeRecord`가 그렇게 새었다.
 - 대문자 값(부품·상수)은 매니페스트 항목이 있어야 한다(§13.2).
 - 소문자 값(함수·훅)은 공개 도우미 목록에 용도를 적어야 통과한다. 부품이 쓰는 내부 계산은 내보내지 않는다.
-  이미 내보낸 것은 `@deprecated`로 예고하고 다음 마이너에서 뺀다(0.4.0: 12개).
+  이미 내보낸 것은 `@deprecated`로 예고하고 다음 마이너에서 뺀다(지금 12개 — 0.4.0 예고 8 + 목표 49 4).
 
 **5. 이름 바꾸기 — 깨지 않는다.** 0.x minor에서도 옛 이름을 바로 지우지 않는다. 새 이름을 더하고 옛 이름은
 `@deprecated` 별칭으로 한 마이너 남긴다. 둘 다 주면 새 이름이 이긴다.
@@ -1444,7 +1444,7 @@ playwright 대신 CDP 를 직접 쓰고, 차트 라이브러리 대신 visx 프�
 
 ```jsonc
 "props": ["leadingIcon", "trailingIcon", "variant", "size"],
-"extends": ["React.ButtonHTMLAttributes<HTMLButtonElement>", "VariantProps<typeof buttonVariants>"]
+"extends": ["React.ComponentProps<'button'>", "VariantProps<typeof buttonVariants>"]
 ```
 
 `extends` 한 줄이 295개 나열보다 더 많은 것을 정확히 전달한다.

@@ -3,7 +3,7 @@ import type { DatePickerProps } from './date-picker';
 const onValueChange = () => {};
 const single: DatePickerProps = { mode: 'single', time: true, value: new Date(), onValueChange };
 const steps: DatePickerProps[] = ([1, 5, 10, 15, 30] as const).map(step => ({ mode: 'single', time: { step }, onValueChange }));
-// 0.4.0 이전 이름 onChange 는 deprecated 별칭으로 계속 받는다(DESIGN.md §6.3).
+// 옛 이름 onChange 는 deprecated 별칭으로 계속 받는다(DESIGN.md §6.3).
 const legacy: DatePickerProps = { mode: 'single', value: new Date(), onChange: (value: Date | undefined) => void value };
 const legacyRange: DatePickerProps = { onChange: value => void value?.from };
 // 모드별로 값 타입이 좁혀진다 — 기간 알림은 DateRange 를 받는다.

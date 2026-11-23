@@ -19,12 +19,15 @@ type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' 
   /** 빠른 선택의 기준일. 기본은 운영자의 로컬 오늘이며 스토리에서는 고정할 수 있다. */
   today?: Date;
 };
-// 값 알림은 onValueChange 다(DESIGN.md §6.3). onChange 는 0.4.0 이전 이름으로, Input 의 DOM 이벤트 onChange 와
-// 이름은 같고 인자가 달라 헷갈렸다. 둘 다 주면 onValueChange 만 부른다. 확정한 값만 보내고 입력 중 초안은 보내지 않는다.
-// JSDoc 본문을 달지 않는다 — 제네릭이 두 모드로 펼쳐지며 매니페스트 doc 이 두 번 이어 붙는다(태그는 doc 에 안 들어간다).
+// 값 알림은 onValueChange 다(DESIGN.md §6.3). onChange 는 옛 이름으로, Input 의 DOM 이벤트 onChange 와
+// 이름은 같고 인자가 달라 헷갈렸다. 둘 다 주면 onValueChange 만 부른다.
 type Handlers<T> = {
+  /** 확정한 값을 받는다. 입력 중 초안은 보내지 않는다. */
   onValueChange?: (value: T | undefined) => void;
-  /** @deprecated 0.4.0에서 onValueChange로 바꿨다. 다음 마이너에서 뺀다. */
+  /**
+   * 옛 이름. onValueChange와 같다.
+   * @deprecated onValueChange로 바꿨다(목표 49). 다음 마이너에서 뺀다.
+   */
   onChange?: (value: T | undefined) => void;
 };
 export type DatePickerProps = Common & (

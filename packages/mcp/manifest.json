@@ -4356,12 +4356,12 @@
         {
           "name": "aria-label",
           "type": "string",
-          "doc": "Defines a string value that labels the current element.\nDefines a string value that labels the current element."
+          "doc": "Defines a string value that labels the current element."
         },
         {
           "name": "aria-labelledby",
           "type": "string",
-          "doc": "Identifies the element (or elements) that labels the current element.\nIdentifies the element (or elements) that labels the current element."
+          "doc": "Identifies the element (or elements) that labels the current element."
         },
         {
           "name": "options",
@@ -6613,11 +6613,13 @@
         },
         {
           "name": "onValueChange",
-          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)"
+          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)",
+          "doc": "확정한 값을 받는다. 입력 중 초안은 보내지 않는다."
         },
         {
           "name": "onChange",
-          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)"
+          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)",
+          "doc": "옛 이름. onValueChange와 같다."
         },
         {
           "name": "time",

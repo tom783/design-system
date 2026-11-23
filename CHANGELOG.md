@@ -16,7 +16,8 @@
   축약 항목, 88,863바이트)를 그대로 보내던 것을 복원 규칙 없이 읽는 목록으로 바꿨다:
   `{ description, components: [{ name, partOf?, category?, purpose, useWhen?, dont?, parts? }] }`(23,191바이트, 순서는
   `list_components`와 같다). props·slots·규칙·부모에서 합친 의도는 `get_component`로 이름마다 조회한다.
-  리소스 목록의 제목·설명도 바뀌었다. **도구(tool) 응답은 바이트까지 그대로다** — 0.4.0 서버와 1,363건 대조.
+  리소스 목록의 제목·설명도 바뀌었다. **R49 자체로는 도구(tool) 응답이 바이트까지 그대로다** — 0.4.0 서버와 1,363건 대조.
+  (목표 49 공개 API 규약이 바꾼 `get_component` 표기는 아래 **바뀐 지침 (MCP)**.)
   - 앱이 할 일: `design://components`를 읽어 `derived`로 복원하던 클라이언트는 `get_component`로 상세를 받는다.
     도구만 쓰는 AI 클라이언트는 할 일이 없다.
 - **MCP 응답 크기 예산은 요약·상세·고정으로 나눈다** (R49). 0.4.0의 "MCP 응답 크기 예산은 응답 단위다" 항목의 수치를
@@ -31,6 +32,48 @@
   안에 머물러 스크롤 영역에서 잘리지 않는다. 이 상태의 링은 버튼 `outline`이 아니라 `::after`로 그린다(§16.1).
   - 앱이 할 일: 코드 수정은 없다. 선택 탭에 포커스가 있는 화면의 시각 기준선을 갱신한다. 앱이 탭 트리거의
     `:focus-visible` 링을 덮어썼다면 선택 탭(`[data-state="active"]`)에서는 `::after`의 `outline`도 함께 맞춘다.
+- **DatePicker 값 알림은 `onValueChange`** (목표 49 · DESIGN.md §6.3). 확정한 날짜·기간을 받는 핸들러가 `onChange` →
+  `onValueChange`다. 감싼 Input의 DOM 이벤트 `onChange(event)`와 이름은 같고 인자가 달랐다. `onChange`는 deprecated 별칭으로
+  그대로 동작하고 다음 마이너에서 빠진다. 둘 다 주면 `onValueChange`만 부른다. 타입에서 핸들러가 필수가 아니게 됐다.
+  - 앱이 할 일: `<DatePicker onChange={…}>`를 `onValueChange={…}`로 바꾼다. 받는 값(Date·DateRange·undefined)은 같다.
+- **ref는 prop으로 받는다 — 타입 표기 변경, 런타임 동일** (목표 49 · DESIGN.md §6.3). `forwardRef`로 감쌌던 22개(Button·Input·
+  Textarea·Checkbox·FormRow·SideNavItem, Select 부품 7개, DropdownMenu 부품 9개)를 ref를 prop으로 받는 함수 부품으로 바꿨다.
+  DOM에 props를 펼치면서 ref 타입이 없던 14개(Card·CardHeader·CardTitle·CardBody·CardFooter·StatusChip·AppShell·SideNav·
+  SideNavGroup·PageHeader·DropdownMenuShortcut·Field·StatTile·Pagination)는 그 요소의 ref 타입을 받는다(StatTile은 루트가 div·a로
+  바뀌어 `HTMLElement`). React 19는 실행 중에 이미 ref를 넘기고 있어 막혀 있던 것은 타입뿐이다. 같은 부품 트리의 SSR HTML이
+  바꾸기 전 소스(ddef6c1)와 바이트 단위로 같고, 헤드리스 브라우저에서 ref 27곳이 같은 요소에 붙는다. 예외 하나: Pagination은 포커스
+  복구용 내부 ref가 앱 ref를 덮어써 버렸는데(`as any`로 넘긴 경우) 이제 둘을 합친다.
+  - 앱이 할 일: 없다. `React.ComponentRef<typeof Button>`·`React.ComponentProps<typeof Button>`은 그대로 쓴다. 부품 타입을
+    `ForwardRefExoticComponent`로 적어 둔 코드가 있다면 `ComponentProps`·`ComponentRef`로 바꾼다.
+- **내부 도우미 4개를 더 예고한다** (목표 49 · DESIGN.md §6.3 규칙 4). `initials`·`encodeRecord`·`decodeRecord`·`useElementWidth`에
+  `@deprecated`를 붙였다. 부품 폴더가 내보낸 것이 루트 `export *`로 새어 나왔다. 0.4.0에서 예고한 8개와 함께 다음 마이너에서
+  공개 API에서 빠지며, 그때까지는 그대로 쓸 수 있다.
+  - 앱이 할 일: 이름 글자는 Avatar가 그리고, 복귀 위치 저장 형식은 `useReturnContext`가 맡는다. 요소 폭은 앱이 `ResizeObserver`로 잰다.
+
+### 바뀐 지침 (MCP)
+
+- DatePicker: "onValueChange로 받은 확정 날짜를 쓴다"(이전 onChange). props에 `onValueChange`가 더해지고 `onChange`는 선택이며
+  "옛 이름. onValueChange와 같다."는 설명이 붙는다.
+- `get_component`의 상속 표기(`extends`) 37곳: `React.*HTMLAttributes<…>`·`ComponentPropsWithoutRef<…>` → `React.ComponentProps<…>`
+  (ref 포함). StatTile은 `React.RefAttributes<HTMLElement>`를 더했다(목표 49).
+- SegmentedControl `aria-label`·`aria-labelledby` 설명이 같은 문장으로 두 번 이어 붙던 것을 한 번으로 고쳤다. 생성기가 합집합
+  갈래마다 다시 잡히는 같은 선언의 JSDoc을 겹쳐 붙였다.
+- 위 세 가지를 `docs/qa/mcp-response-diff.mjs`로 main 서버(cd294ae — MCP는 R49와 같다)와 대조하면 1,363건 중 42건(이름 39개 + 대소문자·공백 변형
+  3건)만 다르고 모두 의도 목록이다. 색인·목록·토큰·규칙·`which_component` 응답은 바이트가 같고 정답 세트도 top-1 52 · top-3 72
+  그대로다. 저장 카탈로그는 88,863 → 88,622바이트(응답 아님).
+
+### 문서
+
+- DESIGN.md §6.3 공개 API 규약(목표 49) — 제어/비제어 쌍 `X`·`defaultX`·`onXChange`, 값 알림 `on{X}Change`와 DOM 전용 `onChange`,
+  ref prop, 루트 `index.ts` 이름 나열, deprecated 별칭으로 이름 바꾸기. 조사 스냅숏 `docs/research/api-conventions-survey.md`.
+  스토리·문서 예제의 DatePicker를 `onValueChange`로, §13.3의 Button `extends` 예시를 지금 표기로 바꿨다.
+
+### 내부
+
+- 공개 API 규약 검사(목표 49): `scripts/check-api-conventions.mjs`가 매니페스트·루트 `index.ts`·소스를 읽어 DESIGN.md §6.3을
+  검사하고 `pnpm test`·pre-commit(`packages/ui/src/lib/api-conventions.test.mjs`)에서 돈다. 기존 위반 11건은
+  `scripts/api-conventions-allow.mjs`에 이유와 함께 두며, 고친 항목이 목록에 남으면 실패한다. ref 타입은
+  `ref-props.typecheck.tsx`가 고정한다. 루트 `index.ts`의 `export *` 27곳을 이름 나열로 바꿨다(공개 이름 224개 그대로).
 
 ---
 
@@ -188,26 +231,11 @@
   생성할 때 하나라도 넘으면 빌드가 멈춘다. 이번 판 실측: 카탈로그 88,863 · 토큰 67,555 · 규칙 4,327 · 목록 19,873 ·
   상세 최대 4,576(DataTable).
   - 앱이 할 일: 없다. MCP를 쓰는 AI 클라이언트의 컨텍스트 예산은 위 응답 단위로 잡는다.
-- **내부 도우미 12개는 다음 마이너에서 공개 API에서 빠진다 (예고).** `placeFallback`·`resolveStep`·`useAnchored`·
-  `supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`, 그리고 목표 49 조사에서 찾은
-  `initials`·`encodeRecord`·`decodeRecord`·`useElementWidth`에 `@deprecated`를 붙였다. 뒤의 넷은 부품 폴더가 내보낸 것이
-  루트 `export *`로 새어 나왔다(§6.3 규칙 4). 0.4.0에서는 그대로 쓸 수 있다.
+- **내부 도우미 8개는 다음 마이너에서 공개 API에서 빠진다 (예고).** `placeFallback`·`resolveStep`·`useAnchored`·
+  `supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`에 `@deprecated`를 붙였다.
+  0.4.0에서는 그대로 쓸 수 있다.
   - 앱이 할 일: 쓰고 있다면 공개 부품으로 옮긴다 — 위치·앵커는 Tooltip·Hint·Tour·Peek, Enter 이동은 FormFlow,
     로딩 표시 지연은 `useDelayedLoading`. `shouldValidate`는 같은 판단식 `!isComposing && (trigger !== 'change' || hasErrored)`을 앱에 둔다.
-    이름 글자는 Avatar가 그리고, 복귀 위치 저장 형식은 `useReturnContext`가 맡는다. 요소 폭은 앱이 `ResizeObserver`로 잰다.
-- **DatePicker 값 알림은 `onValueChange`** (목표 49 · DESIGN.md §6.3). 확정한 날짜·기간을 받는 핸들러가 `onChange` →
-  `onValueChange`다. 감싼 Input의 DOM 이벤트 `onChange(event)`와 이름은 같고 인자가 달랐다. `onChange`는 deprecated 별칭으로
-  0.4.0에서 그대로 동작하고 다음 마이너에서 빠진다. 둘 다 주면 `onValueChange`만 부른다. 타입에서 핸들러가 필수가 아니게 됐다.
-  - 앱이 할 일: `<DatePicker onChange={…}>`를 `onValueChange={…}`로 바꾼다. 받는 값(Date·DateRange·undefined)은 같다.
-- **ref는 prop으로 받는다 — 타입 표기 변경, 런타임 동일** (목표 49 · DESIGN.md §6.3). `forwardRef`로 감쌌던 22개(Button·Input·
-  Textarea·Checkbox·FormRow·SideNavItem, Select 부품 7개, DropdownMenu 부품 9개)를 ref를 prop으로 받는 함수 부품으로 바꿨다.
-  DOM에 props를 펼치면서 ref 타입이 없던 14개(Card·CardHeader·CardTitle·CardBody·CardFooter·StatusChip·AppShell·SideNav·
-  SideNavGroup·PageHeader·DropdownMenuShortcut·Field·StatTile·Pagination)는 그 요소의 ref 타입을 받는다(StatTile은 루트가 div·a로
-  바뀌어 `HTMLElement`). React 19는 실행 중에 이미 ref를 넘기고 있어 막혀 있던 것은 타입뿐이다. 같은 부품 트리의 SSR HTML이
-  바꾸기 전 소스(ddef6c1)와 바이트 단위로 같고, 헤드리스 브라우저에서 ref 27곳이 같은 요소에 붙는다. 예외 하나: Pagination은 포커스
-  복구용 내부 ref가 앱 ref를 덮어써 버렸는데(`as any`로 넘긴 경우) 이제 둘을 합친다.
-  - 앱이 할 일: 없다. `React.ComponentRef<typeof Button>`·`React.ComponentProps<typeof Button>`은 그대로 쓴다. 부품 타입을
-    `ForwardRefExoticComponent`로 적어 둔 코드가 있다면 `ComponentProps`·`ComponentRef`로 바꾼다.
 
 그 밖의 시각 보정(Select 계열 트리거 통일·다크 대화상자 막·달력 날짜 색·메뉴 글자 시작 정렬 등)은 **고침**에 있다.
 코드 수정은 필요 없지만 시각 기준선에는 함께 잡힌다.
@@ -258,9 +286,6 @@
   간격은 gap · 미오픈 메뉴는 "출시 예정" · Pagination의 진행 표시는 표 스켈레톤이 맡는다.
 - Select: 필터 줄에서는 폭을 지정한다.
 - DatePicker: Field 밖 오류는 아래로 20px 걸치므로 필터 툴바 아래는 20px 이상 띄운다.
-- DatePicker: "onValueChange로 받은 확정 날짜를 쓴다"(이전 onChange). props에 `onValueChange`가 더해지고 `onChange`는 선택이다.
-- 상속 표기(`extends`) 37곳: `React.*HTMLAttributes<…>`·`ComponentPropsWithoutRef<…>` → `React.ComponentProps<…>`(ref 포함).
-  StatTile은 `React.RefAttributes<HTMLElement>`를 더했다. 카탈로그 88,863 → 88,627바이트(목표 49).
 - Toaster: 포커스가 들어간 알림은 Escape로 닫힌다.
 - ClampText: "DataTable 셀에 쓰지 마라" — 셀이 말줄임과 전체 값 `title`을 이미 제공한다.
 - DataTable: "긴 글 열을 ClampText로 감싸지 마라" · 빠진 행의 선택 자동 해제 · 화면 라벨이 원본과 다른 열(상태 등)은
@@ -293,9 +318,6 @@
 - 문서 미리보기가 화면 높이를 채우지 않는다(Combobox 문서 15,471 → 4,635px). 테스트용 스크롤 여유 높이(`180vh`)는 스토리
   화면에서만 준다. Guide 문서의 Tour·Hint는 iframe에 격리해 본문을 덮지 않는다.
 - 도그푸딩 기록(02 마케팅·03 물류·04 CMS·05 상품 관리)과 UI 요소 준비도 검토(`docs/research/ui-coverage-review.md`).
-- DESIGN.md §6.3 공개 API 규약(목표 49) — 제어/비제어 쌍 `X`·`defaultX`·`onXChange`, 값 알림 `on{X}Change`와 DOM 전용 `onChange`,
-  ref prop, 루트 `index.ts` 이름 나열, deprecated 별칭으로 이름 바꾸기. 조사 스냅숏 `docs/research/api-conventions-survey.md`.
-  스토리·문서 예제의 DatePicker를 `onValueChange`로 바꿨다.
 
 ### 내부
 
@@ -326,10 +348,6 @@
   ci-734862c(하네스 31개 384.7초). pre-push는 origin/main 대비 `.github/**`만 바뀐 푸시면 브라우저 하네스를 건너뛴다.
 - CI: 게이트 제한 시간 verify 20 → 45분·release 25 → 60분, 실행 기반과 액션 런타임 정리.
 - 개발 의존성 `pretendard` 1.3.9 — Storybook도 소비 앱과 같은 CSS import로 글꼴을 로드한다.
-- 공개 API 규약 검사(목표 49): `scripts/check-api-conventions.mjs`가 매니페스트·루트 `index.ts`·소스를 읽어 DESIGN.md §6.3을
-  검사하고 `pnpm test`·pre-commit(`packages/ui/src/lib/api-conventions.test.mjs`)에서 돈다. 기존 위반 11건은
-  `scripts/api-conventions-allow.mjs`에 이유와 함께 두며, 고친 항목이 목록에 남으면 실패한다. ref 타입은
-  `ref-props.typecheck.tsx`가 고정한다. 루트 `index.ts`의 `export *` 27곳을 이름 나열로 바꿨다(공개 이름 224개 그대로).
 
 ## 0.3.0 — 2026-11-21
 
