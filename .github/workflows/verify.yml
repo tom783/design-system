@@ -71,7 +71,7 @@ jobs:
         run: |
           pnpm tokens
           pnpm mcp:build
-          git diff --exit-code -- packages/tokens docs/research/tokens.json packages/mcp/manifest.json
+          git diff --exit-code -- packages/tokens docs/research/tokens.json packages/ui/src/lib/runtime-tokens.ts packages/mcp/manifest.json
       # 이 저장소는 ESLint를 도입하지 않는다. 소유한 의존 경계 검사가 정적 lint 역할을 한다.
       - name: 정적 의존 경계 검사
         run: >-
@@ -81,6 +81,24 @@ jobs:
         run: pnpm typecheck
       - name: 단위 테스트
         run: pnpm test
+      - name: 앱 번들 크기 회귀 검사
+        shell: bash
+        run: |
+          set +e
+          pnpm size 2>&1 | tee /tmp/bundle-size.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary="$(sed -n '/^✗ 번들 크기 검사 실패/,$p' /tmp/bundle-size.log)"
+            if [ -z "$summary" ]; then
+              summary="$(tail -n 20 /tmp/bundle-size.log)"
+            fi
+            summary=${summary//'%'/'%25'}
+            summary=${summary//$'\r'/'%0D'}
+            summary=${summary//$'\n'/'%0A'}
+            echo "::error title=앱 번들 크기 검사 실패::$summary"
+            exit "$status"
+          fi
 
   # Node 전용 하네스는 한 러너에서 순차 실행한다. pack-verify의 /tmp/s2와 생성 파일을
   # 다른 하네스가 동시에 읽지 않게 하면서, run-plan의 그룹 분류를 단일 진실 원천으로 쓴다.
