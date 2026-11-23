@@ -7416,6 +7416,174 @@
       "source": "components/data-table/selection-column.tsx"
     },
     {
+      "name": "FilterBar",
+      "category": "table",
+      "purpose": "목록 위에 저장된 보기·검색·필터 트리거와 적용 필터 칩을 한 툴바로 둔다.",
+      "useWhen": [
+        "주문·상품 목록 위에 검색창과 적용 조건 칩을 둘 때"
+      ],
+      "dont": [
+        "적용 필터 칩을 여러 줄로 늘어놓지 마라",
+        "조건 편집 UI는 앱이 filterContent로 넣는다"
+      ],
+      "rules": [
+        {
+          "text": "views·view·onViewChange는 맨 앞 저장된 보기 Select다. viewChanged면 변경됨과 보기 저장(onSaveView)을 보인다.",
+          "source": "4.2"
+        },
+        {
+          "text": "filters는 {id,label} 칩이다. 칩은 한 줄이고 넘치면 +N 팝오버다. 칩 해제·초기화는 onFiltersChange로 남은 목록을 알린다.",
+          "source": "4.2"
+        },
+        {
+          "text": "0개면 트리거는 필터, 초기화는 숨고 칩 줄 높이는 남는다. 해제 뒤 포커스는 다음 칩, 없으면 필터 트리거다.",
+          "source": "4.2"
+        },
+        {
+          "text": "filterContent는 트리거 팝오버 내용이다. 없으면 filterOpen·onFilterOpenChange만 바뀌어 앱이 Sheet 등을 연다.",
+          "source": "4.2"
+        },
+        {
+          "text": "바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다.",
+          "source": "4.2"
+        }
+      ],
+      "related": [
+        "DataTable",
+        "Select",
+        "Input"
+      ],
+      "keywords": [
+        "필터 바",
+        "필터 칩",
+        "적용된 필터",
+        "저장된 보기",
+        "목록 툴바",
+        "검색 필터 툴바",
+        "조건 칩",
+        "filter bar",
+        "filter chips"
+      ],
+      "source": "components/filter-bar/filter-bar.tsx",
+      "props": [
+        {
+          "name": "views",
+          "type": "readonly FilterBarView[]",
+          "doc": "저장된 보기. 주면 툴바 맨 앞에 Select 로 놓인다."
+        },
+        {
+          "name": "view",
+          "type": "string"
+        },
+        {
+          "name": "defaultView",
+          "type": "string"
+        },
+        {
+          "name": "onViewChange",
+          "type": "((view: string) => void)"
+        },
+        {
+          "name": "viewChanged",
+          "type": "boolean",
+          "doc": "고른 보기의 저장된 조건과 지금 조건이 다른지. 앱이 비교해 준다. true 면 '변경됨'과 보기 저장을 보인다."
+        },
+        {
+          "name": "onSaveView",
+          "type": "(() => void)",
+          "doc": "보기 저장 버튼을 눌렀다. viewChanged 일 때만 버튼이 보인다."
+        },
+        {
+          "name": "query",
+          "type": "string"
+        },
+        {
+          "name": "defaultQuery",
+          "type": "string"
+        },
+        {
+          "name": "onQueryChange",
+          "type": "((query: string) => void)"
+        },
+        {
+          "name": "searchLabel",
+          "type": "string",
+          "doc": "검색 입력의 접근 이름. 기본 '검색'."
+        },
+        {
+          "name": "searchPlaceholder",
+          "type": "string"
+        },
+        {
+          "name": "filters",
+          "type": "readonly FilterBarFilter[]",
+          "doc": "적용된 필터 — 칩 하나가 조건 하나다. 칩 해제·초기화는 onFiltersChange 로 남은 목록을 알린다."
+        },
+        {
+          "name": "defaultFilters",
+          "type": "readonly FilterBarFilter[]"
+        },
+        {
+          "name": "onFiltersChange",
+          "type": "((filters: FilterBarFilter[]) => void)"
+        },
+        {
+          "name": "filterContent",
+          "type": "ReactNode",
+          "doc": "필터 트리거가 여는 패널의 내용(조건 편집). 없으면 트리거는 filterOpen 만 바꾸고 앱이 Sheet 등을 연다."
+        },
+        {
+          "name": "filterOpen",
+          "type": "boolean"
+        },
+        {
+          "name": "defaultFilterOpen",
+          "type": "boolean"
+        },
+        {
+          "name": "onFilterOpenChange",
+          "type": "((open: boolean) => void)"
+        }
+      ],
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "slots": [
+        "button",
+        "filter-bar",
+        "filter-bar-chip",
+        "filter-bar-chip-label",
+        "filter-bar-chip-remove",
+        "filter-bar-chips",
+        "filter-bar-controls",
+        "filter-bar-empty",
+        "filter-bar-measure",
+        "filter-bar-more",
+        "filter-bar-more-content",
+        "filter-bar-more-title",
+        "filter-bar-panel",
+        "filter-bar-reset",
+        "filter-bar-save-view",
+        "filter-bar-search",
+        "filter-bar-trigger",
+        "filter-bar-view",
+        "filter-bar-view-changed",
+        "input",
+        "input-action",
+        "input-control",
+        "input-leading-icon",
+        "input-unit",
+        "select-content",
+        "select-icon",
+        "select-item",
+        "select-scroll-down-button",
+        "select-scroll-up-button",
+        "select-trigger",
+        "select-value",
+        "select-viewport"
+      ]
+    },
+    {
       "name": "ChartFrame",
       "category": "chart",
       "purpose": "차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",

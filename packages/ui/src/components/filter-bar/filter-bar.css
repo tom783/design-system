@@ -1,0 +1,63 @@
+/* 필터 바 — DESIGN.md §4.2 · 0.5.0 목록 툴바 규격(Figma 174:2). 새 토큰 없이 중립 칩·버튼·입력·레이어 토큰만 쓴다.
+   Tailwind 유틸리티와 섞지 않는다(@layer components 는 utilities 에 진다 — 칩 모양은 여기서 전부 정한다). */
+@layer components {
+  .ds-filter-bar { container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+  .ds-filter-bar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); min-width: 0; }
+  .ds-filter-bar-view { display: flex; align-items: center; gap: var(--space-8); min-width: 0; }
+  .ds-filter-bar-dot { color: var(--text-tertiary); }
+  /* 검색 칸 — 넓으면 240px 에서 시작해 320px(기존 목록 툴바 w-80)까지 자란다. 보기 저장이 붙어도 한 줄에 남게 200px 까지 준다. */
+  .ds-filter-bar-search { flex: 1 1 240px; min-width: 200px; max-width: 320px; }
+
+  /* 칩 줄 — 언제나 한 줄. 0개여도 32px(control-h-sm)을 남겨 표 시작점을 고정한다. */
+  .ds-filter-bar-chips { position: relative; display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-8); min-width: 0; min-height: var(--control-h-sm); }
+  .ds-filter-bar-list { display: flex; align-items: center; gap: var(--space-8); min-width: 0; margin: 0; padding: 0; list-style: none; }
+  .ds-filter-bar-empty { color: var(--text-tertiary); font-size: var(--text-caption); line-height: var(--text-caption-lh); }
+
+  /* 칩 — 중립 칩(status-neutral) 바탕. 해제 버튼은 24px 표적(WCAG 2.5.8)이라 칩 높이는 28px 이다. */
+  .ds-filter-bar-chip {
+    display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; max-width: 20rem; height: 28px;
+    padding-inline: var(--space-12) 2px; border-radius: var(--radius-full);
+    background: var(--status-neutral-bg); color: var(--status-neutral-fg);
+    font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: var(--text-caption-weight); white-space: nowrap;
+  }
+  .ds-filter-bar-chip > [data-slot="filter-bar-chip-label"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .ds-filter-bar-chip > [data-slot="filter-bar-chip-remove"] {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 24px; height: 24px;
+    border-radius: var(--radius-full); color: inherit; cursor: pointer;
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+  .ds-filter-bar-chip > [data-slot="filter-bar-chip-remove"]:hover { background: var(--bg-surface); }
+  .ds-filter-bar-chip svg { width: 14px; height: 14px; }
+
+  /* `+N` — 칩과 같은 면. 팝오버가 열린 동안은 포커스 링이 아니라 눌린 상태(반전)로 보인다(review-r2 1). */
+  .ds-filter-bar-more {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; height: 28px; min-width: 28px;
+    padding-inline: var(--space-8); border: 1px solid transparent; border-radius: var(--radius-full);
+    background: var(--status-neutral-bg); color: var(--status-neutral-fg);
+    font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: 600; white-space: nowrap; cursor: pointer;
+  }
+  .ds-filter-bar-more:hover { border-color: var(--border-input); }
+  .ds-filter-bar-more[aria-expanded="true"] { background: var(--status-neutral-fg); color: var(--bg-surface); border-color: var(--status-neutral-fg); }
+
+  /* 폭 측정 사본 — 0×0 클리퍼 안에서 제 폭으로 놓인다. 스크롤 영역을 늘리지 않는다. */
+  .ds-filter-bar-measure { position: absolute; top: 0; left: 0; display: flex; gap: var(--space-8); width: 0; height: 0; overflow: hidden; visibility: hidden; }
+  .ds-filter-bar-measure > * { flex-shrink: 0; }
+
+  /* 떠 있는 레이어만 그림자를 쓴다(§5). */
+  .ds-filter-bar-more-content, .ds-filter-bar-panel {
+    z-index: 50; max-width: calc(100vw - var(--space-16)); border: 1px solid var(--border-default); border-radius: var(--radius-lg);
+    background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-overlay);
+  }
+  .ds-filter-bar-more-content { min-width: 200px; width: max-content; max-width: min(320px, calc(100vw - var(--space-16))); padding: var(--space-12) var(--space-16) var(--space-16); }
+  .ds-filter-bar-more-title { margin: 0 0 var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); font-weight: 600; }
+  .ds-filter-bar-more-list { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); margin: 0; padding: 0; list-style: none; }
+  .ds-filter-bar-more-list .ds-filter-bar-chip { max-width: 100%; }
+  .ds-filter-bar-panel { min-width: 280px; padding: var(--space-16); }
+
+  /* 좁은 바(720px 미만): 1줄 보기·필터·보기 저장, 2줄 검색 전체 폭, 3줄 칩.
+     720 = 한 줄에 놓이는 최소 폭(보기 160 + 변경됨 66 + 검색 200 + 필터 74 + 보기 저장 84 + 간격 40 = 624)에
+     여유를 둔 값. 그 아래에서 검색이 200px 로 눌리기 전에 줄을 나눈다. */
+  @container (max-width: 719.98px) {
+    .ds-filter-bar-search { order: 1; flex-basis: 100%; min-width: 0; max-width: none; }
+  }
+}

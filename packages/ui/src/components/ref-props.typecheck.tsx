@@ -13,6 +13,7 @@ import { Pagination } from './pagination';
 import { StatTile } from './stat-tile/stat-tile';
 import { SelectTrigger, SelectItem } from './select';
 import { DropdownMenuItem, DropdownMenuShortcut } from './dropdown-menu';
+import { FilterBar } from './filter-bar';
 
 const button = React.createRef<HTMLButtonElement>();
 const input = React.createRef<HTMLInputElement>();
@@ -43,6 +44,7 @@ void [
   <SelectTrigger ref={button} />,
   <SelectItem ref={div} value="a">가</SelectItem>,
   <DropdownMenuItem ref={div}>복사</DropdownMenuItem>,
+  <FilterBar ref={div} />,
   <DropdownMenuShortcut ref={span}>⌘C</DropdownMenuShortcut>,
 ];
 

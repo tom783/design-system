@@ -268,6 +268,17 @@ const intents = [
     "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다."
   ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip','Pagination'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
   entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6',[],[],[],['DataTable'],['선택 열 식별자']),
+  entry('FilterBar','table','목록 위에 저장된 보기·검색·필터 트리거와 적용 필터 칩을 한 툴바로 둔다.',
+    ['주문·상품 목록 위에 검색창과 적용 조건 칩을 둘 때'],
+    ['적용 필터 칩을 여러 줄로 늘어놓지 마라','조건 편집 UI는 앱이 filterContent로 넣는다'],'4.2',[
+      'views·view·onViewChange는 맨 앞 저장된 보기 Select다. viewChanged면 변경됨과 보기 저장(onSaveView)을 보인다.',
+      'filters는 {id,label} 칩이다. 칩은 한 줄이고 넘치면 +N 팝오버다. 칩 해제·초기화는 onFiltersChange로 남은 목록을 알린다.',
+      '0개면 트리거는 필터, 초기화는 숨고 칩 줄 높이는 남는다. 해제 뒤 포커스는 다음 칩, 없으면 필터 트리거다.',
+      'filterContent는 트리거 팝오버 내용이다. 없으면 filterOpen·onFilterOpenChange만 바뀌어 앱이 Sheet 등을 연다.',
+      '바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다.'
+    ],['views','view','defaultView','onViewChange','viewChanged','onSaveView','query','defaultQuery','onQueryChange','searchLabel','searchPlaceholder','filters','defaultFilters','onFiltersChange','filterContent','filterOpen','defaultFilterOpen','onFilterOpenChange'],
+    ['filter-bar','filter-bar-controls','filter-bar-search','filter-bar-trigger','filter-bar-chips','filter-bar-chip','filter-bar-chip-remove','filter-bar-more','filter-bar-reset'],
+    ['DataTable','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','filter bar','filter chips']),
   entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
     "state로 loading·empty·error를 구분해 준다."
   ],['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),

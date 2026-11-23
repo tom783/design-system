@@ -1,6 +1,6 @@
 {
   "description": "which_component 정답 세트(R49). 실제 요청 문장의 핵심 100문항과 정답 부품 하나. 질의에 컴포넌트 이름을 넣지 않는다(이름 일치 +1000점이 정확도를 부풀린다). 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. baseline 은 이 세트를 만든 날 현재 matchComponents 의 실측이며, 그 아래로 떨어지면 docs/qa/which-component-golden.test.mjs 가 실패한다. 올라가면 baseline 을 함께 올린다.",
-  "baseline": { "measuredAt": "2026-11-23", "top1": 57, "top3": 77 },
+  "baseline": { "measuredAt": "2026-11-23", "top1": 61, "top3": 81 },
   "cases": [
     { "query": "주문 목록을 표로 보여주고 열 기준으로 정렬하고 싶어", "expected": "DataTable", "lang": "ko" },
     { "query": "매장 카드 목록을 불러오는 동안 카드 모양 자리 표시", "expected": "CardSkeleton", "lang": "ko" },
@@ -106,6 +106,10 @@
     { "query": "처음 가입한 사용자에게 화면 사용법을 단계별로 안내", "expected": "Tour", "lang": "ko" },
     { "query": "상품 사진을 누르면 크게 확대해서 보기", "expected": "MediaViewer", "lang": "ko" },
     { "query": "상품 설명이 길면 세 줄만 보이고 더보기", "expected": "ClampText", "lang": "ko" },
-    { "query": "고급 검색 조건을 접어두기", "expected": "Collapsible", "lang": "ko" }
+    { "query": "고급 검색 조건을 접어두기", "expected": "Collapsible", "lang": "ko" },
+    { "query": "목록 위에 적용된 필터를 칩으로 보여주고 하나씩 지우기", "expected": "FilterBar", "lang": "ko" },
+    { "query": "저장된 보기와 검색창, 필터 버튼을 한 줄에 놓는 목록 툴바", "expected": "FilterBar", "lang": "ko" },
+    { "query": "필터가 많으면 +3처럼 접어서 보여주는 칩 줄", "expected": "FilterBar", "lang": "ko" },
+    { "query": "filter chips above the order table", "expected": "FilterBar", "lang": "en" }
   ]
 }

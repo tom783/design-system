@@ -98,9 +98,10 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
     }
   }
   // R49: 리소스는 저장 형태 대신 선택 색인을 보낸다. 색인 실측 23,191B + 309B. 목록 19,873B(FormRow 포함) + 77B.
-  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500);
+  // 목표 49 FilterBar 색인 +362B, 목록 +206B.
+  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362);
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
-  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950);
+  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206);
   assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);
   // 2026-11-22 표 선택 행 토큰(bg-selected-row) 추가: 토큰 67,503B + 297B. 운영 상한 80KB 는 유지한다.
   assert.ok(Buffer.byteLength(JSON.stringify(manifest.tokens)) <= 67_800);
