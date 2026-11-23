@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog, designSections } from '../../docs/research/mcp-build.mjs';
-import { restoreComponent, listComponents, getComponent } from './catalog.mjs';
+import { restoreComponent, listComponents, getComponent, componentIndex } from './catalog.mjs';
+import { BUDGETS, RESERVE_FAMILIES, measureResponses } from './budget.mjs';
 import intents, { principles } from '../../docs/research/component-intent.mjs';
 const data = JSON.parse(await readFile(new URL('../../docs/research/tokens.json', import.meta.url), 'utf8'));
 const design = await readFile(new URL('../../DESIGN.md', import.meta.url), 'utf8');
@@ -96,8 +97,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
       if (!prop.required) assert.ok(!prop.type.endsWith(compact.derived.optionalTypeSuffix));
     }
   }
-  // FormRow(2026-11-22): 카탈로그 88,651B + 299B, 목록 19,870B + 80B. 운영 예산은 유지한다.
-  assert.ok(Buffer.byteLength(JSON.stringify(compact)) <= 88_950);
+  // R49: 리소스는 저장 형태 대신 선택 색인을 보낸다. 색인 실측 23,191B + 309B. 목록 19,873B(FormRow 포함) + 77B.
+  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500);
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
   assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950);
   assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);
@@ -159,64 +160,94 @@ test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 �
   assert.deepEqual(button.extends, components.find((c) => c.name === 'Button').extends);
   assert.ok(manifest.components.every((c) => !Object.hasOwn(c, 'propNames')));
 });
-// 다섯 응답 예산 모두 compact UTF-8 기준으로 정확한 경계와 +1바이트를 검사한다.
-test('크기 예산 다섯 개는 경계값을 허용하고 1바이트 초과를 차단', (t) => {
-  t.mock.method(console, 'error', () => {});
-  const fixture = () => {
-    const resource = compactCatalog([{ name: '테스트', kind: 'component', purpose: '', source: 'packages/ui/src/test.tsx',
-      props: [], extends: [], slots: [], import: "import { 테스트 } from '@s2life/ui';" }]);
-    return { resource, manifest: { ...resource, tokens: [{}], principles: [{}] } };
-  };
-  const bytes = value => Buffer.byteLength(JSON.stringify(value));
-  const scenarios = [
-    [90_000, f => f.resource, f => f.resource, 'padding'],
-    [80_000, f => f.manifest.tokens, f => f.manifest.tokens[0], 'padding'],
-    [8_000, f => ({ rules: f.manifest.principles }), f => f.manifest.principles[0], 'padding'],
-    [24_000, f => listComponents(f.manifest), f => f.manifest.components[0], 'purpose'],
-    [6_000, f => getComponent(f.manifest, f.manifest.components[0]), f => f.manifest.components[0], 'detail'],
-  ];
-  for (const [limit, response, target, key] of scenarios) {
-    const f = fixture();
-    target(f)[key] = '';
-    target(f)[key] = 'x'.repeat(limit - bytes(response(f)));
-    assert.equal(bytes(response(f)), limit);
-    // 목록 경계는 여러 항목 합산 예산이다. 개별 상세 예산에 먼저 걸리지 않게 나눈다.
-    if (limit === 24_000) {
-      f.manifest.components[0].purpose = '';
-      f.manifest.components = Array.from({ length: 8 }, (_, i) => ({ ...f.manifest.components[0], name: `Test${i}`, purpose: '' }));
-      const remaining = limit - bytes(response(f));
-      for (let i = 0; i < 8; i++) f.manifest.components[i].purpose = 'x'.repeat(Math.floor(remaining / 8) + (i < remaining % 8 ? 1 : 0));
-      assert.equal(bytes(response(f)), limit);
-    }
-    assert.doesNotThrow(() => assertSizeBudget(f.resource, f.manifest), `허용 ${limit}`);
-    if (limit === 24_000) f.manifest.components[0].purpose += 'x';
-    else target(f)[key] += 'x';
-    assert.equal(bytes(response(f)), limit + 1);
-    assert.throws(() => assertSizeBudget(f.resource, f.manifest), /크기 예산 초과/);
-  }
-  const f = fixture();
-  f.resource.padding = 'x'.repeat(90_000 - bytes({ ...f.resource, padding: '' }));
-  f.resource.padding = f.resource.padding.slice(0, -2) + '가';
-  assert.equal(bytes(f.resource), 90_001);
-  assert.throws(() => assertSizeBudget(f.resource, f.manifest), /크기 예산 초과/);
+// R49 예산: 요약(색인·목록)은 항목당·전체·큰 묶음 예약, 상세·토큰·규칙은 고정 상한. 모두 compact UTF-8 로
+// 정확한 경계는 통과하고 +1바이트는 막는다. 검사 하나씩 떼어 보려고 나머지 상한은 넉넉하게 둔다.
+const entry = (name, extra = {}) => ({ name, kind: 'component', purpose: '', source: 'packages/ui/src/test.tsx',
+  props: [], extends: [], slots: [], import: `import { ${name} } from '@s2life/ui';`, ...extra });
+const manifestOf = entries => ({ ...compactCatalog(entries), tokens: [], principles: [] });
+const loose = { index: { total: 1e9, entry: 1e9 }, list: { total: 1e9, entry: 1e9 }, detail: 1e9, tokens: 1e9, rules: 1e9 };
+const bytes = value => Buffer.byteLength(JSON.stringify(value));
+const quiet = { log: () => {} };
+// 응답 크기가 정확히 target 이 되도록 한 문자열 필드를 채운다(ASCII 1바이트씩).
+function fill(manifest, response, set, target) {
+  set(manifest, '');
+  set(manifest, 'x'.repeat(target - bytes(response(manifest))));
+  assert.equal(bytes(response(manifest)), target);
+}
+
+test('R49 예산 수치는 문서의 구조와 같다', () => {
+  assert.deepEqual(BUDGETS, { index: { total: 40_000, entry: 800 }, list: { total: 36_000, entry: 320 }, detail: 6_000, tokens: 80_000, rules: 8_000 });
+  assert.equal(RESERVE_FAMILIES, 4);
 });
 
-test('전체 저장 크기는 응답 예산과 무관하며 토큰·규칙의 UTF-8 초과를 차단한다', t => {
-  t.mock.method(console, 'error', () => {});
-  const resource = compactCatalog([]);
-  const manifest = { ...resource, tokens: [], principles: [], padding: 'x'.repeat(160_001) };
-  assert.doesNotThrow(() => assertSizeBudget(resource, manifest));
-  const bytes = value => Buffer.byteLength(JSON.stringify(value));
-  for (const [key, limit, response] of [
-    ['tokens', 80_000, () => manifest.tokens],
-    ['principles', 8_000, () => ({ rules: manifest.principles })],
-  ]) {
-    manifest[key] = [{ text: '' }];
-    manifest[key][0].text = 'x'.repeat(limit - bytes(response()) - 2) + '가';
-    assert.equal(bytes(response()), limit + 1);
-    assert.throws(() => assertSizeBudget(resource, manifest), /크기 예산 초과/);
-    manifest[key] = [];
+test('R49 요약 응답: 항목당 상한과 전체 상한은 경계를 허용하고 1바이트 초과를 막는다', () => {
+  const purpose = (m, value) => { m.components[0].purpose = value; };
+  for (const [kind, response] of [['index', m => componentIndex(m).components[0]], ['list', m => listComponents(m).components[0]]]) {
+    const m = manifestOf([entry('테스트')]);
+    const budgets = { ...loose, [kind]: { total: 1e9, entry: 500 } };
+    fill(m, response, purpose, 500);
+    assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets, reserve: 0 }), `${kind} 항목 500B`);
+    m.components[0].purpose += 'x';
+    assert.throws(() => assertSizeBudget(m, { ...quiet, budgets, reserve: 0 }), /항목 테스트 501바이트 > 500바이트/);
   }
+  for (const [kind, response] of [['index', componentIndex], ['list', listComponents]]) {
+    const m = manifestOf([entry('가'), entry('나')]);
+    const budgets = { ...loose, [kind]: { total: 900, entry: 1e9 } };
+    fill(m, response, purpose, 900);
+    assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets, reserve: 0 }), `${kind} 전체 900B`);
+    m.components[0].purpose += '가';
+    assert.equal(bytes(response(m)), 903, 'UTF-8 바이트로 잰다');
+    assert.throws(() => assertSizeBudget(m, { ...quiet, budgets, reserve: 0 }), /전체 903바이트 > 900바이트/);
+  }
+});
+
+test('R49 예약: 가장 큰 가족 N개를 더 받을 여유가 없으면 상한 안이어도 막는다', () => {
+  const m = manifestOf([entry('Root', { category: 'layout', useWhen: ['쓸 때'], dont: ['금지'], parts: ['RootPart'] }), entry('RootPart', { partOf: 'Root' }), entry('Solo')]);
+  for (const kind of ['index', 'list']) {
+    const summary = measureResponses(m, { budgets: loose, reserve: 4 }).summaries[kind === 'index' ? 0 : 1];
+    assert.equal(summary.largestFamily.name, 'Root');
+    assert.equal(summary.largestFamily.count, 2);
+    const exact = { ...loose, [kind]: { total: summary.projected, entry: 1e9 } };
+    assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets: exact, reserve: 4 }));
+    const short = { ...loose, [kind]: { total: summary.projected - 1, entry: 1e9 } };
+    assert.throws(() => assertSizeBudget(m, { ...quiet, budgets: short, reserve: 4 }), /예약 부족: 가장 큰 가족 4개/);
+    assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets: short, reserve: 0 }), '예약을 빼면 같은 크기가 통과한다');
+  }
+});
+
+test('R49 예약 계산은 실제로 가장 큰 가족 4개를 복제해 넣은 응답 크기와 바이트까지 같다 — P3 4가족을 받는다', async () => {
+  const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+  const { summaries } = measureResponses(manifest);
+  for (const [summary, response] of [[summaries[0], m => componentIndex(m)], [summaries[1], m => listComponents(m)]]) {
+    const family = manifest.components.filter(c => (c.partOf ?? c.name) === summary.largestFamily.name);
+    const grown = { ...manifest, components: [...manifest.components, ...Array.from({ length: RESERVE_FAMILIES }, () => family).flat()] };
+    assert.equal(bytes(response(grown)), summary.projected, summary.label);
+    assert.ok(summary.projected <= summary.limit, `${summary.label}: 가장 큰 가족 ${RESERVE_FAMILIES}개를 더한 ${summary.projected}B > ${summary.limit}B`);
+  }
+  assert.doesNotThrow(() => assertSizeBudget(manifest, quiet), '현재 매니페스트는 예약까지 포함해 모든 예산 안이다');
+});
+
+test('R49 상세·토큰·규칙 상한과 저장 총량 무관', () => {
+  const m = manifestOf([entry('테스트')]);
+  fill(m, mm => getComponent(mm, mm.components[0]), (mm, v) => { mm.components[0].purpose = v; }, 700);
+  assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets: { ...loose, detail: 700 }, reserve: 0 }));
+  m.components[0].purpose += 'x';
+  assert.throws(() => assertSizeBudget(m, { ...quiet, budgets: { ...loose, detail: 700 }, reserve: 0 }), /get_component 최대 테스트 701바이트 > 700바이트/);
+  for (const [key, limit, response, label] of [
+    ['tokens', 'tokens', mm => mm.tokens, 'design://tokens'],
+    ['principles', 'rules', mm => ({ rules: mm.principles }), 'get_rules 전체'],
+  ]) {
+    const mm = manifestOf([entry('테스트')]);
+    mm[key] = [{ text: '' }];
+    fill(mm, response, (x, v) => { x[key][0].text = v; }, 300);
+    assert.doesNotThrow(() => assertSizeBudget(mm, { ...quiet, budgets: { ...loose, [limit]: 300 }, reserve: 0 }));
+    mm[key][0].text = mm[key][0].text.slice(0, -1) + '가';
+    assert.throws(() => assertSizeBudget(mm, { ...quiet, budgets: { ...loose, [limit]: 300 }, reserve: 0 }), new RegExp(`${label} 302바이트 > 300바이트`));
+  }
+  // 저장 형태(compact 카탈로그·매니페스트 전체)는 응답이 아니다. 아무리 커도 예산과 무관하다.
+  const big = { ...manifestOf([entry('테스트')]), padding: 'x'.repeat(500_000) };
+  big.derived = { ...big.derived, filler: 'x'.repeat(200_000) };
+  assert.doesNotThrow(() => assertSizeBudget(big, quiet));
 });
 
 test('DESIGN.md 절 번호는 유일하다 — 실제 문서', () => {

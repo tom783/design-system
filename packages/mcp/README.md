@@ -41,25 +41,78 @@ claude mcp add s2life -- npx -y @s2life/mcp
 선택 prop의 타입에는 `optionalTypeSuffix`를 붙인다. `optionalTypeSuffixExceptions`는
 이미 undefined를 포함해 검사기가 접미사를 생략한 타입 별칭 목록이며 실제 추출 결과에서 생성한다.
 `derived.description`에도 이 규칙이 있어 매니페스트만 읽어도 복원할 수 있다.
+이 저장 형태는 **어떤 응답으로도 그대로 나가지 않는다.** 서버가 `catalog.mjs`로 복원해서 보낸다.
 
-`design://components`는 `{ derived, components }` 형태로 이 규칙과 압축된 항목을 함께 보낸다.
-카탈로그 예산 **90,000바이트**는 이 객체 전체의 compact UTF-8 JSON을 잰다. `design://tokens`는 **80,000바이트**, `get_rules` 전체는 **8,000바이트**,
-복원한 `list_components` 응답은 **24,000바이트**, 부모 의도를 합친 `get_component` 한 건은 **6,000바이트**다.
-생성 시 다섯 응답 예산을 검사하며 하나라도 넘으면 exit 1로 차단하고, 가장 큰 상세 항목의 이름과 바이트를 출력한다.
+## `design://components` — 선택 색인 (R49)
 
-R42 재설정 근거: 사용자 제공 R41 후 전체 매니페스트는 154,853/160,000바이트다.
-전체 매니페스트는 어떤 MCP 응답으로도 한 번에 전송되지 않는다. 이미 예산이 있는
-카탈로그·목록·상세 외에 토큰 응답 67,002바이트와 규칙 전체 응답 4,141바이트가 남는다.
-저장 크기 상한을 제거하고 이 두 실제 응답에 각각 80,000·8,000바이트 예산을 둔다.
-카탈로그 90KB는 유지한다. 수치는 사용자가 제공한 기준 실측이며 현재 출력은 생성기로 재현한다.
+리소스는 `{ description, components }`다. 항목마다 `name`·`partOf`·`category`·`purpose`·`useWhen`·`dont`·`parts`를
+**값 그대로** 적고(없는 필드·빈 배열은 생략), 순서는 `list_components`와 같다. 복원 규칙이 필요 없다.
+props·slots·규칙과 부모에서 합친 의도는 `get_component`로 이름마다 조회한다(지연 조회).
 
-R37 재설정은 실제 소비 경로에 따른다. 도그푸딩 4(46턴)는 카탈로그를 읽지 않았고 목록 1회·추천 2회·상세 10회·규칙 1회를 호출했다.
-사용자 제공 R36b 실측은 카탈로그 76,925바이트, 목록 18,490바이트, 상세 최대 4,576바이트(DataTable)·중앙값 469바이트다.
-지침을 줄이는 대신 카탈로그 상한을 80,000→90,000으로 늘리고 자주 소비하는 두 응답에 별도 예산을 건다.
+목록형을 고른 이유: 이전 리소스는 저장 형태(`{ derived, components }`, 88,863B / 90,000B)라 읽는 쪽이 `derived` 규칙으로
+복원해야 했다. 복원형 전체는 **109,990B**로 상한을 이미 넘고, 항목마다 props·규칙이 붙어 부품이 늘 때마다 함께 커진다.
+그 상세는 `get_component`가 이미 이름별로 준다. 색인은 고르는 데 필요한 필드만 두어 **23,191B**(항목 평균 202B)다.
+도구 응답(`list_components`·`get_component` 등)은 바뀌지 않았다.
+
+## 응답 크기 예산 (R49)
+
+예산은 AI에게 실제로 가는 compact UTF-8 JSON을 잰다. 수치는 `budget.mjs` 한 곳에 있고
+생성기(`pnpm mcp:build`)·단위 테스트·`docs/qa/mcp-client-verify.mjs`가 같은 값을 읽는다.
+
+| 층 | 응답 | 지금(2026-11-23) | 상한 |
+|---|---|---:|---:|
+| 요약 — 항목 수에 비례 | `design://components` 색인 | 23,191B · 항목 최대 553B | 전체 **40,000** · 항목 **800** |
+| | `list_components` | 19,873B · 항목 최대 239B | 전체 **36,000** · 항목 **320** |
+| 상세 — 지연 조회, 개수와 무관 | `get_component` 한 건(부모 의도 포함) | 최대 4,576B(DataTable) | **6,000** |
+| 고정 — 컴포넌트 수와 무관 | `design://tokens` | 67,555B | **80,000** |
+| | `get_rules` 전체 | 4,327B | **8,000** |
+| 저장 — 응답 아님 | `manifest.json` 전체·저장 카탈로그 | 88,863B(compact) | 없음 |
+
+**큰 묶음 예약.** 요약 응답은 언제나 지금 가장 큰 가족(루트 + 부품, 현재 DropdownMenu 15항목: 색인 2,047B · 목록 2,783B)
+**4개**를 더 받을 여유를 남긴다. 여유가 그 아래로 떨어지면 상한에 닿기 전에 `mcp:build`가 실패한다 —
+그때 예산을 다시 정한다. 지금 예상치는 색인 31,379B / 40,000B(남은 자유 ≈ 평균 가족 20개),
+목록 31,005B / 36,000B(≈ 13개)이므로 P3(리치 텍스트 편집기·카테고리 트리·칸반·알림 센터)가 가장 큰 가족만 해도 들어간다.
+`build.test.mjs`가 가장 큰 가족 4개를 실제로 복제해 넣은 응답 크기와 예약 계산이 바이트까지 같은지 검사한다.
+
+항목당 상한은 지금 최대의 약 1.4배라 문장 하나가 비정상적으로 길어지면 그 항목 이름과 함께 걸린다.
+상한과 별개로 단위 테스트·하네스는 실측 + 약 300B의 **회귀 상한**을 둬 의도하지 않은 증가를 라운드마다 잡는다.
+
+이전 재설정: R37은 실제 소비 경로(도그푸딩 4: 목록 1회·추천 2회·상세 10회·규칙 1회, 카탈로그 0회)에 따라
+카탈로그 80,000→90,000과 목록 24,000·상세 6,000을 뒀고, R42는 저장 크기 상한을 없애고 토큰 80,000·규칙 8,000을 더했다.
+R49는 카탈로그 응답을 색인으로 바꿔 90,000 상한을 없애고, 목록 24,000→36,000과 항목당·예약 검사를 더했다.
+
 `get_component`·`list_components`는 `catalog.mjs`로 기본값·경로·import·타입 표기를 복원해
-이전 응답을 유지한다. 부품의 부모 의도 합치기는 기존과 동일하며 저장 항목은 변경하지 않는다.
-생성기는 모든 항목을 복원해 원본과 깊은 비교하고, 단위 테스트는 고정 기준선의 상세 8개·목록 99개를
+이전 응답을 유지한다. 생성기는 모든 항목을 복원해 원본과 깊은 비교하고, 단위 테스트는 고정 기준선의 상세 8개·목록 99개를
 실제 stdio 응답과 비교한다. 기준선은 `docs/qa/fixtures/get-component-baseline.json`이다.
+
+## 응답 불변 증명 (R49)
+
+저장 형태나 서버를 바꾸는 라운드는 기준 커밋의 서버와 새 서버를 나란히 띄워 응답 줄을 바이트로 대조한다.
+
+```sh
+node docs/qa/mcp-response-diff.mjs --base main \
+  --expect resources/list --expect "resources/read design://components" --report /tmp/diff.md
+```
+
+요청은 핸드셰이크·`tools/list`·`resources/list`·**양쪽 목록의 모든 `resources/read`**·모든 도구다.
+`get_component`·`get_token`은 양쪽 매니페스트의 모든 이름, `which_component`는 정답 세트·R38 전체 질의·모든 이름,
+`search_tokens`는 모든 분류·토큰 이름, `get_rules`는 모든 주제와 전체, 오류 경로까지 보낸다(약 1,360건).
+`--expect`에 적지 않은 키가 한 바이트라도 다르거나, 적었는데 같으면 exit 1이다.
+`docs/qa/compare-guidance-baseline.mjs`는 커밋된 기준선 파일끼리 비교하는 재승인 도구라 이 증명을 대신하지 못한다.
+
+## `which_component` 정답 세트 (R49)
+
+`docs/qa/fixtures/which-component-golden.json`은 실제 요청 문장의 핵심 100문항(한국어 83 · 영어 17)과 정답 부품 하나씩이다.
+선택 후보가 될 수 있는 55개 전부를 한 번 이상 정답으로 쓴다. 질의에 컴포넌트 이름을 넣지 않는다(이름 일치 +1000점).
+
+```sh
+node docs/qa/which-component-golden.mjs           # 정확도와 1위가 아닌 문항 표
+node docs/qa/which-component-golden.mjs --check   # 기준선 아래면 exit 1
+```
+
+2026-11-23 기준선: **top-1 52/100 · top-3 72/100**(한국어 52/83 · 72/83, 영어 0/17 · 0/17 — 키워드가 한국어뿐이다).
+`which-component-golden.test.mjs`가 `pnpm test`(= `pnpm verify`·pre-commit)에서 같은 판정을 한다.
+키워드·매칭을 고쳐 수치가 오르면 기준선을 함께 올린다.
 
 검증 명령:
 
@@ -67,6 +120,7 @@ R37 재설정은 실제 소비 경로에 따른다. 도그푸딩 4(46턴)는 카
 pnpm verify
 node --test packages/mcp/*.test.mjs
 node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs
+node docs/qa/mcp-client-verify.mjs
 ```
 
 `build.test.mjs`는 6가지 검증에 잘못된 입력을 주입한다. `server.test.mjs`는 실제 자식 프로세스의 stdin/stdout으로 통신하며 모든 출력 줄을 JSON으로 파싱하고, 요청하지 않은 메시지·알림 응답·프로세스 종료 상태까지 확인한다.

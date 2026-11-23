@@ -31,6 +31,19 @@ export function listComponents(manifest) {
     return { name, kind, purpose, import: statement, ...(partOf ? { partOf } : {}) };
   }) };
 }
+// design://components 는 사람·AI 가 복원 규칙 없이 읽는 선택 색인이다(R49).
+// 저장 형태({ derived, components })를 그대로 보내면 읽는 쪽이 derived 규칙으로 복원해야 하고,
+// 복원형 전체는 109,990B(2026-11-23 실측)로 항목마다 props·규칙이 붙어 개수에 비례해 커진다.
+// 고르는 데 필요한 필드만 두고 props·slots·규칙은 get_component 지연 조회로 넘긴다.
+export const INDEX_DESCRIPTION = "컴포넌트 선택 색인이다. 항목마다 이름·부모(partOf)·분류·용도·쓰는 때·금지·부품 목록을 그대로 적는다. 모든 항목은 import { 이름 } from '@s2life/ui'; 로 가져온다. props·slots·규칙과 부모에서 합친 의도는 get_component로 이름마다 조회한다.";
+const INDEX_FIELDS = ['name', 'partOf', 'category', 'purpose', 'useWhen', 'dont', 'parts'];
+export function componentIndex(manifest) {
+  return { description: INDEX_DESCRIPTION, components: manifest.components.map(entry => {
+    const component = restoreComponent(entry, manifest.derived, manifest.components);
+    return Object.fromEntries(INDEX_FIELDS.filter(field => component[field] !== undefined
+      && !(Array.isArray(component[field]) && component[field].length === 0)).map(field => [field, component[field]]));
+  }) };
+}
 export function getComponent(manifest, entry) {
   const component = restoreComponent(entry, manifest.derived, manifest.components);
   if (!component.partOf) return component;

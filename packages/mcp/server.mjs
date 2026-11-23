@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { matchComponents } from './match.mjs';
-import { listComponents, getComponent } from './catalog.mjs';
+import { listComponents, getComponent, componentIndex } from './catalog.mjs';
 
 const { version } = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
 
@@ -19,7 +19,7 @@ const definitions = [
 ].map(([name,title,description,inputSchema]) => ({ name,title,description,inputSchema }));
 const resources = [
   { uri: 'design://tokens', name: 'tokens', title: '전체 토큰', description: '생성된 토큰의 값·참조·용도·테마·클래스', mimeType: 'application/json' },
-  { uri: 'design://components', name: 'components', title: '컴포넌트 카탈로그', description: '공개 API와 선택 의도', mimeType: 'application/json' },
+  { uri: 'design://components', name: 'components', title: '컴포넌트 선택 색인', description: '모든 컴포넌트의 이름·분류·용도·쓰는 때·금지·부품 관계. props·규칙은 get_component로 조회', mimeType: 'application/json' },
   { uri: 'design://principles', name: 'principles', title: '하드 규칙', description: '주제별 규칙과 출처', mimeType: 'text/markdown' },
 ];
 class RpcError extends Error { constructor(code, message) { super(message); this.code = code; } }
@@ -82,7 +82,7 @@ function dispatch(manifest, method, params) {
       if (!isObject(params) || typeof params.uri !== 'string') invalid('resources/read에는 uri가 필요합니다.');
       const resource = resources.find((r) => r.uri === params.uri);
       if (!resource) throw new RpcError(-32002, `없는 리소스: ${params.uri}`);
-      const value = params.uri === 'design://tokens' ? manifest.tokens : params.uri === 'design://components' ? { derived: manifest.derived, components: manifest.components }
+      const value = params.uri === 'design://tokens' ? manifest.tokens : params.uri === 'design://components' ? componentIndex(manifest)
         : manifest.principles.map((p) => `- **${p.topic}** ${p.text} (${p.source})`).join('\n');
       return { contents: [{ uri: resource.uri, mimeType: resource.mimeType, text: typeof value === 'string' ? value : JSON.stringify(value) }] };
     }

@@ -4,6 +4,8 @@ import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
+import { componentIndex } from './catalog.mjs';
+import { BUDGETS } from './budget.mjs';
 
 const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
 const baseline = JSON.parse(await readFile(new URL('../../docs/qa/fixtures/get-component-baseline.json', import.meta.url), 'utf8'));
@@ -99,10 +101,9 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     const result = (await c.request('resources/read', { uri: resource.uri })).result.contents[0];
     assert.equal(result.uri, resource.uri); assert.equal(result.mimeType, resource.mimeType); assert.ok(result.text.length);
     if (result.uri === 'design://components') {
-      const catalog = JSON.parse(result.text);
-      assert.deepEqual(catalog, { derived: manifest.derived, components: manifest.components });
-      // FormRow(2026-11-22) 포함 실측 88,651바이트 + 여유 299바이트. 운영 상한 90KB는 유지한다.
-      assert.ok(Buffer.byteLength(result.text) <= 88_950, '복원 규칙까지 포함한 전송량을 잰다');
+      assert.equal(result.text, JSON.stringify(componentIndex(manifest)));
+      // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
+      assert.ok(Buffer.byteLength(result.text) <= 23_500, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -190,9 +191,39 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     name: 'FormRow', kind: 'component', purpose: '같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.',
     import: "import { FormRow } from '@s2life/ui';", partOf: 'Field',
   }] : [entry])] });
-  // 부품 조회가 보관 형태에 부모 필드나 기본값을 써 넣지 않았는지도 확인한다.
+  // 부품 조회가 보관 형태에 부모 필드나 기본값을 써 넣지 않았는지도 확인한다 — 조회 뒤 색인이 처음 그대로다.
   const resource = (await c.request('resources/read', { uri: 'design://components' })).result.contents[0];
-  assert.deepEqual(JSON.parse(resource.text), { derived: manifest.derived, components: manifest.components });
+  assert.equal(resource.text, JSON.stringify(componentIndex(manifest)));
+});
+
+test('R49: design://components 는 복원 규칙 없이 읽는 선택 색인이고 상세는 get_component 로 넘긴다', async (t) => {
+  const c = await client(t);
+  const listed = (await c.request('resources/list')).result.resources.find(r => r.uri === 'design://components');
+  assert.equal(listed.mimeType, 'application/json');
+  assert.match(listed.description, /get_component/);
+  const index = JSON.parse((await c.request('resources/read', { uri: 'design://components' })).result.contents[0].text);
+  assert.deepEqual(Object.keys(index), ['description', 'components']);
+  assert.match(index.description, /get_component/);
+  assert.match(index.description, /import \{ 이름 \} from '@s2life\/ui';/);
+  assert.equal(index.components.length, manifest.components.length);
+  assert.deepEqual(index.components.map(item => item.name), manifest.components.map(item => item.name), '목록과 같은 순서');
+  const allowed = ['name', 'partOf', 'category', 'purpose', 'useWhen', 'dont', 'parts'];
+  for (const item of index.components) {
+    const keys = Object.keys(item);
+    assert.deepEqual(keys, allowed.filter(key => keys.includes(key)), `${item.name}: 정해진 필드만 정해진 순서로`);
+    assert.ok(item.name && item.purpose, item.name);
+    assert.ok(item.partOf ? !item.category : item.category, `${item.name}: 루트는 분류, 부품은 부모를 적는다`);
+    for (const key of ['useWhen', 'dont', 'parts']) if (key in item) assert.ok(item[key].length, `${item.name}.${key}: 빈 배열은 생략`);
+  }
+  // 저장 형태의 축약(derived 규칙·짧은 출처·생략된 기본값)이 새지 않는다.
+  assert.ok(!('derived' in index) && !/sourceRoot|optionalTypeSuffix|kindDefault/.test(JSON.stringify(index)));
+  const select = index.components.find(item => item.name === 'Select');
+  const trigger = index.components.find(item => item.name === 'SelectTrigger');
+  assert.ok(select.parts.includes('SelectTrigger') && trigger.partOf === 'Select' && !('useWhen' in trigger));
+  assert.equal(index.components.find(item => item.name === 'SELECTION_COLUMN_ID').category, 'constant');
+  // 색인에 없는 상세는 같은 이름으로 get_component 에서 얻는다.
+  const detail = (await call(c, 'get_component', { name: 'SelectTrigger' })).result.structuredContent;
+  assert.ok(detail.props && detail.slots.includes('select-trigger') && detail.useWhen.length && detail.inheritedFrom === 'Select');
 });
 test('깨진 JSON 후 생존·이후 정상 처리·stdout 오염 없음', async (t) => {
   const c = await client(t);
@@ -224,10 +255,11 @@ test('R37 파일 업로드의 여섯 검색 의도·API와 실제 응답 예산'
     assert.equal(result.candidates[0].name, 'FileUpload');
   }
   const list = (await call(c, 'list_components', {})).result;
-  assert.ok(Buffer.byteLength(list.content[0].text) <= 24_000);
+  // 운영 상한은 budget.mjs 한 곳에서 읽는다(R49: 목록 24,000 → 36,000, 상세 6,000 유지).
+  assert.ok(Buffer.byteLength(list.content[0].text) <= BUDGETS.list.total);
   for (const component of manifest.components) {
     const detail = (await call(c, 'get_component', { name: component.name })).result;
-    assert.ok(Buffer.byteLength(detail.content[0].text) <= 6_000, component.name);
+    assert.ok(Buffer.byteLength(detail.content[0].text) <= BUDGETS.detail, component.name);
     assert.equal(detail.content[0].text, JSON.stringify(detail.structuredContent));
   }
   const upload = (await call(c, 'get_component', { name: 'FileUpload' })).result.structuredContent;

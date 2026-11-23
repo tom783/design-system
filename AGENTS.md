@@ -293,7 +293,8 @@ iframe 격리를 쓰는 스토리는 부모가 `viewMode=docs` 일 때 play 를 
 리치 텍스트 편집기 · 계층 카테고리 트리 · 칸반 보드 · 알림 센터 — P3(필요할 때).
 P1(검색 입력 R33 · 앱 셸 R34 · 페이지네이션 R35 · 옆 패널 R36 · 파일 업로드 R37)과
 P2(날짜+시간 R40 · KPI 타일 StatTile R41 · 세그먼트 R42 · 단계 표시 Steps R43)는 2026-11-22 완료.
-MCP 카탈로그는 88KB / 90KB — P3 부품을 넣기 전에 예산을 다시 정한다(응답 단위 예산은 R37·R42).
+MCP 응답 예산은 `packages/mcp/budget.mjs` 한 곳(R49) — `design://components` 선택 색인 23KB / 40KB · `list_components` 20KB / 36KB ·
+상세 한 건 6KB. 요약 응답은 가장 큰 가족 4개분 여유를 늘 남기고, 모자라면 `mcp:build` 가 실패한다(P3 4가족은 이 여유 안이다).
 근거와 순서는 `docs/research/ui-coverage-review.md` (2026-11-21).
 
 고유 CSS 클래스 37개는 R39에서 `ds-` 이름 공간으로 옮겼다. 새 CSS 클래스도 반드시 `ds-`로

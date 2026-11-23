@@ -6,7 +6,8 @@ import { API, SymbolFlags, SignatureKind } from 'typescript/unstable/sync';
 import * as ast from 'typescript/unstable/ast';
 import { checkBoundaries } from '../../scripts/check-boundaries.mjs';
 import intents, { principles } from './component-intent.mjs';
-import { restoreComponent, listComponents, getComponent } from '../../packages/mcp/catalog.mjs';
+import { restoreComponent } from '../../packages/mcp/catalog.mjs';
+import { assertSizeBudget } from '../../packages/mcp/budget.mjs';
 import { checkConsumerGuidance } from './consumer-guidance.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -215,20 +216,8 @@ export function validate({ components, intents, sections, tokens, expectedNames,
 // 처음에는 파일 크기를 쟀는데, 그건 서버가 보내는 양보다 53% 크다
 // (155.5KB vs 101.7KB). 아무도 읽지 않는 들여쓰기 때문에 게이트가 먼저 터진다.
 // 파일은 git 에서 읽기 쉽도록 pretty 로 두고, 재는 것은 compact 쪽이다.
-export function assertSizeBudget(catalog, manifest) {
-  const details = manifest.components.map(entry => [entry.name, Buffer.byteLength(JSON.stringify(getComponent(manifest, entry)))]);
-  const largest = details.reduce((max, item) => item[1] > max[1] ? item : max, ['없음', 0]);
-  const sizes = [
-    ['components (전송)', Buffer.byteLength(JSON.stringify(catalog)), 90_000],
-    ['design://tokens (전송)', Buffer.byteLength(JSON.stringify(manifest.tokens)), 80_000],
-    ['get_rules 전체 (전송)', Buffer.byteLength(JSON.stringify({ rules: manifest.principles })), 8_000],
-    ['list_components (전송)', Buffer.byteLength(JSON.stringify(listComponents(manifest))), 24_000],
-    [`get_component 최대 ${largest[0]} (전송)`, largest[1], 6_000],
-  ];
-  for (const [name, bytes, limit] of sizes)
-    console.error(`MCP 크기 ${name}: ${bytes}바이트 / ${limit}바이트 (${(bytes / 1000).toFixed(2)}KB / ${limit / 1000}KB)`);
-  if (sizes.some(([, bytes, limit]) => bytes > limit)) throw new Error('MCP 크기 예산 초과');
-}
+// 수치·구조(요약/상세/고정 + 큰 묶음 예약)는 packages/mcp/budget.mjs 한 곳에 있다(R49).
+export { assertSizeBudget };
 
 export function compactCatalog(catalog) {
   const optionalTypeSuffix = ' | undefined';
@@ -308,11 +297,11 @@ export async function build() {
     if (api.name === 'Button') api.props = api.props.filter((p) => p.name !== 'iconOnly');
     return { ...intent, ...api, import: `import { ${intent.name} } from '@s2life/ui';` };
   });
-  const resource = compactCatalog(catalog);
-  const manifest = { schemaVersion: 1, derived: resource.derived, tokens, components: resource.components, principles };
+  const stored = compactCatalog(catalog);
+  const manifest = { schemaVersion: 1, derived: stored.derived, tokens, components: stored.components, principles };
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
-  // 리소스 소비자도 스스로 복원할 수 있어야 하므로 derived 전송량까지 예산에 포함한다.
-  assertSizeBudget(resource, manifest);
+  // 저장 형태는 응답이 아니다. 서버가 실제로 보내는 색인·목록·상세·토큰·규칙을 같은 복원 경로로 잰다.
+  assertSizeBudget(manifest);
   await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
   console.error(`MCP 검증 8종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }

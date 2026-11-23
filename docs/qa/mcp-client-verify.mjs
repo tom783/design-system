@@ -13,11 +13,12 @@
 //  · 모르는 프로토콜 버전은 에러가 아니라 지원 버전으로 대체 응답
 //  · 깨진 JSON 을 받아도 죽지 않고 -32700 뒤 정상 복구
 //  · 조회 실패는 JSON-RPC 에러가 아니라 isError 결과 + 다음에 뭘 할지 안내
-//  · components 카탈로그 크기 — 커지면 AI 컨텍스트를 태운다
+//  · 응답 크기 — 커지면 AI 컨텍스트를 태운다. 운영 상한은 packages/mcp/budget.mjs 한 곳(R49)
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { readFileSync } from 'node:fs';
+import { BUDGETS } from '../../packages/mcp/budget.mjs';
 // 문구는 매니페스트가 원본이다. 하네스에 문장을 복사하면 지침을 고칠 때마다 깨진다(R28).
 const stored = JSON.parse(readFileSync(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
 // 절대경로를 박으면 내 기계에서만 돈다. 실제로 CI(리눅스)에서 initialize 타임아웃으로 죽었다.
@@ -153,20 +154,27 @@ const t = async (name, args) => {
 {
   const r = await t('list_components', {});
   const s = JSON.stringify(r.structuredContent ?? '');
-  check('list_components 응답은 24,000바이트 이하', Buffer.byteLength(s) <= 24_000, `${Buffer.byteLength(s)}바이트`);
+  check(`list_components 응답은 ${BUDGETS.list.total}바이트 이하`, Buffer.byteLength(s) <= BUDGETS.list.total, `${Buffer.byteLength(s)}바이트`);
   check('list_components 가 import 구문을 준다', /import \{/.test(s), s.slice(0,110));
   const list = r.structuredContent.components;
   check('목록은 부품의 partOf를 주고 독립 CardSkeleton은 유지한다', list.find((c) => c.name === 'SelectTrigger')?.partOf === 'Select' && !Object.hasOwn(list.find((c) => c.name === 'CardSkeleton'), 'partOf'));
   check('목록은 이름·종류·목적·import·partOf만 제공한다', list.every((c) => Object.keys(c).every((key) => ['name', 'kind', 'purpose', 'import', 'partOf'].includes(key))));
 }
 {
-  // 카탈로그가 AI 컨텍스트를 태우지 않을 만큼 작은가
+  // R49: 리소스는 저장 형태(derived 복원 규칙 + 축약 항목)가 아니라 읽을 수 있는 선택 색인이다.
   const rr = await call('resources/read', { uri: 'design://components' });
   const bytes = Buffer.byteLength(rr.result.contents[0].text);
-  check('components 카탈로그가 90,000바이트 이하', bytes <= 90_000, `${bytes}바이트`);
-  const { derived, components: catalog } = JSON.parse(rr.result.contents[0].text);
-  const part = catalog.find((c) => c.name === 'SelectTrigger');
-  check('리소스는 복원 규칙과 상속을 합치지 않은 보관 형태다', derived.sourceRoot === 'packages/ui/src/' && derived.kindDefault === 'component' && part.partOf === 'Select' && ['useWhen', 'dont', 'rules', 'category', 'related', 'keywords', 'inheritedFrom', 'import', 'kind'].every((key) => !Object.hasOwn(part, key)));
+  check(`components 색인이 ${BUDGETS.index.total}바이트 이하`, bytes <= BUDGETS.index.total, `${bytes}바이트`);
+  const index = JSON.parse(rr.result.contents[0].text);
+  const part = index.components.find((c) => c.name === 'SelectTrigger');
+  const parent = index.components.find((c) => c.name === 'Select');
+  check('리소스는 복원 규칙 없이 읽는 색인이다 — 이름·분류·용도·쓰는 때·금지·부품 관계만', !Object.hasOwn(index, 'derived')
+    && index.components.length === stored.components.length && /get_component/.test(index.description)
+    && index.components.every((c) => Object.keys(c).every((key) => ['name', 'partOf', 'category', 'purpose', 'useWhen', 'dont', 'parts'].includes(key)))
+    && part.partOf === 'Select' && parent.category && parent.parts.includes('SelectTrigger') && parent.useWhen.length && parent.dont.length,
+    `${index.components.length}항목`);
+  const entryMax = Math.max(...index.components.map((c) => Buffer.byteLength(JSON.stringify(c))));
+  check(`색인 항목 하나는 ${BUDGETS.index.entry}바이트 이하`, entryMax <= BUDGETS.index.entry, `최대 ${entryMax}바이트`);
 }
 {
   const bad = await call('tools/call', { name: '없는도구', arguments: {} });
@@ -188,9 +196,9 @@ for (const query of ['보기 전환', '기간 단위', '일 주 월', '토글 �
       && related.related.includes('SegmentedControl') && related.dont.some(s => s.includes('SegmentedControl')));
   }
   const tokens = (await call('resources/read', { uri: 'design://tokens' })).result.contents[0].text;
-  check('design://tokens 응답은 80,000바이트 이하', Buffer.byteLength(tokens) <= 80_000, `${Buffer.byteLength(tokens)}바이트`);
+  check(`design://tokens 응답은 ${BUDGETS.tokens}바이트 이하`, Buffer.byteLength(tokens) <= BUDGETS.tokens, `${Buffer.byteLength(tokens)}바이트`);
   const rules = (await t('get_rules', {})).content[0].text;
-  check('get_rules 전체 응답은 8,000바이트 이하', Buffer.byteLength(rules) <= 8_000, `${Buffer.byteLength(rules)}바이트`);
+  check(`get_rules 전체 응답은 ${BUDGETS.rules}바이트 이하`, Buffer.byteLength(rules) <= BUDGETS.rules, `${Buffer.byteLength(rules)}바이트`);
 }
 
 for (const query of ['KPI', '지표', '대시보드 숫자', '요약 수치', '증감', '전일 대비']) {
@@ -300,7 +308,7 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
     const bytes = Buffer.byteLength(response.content[0].text);
     if (bytes > largest.bytes) largest = { name: entry.name, bytes };
   }
-  check('get_component 한 건은 6,000바이트 이하', largest.bytes <= 6_000, `${largest.name} ${largest.bytes}바이트`);
+  check(`get_component 한 건은 ${BUDGETS.detail}바이트 이하`, largest.bytes <= BUDGETS.detail, `${largest.name} ${largest.bytes}바이트`);
 }
 // R43: 실제 응답 단위 회귀 상한. 실측 대비 여유는 각각 300B 이하다.
 {
@@ -323,8 +331,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const tokens = (await call('resources/read', { uri: 'design://tokens' })).result.contents[0].text;
   const list = (await t('list_components', {})).content[0].text;
   const rules = (await t('get_rules', {})).content[0].text;
-  // FormRow(2026-11-22) 포함 카탈로그 실측 88,651B + 299B, 표 선택 행 토큰 포함 토큰 67,503B + 297B. 운영 상한은 그대로다.
-  for (const [name, text, limit] of [['카탈로그',catalog,88_950],['목록',list,19_950],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
+  for (const [name, text, limit] of [['색인',catalog,23_500],['목록',list,19_950],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }
