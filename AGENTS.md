@@ -38,7 +38,9 @@ pnpm verify       # 위 세 개를 순서대로
 pre-commit  토큰·매니페스트 재생성 + 산출물 동기 확인 + 타입 + 단위·함정 린트
 pre-push    깨끗한 체크아웃 typecheck + pnpm verify + pnpm qa(엄격 — dirty 빌드 거부)
             origin/main 대비 .github/** 만 바뀌었으면 qa 를 건너뛴다 · SKIP_QA=1 로 qa 만 건너뛸 수 있다
-CI          pnpm gate — --no-verify 로 빠져나간 푸시를 받는 마지막 그물 (CI=true 라 엄격)
+            보내는 sha 전부의 원격 gate 가 이미 녹색이면 qa 를 건너뛰고 근거 run URL 을 찍는다
+CI          verify.yml — build·checks·node·harness 병렬 job 을 `gate` 하나로 모은다 (CI=true 라 엄격)
+            `gate` 는 main 브랜치 보호의 필수 체크다 — 아래 "main 통합"
 ```
 
 훅은 `.githooks/` 에 있고 `pnpm install` 이 `core.hooksPath` 를 걸어준다
@@ -75,6 +77,50 @@ DS_SB_URL=<그 주소> node docs/qa/render-verify.mjs     # DS_SB_URL 이 없으
 
 전부 `docs/qa/browser.mjs` 를 거친다. **GUI Chrome 을 직접 띄우지 마라** —
 이유는 "이미 밟은 함정" 절에 있다.
+
+일회성 사전 계측 스크립트(R40~R43 CoreText·폭 계측)는 `docs/qa/measure/` 에 있다. 게이트·CI 는 돌리지 않는다.
+
+## main 통합
+
+main 에는 브랜치 보호가 걸려 있고 **관리자도 예외가 아니다**(`enforce_admins`).
+
+- **필수 체크 `gate`**(verify.yml, GitHub Actions 앱). 그 sha 의 `gate` 가 녹색이 아니면 main 으로 가는 push 는
+  거절된다(`GH006 … Required status check "gate" is expected`). main 에서 커밋을 만들어 바로 올리는 직접 push 는 안 된다.
+- **강제 push 금지 · 삭제 금지.** 그래서 main 은 빨리 감기로만 움직인다.
+- **GitHub 병합 버튼은 쓰지 않는다.** 병합·스쿼시·리베이스 버튼은 gate 를 받은 것과 **다른 sha** 를 main 에 만든다.
+  main 의 모든 sha 는 그 sha 그대로 gate 를 통과한 것이어야 한다. 같은 저장소 PR 의 `pull_request` run 은 일부러
+  건너뛰므로(push run 이 판정한다) PR 화면의 체크 표시도 판정 근거가 아니다.
+- **`--no-verify` 금지.** pre-push 를 건너뛰는 길은 훅에 이유와 함께 정해 둔 것(태그만·`.github/**` 만·`SKIP_QA=1`·
+  원격 gate 녹색)뿐이다.
+
+절차 — 브랜치 이름·sha 는 자기 것으로:
+
+```bash
+# 1. 최신 main 위로 올린다. 빨리 감기만 되니 main 이 앞서 있으면 4번이 거절된다.
+git fetch origin && git rebase origin/main
+
+# 2. 작업 브랜치를 push 한다 — pre-push 게이트 전부가 돈다.
+GIT_SSH_COMMAND="ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=120" git push -u origin tom783/x
+
+# 3. 그 sha 의 원격 gate 가 녹색이고 headSha 가 내 sha 와 같은지 본다. 진행 중이면 gh run watch <id>.
+sha=$(git rev-parse HEAD)
+gh run list -R tom783/design-system --branch tom783/x --json databaseId,headSha,status,conclusion,url -L 5
+gh api "repos/tom783/design-system/commits/$sha/check-runs?check_name=gate" \
+  --jq '.check_runs[] | [.head_sha, .status, .conclusion, .html_url] | @tsv'   # 브랜치 보호가 보는 바로 그 체크
+
+# 4. 바로 그 sha 로 main 을 빨리 감는다. 그 sha 를 HEAD 로 둔 깨끗한 작업 폴더에서 한다(verify 는 작업 트리를 본다).
+GIT_SSH_COMMAND="ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=120" git push origin "$sha":main
+
+# 5. main push 가 만든 run 의 gate 도 녹색인지 본다(main run 은 취소되지 않는다).
+gh run list -R tom783/design-system --branch main --json headSha,status,conclusion,url -L 3
+```
+
+4번의 pre-push 는 보내는 sha 의 원격 gate 가 이미 녹색이면 브라우저 하네스(약 6분)를 건너뛰고 근거 run URL 을
+찍는다. typecheck·verify 는 그대로 돈다. gh 가 없거나, 조회가 실패하거나, gate 가 진행 중·실패·없음·headSha 불일치면
+평소대로 전부 돈다(`scripts/gate-reuse.mjs`, 시험 `docs/qa/gate-reuse.test.mjs`).
+
+거절되면: `non-fast-forward` 는 main 이 앞서 있다는 뜻이다 — 1번부터 다시(rebase 하면 sha 가 바뀌니 2·3번도).
+`GH006 … "gate" is expected` 는 3번이 끝나지 않은 sha 를 보낸 것이다.
 
 ## 상시 규칙
 
