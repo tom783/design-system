@@ -7,11 +7,14 @@ const golden = await loadGolden();
 const components = await loadComponents();
 const normalize = text => text.normalize('NFKC').toLocaleLowerCase('ko-KR').replace(/\s+/gu, '');
 
-test('정답 세트는 100문항·한국어 위주·질의마다 정답 하나이며 선택 가능한 부품을 가리킨다', () => {
-  assert.equal(golden.cases.length, 100);
-  assert.equal(new Set(golden.cases.map(item => item.query)).size, 100, '같은 질의가 두 번 들어가면 정확도가 부풀려진다');
+// R49 기준 100문항 + 0.5.0 부품마다 더한 문항. rebase 때는 증가분 항을 모두 남겨 합을 맞춘다.
+const CASES = 100
+  + 5; // 목표 49 입력 단위 접미사(Input unit)
+test('정답 세트는 100문항(+부품 증가분)·한국어 위주·질의마다 정답 하나이며 선택 가능한 부품을 가리킨다', () => {
+  assert.equal(golden.cases.length, CASES);
+  assert.equal(new Set(golden.cases.map(item => item.query)).size, CASES, '같은 질의가 두 번 들어가면 정확도가 부풀려진다');
   const ko = golden.cases.filter(item => item.lang === 'ko').length, en = golden.cases.filter(item => item.lang === 'en').length;
-  assert.equal(ko + en, 100);
+  assert.equal(ko + en, CASES);
   assert.ok(ko > en && en > 0, `한국어 위주·영어 일부: ko ${ko} · en ${en}`);
   // 서버가 후보로 내놓을 수 있는 것만 정답이 된다: 상수·검색어 없는 부품은 후보에서 빠진다(match.mjs).
   const selectable = new Set(components.filter(c => c.kind !== 'constant' && (!c.partOf || c.keywords?.length)).map(c => c.name));

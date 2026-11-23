@@ -10,6 +10,20 @@
 
 ## 미출시
 
+### 추가
+
+- **입력 단위 접미사** — `Input`의 `unit`(목표 49 4a · DESIGN.md §17.1.1). `<Input numeric inputMode="numeric" unit="원" />`처럼
+  원·개·%·개월을 상자 안 오른쪽 12px에 값과 같은 14px로 그린다. 숫자 값은 접미사 왼쪽 4px에서 끝나고, 접미사 폭은 실제로 재서
+  끝 여백과 최소 폭(120px + 4px + 접미사 폭)에 더한다 — '개월'처럼 긴 접미사도 값과 겹치지 않는다. 색은 기본·포커스·오류
+  `--text-tertiary`, 비활성 `--text-disabled`(오류는 경계·아이콘·문장이 맡는다). leadingIcon과 함께 쓸 수 있다.
+  접미사는 값이 아니다: `aria-describedby` 맨 앞에 붙어 낭독기가 "39,000 원"으로 읽고(Field 오류·설명·앱 id 와 합친다),
+  span은 `aria-hidden`·`user-select: none`이라 복사·붙여넣기·제출에 섞이지 않는다. 슬롯 `data-slot="input-unit"`.
+  이름은 StatTile·BulletRow의 `unit`과 같다. DatePicker는 Input props를 이어받지만 `unit`은 뺐다.
+  - MCP: `get_component Input`에 `unit` prop·규칙 1개·검색어 3개(접미사·단위 접미사·퍼센트 입력), 2,007 → 2,595바이트(+588).
+    `get_component DatePicker` +22바이트(상속 표기 `| 'unit'`·정적 슬롯 `input-unit`). 색인·목록은 바이트가 같다.
+    which_component 정답 세트에 5문항을 더해 top-1 57/105 · top-3 77/105(기존 100문항 순위 변화 0).
+  - 앱이 할 일: 없다. 단위를 설명 줄이나 겹친 span으로 그리던 곳은 `unit`으로 바꾼다.
+
 ### 바뀐 동작 (마이그레이션)
 
 - **MCP `design://components` 리소스는 선택 색인이다** (R49). 저장 형태(`{ derived, components }` — 복원 규칙과

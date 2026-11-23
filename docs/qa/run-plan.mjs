@@ -38,6 +38,7 @@ export const HARNESSES = [
   ['app-shell-render-verify.mjs', '앱 셸·사이드 메뉴·페이지 머리'],
   ['input-consistency-render-verify.mjs', '검색 아이콘·카드·선택 트리거·공개 유틸리티'],
   ['input-render-verify.mjs', '입력 타입·Textarea·Radio·Switch'],
+  ['input-unit-render-verify.mjs', '입력 단위 접미사·자리·낭독·복사·폭·같은 줄'],
   ['peek-render-verify.mjs', 'Peek·다녀온 행'],
   ['mcp-client-verify.mjs', 'MCP 서버'],
   ['list-screen-render-verify.mjs', '목록 필터·행 액션·알림'],

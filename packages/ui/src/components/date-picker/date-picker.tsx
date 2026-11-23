@@ -14,7 +14,8 @@ import { Popover, PopoverTrigger, PopoverContent } from './popover';
 import { formatValue, parseDate, parseDateTime, snapTime, withTime, quickRange, quickDate, outOfRange, rangeInputError } from './date-value';
 import { cn } from '../../lib/cn';
 
-type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type'> & {
+// unit(단위 접미사)은 날짜 입력에 쓰지 않는다 — 감싼 Input 에 넘기지 않도록 공개 props 에서 뺀다(목표 49 4a).
+type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type' | 'unit'> & {
   defaultMonth?: Date;
   /** 빠른 선택의 기준일. 기본은 운영자의 로컬 오늘이며 스토리에서는 고정할 수 있다. */
   today?: Date;

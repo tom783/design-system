@@ -1,6 +1,6 @@
 {
   "description": "which_component 정답 세트(R49). 실제 요청 문장의 핵심 100문항과 정답 부품 하나. 질의에 컴포넌트 이름을 넣지 않는다(이름 일치 +1000점이 정확도를 부풀린다). 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. baseline 은 이 세트를 만든 날 현재 matchComponents 의 실측이며, 그 아래로 떨어지면 docs/qa/which-component-golden.test.mjs 가 실패한다. 올라가면 baseline 을 함께 올린다.",
-  "baseline": { "measuredAt": "2026-11-23", "top1": 52, "top3": 72 },
+  "baseline": { "measuredAt": "2026-11-23", "top1": 57, "top3": 77 },
   "cases": [
     { "query": "주문 목록을 표로 보여주고 열 기준으로 정렬하고 싶어", "expected": "DataTable", "lang": "ko" },
     { "query": "매장 카드 목록을 불러오는 동안 카드 모양 자리 표시", "expected": "CardSkeleton", "lang": "ko" },
@@ -38,6 +38,11 @@
     { "query": "목록 위에 키워드 검색창", "expected": "Input", "lang": "ko" },
     { "query": "담당자 프로필 사진이나 이니셜 표시", "expected": "Avatar", "lang": "ko" },
     { "query": "single-line text box for product SKU", "expected": "Input", "lang": "en" },
+    { "query": "할인율 입력칸 끝에 % 붙이기", "expected": "Input", "lang": "ko" },
+    { "query": "약정 기간을 몇 개월로 입력받기", "expected": "Input", "lang": "ko" },
+    { "query": "재고 개수 옆에 개 단위 접미사", "expected": "Input", "lang": "ko" },
+    { "query": "금액 칸 안 오른쪽에 원 단위 표시", "expected": "Input", "lang": "ko" },
+    { "query": "수수료율을 퍼센트 입력으로 받기", "expected": "Input", "lang": "ko" },
     { "query": "배송 요청사항을 여러 줄로 적게", "expected": "Textarea", "lang": "ko" },
     { "query": "관리자 메모 작성란", "expected": "Textarea", "lang": "ko" },
     { "query": "결제 방식 중 하나만 고르게 선택지를 모두 펼쳐 보여주기", "expected": "RadioGroup", "lang": "ko" },

@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { Field } from '../components/form';
+import { Field, FormRow } from '../components/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/select';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Input } from '../components/input';
-import { Mail, LockKeyhole } from 'lucide-react';
+import { Mail, LockKeyhole, Banknote } from 'lucide-react';
 
 const meta = {
   tags: ['autodocs'],
@@ -209,5 +209,87 @@ export const 검색툴바폭: Story = {
       <SelectContent><SelectItem value="all">전체 상태</SelectItem><SelectItem value="ready">출고 대기</SelectItem></SelectContent></Select>
     <Select defaultValue="30d"><SelectTrigger aria-label="주문 기간" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
       <SelectContent><SelectItem value="7d">최근 7일</SelectItem><SelectItem value="30d">최근 30일</SelectItem></SelectContent></Select>
+  </div>,
+};
+
+// ── 단위 접미사 — unit (목표 49 4a · 2026-11-23 디자인 총괄 규격, DESIGN §17.1.1) ──
+// 검수 매트릭스: 라이트·다크 × 기본·포커스·비활성·오류 × 짧은/긴 접미사('원'·'개월'). 포커스 줄은 Tab 으로
+// 들어가야 링이 보인다 — 하네스(input-unit-render-verify)가 키보드로 포커스해 칸마다 찍는다.
+const UNIT_STATES = [
+  { key: 'default', label: '기본' }, { key: 'focus', label: '포커스' },
+  { key: 'disabled', label: '비활성' }, { key: 'error', label: '오류' },
+] as const;
+const UNIT_CASES = [
+  { unit: '원', label: '판매가', value: '39,000', error: '판매가를 1원 이상으로 입력하세요' },
+  { unit: '개월', label: '약정 기간', value: '12', error: '약정 기간은 1~36 사이로 입력하세요' },
+] as const;
+function UnitMatrix() {
+  return <div data-probe="unit-matrix" className="grid w-[528px] grid-cols-2 gap-x-6">
+    {UNIT_STATES.flatMap(state => UNIT_CASES.map(item =>
+      <Field key={`${state.key}-${item.unit}`} data-probe={`unit-field-${state.key}-${item.unit}`} label={`${item.label} · ${state.label}`}
+        error={state.key === 'error' ? item.error : undefined}>
+        <Input numeric inputMode="numeric" unit={item.unit} defaultValue={item.value} disabled={state.key === 'disabled'}
+          data-probe={`unit-${state.key}-${item.unit}`} />
+      </Field>))}
+  </div>;
+}
+const unitReady: Story['play'] = async ({ canvasElement: root }) => {
+  // 접미사는 값이 아니다 — 값에 섞이지 않고, 낭독기 설명의 맨 앞(값 바로 뒤)에 온다.
+  const input = within(root).getByLabelText('판매가 · 오류');
+  await expect(input).toHaveValue('39,000');
+  await expect(input).toHaveAccessibleDescription(/^원 판매가를 1원 이상으로 입력하세요$/);
+  root.dataset.playComplete = 'true';
+};
+export const 단위접미사: Story = {
+  name: '단위 접미사 — 검수 매트릭스',
+  parameters: { docs: { description: { story: '`unit`은 상자 안 오른쪽 12px에 값과 같은 14px로 그린다. 숫자 값은 접미사 왼쪽 4px에서 끝난다. 색은 기본·포커스·오류 모두 text-tertiary, 비활성만 text-disabled다 — 오류는 경계·아이콘·문장이 맡는다. 접미사는 값·복사·제출에 섞이지 않고 낭독기는 aria-describedby로 "39,000 원"처럼 값 뒤에 읽는다.' } } },
+  render: () => <UnitMatrix />,
+  play: unitReady,
+};
+export const 단위접미사다크: Story = {
+  name: '단위 접미사 — 검수 매트릭스(다크)',
+  globals: { theme: 'dark' },
+  render: () => <UnitMatrix />,
+  play: unitReady,
+};
+export const 단위접미사폭: Story = {
+  name: '단위 접미사 — 최소 폭·긴 값·앞 아이콘',
+  parameters: { docs: { description: { story: '최소 폭은 120px에 접미사 폭과 간격 4px를 더한다 — 값이 들어갈 폭이 접미사 없는 입력과 같다. 긴 값은 접미사 밑으로 들어가지 않고 칸 안에서 가로 스크롤된다. leadingIcon과 함께 쓸 수 있다.' } } },
+  render: () => <div className="grid gap-3">
+    <div data-probe="unit-min" className="flex flex-wrap items-start gap-3">
+      <Input aria-label="최소 폭 접미사 없음" numeric inputMode="numeric" defaultValue="39,000" className="w-0" data-probe="unit-min-none" />
+      <Input aria-label="최소 폭 원" numeric inputMode="numeric" unit="원" defaultValue="39,000" className="w-0" data-probe="unit-min-원" />
+      <Input aria-label="최소 폭 개월" numeric inputMode="numeric" unit="개월" defaultValue="12" className="w-0" data-probe="unit-min-개월" />
+      <Input aria-label="최소 폭 퍼센트" numeric inputMode="numeric" unit="%" defaultValue="15" className="w-0" data-probe="unit-min-%" />
+    </div>
+    <div className="grid w-48 gap-3">
+      <Input aria-label="긴 값 원" numeric inputMode="numeric" unit="원" defaultValue="12,345,678,901,234,567,890" data-probe="unit-long-원" />
+      <Input aria-label="긴 값 개월" numeric inputMode="numeric" unit="개월" defaultValue="123,456,789,012,345,678" data-probe="unit-long-개월" />
+      <Input aria-label="앞 아이콘과 원" numeric inputMode="numeric" unit="원" leadingIcon={<Banknote />} defaultValue="49,000" data-probe="unit-icon-원" />
+      <Input aria-label="빈 값 원" numeric inputMode="numeric" unit="원" placeholder="0" data-probe="unit-empty-원" />
+      <div className="grid gap-1">
+        <Input aria-label="할인율" numeric inputMode="numeric" unit="%" defaultValue="15" aria-describedby="unit-own-help" data-probe="unit-described-%" />
+        <p id="unit-own-help" className="text-fg-muted text-[length:var(--text-caption)]">최대 90까지 입력합니다.</p>
+      </div>
+    </div>
+  </div>,
+};
+export const 단위접미사같은줄: Story = {
+  name: '단위 접미사 — FormRow 같은 줄',
+  parameters: { docs: { description: { story: '같은 줄 두 칸에서 접미사가 있어도 입력칸 윗선·높이가 같다. 한쪽에만 설명·오류가 있어도 움직이지 않는다(§11.9).' } } },
+  render: () => <div className="grid max-w-2xl gap-0">
+    <FormRow data-probe="unit-row-price">
+      <Field label="판매가" required><Input numeric inputMode="numeric" unit="원" defaultValue="39,000" /></Field>
+      <Field label="정가" description="할인 전 가격입니다. 비우면 판매가와 같게 표시합니다.">
+        <Input numeric inputMode="numeric" unit="원" defaultValue="49,000" /></Field>
+    </FormRow>
+    <FormRow data-probe="unit-row-term">
+      <Field label="재고 수량" error="재고 수량을 1개 이상으로 입력하세요"><Input numeric inputMode="numeric" unit="개" defaultValue="0" /></Field>
+      <Field label="약정 기간"><Input numeric inputMode="numeric" unit="개월" defaultValue="12" /></Field>
+    </FormRow>
+    <FormRow data-probe="unit-row-mixed">
+      <Field label="할인율"><Input numeric inputMode="numeric" unit="%" defaultValue="15" /></Field>
+      <Field label="공급가"><Input numeric inputMode="numeric" defaultValue="35,455" /></Field>
+    </FormRow>
   </div>,
 };

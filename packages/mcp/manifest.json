@@ -6628,7 +6628,7 @@
         }
       ],
       "extends": [
-        "Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type'>"
+        "Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' | 'onChange' | 'type' | 'unit'>"
       ],
       "slots": [
         "button",
@@ -6642,6 +6642,7 @@
         "input-action",
         "input-control",
         "input-leading-icon",
+        "input-unit",
         "popover-content",
         "select-content",
         "select-icon",
@@ -6753,6 +6754,10 @@
         {
           "text": "앱 검증·Field 한국어 오류를 쓴다.",
           "source": "17.1"
+        },
+        {
+          "text": "단위(원·개·%·개월)는 unit을 쓴다. 상자 안 오른쪽 회색, 값·복사에 섞이지 않고 낭독은 값 뒤다. 설명 줄·겹친 span으로 대신하지 않는다.",
+          "source": "17.1.1"
         }
       ],
       "related": [
@@ -6773,7 +6778,10 @@
         "검색창",
         "전화번호",
         "수량",
-        "금액 입력"
+        "금액 입력",
+        "접미사",
+        "단위 접미사",
+        "퍼센트 입력"
       ],
       "source": "components/input.tsx",
       "props": [
@@ -6790,6 +6798,11 @@
           "name": "leadingIcon",
           "type": "ReactNode",
           "doc": "장식용 앞쪽 아이콘. search는 기본 돋보기이며 null로 숨긴다."
+        },
+        {
+          "name": "unit",
+          "type": "string",
+          "doc": "단위 접미사(원·개·%·개월). 상자 안 오른쪽에 회색으로 표시하며 값·복사·제출에 섞이지 않는다.\n낭독기는 aria-describedby로 값 뒤에 읽는다. 금액·수량은 numeric과 함께 쓴다."
         }
       ],
       "extends": [
@@ -6799,7 +6812,8 @@
         "input",
         "input-action",
         "input-control",
-        "input-leading-icon"
+        "input-leading-icon",
+        "input-unit"
       ]
     },
     {

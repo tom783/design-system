@@ -230,8 +230,9 @@ const intents = [
     rule('검색 칸은 type="search"를 쓴다. 돋보기·지우기가 내장되므로 아이콘을 따로 겹치지 않는다. 폭(w-80·flex-1)은 className에 주면 바깥 래퍼에 붙는다.', '17.1'),
     rule('앞쪽 장식은 leadingIcon, 검색 돋보기를 끄려면 leadingIcon={null}. password 보기는 내장 버튼을 쓴다.', '17.1'),
     rule("날짜는 DatePicker 우선. type=date는 value 문자열로 다룬다.", "17.1"),
-    rule("앱 검증·Field 한국어 오류를 쓴다.", "17.1")
-  ],['invalid','numeric','leadingIcon','type','inputMode'],['input','input-control','input-leading-icon','input-action'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색','검색창','전화번호','수량','금액 입력']),
+    rule("앱 검증·Field 한국어 오류를 쓴다.", "17.1"),
+    rule('단위(원·개·%·개월)는 unit을 쓴다. 상자 안 오른쪽 회색, 값·복사에 섞이지 않고 낭독은 값 뒤다. 설명 줄·겹친 span으로 대신하지 않는다.', '17.1.1')
+  ],['invalid','numeric','leadingIcon','unit','type','inputMode'],['input','input-control','input-leading-icon','input-action','input-unit'],['Field','FormFlow','Textarea'],['입력','텍스트','금액','입력칸','숫자 입력','통화','가격','비밀번호','검색','검색창','전화번호','수량','금액 입력','접미사','단위 접미사','퍼센트 입력']),
   entry('Textarea','form','여러 줄 메모와 긴 글을 입력한다.',['메모·비고를 여러 줄로 작성할 때'],["자동 높이가 필요하면 autoGrow를 쓰고 직접 높이를 계산하지 않는다", "autoGrow가 꺼진 입력의 크기 조절을 막지 마라"],'17',[
     rule("autoGrow는 maxHeight(기본 240px)까지 자란 뒤 안에서 스크롤한다.", "17.2"),
     rule("FormFlow 안 Enter·Shift+Enter는 줄바꿈, Ctrl/Cmd+Enter는 제출이다. 줄바꿈을 이동으로 바꾸지 않는다.", "17.2")
