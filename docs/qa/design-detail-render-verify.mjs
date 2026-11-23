@@ -75,38 +75,87 @@ async function actions(selector, expectedCount) {
 // 클래식(Windows·리눅스·마우스 연결 macOS) 10~11px. 상자 바닥이 아니라 **스크롤 영역 바닥**을
 // 기준으로 재고, 기준선은 계산 스타일이 아니라 실제로 그려진 픽셀로 확인한다(스크롤바가 선을
 // 덮어도 계산 스타일은 그대로라서다 — 2026-11-22 실측, DESIGN.md §16.1).
-async function tabs() {
+//
+// 링은 두 가지다(2026-11-23 디자인 총괄 결정). 선택+포커스 탭은 버튼 outline 을 끄고 ::after 로 같은 링을
+// 그리며 **아래 변만** 밑줄 2px·간격 2px 위로 올린다 — 안쪽 링이 밑줄을 정확히 덮어 선택 표시가 사라졌었다.
+// 포커스만 있는(선택 안 된) 탭은 버튼 outline 그대로다. 그래서 링 상자는 실제로 그리는 쪽에서 재고,
+// 밑줄·간격·링이 겹치지 않는지는 탭 안쪽 여백(링 안·글자 앞)의 세로 한 줄 픽셀로 본다.
+// target: 'selected' = 선택 탭(포커스 있음), 'focus-only' = 포커스를 가진 선택 안 된 탭(선택 탭도 함께 본다).
+async function tabs(target = 'selected') {
   const m = await ev(`(() => {
-    const list = document.querySelector('[role="tablist"]'), tab = list.querySelector('[aria-selected="true"]');
+    const list = document.querySelector('[role="tablist"]'), selected = list.querySelector('[aria-selected="true"]');
+    const tab = ${target === 'selected' ? 'selected' : 'document.activeElement'};
     const a = list.getBoundingClientRect(), b = tab.getBoundingClientRect(), s = getComputedStyle(tab), l = getComputedStyle(list);
-    const outer = parseFloat(s.outlineOffset) + parseFloat(s.outlineWidth);
+    const p = getComputedStyle(tab, '::after'), pseudo = p.content !== 'none' && p.outlineStyle !== 'none';
+    const r = pseudo ? p : s, outer = parseFloat(r.outlineOffset) + parseFloat(r.outlineWidth);
+    // ::after 는 absolute 라 계산된 inset 이 패딩 상자 기준 px 다. 탭은 아래에만 테두리(밑줄)가 있다.
+    const box = pseudo ? { left: b.left + parseFloat(s.borderLeftWidth) + parseFloat(p.left), right: b.right - parseFloat(s.borderRightWidth) - parseFloat(p.right),
+      top: b.top + parseFloat(s.borderTopWidth) + parseFloat(p.top), bottom: b.bottom - parseFloat(s.borderBottomWidth) - parseFloat(p.bottom) } : b;
     const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-    ctx.fillStyle = l.getPropertyValue('--border-default'); ctx.fillRect(0, 0, 1, 1);
-    return { underlineBottom: b.bottom, boxBottom: a.bottom, portBottom: a.top + list.clientTop + list.clientHeight,
+    const rgb = color => { ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1); return [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3); };
+    const sb = selected.getBoundingClientRect();
+    return { underlineBottom: sb.bottom, boxBottom: a.bottom, portBottom: a.top + list.clientTop + list.clientHeight,
       scrollbar: list.offsetHeight - list.clientHeight - list.clientTop - parseFloat(l.borderBottomWidth),
-      paddingBottom: l.paddingBottom, borderBottom: l.borderBottomWidth, underlineWidth: s.borderBottomWidth,
-      baselineColor: [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3), probeX: Math.floor(a.left + list.clientLeft) + 1, scrollX, scrollY,
-      focused: document.activeElement === tab && tab.matches(':focus-visible'),
-      outlineWidth: s.outlineWidth, outlineOffset: s.outlineOffset,
-      ring: { left: b.left - outer, right: b.right + outer, top: b.top - outer, bottom: b.bottom + outer },
+      paddingBottom: l.paddingBottom, borderBottom: l.borderBottomWidth, underlineWidth: getComputedStyle(selected).borderBottomWidth,
+      baselineColor: rgb(l.getPropertyValue('--border-default')), ringColor: rgb(l.getPropertyValue('--border-focus')),
+      brandColor: rgb(l.getPropertyValue('--action-primary-bg')),
+      probeX: Math.floor(a.left + list.clientLeft) + 1, scrollX, scrollY,
+      // 링 2px 안·글자 앞(좌우 안쪽 여백 12px) — 링·간격·밑줄만 지나는 세로 한 줄
+      tabProbeX: Math.floor(b.left) + 6, tabTop: b.top, selectedProbeX: Math.floor(sb.left) + 6, selectedTop: sb.top,
+      focused: document.activeElement === tab && tab.matches(':focus-visible'), selected: tab === selected, pseudo,
+      buttonOutline: s.outlineStyle, outlineWidth: r.outlineWidth, outlineOffset: r.outlineOffset,
+      ring: { left: box.left - outer, right: box.right + outer, top: box.top - outer, bottom: box.bottom + outer },
       clip: { left: a.left + list.clientLeft, right: a.left + list.clientLeft + list.clientWidth,
         top: a.top + list.clientTop, bottom: a.top + list.clientTop + list.clientHeight },
       scrollLeft: list.scrollLeft, overflow: list.scrollWidth > list.clientWidth };
   })()`);
-  // 목록 왼쪽 안쪽 여백(탭이 없는 자리)의 세로 한 줄을 캡처해 기준선이 실제로 보이는 행을 찾는다.
-  const top = Math.floor(m.portBottom) - 3;
-  // 캡처 영역은 문서 좌표다 — 뷰포트 좌표에 페이지 스크롤을 더한다.
-  const shot = await cdp('Page.captureScreenshot', { format: 'png', clip: { x: m.probeX + m.scrollX, y: top + m.scrollY, width: 1, height: Math.ceil(m.boxBottom) - top + 1, scale: 1 } });
+  // 세로 탐침 여러 줄을 **한 번의 캡처**에서 읽는다(문서 좌표 — 뷰포트 좌표에 페이지 스크롤을 더한다).
+  // 1px 폭 clip 캡처를 연달아 보내면 두 번째가 앞 clip 의 x 를 그대로 찍는 일이 잦다(2026-11-23 실측:
+  // x=25 다음 x=34 를 40회 연속 → 26회가 x=25 열). 사이에 프레임 두 개를 기다리면 0/40 이다. 앞 검사의 캡처와
+  // 겹치지 않도록 캡처 전에도 프레임 두 개를 기다린다.
+  const T = Math.round(m.tabTop), P = Math.round(m.portBottom);
+  const x0 = Math.min(m.probeX, m.tabProbeX, m.selectedProbeX), x1 = Math.max(m.probeX, m.tabProbeX, m.selectedProbeX) + 1;
+  const y0 = Math.min(Math.floor(m.portBottom) - 3, T - 1, Math.round(m.selectedTop) - 1), y1 = Math.ceil(m.boxBottom) + 1;
+  await ev('new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))');
+  const shot = await cdp('Page.captureScreenshot', { format: 'png', clip: { x: x0 + m.scrollX, y: y0 + m.scrollY, width: x1 - x0, height: y1 - y0, scale: 1 } });
   const image = decodePng(Buffer.from(shot.data, 'base64'));
-  const near = (c) => c.every((v, i) => Math.abs(v - m.baselineColor[i]) <= 2);
-  m.baselineRows = [...Array(image.height).keys()].filter(y => near(image.pixel(0, y))).map(y => top + y);
+  // [y, 픽셀] 목록: x 열의 top 행부터 캡처 끝까지
+  const column = (x, top) => [...Array(y1 - top).keys()].map(i => [top + i, image.pixel(x - x0, top + i - y0)]);
+  const near = (color) => (c) => c.every((v, i) => Math.abs(v - color[i]) <= 2);
+  const rows = (col, color) => col.filter(([, c]) => near(color)(c)).map(([y]) => y);
+  // 목록 왼쪽 안쪽 여백(탭이 없는 자리)의 세로 한 줄로 기준선이 실제로 보이는 행을 찾는다.
+  m.baselineRows = rows(column(m.probeX, Math.floor(m.portBottom) - 3), m.baselineColor);
+  // 탭 줄만 본다 — 스크롤 영역 아래(클래식 스크롤바 자리)는 탭이 아니다.
+  const tabColumn = column(m.tabProbeX, T - 1).filter(([y]) => y < P);
+  m.ringRows = rows(tabColumn, m.ringColor); m.brandRows = rows(tabColumn, m.brandColor);
+  // 실패 메시지에서 실제 픽셀을 볼 수 있게 같은 색이 이어지는 구간으로 줄여 남긴다.
+  m.tabColumn = tabColumn.reduce((runs, [y, c]) => { const last = runs.at(-1), key = c.join(',');
+    if (last?.color === key) last.to = y; else runs.push({ from: y, to: y, color: key }); return runs; }, []);
   assert.equal(m.paddingBottom, '0px'); assert.equal(m.borderBottom, '0px'); assert.equal(m.underlineWidth, '2px');
   // 선택 밑줄은 스크롤 영역 바닥에 닿는다(오버레이에서는 상자 바닥과 같다).
   assert.ok(Math.abs(m.underlineBottom - m.portBottom) <= .5, JSON.stringify(m));
   // 기준선은 스크롤 영역 바로 위 한 줄에 실제로 보인다 — 스크롤바에 가려지지 않는다.
-  assert.deepEqual(m.baselineRows, [Math.round(m.portBottom) - 1], JSON.stringify(m));
+  assert.deepEqual(m.baselineRows, [P - 1], JSON.stringify(m));
   assert.ok(m.focused); assert.equal(m.outlineWidth, '2px'); assert.equal(m.outlineOffset, '-2px');
+  // 링 네 변이 스크롤 영역 안에 있다 — 잘리지 않는다.
   assert.ok(m.ring.left >= m.clip.left - .5 && m.ring.right <= m.clip.right + .5 && m.ring.top >= m.clip.top - .5 && m.ring.bottom <= m.clip.bottom + .5, JSON.stringify(m));
+  if (target === 'selected') {
+    // 선택+포커스: 버튼 outline 은 꺼지고 ::after 링의 아래 변이 밑줄 2px + 간격 2px 위에서 끝난다.
+    assert.ok(m.selected && m.pseudo, JSON.stringify(m)); assert.equal(m.buttonOutline, 'none');
+    assert.ok(Math.abs(m.ring.bottom - (m.portBottom - 4)) <= .5, JSON.stringify(m));
+    // 픽셀: 위 링 2줄 … 아래 링 2줄 · 간격 2줄 · 브랜드 밑줄 2줄(바닥 = 기준선 행).
+    assert.deepEqual(m.ringRows, [T, T + 1, P - 6, P - 5], JSON.stringify(m));
+    assert.deepEqual(m.brandRows, [P - 2, P - 1], JSON.stringify(m));
+  } else {
+    // 포커스만: 버튼 outline 그대로(바뀌기 전과 같다) — 링 아래 변이 탭 바닥에 있고 ::after 는 없다.
+    assert.ok(!m.selected && !m.pseudo, JSON.stringify(m)); assert.equal(m.buttonOutline, 'solid');
+    assert.ok(Math.abs(m.ring.bottom - m.portBottom) <= .5, JSON.stringify(m));
+    assert.deepEqual(m.ringRows, [T, T + 1, P - 2, P - 1], JSON.stringify(m)); assert.deepEqual(m.brandRows, [], JSON.stringify(m));
+    // 함께 보이는 선택 탭(포커스 없음)은 밑줄만 있고 링은 없다.
+    const selectedColumn = column(m.selectedProbeX, Math.round(m.selectedTop) - 1).filter(([y]) => y < P);
+    m.selectedRingRows = rows(selectedColumn, m.ringColor); m.selectedBrandRows = rows(selectedColumn, m.brandColor);
+    assert.deepEqual(m.selectedRingRows, [], JSON.stringify(m)); assert.deepEqual(m.selectedBrandRows, [P - 2, P - 1], JSON.stringify(m));
+  }
   return m;
 }
 async function axNames() {
@@ -136,6 +185,12 @@ try {
         await check(`D2 상세 탭 밑줄·키보드 링 ${context}`, async () => {
           await key('Tab', 9); await ev(`document.querySelector('[role="tab"][aria-selected="true"]').focus()`);
           return tabs();
+        });
+        await check(`D2 상세 포커스만 있는 탭 링 불변·선택 탭 밑줄 ${context}`, async () => {
+          // manual 이라 화살표는 포커스만 옮긴다 — 포커스만 있는 탭과 선택만 된 탭이 함께 보인다.
+          await key('ArrowRight', 39);
+          await wait(`document.activeElement?.getAttribute('role') === 'tab' && document.activeElement.getAttribute('aria-selected') === 'false'`);
+          return tabs('focus-only');
         });
         await check(`D3 탭 아래 24px 안에 중복 선 없음 ${context}`, async () => {
           const lines = await ev(`(() => { const list = document.querySelector('[role="tablist"]'), bottom = list.getBoundingClientRect().bottom;
@@ -180,6 +235,25 @@ try {
         const last = await tabs(); assert.ok(last.scrollLeft > 0);
         return { scrollbar: first.scrollbar, portBottom: first.portBottom, boxBottom: first.boxBottom, baselineRows: [first.baselineRows, last.baselineRows] };
       } finally { await cdp('Emulation.setScrollbarsHidden', { hidden: false }); }
+    });
+    // 포커스만 있는 탭은 manual 탭에서만 생긴다. 상세 화면을 좁혀(260px) 탭이 넘치게 하면 클래식 스크롤바 위에서
+    // 선택+포커스·포커스만·선택만 세 상태를 모두 본다. 폭마다 같은 결과라 1440 회차에서 한 번만 돈다.
+    if (width === 1440) for (const [state, hidden] of [['기본', false], ['두께 0(CDP)', true]]) await check(`D2 좁은 상세 탭 세 상태 링·밑줄 ${theme} 260px 스크롤바 ${state}`, async () => {
+      await cdp('Emulation.setScrollbarsHidden', { hidden });
+      await cdp('Emulation.setDeviceMetricsOverride', { width: 260, height: 1000, deviceScaleFactor: 1, mobile: false });
+      try {
+        await load('qa-detailscreen--상세화면', theme);
+        await key('Tab', 9); await ev(`document.querySelector('[role="tab"][aria-selected="true"]').focus()`);
+        const selected = await tabs(); assert.ok(selected.overflow);
+        if (hidden) assert.equal(selected.scrollbar, 0);
+        await key('ArrowRight', 39);
+        await wait(`document.activeElement?.getAttribute('role') === 'tab' && document.activeElement.getAttribute('aria-selected') === 'false'`);
+        const focusOnly = await tabs('focus-only');
+        return { scrollbar: selected.scrollbar, ringRows: [selected.ringRows, focusOnly.ringRows], brandRows: [selected.brandRows, focusOnly.selectedBrandRows] };
+      } finally {
+        await cdp('Emulation.setScrollbarsHidden', { hidden: false });
+        await cdp('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false });
+      }
     });
   }
   for (const theme of ['light', 'dark']) {

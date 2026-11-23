@@ -119,9 +119,13 @@ try {
       return panel.tabIndex === 0 && document.getElementById(panel.getAttribute('aria-labelledby')) === ${CANVAS}.querySelector('${selected}'); })()`), true);
   });
   await check('선택 표시 2px 브랜드 밑줄·굵기, 포커스 링 분리', async () => {
-    assert.equal(await ev(`(() => { const active = getComputedStyle(${tabs}[1]), inactive = getComputedStyle(${tabs}[0]);
+    // 선택+포커스 탭의 링은 버튼 outline 이 아니라 ::after 다. 아래 변만 올려(bottom > 0) 밑줄을 덮지 않는다
+    // (2026-11-23 디자인 총괄 결정). 픽셀 단정은 design-detail-render-verify 가 한다.
+    assert.equal(await ev(`(() => { const tab = ${tabs}[1], active = getComputedStyle(tab), inactive = getComputedStyle(${tabs}[0]);
+      const ring = getComputedStyle(tab, '::after');
       return active.borderBottomWidth === '2px' && Number(active.fontWeight) > Number(inactive.fontWeight)
-        && active.outlineStyle !== 'none' && active.outlineOffset !== '0px'; })()`), true);
+        && tab.matches(':focus-visible') && active.outlineStyle === 'none'
+        && ring.outlineStyle !== 'none' && ring.outlineOffset !== '0px' && parseFloat(ring.bottom) > 0; })()`), true);
   });
   await check('이력 패널은 Skeleton·로딩 안내 제공', async () => {
     await pickTab(ev, tabs, 3);
