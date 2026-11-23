@@ -19,6 +19,8 @@
     gap: var(--space-4);
   }
   .ds-tabs-trigger {
+    /* 선택 탭의 포커스 링(::after)이 이 상자를 기준으로 선다. */
+    position: relative;
     flex: 0 0 auto;
     min-height: var(--control-h-md);
     padding: var(--space-8) var(--space-12);
@@ -37,6 +39,20 @@
     border-bottom-color: var(--action-primary-bg);
     font-weight: 600;
     color: var(--text-primary);
+  }
+  /* 선택 탭의 안쪽 링은 아래 2px(= 밑줄 자리)를 덮어 선택 표시를 지웠다(2026-11-23 디자인 총괄 결정).
+     outline 은 변마다 위치를 줄 수 없어 이 상태에서만 ::after 로 같은 링을 그리고, 아래 변만 올린다.
+     absolute 의 기준은 패딩 상자라 bottom 이 밑줄(border-bottom) 윗면부터 잰 간격이다 —
+     밑줄 2px + 간격 --space-2(2px) = 아래 안쪽 여백 4px. 위·좌·우는 버튼 가장자리로 지금 링과 같고,
+     링은 버튼 안에 머물러 스크롤 영역에서 잘리지 않는다. 선택되지 않은 탭의 링은 위 규칙 그대로다. */
+  .ds-tabs-trigger[data-state="active"]:focus-visible { outline: none; }
+  .ds-tabs-trigger[data-state="active"]:focus-visible::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 var(--space-2);
+    outline: var(--focus-width) solid var(--border-focus);
+    outline-offset: calc(-1 * var(--focus-width));
+    pointer-events: none;
   }
   .ds-tabs-trigger:hover { background: var(--bg-hover); }
   .ds-tabs-trigger:disabled { cursor: not-allowed; color: var(--text-disabled); }
