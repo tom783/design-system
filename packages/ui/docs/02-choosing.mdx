@@ -52,9 +52,15 @@ UI의 뜻 한 줄은 Tooltip, 새 기능 알림은 Hint, 요청한 단계 안내
 
 ## DescriptionList·DataTable·Peek
 
-열 머리글 없는 키-값(주문 정보·배송지·결제 내역·합계)은 DescriptionList, 같은 열을 여러 행으로 비교하면 DataTable, 표의 행을 열지 않고 훑어보는 요약은 Peek를 고릅니다.
+열 머리글 없는 키-값(주문 정보·배송지·배송비·결제 금액 내역)은 DescriptionList, 같은 열을 여러 행으로 비교하면 DataTable, 표의 행을 열지 않고 훑어보는 요약은 Peek를 고릅니다. 수량·금액 열의 합계는 DescriptionList가 아니라 DataTable `summary`(같은 열 맨 아래 합계 행)입니다.
 
 <div className="intent-grid"><Intent name="DescriptionList" /><Intent name="DataTable" /><Intent name="Peek" /></div>
+
+## FormActionBar·DialogFooter·BulkActionBar
+
+등록·편집 페이지의 취소·저장은 FormActionBar(AppShell 본문 바닥 고정), 옆 패널·대화상자의 버튼은 DialogFooter, 목록에서 선택한 행의 일괄 작업은 BulkActionBar를 고릅니다. 세 곳 모두 주요 버튼은 하나이고 위험 동작은 주요 버튼 옆에 두지 않습니다.
+
+<div className="intent-grid"><Intent name="FormActionBar" /><Intent name="DialogFooter" /><Intent name="BulkActionBar" /></div>
 
 ## DatePicker와 네이티브 날짜 입력
 

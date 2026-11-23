@@ -88,13 +88,17 @@ try {
       const errors = await ev(`[...${CANVAS}.querySelectorAll('[data-slot="field-error"] span')].map(el => el.textContent)`);
       assert.deepEqual(errors, ['상품명을 입력하세요', '판매가를 1원 이상으로 입력하세요']);
       assert.equal(errored.length, 13); assert.equal(base.length, 13);
-      const moved = Math.max(...errored.map((item, index) => Math.abs(item.top - base[index].top)));
+      // 목표 57: 오류 상태는 폼 위 오류 요약(F-7)이 있어 폼 전체가 요약 높이 + 간격 16 만큼 내려간다. 오류 자리 예약은
+      // 칸끼리의 이동이므로 그만큼 뺀 뒤 잰다.
+      const shift = await ev(`(() => { const s=${CANVAS}.querySelector('[data-screen="error-summary"]'); return s ? s.getBoundingClientRect().height + 16 : null; })()`);
+      assert.ok(shift > 16, '오류 요약이 폼 위에 있다');
+      const moved = Math.max(...errored.map((item, index) => Math.abs(item.top - shift - base[index].top)));
       assert.equal(moved, 0);
       const rows = await rowTops();
       for (const [key, [a, b]] of Object.entries(rows)) assert.equal(Math.abs(a - b), 0, `${key} 줄 오류 상태 y 차이`);
       const unit = assertUnits(await units());
       await browser.shot(`create-errors-${theme}`);
-      return { moved, errors, unit };
+      return { moved, shift, errors, unit };
     });
   }
 

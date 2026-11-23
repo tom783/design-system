@@ -9,7 +9,9 @@ const browser = await launchBrowser({ outDir: OUT });
 const { cdp, ev, sleep } = browser;
 const { open } = storybook(browser);
 const results = [], measurements = [];
-const probe = name => `${CANVAS}.querySelector('[data-probe="${name}"]')`;
+// 목표 57: 저장 버튼은 하단 고정 액션 줄(FormActionBar)의 제출 버튼이다 — 줄은 data-probe 를 버튼까지 넘기지 않는다.
+const probe = name => name === 'save' ? `${CANVAS}.querySelector('[data-probe="order-form"] [data-slot="form-action-bar-submit"]')`
+  : `${CANVAS}.querySelector('[data-probe="${name}"]')`;
 const form = probe('order-form');
 const trigger = `${form}?.querySelector('[data-slot="combobox-trigger"]')`;
 const comboInput = `document.querySelector('[data-slot="combobox-input"]')`;
@@ -66,7 +68,8 @@ const currentStop = `(() => {
   if (node?.matches('[data-slot="combobox-trigger"]')) return '사업장(트리거)';
   if (node?.matches('[data-slot="combobox-input"]')) return '사업장(검색 입력)';
   if (node?.closest('[data-slot="radio-group"]')) return '배송';
-  return ({ name: '상품명', qty: '수량', notifications: '알림', memo: '비고', owner: '담당자', save: '저장' })[node?.dataset.probe] ?? node?.tagName;
+  if (node?.matches('[data-slot="form-action-bar-submit"]')) return '저장';
+  return ({ name: '상품명', qty: '수량', notifications: '알림', memo: '비고', owner: '담당자' })[node?.dataset.probe] ?? node?.tagName;
 })()`;
 
 try {
@@ -106,7 +109,7 @@ try {
       await enter(`!!${probe('order-list')}`);
       await wait(`!!document.querySelector('[data-sonner-toast]')`);
       assert.deepEqual(
-        (await ev('window.__createFocus')).filter(item => item.probe === 'save').map(item => item.probe), [],
+        (await ev('window.__createFocus')).filter(item => item.slot.startsWith('form-action-bar')).map(item => item.slot), [],
         '마지막 칸 Enter 가 제출 대신 저장 버튼으로 포커스를 옮겼다');
     } finally {
       measurements.push({ label: '전체 포커스 경로', path, keys, raw: await ev('window.__createFocus') });

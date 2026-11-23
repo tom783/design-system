@@ -76,7 +76,13 @@ export function useFormFlow({ onSubmit, restartOnSubmit = false, onSubmitError }
     if (from < 0) return;
     event.preventDefault();
     const destination = destinationFrom(stops, target, event.shiftKey ? -1 : 1);
-    if (!event.shiftKey && (!destination || destination.matches('button[type="submit"], button:not([type]), input[type="submit"]'))) {
+    // 하단 고정 액션 줄(FormActionBar)은 [삭제] [오류 링크] [취소] [저장] 순서라 마지막 칸 다음 정지점이 저장이 아니다.
+    // 줄에 닿으면 폼 끝으로 보고 제출한다 — 마지막 칸 Enter = 저장(§11.5·§19.5 F-11). 제출자는 줄의 저장 버튼이다.
+    const bar = destination?.closest('[data-slot="form-action-bar"]');
+    if (!event.shiftKey && bar) {
+      const submitter = bar.querySelector<HTMLButtonElement>('button[type="submit"]');
+      form.requestSubmit(submitter?.form === form ? submitter : undefined);
+    } else if (!event.shiftKey && (!destination || destination.matches('button[type="submit"], button:not([type]), input[type="submit"]'))) {
       form.requestSubmit(destination as HTMLButtonElement | HTMLInputElement | undefined);
     } else destination?.focus();
   };

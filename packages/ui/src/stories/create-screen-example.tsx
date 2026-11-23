@@ -4,7 +4,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
-  Button, Combobox, DataTable, dataTableFeatures, Field, FormFlow, Input, Label,
+  Button, Combobox, DataTable, dataTableFeatures, Field, FormActionBar, FormFlow, Input, Label,
   RadioGroup, RadioGroupItem, Switch, Textarea, toast, useComposition,
   type ReturnRecord,
 } from '../index';
@@ -42,6 +42,11 @@ export function OrderCreateScreen({ onSave, onBack, restart = false, notificatio
     leaveOrigin.current = event.currentTarget;
     if (dirty) setDiscard(true); else onBack();
   };
+  // 하단 줄의 취소도 Breadcrumb 이탈과 같은 확인을 거친다. 확인창이 닫히면 취소 버튼으로 돌아온다.
+  const cancel = () => {
+    leaveOrigin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (dirty) setDiscard(true); else onBack();
+  };
   const validate = (key: keyof Draft, value: string, trigger: 'change' | 'blur') => {
     // 한글 조합 중에는 검증하지 않는다. 첫 오류는 blur에서 알리고, 이미 난 오류는 change에서 바로 푼다.
     if (!composition.isComposing() && (trigger !== 'change' || Boolean(errors[key]))) {
@@ -61,7 +66,7 @@ export function OrderCreateScreen({ onSave, onBack, restart = false, notificatio
     </BreadcrumbList></Breadcrumb>
     <header className="space-y-2"><h1 className="text-title font-semibold">주문 등록</h1>
       <p className="text-fg-muted">필수 항목을 입력하고 저장하세요. Enter로 다음 칸, 비고에서는 Tab으로 이동합니다.</p></header>
-    <FormFlow noValidate restartOnSubmit={restart} data-probe="order-form" className="max-w-2xl space-y-3 border-y border-line py-4"
+    <FormFlow noValidate restartOnSubmit={restart} data-probe="order-form" className="max-w-2xl space-y-3 border-t border-line pt-4"
       onCompositionStartCapture={composition.bind.onCompositionStart}
       onCompositionEndCapture={composition.bind.onCompositionEnd}
       onSubmit={() => {
@@ -72,6 +77,12 @@ export function OrderCreateScreen({ onSave, onBack, restart = false, notificatio
         if (restart) { setDraft(emptyDraft); setErrors({}); }
         return true;
       }}>
+      {/* 실제 액션 버튼(§19.2). 하단 줄은 폼의 마지막 자식이라(F-1) 입력 도움말은 첫 칸 앞에 둔다 — 담당자 다음 정지점이 줄이어야
+          마지막 칸 Enter 가 저장이다. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button data-probe="action" type="button" onClick={() => setActions(count => count + 1)}>입력 도움말</Button>
+        <p role="status" data-probe="action-result" className="text-fg-muted">{actions ? `도움말을 ${actions}회 열었습니다. 사업장을 고른 뒤 주문 수량을 입력하세요.` : '입력 도움말을 열어 작성 순서를 확인할 수 있습니다.'}</p>
+      </div>
       <Field label="상품명" required error={errors.name}><Input data-probe="name" value={draft.name}
         onChange={event => change('name', event.target.value)} onBlur={() => validate('name', draft.name, 'blur')} /></Field>
       <Field label="사업장" required error={errors.site}><Combobox options={sites} value={draft.site}
@@ -91,12 +102,9 @@ export function OrderCreateScreen({ onSave, onBack, restart = false, notificatio
       <Field label="담당자">{/* 마지막 칸은 계약을 붙이지 않는다. §11.5 의 암묵적 제출이 살아 있어야
           연속 등록이 레코드마다 Enter 한 번으로 끝난다. */}
       <Input data-probe="owner" value={draft.owner} onChange={event => change('owner', event.target.value)} /></Field>
-      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
-        <Button data-probe="save" type="submit" variant="primary">저장</Button>
-        <Button data-probe="action" type="button" onClick={() => setActions(count => count + 1)}>입력 도움말</Button>
-      </div>
-      <p role="status" data-probe="action-result">{actions ? `도움말을 ${actions}회 열었습니다. 사업장을 고른 뒤 주문 수량을 입력하세요.` : '입력 도움말을 열어 작성 순서를 확인할 수 있습니다.'}</p>
       {restart && <output data-probe="saved-count" aria-label="등록 횟수" className="tabular">등록 {saved}건</output>}
+      {/* 저장 줄(§19.5): [상태] [취소] [저장 primary, 오른쪽 끝]. 예전 줄은 주요 버튼이 왼쪽 첫째였다. */}
+      <FormActionBar dirty={dirty} onCancel={cancel} />
     </FormFlow>
     <AlertDialog open={discard} onOpenChange={setDiscard}>
       <AlertDialogContent onCloseAutoFocus={event => {

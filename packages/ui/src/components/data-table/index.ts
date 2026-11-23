@@ -1,4 +1,4 @@
-export { DataTable, type DataTableProps } from './data-table';
+export { DataTable, type DataTableProps, type DataTableSummaryRow } from './data-table';
 export {
   useDataTable, dataTableFeatures, createDataTableColumnHelper,
   type DataTableFeatures, type DataTableColumns, type SelectionMode, type UseDataTableOptions,

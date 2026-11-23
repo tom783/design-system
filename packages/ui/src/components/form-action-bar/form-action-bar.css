@@ -1,0 +1,90 @@
+/* 폼 하단 고정 액션 줄 — DESIGN.md §19.5 · 규칙 표 F-1~F-13(Figma 198:3939 r2). 새 토큰 없이 기존 토큰만 쓴다. */
+@layer components {
+  /* 가로 범위·sticky 오프셋은 AppShell 본문 여백(--app-shell-gutter: 24 · 1024 미만 16)이다. 고정 24 는 1024 미만에서
+     줄이 양옆 8px 넘쳐 본문이 가로로 스크롤됐다(1단계 관찰 1). AppShell 밖이면 0 — 줄 폭이 부모 폭과 같다. */
+  .ds-form-action-bar {
+    --form-action-bar-gutter: var(--app-shell-gutter, 0px);
+    position: sticky;
+    bottom: calc(-1 * var(--form-action-bar-gutter));
+    /* 본문 내용 위, 일괄 작업 바(30)·떠 있는 레이어(50) 아래(F-12). 열린 Select·메뉴 목록은 포털 50 이라 줄 위에 그려진다. */
+    z-index: 5;
+    box-sizing: border-box;
+    /* 위 auto: 조상이 세로 flex 면 짧은 폼에서도 본문 바닥으로 내려간다(FD-1 A — 아래 :has 규칙). 아래 음수: 스크롤
+       끝에서 본문 아래 여백까지 덮어 줄이 바닥에 닿는다. */
+    margin-block: auto calc(-1 * var(--form-action-bar-gutter));
+    margin-inline: calc(-1 * var(--form-action-bar-gutter));
+    /* 높이 63 = 윗선 1 + 12 + 버튼 md 38 + 12 (F-4). 좌우 여백 = gutter. */
+    padding: var(--space-12) var(--form-action-bar-gutter);
+    border-top: var(--border-width) solid var(--border-subtle);
+    /* 일괄 작업 바와 같은 'sticky 바 = 중립 sunken' 한 규칙(FD-2 B). 평면 위 요소라 그림자 없음. */
+    background: var(--bg-sunken);
+    color: var(--text-primary);
+  }
+  /* 버튼 묶음은 폼 열과 같은 최대 폭으로 폼 열 왼끝에서 시작한다 — 저장 오른끝 = 폼 열 오른끝(F-3, 관찰 5). */
+  .ds-form-action-bar-content {
+    display: flex;
+    align-items: center;
+    /* 위험 동작과 주요 버튼 사이 최소 24 — 같은 묶음에 두지 않는다(F-5). */
+    column-gap: var(--space-24);
+    min-width: 0;
+    max-width: var(--form-action-bar-content-max-width, 48rem);
+  }
+  .ds-form-action-bar-danger { display: flex; flex: none; margin-inline-end: auto; }
+  .ds-form-action-bar-actions { display: flex; align-items: center; gap: var(--space-8); min-width: 0; margin-inline-start: auto; }
+  .ds-form-action-bar-status {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+  }
+  /* 보이는 문구가 없을 때는 자리를 차지하지 않는다(간격 8 이 남지 않게). live region 은 접근성 트리에 남긴다. */
+  .ds-form-action-bar-status[data-empty] {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%);
+  }
+  /* '오류 N개' — 링크 모양(danger 글자 + 밑줄). 색만이 아니라 '오류' 글자와 밑줄이 함께 알린다. */
+  .ds-form-action-bar-errors {
+    flex: none;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--status-danger-fg);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .ds-form-action-bar-errors:hover { text-decoration-thickness: 2px; }
+  .ds-form-action-bar-submit[aria-disabled="true"] { cursor: progress; }
+  .ds-form-action-bar-spinner { animation: ds-form-action-bar-spin 1s linear infinite; }
+  @media (prefers-reduced-motion: reduce) { .ds-form-action-bar-spinner { animation: none; } }
+  @keyframes ds-form-action-bar-spin { to { transform: rotate(360deg); } }
+
+  /* 넓은 폭은 삭제 버튼, 좁은 폭은 '더 보기' 메뉴. 버튼의 display 유틸리티를 이기려고 감싼 칸을 숨긴다. */
+  .ds-form-action-bar-more-slot { display: none; }
+  /* 480px 미만(F-10): 상태 문구 숨김(오류는 폼 위 요약으로), 삭제는 ⋯ 38×38 메뉴, 취소·저장 같은 폭으로 줄을 채운다. 높이 63 유지. */
+  @media (width < 480px) {
+    .ds-form-action-bar-content { column-gap: var(--space-8); }
+    .ds-form-action-bar-delete-slot, .ds-form-action-bar-status, .ds-form-action-bar-errors { display: none; }
+    .ds-form-action-bar-more-slot { display: flex; }
+    .ds-form-action-bar-danger { margin-inline-end: 0; }
+    .ds-form-action-bar-actions { flex: 1; }
+    .ds-form-action-bar-cancel, .ds-form-action-bar-submit { flex: 1 1 0; }
+  }
+
+  /* 줄이 있는 본문: Tab·오류 이동으로 스크롤될 때 칸이 줄 위로 보인다 — 줄 높이 63 + 16 = 79(F-6, 관찰 2). */
+  .ds-app-shell-main:has(.ds-form-action-bar) {
+    scroll-padding-bottom: calc(var(--border-width) + var(--space-12) + var(--control-h-md) + var(--space-12) + var(--space-16));
+  }
+  /* 항상 본문 바닥(FD-1 A): 내용 영역을 본문 높이까지 늘리고 줄의 조상을 늘린다. 조상이 세로 flex(페이지 루트·폼의
+     flex-col gap-6)이면 줄의 margin-top:auto 가 바닥까지 내려간다. 세로 flex 가 아닌 조상이 끼면 줄은 폼 바로 아래에서
+     sticky 로만 동작한다. */
+  .ds-app-shell-content:has(.ds-form-action-bar) { display: flex; flex-direction: column; min-height: 100%; }
+  .ds-app-shell-content :has(.ds-form-action-bar) { flex-grow: 1; }
+}

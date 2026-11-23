@@ -235,7 +235,7 @@ try {
   });
 
   for (const theme of THEMES) {
-    await check(`주문 상세 교체 ${theme}: 카드 세 장 가로형·라벨 88·값 112·행 간격 32 유지, 합계는 끝 정렬·강조`, async () => {
+    await check(`주문 상세 교체 ${theme}: 카드 세 장 가로형·라벨 88·값 112·행 간격 32 유지, 금액 내역은 끝 정렬·강조`, async () => {
       await story('기본', theme, { prefix: 'screens-orderdetail', waitPlay: true });
       const m = await inPage(`const lists = [...document.querySelectorAll(${JSON.stringify(LIST)})];
         return { cards: lists.slice(0, 3).map(list => { const card = rect(list.closest('[data-slot="card"]')); return { card, rows: geometry(list) }; }),
@@ -252,9 +252,12 @@ try {
       }
       // 결제 카드의 결제 금액은 합계 강조다(구분선 + 위 여백 8).
       const pay = m.cards[2].rows; assert.ok(pay[3].borderTop.startsWith('1px solid')); near(pay[3].dt.y - pay[3].pair.y, 9, '결제 금액 강조');
+      // 목표 57 TD-1 A: 열 합계는 표 안 합계 행(tfoot)이 맡고, 표 아래는 금액 내역(배송비 → 결제 금액)만 남는다.
+      // 값 끝 = 금액 열 글자 끝 = 표 오른끝 안쪽 15(셀 여백 14 + 테두리 1).
       const totals = m.totals;
-      for (const p of totals) { near(p.dd.r, m.section.r, `${p.label} 값 끝 = 표 끝`); near(p.dd.x - p.dt.r, 24, `${p.label} 라벨–값 24`); }
-      near(totals[1].pair.y - totals[0].pair.b, 8, '합계 쌍 사이 8'); assert.ok(totals[2].borderTop.startsWith('1px solid'));
+      assert.deepEqual(totals.map(p => p.label), ['배송비', '결제 금액']);
+      for (const p of totals) { near(p.dd.r, m.section.r - 15, `${p.label} 값 끝 = 금액 열 글자 끝`); near(p.dd.x - p.dt.r, 24, `${p.label} 라벨–값 24`); }
+      near(totals[1].pair.y - totals[0].pair.b, 8, '내역 쌍 사이 8'); assert.ok(totals[1].borderTop.startsWith('1px solid'));
       return { theme, cards: m.cards.map(c => ({ card: c.card, rows: c.rows.map(p => [p.label, Math.round(p.pair.y - c.card.y), p.pair.h]) })),
         totals: totals.map(p => [p.label, Math.round(p.dt.x), Math.round(p.dd.r), Math.round(p.pair.y - m.section.y)]) };
     });

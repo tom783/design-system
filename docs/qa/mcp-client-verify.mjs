@@ -231,6 +231,25 @@ for (const query of ['키-값', '라벨과 값', '주문 정보', '합계 묶음
     && component.rules.some(r => r.text.includes('없음')) && component.rules.some(r => r.text.includes('640px') && r.text.includes('360px'))
     && component.rules.some(r => r.text.includes('emphasis')) && ['DataTable', 'Peek'].every(name => component.dont.some(s => s.includes(name))));
 }
+// 목표 57: 폼 하단 고정 액션 줄·표 합계 행 — 질의 첫 후보와 디자인 총괄 지침(purpose·useWhen·dont)·API.
+for (const [query, expected] of [['폼 아래에 취소와 저장 버튼을 항상 고정해 줘', 'FormActionBar'],
+  ['sticky save and cancel bar at the bottom of the edit form', 'FormActionBar'],
+  ['주문 상품 표 맨 아래에 수량과 금액 합계 행', 'DataTable'], ['totals row at the bottom of the order items table', 'DataTable'],
+  ['배송비와 할인, 결제 금액 내역을 표 아래 오른쪽에', 'DescriptionList']]) {
+  const response = await t('which_component', { description: query });
+  check(`목표 57 검색: ${query} → ${expected}`, response.structuredContent?.candidates[0]?.name === expected);
+}
+{
+  const bar = (await t('get_component', { name: 'FormActionBar' })).structuredContent;
+  check('FormActionBar 상세는 지침(purpose·useWhen·dont)과 저장 중·변경·오류·삭제 API를 제공한다',
+    bar?.purpose === '등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.'
+    && bar.useWhen.some(s => s.includes('AppShell 본문 마지막')) && ['sticky div', 'DialogFooter', '주요 버튼', 'BulkActionBar'].every(w => bar.dont.some(s => s.includes(w)))
+    && ['saving', 'dirty', 'errorCount', 'onCancel', 'onDelete', 'form', 'contentMaxWidth'].every(name => bar.props.some(p => p.name === name)));
+  const table = (await t('get_component', { name: 'DataTable' })).structuredContent;
+  check('DataTable 상세는 합계 행(summary) API·지침과 DescriptionList 갈림길을 제공한다',
+    table?.props.some(p => p.name === 'summary') && table.useWhen.some(s => s.includes('합을 확인'))
+    && ['dl·div', '이 페이지 합계', 'DescriptionList'].every(w => table.dont.some(s => s.includes(w))));
+}
 
 for (const query of ['날짜 시간', '시각', '예약 발행', '일시']) {
   const response = await t('which_component', { description: query });
@@ -345,13 +364,14 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const rules = (await t('get_rules', {})).content[0].text;
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
   // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436],['목록',list,19_950 + 206 + 203 + 199],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935],['목록',list,19_950 + 206 + 203 + 199 + 212],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }
   const detailBytes = Math.max(...(await Promise.all(stored.components.map(async entry =>
     Buffer.byteLength((await t('get_component', { name: entry.name })).content[0].text)))));
-  check('최대 상세 응답 크기 회귀 상한 4,800B', detailBytes <= 4_800, `${detailBytes}바이트`);
+  // 목표 57: DataTable 상세 4,576B → 5,642B(summary 합계 행 지침 +1,066B). 운영 상한 6,000B 는 budget.mjs.
+  check('최대 상세 응답 크기 회귀 상한 5,642B', detailBytes <= 4_800 + 842, `${detailBytes}바이트`);
 }
 check('stdout 에 JSON 아닌 줄이 하나도 없다', badLines.length === 0, badLines.join(' | ').slice(0,150));
 console.log(`     stderr ${stderrBuf.length}자${stderrBuf?': "'+stderrBuf.slice(0,80)+'"':''}`);

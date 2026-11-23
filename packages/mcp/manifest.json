@@ -7161,11 +7161,12 @@
       "purpose": "상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.",
       "useWhen": [
         "주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때",
-        "상품 합계·배송비·결제 금액 합계를 끝에 맞출 때"
+        "배송비·할인·결제 금액 같은 금액 내역을 표 아래 끝에 맞출 때"
       ],
       "dont": [
         "열 머리글이 있는 행 비교는 DataTable을 쓴다",
-        "행을 열지 않고 훑는 요약은 Peek을 쓴다"
+        "행을 열지 않고 훑는 요약은 Peek을 쓴다",
+        "표 열의 합계는 DataTable summary로 둔다"
       ],
       "rules": [
         {
@@ -7189,7 +7190,11 @@
           "source": "16.7"
         },
         {
-          "text": "합계는 align=end와 마지막 쌍 emphasis다. 여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.",
+          "text": "금액 내역은 align=end와 마지막 쌍 emphasis다. 표 아래면 값 끝을 금액 열 글자 끝에 맞추고 상품 합계를 다시 쓰지 않는다.",
+          "source": "16.7"
+        },
+        {
+          "text": "여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.",
           "source": "16.7"
         }
       ],
@@ -7208,6 +7213,7 @@
         "정보 목록",
         "합계 묶음",
         "결제 금액 합계",
+        "금액 내역",
         "정보 나열",
         "key value",
         "description list"
@@ -7292,11 +7298,15 @@
       "category": "table",
       "purpose": "정렬·선택·가상화가 가능한 데이터 표다.",
       "useWhen": [
-        "많은 레코드를 열로 비교할 때"
+        "많은 레코드를 열로 비교할 때",
+        "금액·수량처럼 더할 수 있는 열이 있고 합을 확인해야 하는 표(summary 합계 행)"
       ],
       "dont": [
         "금액을 가변폭 숫자로 쓰지 마라",
-        "긴 글 열을 ClampText 로 감싸지 마라"
+        "긴 글 열을 ClampText 로 감싸지 마라",
+        "표 밖 dl·div로 열 합계를 만들지 마라",
+        "페이지 일부 합을 '합계'라고만 쓰지 마라('이 페이지 합계')",
+        "배송비·할인은 합계 행이 아니라 DescriptionList에 둔다"
       ],
       "rules": [
         {
@@ -7322,13 +7332,22 @@
         {
           "text": "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다.",
           "source": "4"
+        },
+        {
+          "text": "summary는 숫자 열의 합계를 같은 열 맨 아래 한 줄로 둔다. values에 없는 열은 비우고 null은 —다. 빈 표에서는 숨는다.",
+          "source": "4.3"
+        },
+        {
+          "text": "라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건. 가로 스크롤 표는 금액 열을 pinnedEnd로.",
+          "source": "4.3"
         }
       ],
       "related": [
         "Peek",
         "Checkbox",
         "StatusChip",
-        "Pagination"
+        "Pagination",
+        "DescriptionList"
       ],
       "keywords": [
         "표",
@@ -7340,7 +7359,14 @@
         "여러 건 선택",
         "다중 선택",
         "일괄 선택",
-        "주문 목록"
+        "주문 목록",
+        "합계 행",
+        "열 합계",
+        "표 합계",
+        "페이지 합계",
+        "전체 합계",
+        "totals row",
+        "table footer"
       ],
       "source": "components/data-table/data-table.tsx",
       "props": [
@@ -7458,6 +7484,11 @@
           "name": "loadingMore",
           "type": "boolean",
           "doc": "전체 로딩과 달리 기존 행 아래에 로딩 표시를 덧붙인다."
+        },
+        {
+          "name": "summary",
+          "type": "DataTableSummaryRow[]",
+          "doc": "열 합계 행(tfoot, 최대 2행). 라벨은 첫 데이터 열에 선다."
         }
       ],
       "extends": [
@@ -7477,6 +7508,9 @@
         "data-table-skeleton-row",
         "data-table-sort",
         "data-table-spacer",
+        "data-table-summary",
+        "data-table-summary-cell",
+        "data-table-summary-row",
         "data-table-table",
         "data-table-toolbar",
         "empty-state",
@@ -9407,6 +9441,161 @@
       ],
       "slots": [
         "form-flow"
+      ]
+    },
+    {
+      "name": "FormActionBar",
+      "category": "form",
+      "purpose": "등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.",
+      "useWhen": [
+        "등록·편집 페이지, AppShell 본문 마지막에 한 번",
+        "저장 버튼이 스크롤 위치와 상관없이 같은 자리에 있어야 할 때"
+      ],
+      "dont": [
+        "sticky div·음수 여백으로 직접 만들지 마라",
+        "Sheet·Dialog에는 DialogFooter를 쓴다",
+        "주요 버튼을 둘 두거나 삭제를 저장 옆에 두지 마라",
+        "목록 선택 작업은 BulkActionBar를 쓴다"
+      ],
+      "rules": [
+        {
+          "text": "폼의 마지막 자식으로 둔다. 저장은 type=submit이고 폼 밖에 두면 form에 폼 id를 준다. 마지막 칸 Enter는 저장, Esc는 취소가 아니다.",
+          "source": "19.5"
+        },
+        {
+          "text": "순서는 삭제(onDelete, 왼쪽 끝) · 상태 · 취소(onCancel) · 저장(submitLabel, 오른쪽 끝)이다. 삭제는 확인창을 거쳐 onDelete를 부른다.",
+          "source": "19.5"
+        },
+        {
+          "text": "dirty면 저장하지 않은 변경 있음, errorCount면 오류 N개 링크(첫 오류 칸 포커스)다. 폼 위 오류 요약은 앱이 그대로 둔다.",
+          "source": "19.5"
+        },
+        {
+          "text": "saving이면 저장 버튼이 스피너·저장 중…이고 취소·삭제는 비활성, 다시 제출되지 않는다. 결과는 토스트나 페이지 이동으로 알린다.",
+          "source": "19.5"
+        },
+        {
+          "text": "contentMaxWidth는 폼 열 최대 폭이다(기본 48rem). 페이지 루트·폼을 세로 flex로 두면 짧은 폼에서도 본문 바닥에 붙는다.",
+          "source": "19.5"
+        },
+        {
+          "text": "480px 미만은 상태 문구를 숨기고 삭제를 더 보기 메뉴로 옮기며 취소·저장이 같은 폭이다.",
+          "source": "19.5"
+        }
+      ],
+      "related": [
+        "AppShell",
+        "FormFlow",
+        "Field",
+        "BulkActionBar",
+        "Dialog"
+      ],
+      "keywords": [
+        "하단 고정",
+        "아래 고정",
+        "화면 아래",
+        "고정 버튼",
+        "버튼 줄",
+        "저장 줄",
+        "취소 저장",
+        "고정 액션",
+        "액션 줄",
+        "저장하지 않은 변경",
+        "sticky footer",
+        "form actions",
+        "save bar",
+        "sticky save"
+      ],
+      "source": "components/form-action-bar/form-action-bar.tsx",
+      "props": [
+        {
+          "name": "submitLabel",
+          "type": "string",
+          "doc": "저장(주요) 버튼 글자. type=submit 이다. 기본 '저장', 저장 중에는 '{submitLabel} 중…'."
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "doc": "줄을 `<form>` 밖에 둘 때 그 form 의 id. 저장 버튼의 form 속성으로 연결한다."
+        },
+        {
+          "name": "onCancel",
+          "type": "(() => void)",
+          "doc": "취소 버튼을 눌렀다. 생략하면 취소 버튼이 없다. Esc 로는 부르지 않는다."
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "doc": "취소 버튼 글자. 기본 '취소'."
+        },
+        {
+          "name": "saving",
+          "type": "boolean",
+          "doc": "저장 중이다. 저장 버튼이 스피너와 '저장 중…'을 보이고 취소·삭제는 비활성, 다시 제출되지 않는다."
+        },
+        {
+          "name": "dirty",
+          "type": "boolean",
+          "doc": "저장하지 않은 변경이 있다. 상태 자리에 '저장하지 않은 변경 있음'을 보인다."
+        },
+        {
+          "name": "errorCount",
+          "type": "number",
+          "doc": "저장에 실패한 칸 수. 1 이상이면 상태 자리가 '오류 N개' 링크다. 폼 위 오류 요약은 앱이 그대로 둔다."
+        },
+        {
+          "name": "onErrorClick",
+          "type": "(() => void)",
+          "doc": "'오류 N개'를 눌렀다. 생략하면 폼 안 첫 aria-invalid 칸으로 포커스를 옮긴다."
+        },
+        {
+          "name": "onDelete",
+          "type": "(() => void)",
+          "doc": "편집 화면의 삭제를 확인창에서 확정했다. 주면 왼쪽 끝에 삭제(480px 미만은 더 보기 메뉴)가 생긴다."
+        },
+        {
+          "name": "deleteLabel",
+          "type": "string",
+          "doc": "삭제 버튼·확정 버튼 글자. 기본 '삭제'. 확인창 제목은 '{deleteLabel}하시겠습니까?'."
+        },
+        {
+          "name": "deleteDescription",
+          "type": "ReactNode",
+          "doc": "삭제 확인창 본문 — 결과와 되돌릴 방법을 함께 쓴다(§6.2). 기본 '삭제하면 되돌릴 수 없습니다.'"
+        },
+        {
+          "name": "contentMaxWidth",
+          "type": "MaxWidth<string | number>",
+          "doc": "버튼 묶음의 최대 폭. 폼 열의 최대 폭과 같게 준다. 기본 48rem(768px)."
+        }
+      ],
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "slots": [
+        "alert-dialog-action",
+        "alert-dialog-cancel",
+        "alert-dialog-content",
+        "alert-dialog-description",
+        "alert-dialog-footer",
+        "alert-dialog-header",
+        "alert-dialog-overlay",
+        "alert-dialog-title",
+        "button",
+        "dropdown-menu-content",
+        "dropdown-menu-destructive-icon",
+        "dropdown-menu-item",
+        "dropdown-menu-trigger",
+        "form-action-bar",
+        "form-action-bar-actions",
+        "form-action-bar-cancel",
+        "form-action-bar-content",
+        "form-action-bar-danger",
+        "form-action-bar-delete",
+        "form-action-bar-errors",
+        "form-action-bar-more",
+        "form-action-bar-status",
+        "form-action-bar-submit"
       ]
     },
     {

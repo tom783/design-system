@@ -99,10 +99,12 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
   }
   // R49: 리소스는 저장 형태 대신 선택 색인을 보낸다. 색인 실측 23,191B + 309B. 목록 19,873B(FormRow 포함) + 77B.
   // 목표 49 FilterBar 색인 +362B · BulkActionBar +341B · DescriptionList +436B, 목록 +206B · +203B · +199B.
-  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362 + 341 + 436);
+  // 목표 57 색인 +935B(FormActionBar 553 · DataTable summary 313 · DescriptionList 금액 내역 69), 목록 +212B(FormActionBar).
+  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362 + 341 + 436 + 935);
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
-  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206 + 203 + 199);
-  assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800);
+  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206 + 203 + 199 + 212);
+  // 목표 57: 최대 상세 DataTable 4,576B → 5,642B(summary 합계 행 지침). 운영 상한 6,000B 는 budget.mjs.
+  assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800 + 842);
   // 2026-11-22 표 선택 행 토큰(bg-selected-row) 추가: 토큰 67,503B + 297B. 운영 상한 80KB 는 유지한다.
   assert.ok(Buffer.byteLength(JSON.stringify(manifest.tokens)) <= 67_800);
   assert.ok(Buffer.byteLength(JSON.stringify({ rules: manifest.principles })) <= 4_400);

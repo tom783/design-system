@@ -77,3 +77,17 @@
 /* inset 마커는 셀 너비·고정 오프셋을 밀지 않는다. 불투명한 셀 위에도 같은 마커를 그린다. */
 [data-slot="data-table-row"][data-revisited],
 [data-slot="data-table-row"][data-revisited] > td:first-child { box-shadow: inset 3px 0 0 var(--row-marker); }
+
+/* 합계 행(tfoot · 규칙 표 T-1~T-5). 셀 여백·행 높이는 본문 칸과 같다(--cell-px 14·--row-h) — 합계 숫자와 열 숫자의
+   x 가 같다(1단계 표 밖 합계는 +15). 라벨·값 600·고정폭 숫자, 바탕은 머리와 같은 canvas.
+   클래스를 둘 겹쳐 고정 열 머리 칸 규칙(th.ds-data-table-pinned 의 surface 바탕)보다 우선한다 — 고정 열 칸도 같은 바탕. */
+[data-slot="data-table"] .ds-data-table-summary-cell.ds-data-table-cell {
+  background: var(--bg-canvas);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+/* 본문과의 구분은 위 1px border-default(본문 행 선 border-subtle 보다 진하게 — 머리 아랫선과 같은 선). 둘째 행은 본문 행 선. */
+[data-slot="data-table-summary-row"]:first-child > .ds-data-table-summary-cell { border-top: var(--border-width) solid var(--border-default); }
+[data-slot="data-table-summary-row"] + [data-slot="data-table-summary-row"] > .ds-data-table-summary-cell { border-top: var(--border-width) solid var(--border-subtle); }
+/* 합계 행 바로 위 본문 행의 아랫선을 지운다 — 선이 두 겹(subtle + default)으로 보이지 않게. */
+[data-slot="data-table"][data-summary] [data-slot="data-table-body"] > :is([data-slot="data-table-row"], [data-slot="data-table-skeleton-row"]):last-child > td { border-bottom-width: 0; }

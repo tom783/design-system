@@ -2,6 +2,7 @@ import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks';
 import * as FormStories from '../src/stories/form.stories';
 import * as StepsStories from '../src/stories/steps.stories';
 import * as FileUploadStories from '../src/stories/file-upload.stories';
+import * as FormActionBarStories from '../src/stories/form-action-bar.stories';
 import { Intent } from './_intent';
 import { DesignLink } from './_page';
 import { FormControlRecipe } from './_form-control';
@@ -50,6 +51,14 @@ FormFlow는 Enter를 Tab 순서의 다음 칸 이동으로 연결하며, 컨트�
 
 <div data-doc-demo="더티 폼"><DirtyFormRecipe /></div>
 <Source code={dirtyCode.replace("from '../src'", "from '@s2life/ui'")} language="tsx" />
+
+## 하단 고정 액션 줄
+
+등록·편집 페이지의 취소·저장(과 수정의 삭제)은 FormActionBar 한 줄로 폼의 마지막 자식에 둡니다. AppShell 본문 바닥에 고정되고, 저장 중·저장하지 않은 변경·오류 N개를 같은 자리에서 보여 줍니다. sticky div와 음수 여백으로 직접 만들지 않습니다. 옆 패널·대화상자는 DialogFooter를 그대로 쓰고 순서(취소 → 주요 버튼 오른쪽 끝)와 상태 문구 규칙만 맞춥니다. 화면 배치는 <DesignLink section="19.5">DESIGN.md §19.5</DesignLink>를 확인하세요.
+
+<Intent name="FormActionBar" />
+
+<Canvas of={FormActionBarStories.사용법} />
 
 ## 파일 선택과 업로드 상태
 

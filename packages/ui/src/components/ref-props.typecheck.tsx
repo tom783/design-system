@@ -16,6 +16,7 @@ import { SelectTrigger, SelectItem } from './select';
 import { DropdownMenuItem, DropdownMenuShortcut } from './dropdown-menu';
 import { FilterBar } from './filter-bar';
 import { BulkActionBar } from './bulk-action-bar';
+import { FormActionBar } from './form-action-bar';
 
 const button = React.createRef<HTMLButtonElement>();
 const input = React.createRef<HTMLInputElement>();
@@ -49,6 +50,7 @@ void [
   <DropdownMenuItem ref={div}>복사</DropdownMenuItem>,
   <FilterBar ref={div} />,
   <BulkActionBar ref={div} selectedCount={0} />,
+  <FormActionBar ref={div} />,
   <DropdownMenuShortcut ref={span}>⌘C</DropdownMenuShortcut>,
 ];
 

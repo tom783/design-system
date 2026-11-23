@@ -47,8 +47,38 @@
   값 아래로 접는다 — CSS 컨테이너 쿼리라 서버 렌더와 첫 그림이 같다. 금액 합계는 `align="end"`(끝 정렬·고정폭 숫자)와 마지막 쌍
   `emphasis`(600·위 구분선·위 여백 8px). Screens/OrderDetail의 손 조합 `<dl>` 네 곳을 이 부품으로 바꿨다(위치 차이는 §16.7).
   - 앱이 할 일: 없다. 상세 화면에서 `<dl>`을 손으로 조합했다면 이 부품으로 바꿀 수 있다.
+- **폼 하단 고정 액션 줄 — `FormActionBar`** (목표 57 · 디자인 총괄 확정 규칙 표 F-1~F-13 · DESIGN.md §19.5 · Figma 198:3939 r2).
+  등록·편집 폼의 마지막 자식으로 두면 AppShell 본문 바닥에 sticky 로 고정된다 — 짧은 폼도 바닥(본문 내용 min-height 100%).
+  좌우·아래 음수 여백과 sticky 오프셋은 `var(--app-shell-gutter)`(24 · 1024 미만 16), 높이 63(12 + 버튼 38 + 윗선 1), 바탕
+  `bg/sunken` + 윗선 `border/subtle`, 그림자 없음. 버튼 묶음 최대 폭은 폼 열과 같은 `contentMaxWidth`(기본 48rem) — 저장 오른끝 =
+  폼 열 오른끝. 순서 `[삭제 — 편집만, onDelete]` · · · `[상태]` `[취소 — onCancel]` `[저장 primary, type=submit]`, 삭제–저장 ≥ 24.
+  `dirty` → '저장하지 않은 변경 있음', `errorCount` → '오류 N개' 링크(첫 `aria-invalid` 칸 포커스, `onErrorClick`),
+  `saving` → 저장 버튼 스피너 '저장 중…'(주요색 유지·`aria-disabled`, 그동안 제출을 막는다)·취소·삭제 비활성.
+  삭제는 확인창(기본 포커스 '계속 편집', 확정 채운 danger)을 거쳐 `onDelete`. 480px 미만은 상태 숨김·삭제는 '더 보기'(⋯ 38×38)
+  메뉴·취소·저장 같은 폭. 줄이 있으면 본문 `scroll-padding-bottom` 79 — Tab·오류 이동으로 칸이 줄 밑에 가리지 않는다.
+  폼 밖에 두면 `form` 에 폼 id. Sheet·Dialog 는 `DialogFooter` 그대로(순서·상태 규칙만 공유). 새 토큰 없음.
+  FormFlow 의 마지막 칸 Enter 는 다음 정지점이 줄(취소가 먼저)이어도 줄의 저장으로 제출한다.
+  `Screens/ProductCreate`(등록·수정·저장 중·오류 2개·짧은 폼)와 `QA/CreateScreen` 저장 줄(주요 버튼이 왼쪽 첫째였다)을 이 부품으로 바꿨다.
+- **표 합계 행 — `DataTable` `summary`** (타입 `DataTableSummaryRow`, 목표 57 · 규칙 표 T-1~T-12 · DESIGN.md §4.3).
+  `summary={[{ label: '합계', values: { qty: '4', sum: '121,300원' } }]}` 가 `<tfoot>` 한 줄을 그린다 — 첫 데이터 열(선택 열 다음)이
+  `<th scope="row">` 라벨, 셀 여백·행 높이는 본문 칸과 같아 합계 숫자가 열 숫자와 같은 x 다. 14/20·600·고정폭 숫자, 열 정렬을 따른다.
+  위 1px `border/default`(본문 행 선보다 진하게)·머리와 같은 `bg/canvas`. 최대 2행('이 페이지 합계' 위 · '전체 합계 · N건' 아래).
+  `values` 에 없는 열은 비우고 `null` 은 '—'(낭독 "없음"), 빈 표·오류에서는 숨고 로딩 중에는 값 자리가 숫자 폭 스켈레톤이다.
+  `tfoot` 은 `sticky bottom` 이라 표가 자기 세로 스크롤을 가지면 바닥에 붙고, `pinnedEnd` 열의 합계 칸도 같은 고정·바탕이다.
+  표 스크롤 영역은 `isolation: isolate` 라 머리·합계 층이 표 밖 sticky 줄 위로 올라오지 않는다.
+  `Screens/OrderDetail` 의 표 밖 합계는 tfoot 합계 행 + 금액 내역 `DescriptionList`(배송비 → 결제 금액, 값 끝 = 금액 열 글자 끝,
+  '상품 합계' 중복 없음)로 바꿨고, 표가 가로로 넘치면 금액 열을 오른쪽에 고정한다. 검수 변형(페이지네이션 2행·선택 열·빈 표·로딩)을 더했다.
+  - MCP: FormActionBar 항목(디자인 총괄 지침 purpose·useWhen·dont) · DataTable useWhen·dont·규칙·`summary` · DescriptionList 금액 내역 갈림길.
+    색인 +935바이트(553 · 313 · 69) · `list_components` +212바이트, 최대 상세 DataTable 4,576 → 5,642바이트(운영 상한 6,000 안).
+    `which_component` 정답 세트에 10문항(FormActionBar 5 · 합계 행 4 · 금액 내역 1, 한국어 8·영어 2)을 더해 128문항
+    top-1 80 · top-3 100(기존 118문항 top-1 70 · top-3 90 그대로).
+  - 앱이 할 일: 없다. 표 아래 `<dl>`·div 로 열 합계를 만들었다면 `summary` 로, sticky div 저장 줄은 `FormActionBar` 로 바꿀 수 있다.
 
 ### 바뀐 동작 (마이그레이션)
+
+- **주문 상세 카드 겹침** (목표 57 2c). `Screens/OrderDetail` 카드 세 장이 1024 이하에서 겹쳤다 — Card 최소 폭 240 × 3 + 간격 32 =
+  752 > 본문 약 720. `grid-cols-3` 대신 `repeat(auto-fit, minmax(min(100%, var(--card-min-w)), 1fr))` 로 폭이 모자라면 줄을 바꾼다.
+  Card 공개 API·최소 폭은 그대로다. 앱이 할 일: 카드를 고정 열 수 격자에 넣었다면 같은 auto-fit 으로 바꾼다.
 
 - **앱 번들 크기 — 쓴 부품만 받는다** (목표 57 · `docs/qa/bundle-size.md`). Button 하나만 가져온 앱이 lucide 전체와
   tokens.json 원본까지 받던 것을 고쳤다. tarball 을 Vite 앱처럼 묶은 값(react 외부, 축소, kB=1000):

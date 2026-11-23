@@ -11,6 +11,17 @@ import { SELECTION_COLUMN_ID } from './selection-column';
 import { downloadCsv } from './export-csv';
 import { shouldLoadMore } from './should-load-more';
 
+/**
+ * 열 합계 행 하나 — 표 맨 아래 tfoot(DESIGN.md §4.3 · 규칙 표 T-1~T-12).
+ * 수량·금액처럼 표의 열을 더한 값만 넣는다. 배송비·할인·결제 금액처럼 열이 아닌 값은 표 밖 DescriptionList 다.
+ */
+export interface DataTableSummaryRow {
+  /** 범위를 함께 쓴다 — 페이지가 하나면 '합계', 이 페이지만 더했으면 '이 페이지 합계', 서버 전체면 '전체 합계 · 128건'. */
+  label: string;
+  /** 열 id → 합계 값(표시 그대로, 예: '121,300원'). 키가 없는 열은 비운다(합산하지 않는 열). 값이 null·undefined 면 '—'(구하지 못함). */
+  values: Record<string, React.ReactNode>;
+}
+
 export interface DataTableProps<T extends RowData> extends UseDataTableOptions<T> {
   revisitedRowId?: string;
   onRowClick?: (row: T) => void;
@@ -36,6 +47,8 @@ export interface DataTableProps<T extends RowData> extends UseDataTableOptions<T
   onLoadMore?: () => void;
   /** 전체 로딩과 달리 기존 행 아래에 로딩 표시를 덧붙인다. */
   loadingMore?: boolean;
+  /** 열 합계 행(tfoot, 최대 2행). 라벨은 첫 데이터 열에 선다. */
+  summary?: DataTableSummaryRow[];
 }
 
 const INTERACTIVE = 'button, a, input, select, textarea, [role="button"], [role="checkbox"], [contenteditable="true"]';
@@ -44,7 +57,7 @@ export function DataTable<T extends RowData>({
   revisitedRowId, onRowClick, density = 'default', state = 'idle',
   emptyMessage = '표시할 데이터가 없습니다', errorMessage = '데이터를 불러오지 못했습니다',
   onRetry, emptyAction, exportFileName, exportValue, align, caption = '데이터 목록', className,
-  virtualize = 100, hasMore, onLoadMore, loadingMore = false, ...options
+  virtualize = 100, hasMore, onLoadMore, loadingMore = false, summary, ...options
 }: DataTableProps<T>) {
   const table = useDataTableState(options, state);
   const rows = table.getRowModel().rows;
@@ -89,6 +102,11 @@ export function DataTable<T extends RowData>({
   const selectable = options.selectionMode != null && options.selectionMode !== 'none';
   const allLoadedSelected = rows.length > 0 && selectedCount === rows.length;
   const partialSelectionNotice = partiallyLoaded && allLoadedSelected;
+  // 합계 행(T-2·T-9): 최대 2행. 행이 있는 표와 로딩 중에만 보인다 — 빈 표·오류에는 더할 행이 없다.
+  const summaryRows = summary?.slice(0, 2) ?? [];
+  const showSummary = summaryRows.length > 0 && (ready || effectiveState === 'loading');
+  // 라벨은 첫 데이터 열(T-3). 선택 열은 빈 칸으로 둔다.
+  const summaryLabelId = columns.find((column) => column.id !== SELECTION_COLUMN_ID)?.id;
 
   const requestLoadMore = React.useCallback(() => {
     const container = scrollRef.current;
@@ -171,14 +189,16 @@ export function DataTable<T extends RowData>({
     };
   }
 
-  function cellClass(column: Column<DataTableFeatures, T>) {
+  // label: 합계 행의 라벨 칸 — 열이 숫자라도 라벨은 시작 정렬이다.
+  function cellClass(column: Column<DataTableFeatures, T>, label = false) {
     const pinned = column.getIsPinned();
+    const alignment = label ? 'start' : columnAlign.get(column.id);
     return cn(
       'ds-data-table-cell',
       column.id === SELECTION_COLUMN_ID && 'ds-data-table-selection',
-      columnAlign.get(column.id) === 'end' && 'ds-data-table-numeric tabular text-right',
-      columnAlign.get(column.id) === 'start' && 'text-left',
-      columnAlign.get(column.id) === 'center' && 'text-center',
+      alignment === 'end' && 'ds-data-table-numeric tabular text-right',
+      alignment === 'start' && 'text-left',
+      alignment === 'center' && 'text-center',
       pinned && 'ds-data-table-pinned',
       pinned === 'start' && column.id === startColumns.at(-1)?.id && 'border-r border-line-strong',
       pinned === 'end' && column.id === endColumns[0]?.id && 'border-l border-line-strong',
@@ -216,7 +236,7 @@ export function DataTable<T extends RowData>({
   }
 
   return (
-    <div data-slot="data-table" data-density={density} className={cn('min-w-0 max-w-full text-fg', className)}>
+    <div data-slot="data-table" data-density={density} data-summary={showSummary || undefined} className={cn('min-w-0 max-w-full text-fg', className)}>
       {(exportFileName || partialSelectionNotice) && (
         <div data-slot="data-table-toolbar" className="flex flex-wrap items-center justify-between gap-3 pb-3">
           {selectable && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
@@ -237,7 +257,9 @@ export function DataTable<T extends RowData>({
       <div ref={scrollRef} data-slot="data-table-scroll" onFocusCapture={keepFocusVisible}
         tabIndex={-1} onScroll={requestLoadMore}
         onBlurCapture={(event) => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) focusedRow.current = null; }}
-        className="relative max-w-full overflow-auto border border-line-strong"
+        // isolate: 머리·합계(z 20)·고정 열 층을 표 안에 가둔다. 그러지 않으면 표 머리가 표 밖 sticky 줄(FormActionBar z 5)
+        // 위로 올라온다 — 폼 안 표가 줄 밑으로 지나갈 때 머리만 줄을 뚫고 보였다.
+        className="relative isolate max-w-full overflow-auto border border-line-strong"
         style={{ scrollPaddingLeft: startWidth, scrollPaddingRight: endWidth,
           maxHeight: isVirtual || onLoadMore ? 'var(--data-table-viewport-height, 480px)' : undefined }}>
         <table data-slot="data-table-table" aria-busy={effectiveState === 'loading'}
@@ -354,6 +376,38 @@ export function DataTable<T extends RowData>({
               </td></tr>
             )}
           </tbody>
+          {showSummary && (
+            // 표 자체 세로 스크롤(높이 제한·가상화)에서는 바닥에 붙는다(T-8). 페이지 흐름 표는 스크롤 영역이 내용 높이라
+            // 제자리다. 층은 머리(z 20)와 같다. 고정 열 칸은 본문과 같은 sticky 오프셋·같은 바탕으로 붙는다(TD-2 A).
+            <tfoot data-slot="data-table-summary" className="sticky bottom-0 z-20">
+              {summaryRows.map((row, rowIndex) => (
+                <tr key={rowIndex} data-slot="data-table-summary-row" aria-rowindex={totalCount + 2 + rowIndex}>
+                  {columns.map((column) => {
+                    const label = column.id === summaryLabelId;
+                    const summed = Object.prototype.hasOwnProperty.call(row.values, column.id);
+                    const value = row.values[column.id];
+                    const alignment = columnAlign.get(column.id);
+                    const content = label ? row.label
+                      : !summed ? null
+                      // 숫자 폭 스켈레톤 — 값을 아직 모르면 금액 한 자리 폭(약 9자)을 쓴다.
+                      : effectiveState === 'loading' ? <Skeleton variant="text" textStyle="body-sm"
+                        width={`${Math.min(12, Math.max(3, typeof value === 'string' || typeof value === 'number' ? String(value).length : 9))}ch`}
+                        className={cn(alignment === 'end' && 'ml-auto', alignment === 'center' && 'mx-auto')} />
+                      // 합산 열인데 값을 못 구함(권한·실패) — 설명 목록 빈 값과 같은 '—', 화면 낭독기는 "없음"(T-6).
+                      : value === null || value === undefined ? <><span aria-hidden="true">—</span><span className="sr-only">없음</span></>
+                      : value;
+                    const Cell = label ? 'th' : 'td';
+                    return (
+                      <Cell key={column.id} scope={label ? 'row' : undefined} data-slot="data-table-summary-cell" data-column-id={column.id}
+                        className={cn(cellClass(column, label), 'ds-data-table-summary-cell')} style={cellStyle(column)}>
+                        {content !== null && <div className="ds-data-table-value">{content}</div>}
+                      </Cell>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tfoot>
+          )}
         </table>
       </div>
     </div>

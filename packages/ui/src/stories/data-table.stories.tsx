@@ -5,6 +5,8 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { DataTable, dataTableFeatures, type SelectionMode } from '../components/data-table';
 import { Button } from '../components/button';
 import { StatusChip } from '../components/status-chip';
+import { DataTableSummaryExample } from '../../docs/examples/data-table-summary';
+import summarySource from '../../docs/examples/data-table-summary.tsx?raw';
 
 interface Order {
   id: string;
@@ -481,4 +483,17 @@ export const 선택없이내보내기: Story = {
 };
 export const 선택없이부분내보내기: Story = {
   args: { data: tenThousandOrders.slice(0, 50), totalCount: infiniteTotal, selectionMode: 'none', exportFileName: '현재-페이지-주문' },
+};
+
+/** 열 합계 행(tfoot, DESIGN.md §4.3). 라벨은 첫 열 th scope=row, 값은 열 정렬을 따르고, 금액 내역은 표 아래 DescriptionList 다. */
+export const 합계: Story = {
+  parameters: { docs: { source: { code: summarySource.replace("from '../../src'", "from '@s2life/ui'"), language: 'tsx', type: 'code' } } },
+  render: () => <DataTableSummaryExample />,
+};
+const tenThousandTotal = tenThousandOrders.reduce((sum, order) => sum + order.amount, 0);
+/** 표가 자기 세로 스크롤을 가지면(가상화·높이 제한) 합계 행이 바닥에 붙는다. 가상화 표의 합계 값은 전체 기준이다(T-8). */
+export const 합계_세로스크롤: Story = {
+  name: '합계 — 세로 스크롤',
+  args: { data: tenThousandOrders, selectionMode: 'multi', className: '[--data-table-viewport-height:320px]', align: { amount: 'end' },
+    caption: '합계 행이 바닥에 붙는 주문 10,000건', summary: [{ label: '전체 합계 · 10,000건', values: { amount: tenThousandTotal.toLocaleString('ko-KR') } }] },
 };

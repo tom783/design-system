@@ -104,7 +104,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
       assert.equal(result.text, JSON.stringify(componentIndex(manifest)));
       // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
       // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436, '색인 전송량을 잰다');
+      // 목표 57 FormActionBar 553B · DataTable summary 313B · DescriptionList 금액 내역 69B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -137,6 +138,19 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
       dont: [...adjusted.dont, '단계 위치는 Steps를 쓰고 폼을 중첩하지 마라'],
       related: [...adjusted.related, 'Steps'],
       rules: [...adjusted.rules, { text: '여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.', source: 'DESIGN.md 11.8' }],
+    };
+    // 목표 57(DESIGN.md §4.3): 합계 행 summary 의 지침·prop·slot 만 더한다. 기존 기준선 값·순서는 그대로다.
+    if (name === 'DataTable') adjusted = { ...adjusted,
+      useWhen: [...adjusted.useWhen, '금액·수량처럼 더할 수 있는 열이 있고 합을 확인해야 하는 표(summary 합계 행)'],
+      dont: [...adjusted.dont, '표 밖 dl·div로 열 합계를 만들지 마라', "페이지 일부 합을 '합계'라고만 쓰지 마라('이 페이지 합계')",
+        '배송비·할인은 합계 행이 아니라 DescriptionList에 둔다'],
+      rules: [...adjusted.rules,
+        { text: 'summary는 숫자 열의 합계를 같은 열 맨 아래 한 줄로 둔다. values에 없는 열은 비우고 null은 —다. 빈 표에서는 숨는다.', source: 'DESIGN.md 4.3' },
+        { text: '라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건. 가로 스크롤 표는 금액 열을 pinnedEnd로.', source: 'DESIGN.md 4.3' }],
+      related: [...adjusted.related, 'DescriptionList'],
+      keywords: [...adjusted.keywords, '합계 행', '열 합계', '표 합계', '페이지 합계', '전체 합계', 'totals row', 'table footer'],
+      props: [...adjusted.props, { name: 'summary', type: 'DataTableSummaryRow[] | undefined', required: false, doc: '열 합계 행(tfoot, 최대 2행). 라벨은 첫 데이터 열에 선다.' }],
+      slots: [...adjusted.slots, 'data-table-summary', 'data-table-summary-cell', 'data-table-summary-row'].sort(),
     };
     // 목표 49(DESIGN.md §6.3): forwardRef → ref prop 으로 상속 표기만 바뀌었다. 런타임 동일.
     if (name === 'Button') adjusted = { ...adjusted, extends: ["React.ComponentProps<'button'>", ...adjusted.extends.slice(1)] };
@@ -201,6 +215,10 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     // 목표 49 0.5.0: 상세 화면 키-값 묶음 DescriptionList 를 Card 가족 다음에 더한다.
     name: 'DescriptionList', kind: 'component', purpose: '상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
     import: "import { DescriptionList } from '@s2life/ui';",
+  }] : [entry]).flatMap(entry => entry.name === 'FormFlow' ? [entry, {
+    // 목표 57: 폼 하단 고정 액션 줄 FormActionBar 를 FormFlow 다음에 더한다.
+    name: 'FormActionBar', kind: 'component', purpose: '등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.',
+    import: "import { FormActionBar } from '@s2life/ui';",
   }] : [entry]).flatMap(entry => entry.name === 'Field' ? [entry, {
     // 2026-11-22: 같은 줄 정렬 FormRow 를 Field 의 부품으로 더한다.
     name: 'FormRow', kind: 'component', purpose: '같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.',

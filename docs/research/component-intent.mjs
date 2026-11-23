@@ -257,28 +257,31 @@ const intents = [
     ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
   ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5',['경계선과 여백으로 구조를 만든다.', rule('헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.', '6')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
   entry('DescriptionList','layout','상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
-    ['주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때','상품 합계·배송비·결제 금액 합계를 끝에 맞출 때'],
-    ['열 머리글이 있는 행 비교는 DataTable을 쓴다','행을 열지 않고 훑는 요약은 Peek을 쓴다'],'16.7',[
+    ['주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때','배송비·할인·결제 금액 같은 금액 내역을 표 아래 끝에 맞출 때'],
+    ['열 머리글이 있는 행 비교는 DataTable을 쓴다','행을 열지 않고 훑는 요약은 Peek을 쓴다','표 열의 합계는 DataTable summary로 둔다'],'16.7',[
       'items는 label·value·emphasis 쌍이고 순서가 읽는 순서다. 라벨 끝에 콜론을 붙이지 않는다.',
       '빈 값은 value를 생략한다. —로 표시되고 화면 낭독기는 "없음"으로 읽는다. 숫자 0은 값이다.',
       '긴 값은 줄바꿈하고 말줄임하지 않는다. 주문번호 같은 식별자는 고정폭 숫자 한 줄과 복사 버튼 하나까지다.',
       '값 자리에 StatusChip·링크·ghost sm 버튼 하나를 그대로 넣는다. 링크는 밑줄을 유지한다.',
       'columns=2는 카드 폭 640px(본문 606px) 이상에서만 두 열이다. 카드 360px(본문 326px) 미만은 라벨 위·값 아래로 접힌다.',
-      '합계는 align=end와 마지막 쌍 emphasis다. 여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.'
+      '금액 내역은 align=end와 마지막 쌍 emphasis다. 표 아래면 값 끝을 금액 열 글자 끝에 맞추고 상품 합계를 다시 쓰지 않는다.',
+      '여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.'
     ],['items','columns','align','labelWidth'],
     ['description-list','description-list-items','description-list-item','description-list-term','description-list-details','description-list-empty'],
-    ['Card','StatusChip','DataTable','Peek'],['키-값','키 값','라벨과 값','주문 정보','설명 목록','정보 목록','합계 묶음','결제 금액 합계','정보 나열','key value','description list']),
+    ['Card','StatusChip','DataTable','Peek'],['키-값','키 값','라벨과 값','주문 정보','설명 목록','정보 목록','합계 묶음','결제 금액 합계','금액 내역','정보 나열','key value','description list']),
   entry('Checkbox','form',"선택·해제·일부 선택 상태를 표시한다.",['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17',[
     "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다."
   ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),
-  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라'],'4',[
+  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때','금액·수량처럼 더할 수 있는 열이 있고 합을 확인해야 하는 표(summary 합계 행)'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라','표 밖 dl·div로 열 합계를 만들지 마라',"페이지 일부 합을 '합계'라고만 쓰지 마라('이 페이지 합계')",'배송비·할인은 합계 행이 아니라 DescriptionList에 둔다'],'4',[
     "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
     "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
     "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
     "필터 등으로 data에서 빠진 행은 선택이 자동 해제된다. 앱은 selectedIds를 그대로 일괄 작업에 쓴다. 로딩·오류 중에는 선택을 유지한다.",
     rule('페이지를 넘기면 선택이 해제된다. 서버 페이징은 표 아래에 Pagination을 조립한다.', '4.1'),
-    "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다."
-  ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId'],['data-table','data-table-row'],['Peek','Checkbox','StatusChip','Pagination'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록']),
+    "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다.",
+    rule("summary는 숫자 열의 합계를 같은 열 맨 아래 한 줄로 둔다. values에 없는 열은 비우고 null은 —다. 빈 표에서는 숨는다.", '4.3'),
+    rule("라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건. 가로 스크롤 표는 금액 열을 pinnedEnd로.", '4.3')
+  ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId','summary'],['data-table','data-table-row','data-table-summary'],['Peek','Checkbox','StatusChip','Pagination','DescriptionList'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록','합계 행','열 합계','표 합계','페이지 합계','전체 합계','totals row','table footer']),
   entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6',[],[],[],['DataTable'],['선택 열 식별자']),
   entry('FilterBar','table','목록 위에 저장된 보기·검색·필터 트리거와 적용 필터 칩을 한 툴바로 둔다.',
     ['주문·상품 목록 위에 검색창과 적용 조건 칩을 둘 때'],
@@ -368,6 +371,18 @@ const intents = [
     "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
     rule("여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.", "11.8")
   ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input','Steps'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
+  entry('FormActionBar','form','등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.',
+    ['등록·편집 페이지, AppShell 본문 마지막에 한 번','저장 버튼이 스크롤 위치와 상관없이 같은 자리에 있어야 할 때'],
+    ['sticky div·음수 여백으로 직접 만들지 마라','Sheet·Dialog에는 DialogFooter를 쓴다','주요 버튼을 둘 두거나 삭제를 저장 옆에 두지 마라','목록 선택 작업은 BulkActionBar를 쓴다'],'19.5',[
+      '폼의 마지막 자식으로 둔다. 저장은 type=submit이고 폼 밖에 두면 form에 폼 id를 준다. 마지막 칸 Enter는 저장, Esc는 취소가 아니다.',
+      '순서는 삭제(onDelete, 왼쪽 끝) · 상태 · 취소(onCancel) · 저장(submitLabel, 오른쪽 끝)이다. 삭제는 확인창을 거쳐 onDelete를 부른다.',
+      'dirty면 저장하지 않은 변경 있음, errorCount면 오류 N개 링크(첫 오류 칸 포커스)다. 폼 위 오류 요약은 앱이 그대로 둔다.',
+      'saving이면 저장 버튼이 스피너·저장 중…이고 취소·삭제는 비활성, 다시 제출되지 않는다. 결과는 토스트나 페이지 이동으로 알린다.',
+      'contentMaxWidth는 폼 열 최대 폭이다(기본 48rem). 페이지 루트·폼을 세로 flex로 두면 짧은 폼에서도 본문 바닥에 붙는다.',
+      '480px 미만은 상태 문구를 숨기고 삭제를 더 보기 메뉴로 옮기며 취소·저장이 같은 폭이다.'
+    ],['submitLabel','form','onCancel','cancelLabel','saving','dirty','errorCount','onErrorClick','onDelete','deleteLabel','deleteDescription','contentMaxWidth'],
+    ['form-action-bar','form-action-bar-content','form-action-bar-danger','form-action-bar-delete','form-action-bar-more','form-action-bar-actions','form-action-bar-status','form-action-bar-errors','form-action-bar-cancel','form-action-bar-submit'],
+    ['AppShell','FormFlow','Field','BulkActionBar','Dialog'],['하단 고정','아래 고정','화면 아래','고정 버튼','버튼 줄','저장 줄','취소 저장','고정 액션','액션 줄','저장하지 않은 변경','sticky footer','form actions','save bar','sticky save']),
   entry('Peek','overlay',"레코드를 열지 않고 핵심 내용을 요약해 보여준다.",['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제는 SheetContent를 쓴다'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable','SheetContent'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
 

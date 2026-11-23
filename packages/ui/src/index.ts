@@ -14,7 +14,7 @@ export { Checkbox, type CheckboxProps } from './components/checkbox';
 export {
   DataTable, useDataTable, dataTableFeatures, createSelectionColumn, SELECTION_COLUMN_ID,
   toCsv, downloadCsv, createDataTableColumnHelper,
-  type DataTableProps, type DataTableFeatures, type DataTableColumns, type SelectionMode,
+  type DataTableProps, type DataTableSummaryRow, type DataTableFeatures, type DataTableColumns, type SelectionMode,
   type UseDataTableOptions, type RowData, type CellContext, type HeaderContext,
 } from './components/data-table';
 export {
@@ -87,3 +87,4 @@ export { SegmentedControl, type SegmentedControlProps, type SegmentedControlOpti
 export { Steps, type StepsProps, type StepItem, type StepStatus } from './components/steps';
 export { FilterBar, type FilterBarProps, type FilterBarFilter, type FilterBarView } from './components/filter-bar';
 export { BulkActionBar, type BulkActionBarProps } from './components/bulk-action-bar';
+export { FormActionBar, type FormActionBarProps } from './components/form-action-bar';
