@@ -219,6 +219,18 @@ for (const [query, name] of [['KPI 목표 달성도', 'BulletRow'], ['매출 시
     component.related.includes('BulletRow') && component.dont.some(s => s.includes('BulletRow'))
     && (await t('get_component', { name: 'BulletRow' })).structuredContent.dont.some(s => s.includes('StatTile')));
 }
+// 목표 49 DescriptionList: 키-값 질의의 첫 후보, 표·요약과의 갈림길, 빈 값·두 열 경계·합계 계약.
+for (const query of ['키-값', '라벨과 값', '주문 정보', '합계 묶음', 'key value']) {
+  const response = await t('which_component', { description: query });
+  check(`설명 목록 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'DescriptionList');
+}
+{
+  const component = (await t('get_component', { name: 'DescriptionList' })).structuredContent;
+  check('DescriptionList 상세는 API·빈 값·두 열 경계·합계 규칙과 DataTable·Peek 갈림길을 제공한다',
+    ['items', 'columns', 'align', 'labelWidth'].every(name => component?.props.some(p => p.name === name))
+    && component.rules.some(r => r.text.includes('없음')) && component.rules.some(r => r.text.includes('640px') && r.text.includes('360px'))
+    && component.rules.some(r => r.text.includes('emphasis')) && ['DataTable', 'Peek'].every(name => component.dont.some(s => s.includes(name))));
+}
 
 for (const query of ['날짜 시간', '시각', '예약 발행', '일시']) {
   const response = await t('which_component', { description: query });
@@ -332,8 +344,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const list = (await t('list_components', {})).content[0].text;
   const rules = (await t('get_rules', {})).content[0].text;
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
-  // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341],['목록',list,19_950 + 206 + 203],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436],['목록',list,19_950 + 206 + 203 + 199],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }

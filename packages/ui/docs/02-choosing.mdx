@@ -50,6 +50,12 @@ UI의 뜻 한 줄은 Tooltip, 새 기능 알림은 Hint, 요청한 단계 안내
 
 <div className="intent-grid"><Intent name="Tooltip" /><Intent name="Hint" /><Intent name="Tour" /><Intent name="Peek" /></div>
 
+## DescriptionList·DataTable·Peek
+
+열 머리글 없는 키-값(주문 정보·배송지·결제 내역·합계)은 DescriptionList, 같은 열을 여러 행으로 비교하면 DataTable, 표의 행을 열지 않고 훑어보는 요약은 Peek를 고릅니다.
+
+<div className="intent-grid"><Intent name="DescriptionList" /><Intent name="DataTable" /><Intent name="Peek" /></div>
+
 ## DatePicker와 네이티브 날짜 입력
 
 업무 날짜·기간 필터는 DatePicker를 우선하고, 네이티브 날짜 입력이 꼭 필요한 경우에만 `<input type="date">`의 문자열 value를 사용합니다.

@@ -256,6 +256,18 @@ const intents = [
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
     ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
   ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5',['경계선과 여백으로 구조를 만든다.', rule('헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.', '6')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
+  entry('DescriptionList','layout','상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
+    ['주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때','상품 합계·배송비·결제 금액 합계를 끝에 맞출 때'],
+    ['열 머리글이 있는 행 비교는 DataTable을 쓴다','행을 열지 않고 훑는 요약은 Peek을 쓴다'],'16.7',[
+      'items는 label·value·emphasis 쌍이고 순서가 읽는 순서다. 라벨 끝에 콜론을 붙이지 않는다.',
+      '빈 값은 value를 생략한다. —로 표시되고 화면 낭독기는 "없음"으로 읽는다. 숫자 0은 값이다.',
+      '긴 값은 줄바꿈하고 말줄임하지 않는다. 주문번호 같은 식별자는 고정폭 숫자 한 줄과 복사 버튼 하나까지다.',
+      '값 자리에 StatusChip·링크·ghost sm 버튼 하나를 그대로 넣는다. 링크는 밑줄을 유지한다.',
+      'columns=2는 카드 폭 640px(본문 606px) 이상에서만 두 열이다. 카드 360px(본문 326px) 미만은 라벨 위·값 아래로 접힌다.',
+      '합계는 align=end와 마지막 쌍 emphasis다. 여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.'
+    ],['items','columns','align','labelWidth'],
+    ['description-list','description-list-items','description-list-item','description-list-term','description-list-details','description-list-empty'],
+    ['Card','StatusChip','DataTable','Peek'],['키-값','키 값','라벨과 값','주문 정보','설명 목록','정보 목록','합계 묶음','결제 금액 합계','정보 나열','key value','description list']),
   entry('Checkbox','form',"선택·해제·일부 선택 상태를 표시한다.",['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17',[
     "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다."
   ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),

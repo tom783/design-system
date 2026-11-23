@@ -5,7 +5,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
-  Button, Card, CardBody, CardHeader, CardTitle, DataTable, DropdownMenu, DropdownMenuContent,
+  Button, Card, CardBody, CardHeader, CardTitle, DataTable, DescriptionList, DropdownMenu, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, PageHeader, StatusChip, Toaster,
   createDataTableColumnHelper, toast,
 } from '../index';
@@ -17,7 +17,7 @@ import { StoreShell, won } from './screens-shell';
  * 머리 오른쪽: ⋯ 더보기(메뉴) · 수정(secondary) · 주요 버튼(출고 처리).
  * 삭제는 더보기 메뉴 안의 destructive 항목 → AlertDialog(기본 포커스 = 취소, 확정 = 채운 danger).
  * 채운 danger 버튼은 확정 단계에서만 나온다. 화면 머리에 브랜드 채움과 에러 채움이 나란히 서지 않는다.
- * 키-값 묶음 부품은 없어 Card + <dl> 로 조립했다.
+ * 키-값 묶음은 DescriptionList(DESIGN.md §16.7)다. 카드 세 장은 가로형, 표 아래 합계는 align=end + 마지막 쌍 emphasis.
  */
 const meta = { title: 'Screens/OrderDetail', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
@@ -40,14 +40,6 @@ const columns = helper.columns([
   helper.display({ id: 'sum', header: '금액', cell: cell => <span className="tabular">{won(cell.row.original.price * cell.row.original.qty)}</span> }),
 ]);
 const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-function KeyValue({ rows }: { rows: [string, React.ReactNode][] }) {
-  return <dl className="grid grid-cols-[minmax(5.5rem,auto)_1fr] gap-x-6 gap-y-2 text-[length:var(--text-body-sm)]">
-    {rows.map(([key, value]) => <React.Fragment key={key}>
-      <dt className="text-fg-muted">{key}</dt><dd className="min-w-0">{value}</dd>
-    </React.Fragment>)}
-  </dl>;
-}
 
 interface Props { menuOpen?: boolean; confirmOpen?: boolean }
 
@@ -97,28 +89,28 @@ function OrderDetailScreen({ menuOpen = false, confirmOpen = false }: Props) {
       </AlertDialog>
       <div className="grid min-w-0 grid-cols-3 gap-4">
         <Card><CardHeader><CardTitle>주문 정보</CardTitle></CardHeader><CardBody>
-          <KeyValue rows={[['주문번호', <span className="tabular">{ORDER_ID}</span>], ['주문 일시', <span className="tabular">2026-11-15 18:59</span>],
-            ['판매 채널', '자사몰'], ['주문자', '박서연 (회원)']]} />
+          <DescriptionList items={[{ label: '주문번호', value: <span className="tabular">{ORDER_ID}</span> },
+            { label: '주문 일시', value: <span className="tabular">2026-11-15 18:59</span> },
+            { label: '판매 채널', value: '자사몰' }, { label: '주문자', value: '박서연 (회원)' }]} />
         </CardBody></Card>
         <Card><CardHeader><CardTitle>배송</CardTitle></CardHeader><CardBody>
-          <KeyValue rows={[['수취인', '박서연'], ['연락처', <span className="tabular">010-****-2841</span>],
-            ['주소', '경기도 ○○시 ○○구 가상로 128, 302동 1104호'], ['요청 사항', '부재 시 문 앞에 놓아 주세요']]} />
+          <DescriptionList items={[{ label: '수취인', value: '박서연' }, { label: '연락처', value: <span className="tabular">010-****-2841</span> },
+            { label: '주소', value: '경기도 ○○시 ○○구 가상로 128, 302동 1104호' }, { label: '요청 사항', value: '부재 시 문 앞에 놓아 주세요' }]} />
         </CardBody></Card>
         <Card><CardHeader><CardTitle>결제</CardTitle></CardHeader><CardBody>
-          <KeyValue rows={[['결제 수단', '간편결제'], ['상품 금액', <span className="tabular">{won(subtotal)}</span>],
-            ['배송비', <span className="tabular">{won(0)}</span>], ['결제 금액', <span className="tabular font-semibold">{won(subtotal)}</span>]]} />
+          <DescriptionList items={[{ label: '결제 수단', value: '간편결제' }, { label: '상품 금액', value: <span className="tabular">{won(subtotal)}</span> },
+            { label: '배송비', value: <span className="tabular">{won(0)}</span> },
+            { label: '결제 금액', value: <span className="tabular">{won(subtotal)}</span>, emphasis: true }]} />
         </CardBody></Card>
       </div>
       <section aria-labelledby="order-items" className="flex min-w-0 flex-col gap-3">
         <h2 id="order-items" className="text-[length:var(--text-title-sm)] leading-[var(--text-title-sm-lh)] font-semibold">주문 상품 <span className="tabular">{items.length}</span>건</h2>
         <DataTable data={items} columns={columns} getRowId={item => item.id} align={{ qty: 'end', price: 'end', sum: 'end' }}
           caption={`${ORDER_ID} 주문 상품`} />
-        {/* 합계 행 부품은 없다. 금액 열 끝에 맞춰 표 아래 오른쪽에 둔다. */}
-        <dl className="ml-auto grid grid-cols-[auto_minmax(8.75rem,auto)] gap-x-8 gap-y-1 text-[length:var(--text-body-sm)]">
-          <dt className="text-fg-muted">상품 합계</dt><dd className="tabular text-right">{won(subtotal)}</dd>
-          <dt className="text-fg-muted">배송비</dt><dd className="tabular text-right">{won(0)}</dd>
-          <dt className="font-semibold">결제 금액</dt><dd className="tabular text-right font-semibold">{won(subtotal)}</dd>
-        </dl>
+        {/* 금액 열 끝에 맞춰 표 아래 오른쪽에 둔다. 한 열 합계는 크기 격리가 없어 ml-auto 로 내용 폭에 붙는다. */}
+        <DescriptionList align="end" className="ml-auto" data-screen="totals" items={[
+          { label: '상품 합계', value: won(subtotal) }, { label: '배송비', value: won(0) },
+          { label: '결제 금액', value: won(subtotal), emphasis: true }]} />
       </section>
     </div>
   </StoreShell>;

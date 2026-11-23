@@ -103,8 +103,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       assert.equal(result.text, JSON.stringify(componentIndex(manifest)));
       // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
-      // 목표 49 FilterBar +362B · BulkActionBar +341B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341, '색인 전송량을 잰다');
+      // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -143,7 +143,7 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     if (name === 'SelectTrigger') adjusted = { ...adjusted, extends: ['React.ComponentProps<typeof SelectPrimitive.Trigger>'] };
     checkBaseline(await call(c, 'get_component', { name }), adjusted);
   }
-  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl·R43 Steps·FormRow만 명시적으로 더한다.
+  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl·R43 Steps·FormRow·목표 49 DescriptionList만 명시적으로 더한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
     name: 'Steps', kind: 'component', purpose: '여러 단계 폼의 현재 위치와 완료·오류·예정을 표시한다.',
     import: "import { Steps } from '@s2life/ui';",
@@ -197,6 +197,10 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }, {
     name: 'BulkActionBar', kind: 'component', purpose: '표에서 행을 선택하면 툴바 자리에 선택 건수와 일괄 작업을 보인다.',
     import: "import { BulkActionBar } from '@s2life/ui';",
+  }] : [entry]).flatMap(entry => entry.name === 'CardFooter' ? [entry, {
+    // 목표 49 0.5.0: 상세 화면 키-값 묶음 DescriptionList 를 Card 가족 다음에 더한다.
+    name: 'DescriptionList', kind: 'component', purpose: '상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
+    import: "import { DescriptionList } from '@s2life/ui';",
   }] : [entry]).flatMap(entry => entry.name === 'Field' ? [entry, {
     // 2026-11-22: 같은 줄 정렬 FormRow 를 Field 의 부품으로 더한다.
     name: 'FormRow', kind: 'component', purpose: '같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.',

@@ -11,7 +11,8 @@ const normalize = text => text.normalize('NFKC').toLocaleLowerCase('ko-KR').repl
 const CASES = 100
   + 5 // 목표 49 입력 단위 접미사(Input unit)
   + 4 // 목표 49 FilterBar(한국어 3·영어 1)
-  + 4; // 목표 49 BulkActionBar(한국어 3·영어 1)
+  + 4 // 목표 49 BulkActionBar(한국어 3·영어 1)
+  + 5; // 목표 49 설명 목록(DescriptionList)
 test('정답 세트는 100문항(+부품 증가분)·한국어 위주·질의마다 정답 하나이며 선택 가능한 부품을 가리킨다', () => {
   assert.equal(golden.cases.length, CASES);
   assert.equal(new Set(golden.cases.map(item => item.query)).size, CASES, '같은 질의가 두 번 들어가면 정확도가 부풀려진다');

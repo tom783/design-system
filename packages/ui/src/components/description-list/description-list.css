@@ -1,0 +1,104 @@
+/* 설명 목록 — DESIGN.md §16.7(디자인 총괄 규칙 표 0.5.0 을 옮긴 것).
+   자식 결합자(>)만 쓴다. 값 자리에 다른 설명 목록이 들어가도 바깥 규칙이 새지 않는다. */
+@layer components {
+  /* 두 열·세로형은 화면이 아니라 카드 폭으로 정한다. 규칙 표의 경계(카드 640·360px, 측정 예시 720·600·320 카드)는
+     카드 바깥 폭이다. 이 부품이 재는 것은 자기 폭 = CardBody 안쪽이라, 카드 경계 1px·본문 여백 16px 양쪽(34px)을 뺀
+     606·326px 로 질의한다. 컨테이너 쿼리 조건에는 var() 를 쓸 수 없어 숫자로 둔다.
+     실측: 주문 상세 1440 화면의 카드 세 장은 바깥 373px·안쪽 339px — 안쪽에 360 을 걸면 세로형으로 접혔다. */
+  .ds-description-list {
+    container: ds-description-list / inline-size;
+    min-inline-size: 0;
+    color: var(--text-primary);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    font-weight: var(--text-body-sm-weight);
+  }
+  /* 합계 묶음(한 열)은 세로형으로 접지 않으므로 질의할 폭이 없다. 크기 격리를 걸면 내용 폭으로 줄지 못해
+     표 아래 오른쪽에 붙이는 ml-auto·w-fit 배치가 0폭이 된다. */
+  .ds-description-list[data-align="end"][data-columns="1"] { container-type: normal; }
+
+  .ds-description-list > [data-slot="description-list-items"] {
+    display: grid;
+    /* 라벨 열은 5.5rem(지금 주문 상세 값)에서 시작해 묶음 안 가장 긴 라벨에 맞추고, 10rem 을 넘으면 라벨이 줄바꿈한다
+       (상한은 아래 라벨 max-inline-size — max-content 기여가 그 값에서 잘린다). labelWidth 는 이 열을 고정한다. */
+    grid-template-columns: var(--ds-description-list-label, minmax(5.5rem, max-content)) minmax(0, 1fr);
+    column-gap: var(--space-24);
+    row-gap: var(--space-8);
+    margin: 0;
+  }
+  /* 쌍마다 div 로 감싸 두 열·접힘에서 dt·dd 가 떨어지지 않게 하고, 열 트랙은 subgrid 로 묶음 전체와 공유한다. */
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] {
+    display: grid;
+    grid-column: span 2;
+    grid-template-columns: subgrid;
+    /* 값이 여러 줄이어도 라벨은 값 첫 줄 기준선에 선다(가운데로 내려가지 않는다). */
+    align-items: baseline;
+    /* 행 최소 높이 = StatusChip 높이(행간 20 + 위아래 2 = 24px). 상태 줄만 쌍 간격이 늘어 보이지 않게 모든 행을 맞춘다.
+       한 줄 글자는 행 위에 붙는다(칩 줄의 라벨은 기준선을 따라 4px 아래 — 측정 예시와 같다). 가운데로 내리지 않는 이유:
+       Chrome 은 subgrid 의 align-content 를 무시해(실측 0px, subgrid 를 빼면 2px) 브라우저마다 2px 가 갈린다.
+       두 열에서 옆 쌍이 길어져도 늘어나지 않도록 행에 붙인다(start). */
+    min-block-size: var(--space-24);
+    align-self: start;
+  }
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-term"] {
+    min-inline-size: 0;
+    max-inline-size: 10rem;
+    /* 라벨을 tertiary 로 낮추지 않는다(대비). 굵기는 합계 강조에만 쓴다. */
+    color: var(--text-secondary);
+  }
+  .ds-description-list[data-label-width] > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-term"] {
+    max-inline-size: none;
+  }
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] {
+    min-inline-size: 0;
+    margin: 0;
+    /* 상세는 다 보여야 한다. 말줄임하지 않고 긴 주소·메모를 줄바꿈한다(본문 keep-all 위에서 긴 어절도 끊는다). */
+    overflow-wrap: anywhere;
+  }
+  .ds-description-list[data-align="end"] > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] > [data-slot="description-list-empty"] {
+    color: var(--text-tertiary);
+  }
+  /* 링크 값은 본문 링크 토큰 그대로, 밑줄로 구분한다(색 단독 신호 금지). 부품이 그리는 링크(data-slot)는 제외한다. */
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-details"] a:not([data-slot]) {
+    color: var(--text-link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* 합계 강조: 라벨·값 600, 위 구분선 1px, 위 여백 8px. 굵기와 함께 라벨도 값과 같은 글자색으로 올린다. */
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"][data-emphasis] {
+    border-block-start: var(--border-width) solid var(--border-subtle);
+    padding-block-start: var(--space-8);
+  }
+  .ds-description-list > [data-slot="description-list-items"] > [data-slot="description-list-item"][data-emphasis] > * {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* 두 열: 카드 640px 이상(안쪽 606px)에서만. 위→아래로 채운 뒤 오른쪽 열(가로 지그재그 금지). 행 수는 부품이 넣는다. */
+  @container ds-description-list (width >= 606px) {
+    .ds-description-list[data-columns="2"] > [data-slot="description-list-items"] {
+      grid-template-columns: repeat(2, var(--ds-description-list-label, minmax(5.5rem, max-content)) minmax(0, 1fr));
+      grid-template-rows: repeat(var(--ds-description-list-rows, 1), auto);
+      grid-auto-flow: column;
+    }
+  }
+  /* 세로형: 카드 360px 미만(안쪽 326px). 라벨 위·값 아래, 라벨–값 4px, 쌍 사이 12px. 합계 묶음은 접지 않는다. */
+  @container ds-description-list (width < 326px) {
+    .ds-description-list:not([data-align="end"]) > [data-slot="description-list-items"] {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--space-12);
+    }
+    .ds-description-list:not([data-align="end"]) > [data-slot="description-list-items"] > [data-slot="description-list-item"] {
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--space-4);
+    }
+    .ds-description-list:not([data-align="end"]) > [data-slot="description-list-items"] > [data-slot="description-list-item"] > [data-slot="description-list-term"] {
+      max-inline-size: none;
+    }
+  }
+}

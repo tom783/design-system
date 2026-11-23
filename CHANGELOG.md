@@ -39,6 +39,13 @@
   - MCP: 색인 +703바이트(FilterBar 362 · BulkActionBar 341) · `list_components` +409바이트(206 · 203), 상세 4,292 · 2,625바이트.
     `which_component` 정답 세트에 8문항(부품마다 한국어 3·영어 1)을 더해 접미사 5문항과 합친 113문항 top-1 65 · top-3 85
     (기존 문항의 순위는 그대로).
+- **설명 목록** — `DescriptionList` (타입 `DescriptionListItem`, 목표 49 · DESIGN.md §16.7). 상세 화면의 라벨-값 묶음을
+  `items`(label·value·emphasis)로 그린다. `<dl>` 하나에 쌍마다 `<div>`, 라벨 열은 5.5rem~10rem 안에서 가장 긴 라벨에 맞추고
+  (`labelWidth`로 고정), 라벨–값 24px·쌍 사이 8px·행 최소 24px(칩 높이)·값 첫 줄 기준선. 빈 값은 `—`(화면 낭독기 "없음"),
+  긴 값은 줄바꿈하고 말줄임하지 않는다. `columns={2}`는 카드 폭 640px 이상에서만 두 열(위→아래 순서), 카드 360px 미만은 라벨 위·
+  값 아래로 접는다 — CSS 컨테이너 쿼리라 서버 렌더와 첫 그림이 같다. 금액 합계는 `align="end"`(끝 정렬·고정폭 숫자)와 마지막 쌍
+  `emphasis`(600·위 구분선·위 여백 8px). Screens/OrderDetail의 손 조합 `<dl>` 네 곳을 이 부품으로 바꿨다(위치 차이는 §16.7).
+  - 앱이 할 일: 없다. 상세 화면에서 `<dl>`을 손으로 조합했다면 이 부품으로 바꿀 수 있다.
 
 ### 바뀐 동작 (마이그레이션)
 
@@ -91,8 +98,15 @@
 - 위 세 가지를 `docs/qa/mcp-response-diff.mjs`로 main 서버(cd294ae — MCP는 R49와 같다)와 대조하면 1,363건 중 42건(이름 39개 + 대소문자·공백 변형
   3건)만 다르고 모두 의도 목록이다. 색인·목록·토큰·규칙·`which_component` 응답은 바이트가 같고 정답 세트도 top-1 52 · top-3 72
   그대로다. 저장 카탈로그는 88,863 → 88,622바이트(응답 아님).
+- `DescriptionList` 항목을 더했다(목표 49). 색인 23,191 → 23,627바이트(+436)·`list_components` 19,873 → 20,072바이트(+199),
+  `get_component DescriptionList` 2,745바이트. "키-값·라벨과 값·주문 정보·합계 묶음" 같은 질의의 첫 후보다. 기존 키워드·쓰임새·목적
+  439개 질의의 1순위는 그대로이고, `which_component` 정답 세트에 이 부품 문항 5개(한국어 4·영어 1)를 더해 접미사 5문항·툴바 8문항과
+  합친 118문항이 top-1 70 · top-3 90이다(다른 문항의 순위는 그대로).
 
 ### 문서
+
+- DESIGN.md §16.7 설명 목록 — 디자인 총괄 규칙 표 0.5.0, 측정 예시와 다른 곳(규칙 표 우선), 카드 폭 경계의 부품 폭 환산(606·326px),
+  주문 상세 교체 실측.
 
 - DESIGN.md §6.3 공개 API 규약(목표 49) — 제어/비제어 쌍 `X`·`defaultX`·`onXChange`, 값 알림 `on{X}Change`와 DOM 전용 `onChange`,
   ref prop, 루트 `index.ts` 이름 나열, deprecated 별칭으로 이름 바꾸기. 조사 스냅숏 `docs/research/api-conventions-survey.md`.
@@ -104,6 +118,10 @@
   검사하고 `pnpm test`·pre-commit(`packages/ui/src/lib/api-conventions.test.mjs`)에서 돈다. 기존 위반 11건은
   `scripts/api-conventions-allow.mjs`에 이유와 함께 두며, 고친 항목이 목록에 남으면 실패한다. ref 타입은
   `ref-props.typecheck.tsx`가 고정한다. 루트 `index.ts`의 `export *` 27곳을 이름 나열로 바꿨다(공개 이름 224개 그대로).
+- `description-list-render-verify.mjs`(목표 49): 규칙 표 5절 검수 매트릭스(라이트·다크 × 가로형·두 열 720·접힘 600·세로형 320 ×
+  빈 값·긴 값·칩·링크·합계 강조), 카드 폭 경계 640·360, 라벨 폭 고정, 주문 상세 교체 뒤 위치를 픽셀로 단정하고 매트릭스를 실제 크기로 찍는다.
+  색인·목록 응답 크기 회귀 단정(server·build 테스트, mcp-client-verify)은 부품별 증가분을 명시해 더하는 꼴(`23_500 + 436`)로 바꿨고,
+  정답 세트 시험의 문항 수(`CASES`)에 이 부품 증가분 `+ 5`를 더했다.
 
 ---
 

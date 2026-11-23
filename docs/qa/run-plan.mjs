@@ -21,6 +21,7 @@ export const HARNESSES = [
   ['charts-render-verify.mjs', '차트 로딩·오류'],
   ['segmented-control-render-verify.mjs', '세그먼트·키보드·좁은 폭·대비'],
   ['stat-tile-render-verify.mjs', 'KPI 값·증감·접근성·좁은 폭'],
+  ['description-list-render-verify.mjs', '설명 목록·두 열·세로형·합계·주문 상세'],
   ['dogfood3-render-verify.mjs', '필터 선택·기간 입력·중립 계열'],
   ['loading-render-verify.mjs', '스켈레톤·진행률'],
   ['state-render-verify.mjs', '상태·아바타·썸네일'],

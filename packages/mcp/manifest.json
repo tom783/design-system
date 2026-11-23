@@ -7156,6 +7156,98 @@
       ]
     },
     {
+      "name": "DescriptionList",
+      "category": "layout",
+      "purpose": "상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.",
+      "useWhen": [
+        "주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때",
+        "상품 합계·배송비·결제 금액 합계를 끝에 맞출 때"
+      ],
+      "dont": [
+        "열 머리글이 있는 행 비교는 DataTable을 쓴다",
+        "행을 열지 않고 훑는 요약은 Peek을 쓴다"
+      ],
+      "rules": [
+        {
+          "text": "items는 label·value·emphasis 쌍이고 순서가 읽는 순서다. 라벨 끝에 콜론을 붙이지 않는다.",
+          "source": "16.7"
+        },
+        {
+          "text": "빈 값은 value를 생략한다. —로 표시되고 화면 낭독기는 \"없음\"으로 읽는다. 숫자 0은 값이다.",
+          "source": "16.7"
+        },
+        {
+          "text": "긴 값은 줄바꿈하고 말줄임하지 않는다. 주문번호 같은 식별자는 고정폭 숫자 한 줄과 복사 버튼 하나까지다.",
+          "source": "16.7"
+        },
+        {
+          "text": "값 자리에 StatusChip·링크·ghost sm 버튼 하나를 그대로 넣는다. 링크는 밑줄을 유지한다.",
+          "source": "16.7"
+        },
+        {
+          "text": "columns=2는 카드 폭 640px(본문 606px) 이상에서만 두 열이다. 카드 360px(본문 326px) 미만은 라벨 위·값 아래로 접힌다.",
+          "source": "16.7"
+        },
+        {
+          "text": "합계는 align=end와 마지막 쌍 emphasis다. 여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.",
+          "source": "16.7"
+        }
+      ],
+      "related": [
+        "Card",
+        "StatusChip",
+        "DataTable",
+        "Peek"
+      ],
+      "keywords": [
+        "키-값",
+        "키 값",
+        "라벨과 값",
+        "주문 정보",
+        "설명 목록",
+        "정보 목록",
+        "합계 묶음",
+        "결제 금액 합계",
+        "정보 나열",
+        "key value",
+        "description list"
+      ],
+      "source": "components/description-list/description-list.tsx",
+      "props": [
+        {
+          "name": "items",
+          "type": "DescriptionListItem[]",
+          "required": true
+        },
+        {
+          "name": "columns",
+          "type": "1 | 2",
+          "doc": "2는 카드 폭 640px(부품 폭 606px) 이상에서만 두 열이다. 열 순서는 위→아래, 왼쪽 열 다음 오른쪽 열이다."
+        },
+        {
+          "name": "align",
+          "type": "\"end\" | \"start\"",
+          "doc": "end는 값을 끝에 맞추고 고정폭 숫자를 쓴다(금액·수량 합계). 세로형으로 접지 않는다."
+        },
+        {
+          "name": "labelWidth",
+          "type": "number",
+          "doc": "라벨 열 고정 폭(rem). 같은 화면 여러 카드의 라벨 열을 맞출 때만 쓴다. 생략하면 5.5~10rem 안에서 가장 긴 라벨에 맞춘다."
+        }
+      ],
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "slots": [
+        "description-list",
+        "description-list-details",
+        "description-list-empty",
+        "description-list-item",
+        "description-list-items",
+        "description-list-term"
+      ]
+    },
+    {
       "name": "Checkbox",
       "category": "form",
       "purpose": "선택·해제·일부 선택 상태를 표시한다.",

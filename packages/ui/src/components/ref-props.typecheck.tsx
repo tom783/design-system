@@ -11,6 +11,7 @@ import { Field, FormRow } from './form';
 import { AppShell, PageHeader, SideNav, SideNavGroup, SideNavItem } from './app-shell';
 import { Pagination } from './pagination';
 import { StatTile } from './stat-tile/stat-tile';
+import { DescriptionList } from './description-list';
 import { SelectTrigger, SelectItem } from './select';
 import { DropdownMenuItem, DropdownMenuShortcut } from './dropdown-menu';
 import { FilterBar } from './filter-bar';
@@ -42,6 +43,7 @@ void [
   <SideNavItem ref={anchor} icon={null} label="주문" href="/orders" />,
   <Pagination ref={element} page={1} pageSize={20} totalCount={100} onPageChange={() => {}} />,
   <StatTile ref={element} label="매출" value={1} />,
+  <DescriptionList ref={div} items={[{ label: '주문번호', value: 'ORD-1' }]} />,
   <SelectTrigger ref={button} />,
   <SelectItem ref={div} value="a">가</SelectItem>,
   <DropdownMenuItem ref={div}>복사</DropdownMenuItem>,
