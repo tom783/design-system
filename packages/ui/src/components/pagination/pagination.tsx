@@ -5,7 +5,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import { cn } from '../../lib/cn';
 import { pageItems } from './page-items';
 
-export interface PaginationProps extends Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 'onChange'> {
+export interface PaginationProps extends Omit<React.ComponentProps<'nav'>, 'children' | 'onChange'> {
   /** 1부터 시작하는 현재 페이지. */
   page: number;
   pageSize: number;
@@ -21,8 +21,14 @@ export interface PaginationProps extends Omit<React.ComponentPropsWithoutRef<'na
 const format = (value: number) => value.toLocaleString('ko-KR');
 
 export function Pagination({ page, pageSize, totalCount, onPageChange, pageSizeOptions,
-  onPageSizeChange, disabled = false, className, ...props }: PaginationProps) {
-  const root = React.useRef<HTMLElement>(null);
+  onPageSizeChange, disabled = false, className, ref, ...props }: PaginationProps) {
+  const root = React.useRef<HTMLElement | null>(null);
+  // 포커스 복구가 nav 를 직접 읽으므로 앱의 ref 와 내부 ref 를 함께 건다(DESIGN.md §6.3).
+  const setRoot = React.useCallback((node: HTMLElement | null) => {
+    root.current = node;
+    if (typeof ref === 'function') return ref(node);
+    if (ref) ref.current = node;
+  }, [ref]);
   const focused = React.useRef<{ node: HTMLButtonElement; page: number } | null>(null);
   // 서버 삭제·필터 변경으로 마지막 페이지가 줄어도 존재하지 않는 범위를 표시하지 않는다.
   const size = Number.isFinite(pageSize) ? Math.max(1, Math.trunc(pageSize)) : 1;
@@ -59,7 +65,7 @@ export function Pagination({ page, pageSize, totalCount, onPageChange, pageSizeO
 
   if (total === 0) return null;
   const move = (next: number) => { if (!disabled && next !== current && next >= 1 && next <= count) onPageChange(next); };
-  return <nav {...props} ref={root} aria-label={props['aria-label'] ?? '페이지 이동'}
+  return <nav {...props} ref={setRoot} aria-label={props['aria-label'] ?? '페이지 이동'}
     data-slot="pagination" className={cn('ds-pagination', className)}
     onFocusCapture={event => {
       props.onFocusCapture?.(event);

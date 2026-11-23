@@ -50,7 +50,7 @@ const TONE_ICON: Record<Tone, React.ComponentType<{ className?: string }>> = {
 };
 
 export interface StatusChipProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
+  extends React.ComponentProps<'span'>,
     VariantProps<typeof chipVariants> {
   /** 톤 기본 아이콘을 다른 것으로 바꿀 때만 쓴다. */
   icon?: React.ReactNode;

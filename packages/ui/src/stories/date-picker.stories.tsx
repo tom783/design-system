@@ -26,7 +26,7 @@ export const 사용법: Story = {
 function TimeExample({ step, field = false, empty = false }: { step?: 1 | 5 | 10 | 15 | 30; field?: boolean; empty?: boolean }) {
   const [date, setDate] = React.useState<Date | undefined>(empty ? undefined : new Date(2026, 10, 15, 13, 30));
   const picker = <DatePicker mode="single" time={step ? { step } : true} today={today} defaultMonth={today}
-    value={date} onChange={setDate} aria-label="예약 발행일시" />;
+    value={date} onValueChange={setDate} aria-label="예약 발행일시" />;
   return <section className="flex w-fit flex-col gap-8">
     {field ? <Field label="예약 발행일시" description="브라우저 지역 시간으로 입력하세요.">{picker}</Field> : picker}
     <output data-probe="date-time-value">{formatValue(date, true)}</output>
@@ -55,7 +55,7 @@ function ToolbarExample() {
       <MultiSelect aria-label="센터" className="w-auto min-w-40" options={[{ value: '이천', label: '이천센터' }, { value: '부산', label: '부산센터' }]} />
       <Select defaultValue="waiting"><SelectTrigger aria-label="출고 상태" className="w-auto min-w-40"><SelectValue /></SelectTrigger>
         <SelectContent><SelectItem value="waiting">대기</SelectItem><SelectItem value="shipped">출고 완료</SelectItem></SelectContent></Select>
-      <DatePicker today={today} value={range} onChange={setRange} aria-label="출고 기간" />
+      <DatePicker today={today} value={range} onValueChange={setRange} aria-label="출고 기간" />
       <Button data-probe="toolbar-button">조회</Button>
     </div>
     <output data-probe="range-value">{formatValue(range)}</output>
@@ -68,7 +68,7 @@ function FieldExample() {
   return <section data-probe="date-fields" className="flex w-fit flex-col gap-4">
     <Field label="출고 기간" description="시작일과 종료일을 순서대로 입력하세요."
       error={externalError ? '출고 가능한 기간을 선택하세요.' : undefined}>
-      <DatePicker today={today} value={range} onChange={setRange} />
+      <DatePicker today={today} value={range} onValueChange={setRange} />
     </Field>
     <Field label="담당자"><Input data-probe="after-date-field" /></Field>
     <Button data-probe="external-error" onClick={() => setExternalError(value => !value)}>업무 오류 전환</Button>
@@ -88,7 +88,7 @@ async function pickDay(date: string) {
 function Demo({ single = false }: { single?: boolean }) {
   const [range, setRange] = React.useState<DateRange>(); const [date, setDate] = React.useState<Date>();
   return <><DatePicker today={today} defaultMonth={today} aria-label="주문 기간"
-    {...(single ? { mode: 'single' as const, value: date, onChange: setDate } : { mode: 'range' as const, value: range, onChange: setRange })} />
+    {...(single ? { mode: 'single' as const, value: date, onValueChange: setDate } : { mode: 'range' as const, value: range, onValueChange: setRange })} />
     <output>{formatValue(single ? date : range)}</output></>;
 }
 export const 기간선택: Story = { name: '날짜-기간선택', render: () => <Demo />, play: async ({ canvasElement: root }) => {

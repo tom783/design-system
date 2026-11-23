@@ -4633,7 +4633,7 @@
         }
       ],
       "extends": [
-        "Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 'onChange'>"
+        "Omit<React.ComponentProps<'nav'>, 'children' | 'onChange'>"
       ],
       "slots": [
         "button",
@@ -4729,7 +4729,7 @@
         }
       ],
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "app-shell",
@@ -4827,7 +4827,7 @@
         }
       ],
       "extends": [
-        "React.HTMLAttributes<HTMLElement>"
+        "React.ComponentProps<'nav'>"
       ],
       "slots": [
         "guide-bubble",
@@ -4850,7 +4850,7 @@
         }
       ],
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "side-nav-group",
@@ -4891,7 +4891,7 @@
         }
       ],
       "extends": [
-        "React.AnchorHTMLAttributes<HTMLAnchorElement>"
+        "React.ComponentProps<'a'>"
       ],
       "slots": [
         "guide-bubble",
@@ -4963,7 +4963,7 @@
         }
       ],
       "extends": [
-        "Omit<React.HTMLAttributes<HTMLElement>, 'title' | 'children'>"
+        "Omit<React.ComponentProps<'header'>, 'title' | 'children'>"
       ],
       "slots": [
         "page-header",
@@ -6195,7 +6195,7 @@
       "source": "components/select/select.tsx",
       "extends": [
         "React.ComponentProps<typeof SelectPrimitive.Root>",
-        "Pick<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>, 'id' | 'aria-describedby' | 'aria-invalid' | 'aria-label' | 'aria-labelledby'>"
+        "Pick<React.ComponentProps<typeof SelectPrimitive.Trigger>, 'id' | 'aria-describedby' | 'aria-invalid' | 'aria-label' | 'aria-labelledby'>"
       ]
     },
     {
@@ -6203,7 +6203,7 @@
       "partOf": "Select",
       "purpose": "선택 목록을 연다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>"
+        "React.ComponentProps<typeof SelectPrimitive.Trigger>"
       ],
       "slots": [
         "select-icon",
@@ -6226,7 +6226,7 @@
       "partOf": "Select",
       "purpose": "선택할 옵션 목록을 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>"
+        "React.ComponentProps<typeof SelectPrimitive.Content>"
       ],
       "slots": [
         "select-content",
@@ -6251,7 +6251,7 @@
       "partOf": "Select",
       "purpose": "선택 그룹의 이름을 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>"
+        "React.ComponentProps<typeof SelectPrimitive.Label>"
       ],
       "slots": [
         "select-label"
@@ -6262,7 +6262,7 @@
       "partOf": "Select",
       "purpose": "선택 옵션 하나를 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>"
+        "React.ComponentProps<typeof SelectPrimitive.Item>"
       ],
       "slots": [
         "select-item"
@@ -6273,7 +6273,7 @@
       "partOf": "Select",
       "purpose": "선택 그룹을 구분한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>"
+        "React.ComponentProps<typeof SelectPrimitive.Separator>"
       ],
       "slots": [
         "select-separator"
@@ -6284,7 +6284,7 @@
       "partOf": "Select",
       "purpose": "선택 목록을 위로 넘긴다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>"
+        "React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>"
       ],
       "slots": [
         "select-scroll-up-button"
@@ -6295,7 +6295,7 @@
       "partOf": "Select",
       "purpose": "선택 목록을 아래로 넘긴다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>"
+        "React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>"
       ],
       "slots": [
         "select-scroll-down-button"
@@ -6351,7 +6351,7 @@
       "partOf": "DropdownMenu",
       "purpose": "행 액션 메뉴를 연다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>"
       ],
       "slots": [
         "dropdown-menu-trigger"
@@ -6362,7 +6362,7 @@
       "partOf": "DropdownMenu",
       "purpose": "실행할 액션 목록을 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.Content>"
       ],
       "slots": [
         "dropdown-menu-content"
@@ -6383,7 +6383,7 @@
         }
       ],
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.Item>"
       ],
       "slots": [
         "dropdown-menu-destructive-icon",
@@ -6395,7 +6395,7 @@
       "partOf": "DropdownMenu",
       "purpose": "메뉴에서 켜고 끌 항목을 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>"
       ],
       "slots": [
         "dropdown-menu-checkbox-item"
@@ -6406,7 +6406,7 @@
       "partOf": "DropdownMenu",
       "purpose": "메뉴에서 하나만 고를 항목을 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>"
       ],
       "slots": [
         "dropdown-menu-radio-item"
@@ -6423,7 +6423,7 @@
         }
       ],
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.Label>"
       ],
       "slots": [
         "dropdown-menu-label"
@@ -6434,7 +6434,7 @@
       "partOf": "DropdownMenu",
       "purpose": "메뉴 그룹을 구분한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.Separator>"
       ],
       "slots": [
         "dropdown-menu-separator"
@@ -6445,7 +6445,7 @@
       "partOf": "DropdownMenu",
       "purpose": "메뉴의 단축키를 표시한다.",
       "extends": [
-        "React.HTMLAttributes<HTMLSpanElement>"
+        "React.ComponentProps<'span'>"
       ],
       "slots": [
         "dropdown-menu-shortcut"
@@ -6477,7 +6477,7 @@
       "partOf": "DropdownMenu",
       "purpose": "하위 메뉴 목록을 표시한다.",
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>"
       ],
       "slots": [
         "dropdown-menu-sub-content"
@@ -6494,7 +6494,7 @@
         }
       ],
       "extends": [
-        "React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger>"
+        "React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger>"
       ],
       "slots": [
         "dropdown-menu-sub-trigger"
@@ -6554,7 +6554,7 @@
       ],
       "rules": [
         {
-          "text": "onChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
+          "text": "onValueChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
           "source": "11.1"
         },
         {
@@ -6612,9 +6612,12 @@
           "type": "Date | DateRange"
         },
         {
+          "name": "onValueChange",
+          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)"
+        },
+        {
           "name": "onChange",
-          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)",
-          "required": true
+          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)"
         },
         {
           "name": "time",
@@ -6705,7 +6708,7 @@
         }
       ],
       "extends": [
-        "React.ButtonHTMLAttributes<HTMLButtonElement>",
+        "React.ComponentProps<'button'>",
         "VariantProps<typeof buttonVariants>"
       ],
       "slots": [
@@ -6788,7 +6791,7 @@
         }
       ],
       "extends": [
-        "React.InputHTMLAttributes<HTMLInputElement>"
+        "React.ComponentProps<'input'>"
       ],
       "slots": [
         "input",
@@ -6846,7 +6849,7 @@
         }
       ],
       "extends": [
-        "React.TextareaHTMLAttributes<HTMLTextAreaElement>"
+        "React.ComponentProps<'textarea'>"
       ],
       "slots": [
         "textarea"
@@ -7042,7 +7045,7 @@
         }
       ],
       "extends": [
-        "React.HTMLAttributes<HTMLSpanElement>",
+        "React.ComponentProps<'span'>",
         "VariantProps<typeof chipVariants>"
       ],
       "slots": [
@@ -7086,7 +7089,7 @@
       ],
       "source": "components/card.tsx",
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "card"
@@ -7097,7 +7100,7 @@
       "partOf": "Card",
       "purpose": "카드 제목과 보조 동작을 배치한다.",
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "card-header"
@@ -7108,7 +7111,7 @@
       "partOf": "Card",
       "purpose": "카드 제목을 표시한다.",
       "extends": [
-        "React.HTMLAttributes<HTMLHeadingElement>"
+        "React.ComponentProps<'h3'>"
       ],
       "slots": [
         "card-title"
@@ -7119,7 +7122,7 @@
       "partOf": "Card",
       "purpose": "카드 본문을 담는다.",
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "card-body"
@@ -7130,7 +7133,7 @@
       "partOf": "Card",
       "purpose": "카드 하단의 보조 정보를 담는다.",
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "card-footer"
@@ -7169,7 +7172,7 @@
         }
       ],
       "extends": [
-        "Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>"
+        "Omit<React.ComponentProps<'input'>, 'type'>"
       ],
       "slots": [
         "checkbox",
@@ -7632,7 +7635,8 @@
         }
       ],
       "extends": [
-        "React.HTMLAttributes<HTMLElement>"
+        "React.HTMLAttributes<HTMLElement>",
+        "React.RefAttributes<HTMLElement>"
       ],
       "slots": [
         "button",
@@ -8929,7 +8933,7 @@
         }
       ],
       "extends": [
-        "Omit<React.HTMLAttributes<HTMLDivElement>, 'children'>"
+        "Omit<React.ComponentProps<'div'>, 'children'>"
       ],
       "slots": [
         "field",
@@ -8945,7 +8949,7 @@
       "purpose": "같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.",
       "source": "components/form/form-row.tsx",
       "extends": [
-        "React.HTMLAttributes<HTMLDivElement>"
+        "React.ComponentProps<'div'>"
       ],
       "slots": [
         "form-row",

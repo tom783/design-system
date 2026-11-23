@@ -22,7 +22,7 @@ export const ShellRailContext = React.createContext<boolean | null>(null);
 // 서랍 안에서는 레일을 강제하지 않고 항목 선택을 셸의 닫기에 연결한다.
 export const ShellDrawerContext = React.createContext<(() => void) | null>(null);
 
-export interface AppShellProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface AppShellProps extends React.ComponentProps<'div'> {
   sidebar: React.ReactNode;
   /** 전역 검색·사용자 메뉴 등 앱이 구성하는 선택 상단 영역. */
   header?: React.ReactNode;

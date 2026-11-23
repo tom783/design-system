@@ -5,7 +5,7 @@ import { FieldErrorContext } from './field-error-context';
 import { FieldLabelContext } from './field-label-context';
 
 type FieldChildProps = React.AriaAttributes & { id?: string; required?: boolean };
-export interface FieldProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
+export interface FieldProps extends Omit<React.ComponentProps<'div'>, 'children'> {
   label: React.ReactNode;
   description?: React.ReactNode;
   error?: React.ReactNode;

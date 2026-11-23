@@ -145,12 +145,12 @@ test('생성된 매니페스트의 토큰 이름·값은 tokens.json 정규화 �
 test('자체 prop은 선언 원점으로 보존하고 DOM prop은 상속 이름으로 요약', () => {
   const button = components.find((c) => c.name === 'Button');
   assert.deepEqual(button.props.map((p) => p.name).sort(), ['asChild', 'iconOnly', 'leadingIcon', 'size', 'trailingIcon', 'variant']);
-  assert.deepEqual(button.extends, ['React.ButtonHTMLAttributes<HTMLButtonElement>', 'VariantProps<typeof buttonVariants>']);
+  assert.deepEqual(button.extends, ["React.ComponentProps<'button'>", 'VariantProps<typeof buttonVariants>']);
   assert.ok(button.props.find((p) => p.name === 'leadingIcon').doc.includes('라벨 왼쪽'));
   assert.ok(button.propNames.includes('onClick'));
   const card = components.find((c) => c.name === 'CardTitle');
   assert.deepEqual(card.props, []);
-  assert.deepEqual(card.extends, ['React.HTMLAttributes<HTMLHeadingElement>']);
+  assert.deepEqual(card.extends, ["React.ComponentProps<'h3'>"]);
   assert.ok(components.find((c) => c.name === 'FormFlow').props.some((p) => p.name === 'onSubmit'));
 });
 test('Button 카탈로그는 요청한 네 prop만 펼치고 상속 계약은 보존', async () => {

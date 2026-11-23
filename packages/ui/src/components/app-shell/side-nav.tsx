@@ -8,7 +8,7 @@ import { ShellRailContext, ShellDrawerContext, useAutomaticRail } from './app-sh
 const NavContext = React.createContext(false);
 const UNRELEASED = '출시 예정';
 
-export interface SideNavProps extends React.HTMLAttributes<HTMLElement> {
+export interface SideNavProps extends React.ComponentProps<'nav'> {
   brand: React.ReactNode;
   /** 접힌 레일에서도 남는 브랜드 표식. */
   brandIcon: React.ReactNode;
@@ -51,7 +51,7 @@ export function SideNav({ brand, brandIcon, collapsed, defaultCollapsed = false,
   </NavContext.Provider>;
 }
 
-export interface SideNavGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SideNavGroupProps extends React.ComponentProps<'div'> {
   label: string;
 }
 export function SideNavGroup({ label, children, className, ...props }: SideNavGroupProps) {
@@ -62,7 +62,7 @@ export function SideNavGroup({ label, children, className, ...props }: SideNavGr
   </div>;
 }
 
-export interface SideNavItemProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+export interface SideNavItemProps extends React.ComponentProps<'a'> {
   icon: React.ReactNode;
   label: string;
   badge?: React.ReactNode;
@@ -71,8 +71,8 @@ export interface SideNavItemProps extends React.AnchorHTMLAttributes<HTMLAnchorE
   /** Next Link 등 단일 자식 링크에 스타일·이벤트·ref를 합친다. */
   asChild?: boolean;
 }
-export const SideNavItem = React.forwardRef<HTMLAnchorElement, SideNavItemProps>(function SideNavItem(
-  { icon, label, badge, current = false, disabled = false, asChild = false, children, className, ...props }, ref,
+export function SideNavItem(
+  { icon, label, badge, current = false, disabled = false, asChild = false, children, className, ref, ...props }: SideNavItemProps,
 ) {
   const rail = React.useContext(NavContext);
   const closeDrawer = React.useContext(ShellDrawerContext);
@@ -100,4 +100,4 @@ export const SideNavItem = React.forwardRef<HTMLAnchorElement, SideNavItemProps>
       {asChild ? <Slottable child={children}>{() => content}</Slottable> : content}
     </Component>
   </Tooltip>;
-});
+}

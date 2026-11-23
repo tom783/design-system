@@ -10,7 +10,7 @@ import { cn } from '../lib/cn';
  *   그림자는 떠 있는 레이어(팝오버·모달)에만 `--shadow-overlay` 로 허용한다.
  * - 최소 너비 240px. 좁은 컨테이너에서 카드 내부 내용이 겹치지 않는 하한값.
  */
-export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card"
@@ -24,7 +24,7 @@ export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
   );
 }
 
-export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-header"
@@ -34,7 +34,7 @@ export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDiv
   );
 }
 
-export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+export function CardTitle({ className, ...props }: React.ComponentProps<'h3'>) {
   return (
     <h3
       data-slot="card-title"
@@ -48,12 +48,12 @@ export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHead
   );
 }
 
-export function CardBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardBody({ className, ...props }: React.ComponentProps<'div'>) {
   // 헤더가 없을 때도 제목과 같은 16px 시작선을 갖는다. 헤더 다음의 위 여백은 유지한다.
   return <div data-slot="card-body" className={cn('p-4 pt-0 first:pt-4', className)} {...props} />;
 }
 
-export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"

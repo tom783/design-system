@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '../../lib/cn';
 
-export interface PageHeaderProps extends Omit<React.HTMLAttributes<HTMLElement>, 'title' | 'children'> {
+export interface PageHeaderProps extends Omit<React.ComponentProps<'header'>, 'title' | 'children'> {
   title: string;
   description?: React.ReactNode;
   breadcrumb?: React.ReactNode;

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '../../lib/cn';
 
-export type FormRowProps = React.HTMLAttributes<HTMLDivElement>;
+export type FormRowProps = React.ComponentProps<'div'>;
 
 /**
  * 같은 줄에 놓인 Field 들을 **입력칸 기준**으로 맞춘다.
@@ -17,9 +17,9 @@ export type FormRowProps = React.HTMLAttributes<HTMLDivElement>;
  * 컨테이너 폭 480px 미만에서는 한 열로 접고 Field 를 평소처럼 쌓는다 — 공유 행이 없으므로
  * 빈 설명 행도 남지 않는다. 직접 자식은 Field 이거나 Field 와 같은 높이 규칙을 따르는 요소다.
  */
-export const FormRow = React.forwardRef<HTMLDivElement, FormRowProps>(({ className, children, ...props }, ref) =>
+export function FormRow({ className, children, ref, ...props }: FormRowProps) {
   // 컨테이너 쿼리는 자기 자신을 잴 수 없어 바깥(컨테이너)과 안쪽(격자)을 나눈다.
-  <div {...props} ref={ref} data-slot="form-row" className={cn('ds-form-row', className)}>
+  return <div {...props} ref={ref} data-slot="form-row" className={cn('ds-form-row', className)}>
     <div data-slot="form-row-grid" className="ds-form-row-grid">{children}</div>
-  </div>);
-FormRow.displayName = 'FormRow';
+  </div>;
+}

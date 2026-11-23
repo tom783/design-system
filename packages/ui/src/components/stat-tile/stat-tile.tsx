@@ -6,7 +6,8 @@ import { Skeleton } from '../loading';
 import { ErrorState } from '../state';
 import { statDelta, statValue } from './format';
 
-export interface StatTileProps extends React.HTMLAttributes<HTMLElement> {
+// 루트가 div·a·asChild 자식으로 바뀌므로 ref 는 공통 상위 HTMLElement 로 받는다(DESIGN.md §6.3).
+export interface StatTileProps extends React.HTMLAttributes<HTMLElement>, React.RefAttributes<HTMLElement> {
   label: string;
   value?: string | number;
   /** 숫자의 ko-KR 표기 옵션. 기본은 만 이상 한국어 축약, 소수 첫째 자리까지다. */
@@ -31,7 +32,7 @@ export interface StatTileProps extends React.HTMLAttributes<HTMLElement> {
 
 export function StatTile({ label, value, format, unit = '', compactValue, delta, deltaFormat = 'percent', deltaUnit = '',
   deltaLabel, goodDirection = 'up', state = 'idle', errorMessage = '지표를 불러오지 못했습니다', onRetry,
-  href, asChild = false, children, className, ...props }: StatTileProps) {
+  href, asChild = false, children, className, ref, ...props }: StatTileProps) {
   const formatted = value === undefined ? null : statValue(value, format, unit, compactValue);
   // 실패·비유한 값을 0으로 바꾸지 않는다. 로딩 중에도 이전 값·증감을 노출하지 않는다.
   const effective = state === 'idle' && !formatted ? 'error' : state;
@@ -55,7 +56,8 @@ export function StatTile({ label, value, format, unit = '', compactValue, delta,
     </>}
   </>;
   const Component = linked ? asChild ? Slot : 'a' : 'div';
-  return <Component {...props} data-slot="stat-tile" data-state={effective} data-linked={linked || undefined}
+  // 세 루트 요소 모두 HTMLElement 다. JSX 는 합집합 태그의 ref 를 교집합 타입으로 요구해 좁혀 넘긴다.
+  return <Component {...props} ref={ref as React.Ref<HTMLDivElement & HTMLAnchorElement>} data-slot="stat-tile" data-state={effective} data-linked={linked || undefined}
     role={linked ? undefined : 'group'} aria-label={sentence} aria-busy={effective === 'loading'}
     href={linked && !asChild ? href : undefined} className={cn('ds-stat-tile', className)}>
     {linked && asChild && React.isValidElement<{ children?: React.ReactNode }>(child) ? React.cloneElement(child, undefined, content) : content}

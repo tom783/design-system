@@ -39,7 +39,7 @@ function Layers() {
       </DropdownMenuContent></DropdownMenu>
     <DropdownMenu><DropdownMenuTrigger asChild><Button data-probe="plain-menu">글자 메뉴</Button></DropdownMenuTrigger>
       <DropdownMenuContent><DropdownMenuItem>저장</DropdownMenuItem><DropdownMenuItem>복사</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-    <DatePicker value={range} onChange={setRange} today={new Date(2026, 10, 21)} defaultMonth={new Date(2026, 10, 1)} />
+    <DatePicker value={range} onValueChange={setRange} today={new Date(2026, 10, 21)} defaultMonth={new Date(2026, 10, 1)} />
     <Popover><PopoverTrigger asChild><Button data-probe="popover">팝오버</Button></PopoverTrigger><PopoverContent>주문 정보</PopoverContent></Popover>
     {[true, false].map(showClose => <Dialog key={String(showClose)}><DialogTrigger asChild><Button data-probe={showClose ? 'dialog' : 'dialog-no-close'}>상세 {showClose ? '닫기 있음' : '닫기 없음'}</Button></DialogTrigger>
       <DialogContent showClose={showClose}><DialogHeader><DialogTitle>주문 상세</DialogTitle><DialogDescription>{description}</DialogDescription></DialogHeader>

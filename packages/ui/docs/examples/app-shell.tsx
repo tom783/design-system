@@ -41,7 +41,7 @@ export function AppShellExample({ narrowNavigation }: Pick<AppShellProps, 'narro
         actions={<Button variant="primary">주문 등록</Button>} />
       <div>
         <div className="flex flex-wrap items-start gap-4 border-b border-line pb-2">
-          <Field label="주문 기간"><DatePicker value={range} onChange={setRange} today={new Date(2026, 10, 15)} /></Field>
+          <Field label="주문 기간"><DatePicker value={range} onValueChange={setRange} today={new Date(2026, 10, 15)} /></Field>
           <Field label="주문 상태"><Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="w-auto min-w-40"><SelectValue /></SelectTrigger><SelectContent>
               <SelectItem value="all">전체</SelectItem><SelectItem value="ready">준비 중</SelectItem><SelectItem value="done">배송 완료</SelectItem>

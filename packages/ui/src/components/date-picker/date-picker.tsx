@@ -19,15 +19,24 @@ type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' 
   /** 빠른 선택의 기준일. 기본은 운영자의 로컬 오늘이며 스토리에서는 고정할 수 있다. */
   today?: Date;
 };
+// 값 알림은 onValueChange 다(DESIGN.md §6.3). onChange 는 0.4.0 이전 이름으로, Input 의 DOM 이벤트 onChange 와
+// 이름은 같고 인자가 달라 헷갈렸다. 둘 다 주면 onValueChange 만 부른다. 확정한 값만 보내고 입력 중 초안은 보내지 않는다.
+// JSDoc 본문을 달지 않는다 — 제네릭이 두 모드로 펼쳐지며 매니페스트 doc 이 두 번 이어 붙는다(태그는 doc 에 안 들어간다).
+type Handlers<T> = {
+  onValueChange?: (value: T | undefined) => void;
+  /** @deprecated 0.4.0에서 onValueChange로 바꿨다. 다음 마이너에서 뺀다. */
+  onChange?: (value: T | undefined) => void;
+};
 export type DatePickerProps = Common & (
-  { mode: 'single'; value?: Date; onChange: (value: Date | undefined) => void;
+  ({ mode: 'single'; value?: Date } & Handlers<Date> & {
     /** 단일 날짜의 지역 시각 입력. true는 10분, step은 분 단위다. */
-    time?: true | { step: 1 | 5 | 10 | 15 | 30 } } |
-  { mode?: 'range'; value?: DateRange; onChange: (value: DateRange | undefined) => void; time?: never }
+    time?: true | { step: 1 | 5 | 10 | 15 | 30 } }) |
+  ({ mode?: 'range'; value?: DateRange } & Handlers<DateRange> & { time?: never })
 );
 /** 기간 필터를 우선한다. 입력 초안과 확정값을 분리해 IME 조합·미완성 날짜가 필터를 망가뜨리지 않는다. */
-export function DatePicker({ mode = 'range', value, onChange, today, defaultMonth, time, className,
+export function DatePicker({ mode = 'range', value, onValueChange, onChange, today, defaultMonth, time, className,
   onBlur, onKeyDown, onCompositionStart, onCompositionEnd, disabled, ...inputProps }: DatePickerProps) {
+  const emit = (onValueChange ?? onChange) as ((next: Date | DateRange | undefined) => void) | undefined;
   const hasTime = mode === 'single' && Boolean(time);
   // 조회 기간·조회 날짜·예약 일시의 작업 방향에 맞는 빠른 선택만 제공한다.
   const presets = mode === 'range'
@@ -69,7 +78,7 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
       const parts = draft.split('~').map(s => s.trim());
       const from = parseDate(parts[0] ?? ''); const to = parseDate(parts[1] ?? '');
       if (parts.length === 2 && from && to && from <= to) {
-        (onChange as (v: DateRange) => void)({ from, to }); setMonth(from); setError(''); return;
+        emit?.({ from, to }); setMonth(from); setError(''); return;
       }
     }
     // 오류가 날 때는 입력에 글자가 있어 placeholder 가 보이지 않는다 — 문구가 고치는 법(형식·범위·순서)을 말해야 한다.
@@ -85,7 +94,7 @@ export function DatePicker({ mode = 'range', value, onChange, today, defaultMont
     setError(hasTime ? 'YYYY-MM-DD HH:mm 형식으로 입력하세요.' : 'YYYY-MM-DD 형식으로 입력하세요.');
   };
   const publish = (next: Date | DateRange | undefined) => {
-    (onChange as (v: Date | DateRange | undefined) => void)(next);
+    emit?.(next);
     setDraft(formatValue(next, hasTime)); setError(''); setNotice(undefined);
   };
   const pick = (next: Date | DateRange | undefined) => {

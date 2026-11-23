@@ -572,6 +572,64 @@ Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·traili
 기준 화면은 Storybook `Screens/OrderDetail`(기본·더보기 메뉴 열림·삭제 확인)이다. 메뉴 항목으로 연
 확인창은 트리거가 없으므로 닫힐 때 앱이 ⋯ 버튼으로 포커스를 돌려준다(onCloseAutoFocus).
 
+### 6.3 공개 API 규약 (목표 49 · 2026-11-23)
+
+부품마다 값·핸들러·ref·내보내기 이름이 제각각이면 앱 개발자와 AI가 부품마다 규칙을 따로 외운다.
+조사(0.4.0 미게시 기준, `docs/research/api-conventions-survey.md`)에서 forwardRef 22개와 ref prop 50개가 섞여
+있었고, ref 타입이 아예 없는 DOM 부품 14개, 값 알림을 `onChange`로 부르는 부품 1개(DatePicker), 루트 `export *`
+27곳으로 새어 나간 내부 도우미가 있었다. 아래 다섯 규칙으로 맞춘다.
+
+**1. 제어/비제어 쌍 — `X` · `defaultX` · `onXChange`.** 사용자가 바꾸는 값 X는 이 세 이름으로 연다.
+`X`를 주면 제어, 생략하면(`undefined`) 부품이 `defaultX`로 시작해 스스로 관리하고, 어느 쪽이든 바뀔 때
+`onXChange(next)`를 부른다.
+- 근거: Radix 기반 부품(Select·Tabs·RadioGroup·Switch·Collapsible·Dialog)이 이미 이 세 이름이다. 직접 만든 부품만
+  다르면 같은 화면에서 두 규칙을 쓰게 된다. SideNav(`collapsed`)·SegmentedControl(`value`)이 같은 방식이다.
+- 제어 전용(`defaultX` 없음)은 앱이 값을 반드시 소유할 때만 둔다 — 업로드 상태를 앱이 갱신하는 FileUpload,
+  URL·조회와 맞추는 Pagination. 허용 목록에 이유를 적는다.
+- `open`·`checked`·`expanded`·`collapsed`·`pressed`·`selected` 같은 상태를 받으면 `on{X}Change`도 둔다.
+- `X` 없이 `defaultX`만 있는 것은 부품 안에서만 쓰는 초기값이다(DatePicker `defaultMonth`).
+
+**2. 핸들러 이름 — 값은 `on{X}Change`, 사건은 `on{동사}`.** 값 알림은 이벤트가 아니라 **새 값**을 받는다
+(`onValueChange(value)`·`onOpenChange(open)`·`onPageChange(page)`). 값이 아닌 사건은 `onRetry`·`onDismiss`·
+`onStepClick`·`onRowClick`·`onLoadMore`·`onSubmit`처럼 동사로 쓴다.
+- `onChange`는 DOM `change` 이벤트 전용이다. Input·Textarea·Checkbox처럼 네이티브 요소를 그대로 노출하는 부품이
+  상속으로 갖고, 부품이 자체 prop으로 다시 정의하지 않는다.
+- 근거: DatePicker가 `onChange(date)`였다. 내부에서 감싼 Input의 `onChange(event)`와 이름은 같고 인자가 달라,
+  `onChange`를 이벤트로 가정하는 코드(폼 라이브러리 어댑터 등)에 그대로 넘기면 깨진다. 0.4.0에서 `onValueChange`로
+  바꾸고 옛 이름은 별칭으로 남겼다(규칙 5).
+
+**3. ref — prop으로 받고, DOM을 펼치면 그 요소 타입으로.** `forwardRef`를 쓰지 않는다. peer가 React `^19.0.0`(§15.7)
+이라 함수 부품이 `ref`를 prop으로 받는다. forwardRef는 19에서 불필요하고, 섞여 있으면 ref 타입을 꺼내는 법이
+부품마다 달라진다.
+- 나머지 props를 DOM 요소에 펼치는 부품은 `React.ComponentProps<'div'>`처럼 ref가 든 타입을 상속한다.
+  `React.HTMLAttributes<…>`·`ComponentPropsWithoutRef<…>`는 ref가 빠진다 — React 19는 실행 중에 ref를 그대로
+  넘기므로 동작은 같은데 타입만 막혀 있었다(Card·StatusChip·Field 등 14개).
+- 루트 요소가 바뀌는 부품(StatTile: div·a·asChild 자식)은 공통 상위 `RefAttributes<HTMLElement>`.
+- 부품이 같은 요소를 안에서도 잡아야 하면 ref를 합친다(Input·Textarea·Checkbox·Pagination). 앱 ref를 덮어쓰지 않는다.
+- DOM 속성을 상속하지 않는 합성 부품(DataTable·차트·Peek·FileUpload·Skeleton 등)은 ref를 받지 않는다.
+  어느 요소를 가리킬지가 계약이 아니기 때문이다.
+
+**4. 내보내기 범위 — 루트 `index.ts`가 이름을 나열한다.** `export *`를 쓰지 않는다. 부품 폴더가 내부 도우미를
+내보내는 순간 그것까지 공개 API가 된다 — `initials`·`encodeRecord`·`decodeRecord`가 그렇게 새었다.
+- 대문자 값(부품·상수)은 매니페스트 항목이 있어야 한다(§13.2).
+- 소문자 값(함수·훅)은 공개 도우미 목록에 용도를 적어야 통과한다. 부품이 쓰는 내부 계산은 내보내지 않는다.
+  이미 내보낸 것은 `@deprecated`로 예고하고 다음 마이너에서 뺀다(0.4.0: 12개).
+
+**5. 이름 바꾸기 — 깨지 않는다.** 0.x minor에서도 옛 이름을 바로 지우지 않는다. 새 이름을 더하고 옛 이름은
+`@deprecated` 별칭으로 한 마이너 남긴다. 둘 다 주면 새 이름이 이긴다.
+
+**자동 검사.** `scripts/check-api-conventions.mjs`가 생성된 매니페스트(자체 props·상속 타입)·루트 `index.ts`·
+매니페스트가 가리키는 소스(forwardRef·`@deprecated`)를 읽어 위 1~5를 검사한다. `pnpm test`와 pre-commit이
+`packages/ui/src/lib/api-conventions.test.mjs`로 돌린다. 지금 표는 `node scripts/check-api-conventions.mjs --table`.
+
+- 기존 위반은 `scripts/api-conventions-allow.mjs`의 `allow`에 이유와 함께 둔다. 고쳐서 더는 위반이 아닌 항목이
+  남아 있으면 그것도 실패다 — 목록은 줄어들기만 한다.
+- 공개 도우미(`helpers`)와 deprecated 별칭(`deprecatedProps`)도 같은 파일에 있다. 별칭은 새 이름이 함께 있고
+  소스 prop에 `@deprecated` JSDoc이 있어야 통과한다.
+- ref 타입은 `packages/ui/src/components/ref-props.typecheck.tsx`가 타입 검사로 고정한다(요소 타입이 다른 ref는 거부).
+- TypeScript 검사기를 띄우지 않고 텍스트로 읽는다(수십 ms). 상속 타입은 매니페스트 문자열로 판단하므로
+  `Pick<…>`(몇 개 배선 속성만 고른 것)은 DOM 펼침으로 보지 않는다.
+
 ---
 
 ## 7. 자동 검증 게이트
@@ -1039,7 +1097,7 @@ single + time에서 오늘·내일이다. 조회 필터는 과거, 예약 일시
 중간의 기존 표시는 유지한다. 이웃 달 날짜도 고를 수 있다.
 
 예약 발행·예약 발송·캠페인 시작에는 `mode="single" time`으로 시각까지 받는다.
-기간 필터는 날짜만 받는다. value·onChange는 기존 Date이며 `time`은 single에서만 허용한다.
+기간 필터는 날짜만 받는다. value·onValueChange는 기존 Date이며 `time`은 single에서만 허용한다.
 `time=true`는 10분, `{ step: 1 | 5 | 10 | 15 | 30 }`은 분 간격이다.
 입력은 24시간 `YYYY-MM-DD HH:mm`을 blur·Enter에서 엄격하게 파싱한다.
 분은 가장 가까운 칸으로 맞추고 동률은 올린다. 예약이 동률에서 더 일찍 실행되는 것을

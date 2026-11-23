@@ -58,8 +58,9 @@ const buttonVariants = cva(
   },
 );
 
+// ref 는 prop 으로 받는다(React 19, DESIGN.md §6.3). ComponentProps<'button'> 에 ref 가 들어 있다.
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends React.ComponentProps<'button'>,
     VariantProps<typeof buttonVariants> {
   /** 단일 자식 링크 등에 스타일·이벤트·ref를 합친다. */
   asChild?: boolean;
@@ -69,33 +70,29 @@ export interface ButtonProps
   trailingIcon?: React.ReactNode;
 }
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    { className, variant, size, iconOnly, asChild = false, leadingIcon, trailingIcon, children, type = 'button', ...props },
-    ref,
-  ) => {
-    const Component = asChild ? Slot : 'button';
-    // children 앞뒤 아이콘은 말줄임 라벨 밖에 둔다(splitIconChildren). iconOnly 는 아이콘 하나가 전부라 그대로다.
-    const renderLabel = (content: React.ReactNode) => {
-      const { lead, label, trail } = iconOnly ? { label: content } : splitIconChildren(content);
-      return <>{lead}<span className="truncate">{label}</span>{trail}</>;
-    };
-    return <Component
-      ref={ref}
-      type={asChild ? undefined : type}
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, iconOnly }), className)}
-      {...props}
-    >
-      {leadingIcon}
-      {/* Slot 대상은 링크 자체로 유지하고, 아이콘과 말줄임 라벨은 그 안에 배치한다. */}
-      {asChild
-        ? <Slottable child={children}>{renderLabel}</Slottable>
-        : children ? renderLabel(children) : null}
-      {trailingIcon}
-    </Component>;
-  },
-);
-Button.displayName = 'Button';
+export function Button(
+  { className, variant, size, iconOnly, asChild = false, leadingIcon, trailingIcon, children, type = 'button', ref, ...props }: ButtonProps,
+) {
+  const Component = asChild ? Slot : 'button';
+  // children 앞뒤 아이콘은 말줄임 라벨 밖에 둔다(splitIconChildren). iconOnly 는 아이콘 하나가 전부라 그대로다.
+  const renderLabel = (content: React.ReactNode) => {
+    const { lead, label, trail } = iconOnly ? { label: content } : splitIconChildren(content);
+    return <>{lead}<span className="truncate">{label}</span>{trail}</>;
+  };
+  return <Component
+    ref={ref}
+    type={asChild ? undefined : type}
+    data-slot="button"
+    className={cn(buttonVariants({ variant, size, iconOnly }), className)}
+    {...props}
+  >
+    {leadingIcon}
+    {/* Slot 대상은 링크 자체로 유지하고, 아이콘과 말줄임 라벨은 그 안에 배치한다. */}
+    {asChild
+      ? <Slottable child={children}>{renderLabel}</Slottable>
+      : children ? renderLabel(children) : null}
+    {trailingIcon}
+  </Component>;
+}
 
 export { buttonVariants };

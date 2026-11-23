@@ -137,6 +137,9 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
       related: [...adjusted.related, 'Steps'],
       rules: [...adjusted.rules, { text: '여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.', source: 'DESIGN.md 11.8' }],
     };
+    // 목표 49(DESIGN.md §6.3): forwardRef → ref prop 으로 상속 표기만 바뀌었다. 런타임 동일.
+    if (name === 'Button') adjusted = { ...adjusted, extends: ["React.ComponentProps<'button'>", ...adjusted.extends.slice(1)] };
+    if (name === 'SelectTrigger') adjusted = { ...adjusted, extends: ['React.ComponentProps<typeof SelectPrimitive.Trigger>'] };
     checkBaseline(await call(c, 'get_component', { name }), adjusted);
   }
   // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl·R43 Steps·FormRow만 명시적으로 더한다.

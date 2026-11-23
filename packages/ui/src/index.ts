@@ -30,33 +30,57 @@ export { Tooltip, Hint, Tour, useTour, placeFallback, resolveStep, useAnchored, 
   type Rect, type Placement } from './components/guide';
 export { Field, FormRow, FormFlow, useFormFlow, focusNextFormStop, useComposition, nextFocusable, shouldValidate,
   type FieldProps, type FormRowProps, type FormFlowOptions, type FormFlowProps, type FocusCandidate, type ValidationTiming } from './components/form';
-export * from './components/peek';
+// 공개 이름은 여기서 하나씩 나열한다(DESIGN.md §6.3 내보내기 범위). export * 는 부품 폴더가 내부 도우미를
+// 내보내는 순간 그것까지 공개 API 로 만든다 — initials·encodeRecord 가 그렇게 새어 나왔다.
+export { Peek, type PeekProps, type PeekItem } from './components/peek';
+export { useReturnContext, type ReturnContextOptions, type ReturnStorage } from './components/peek';
+export { encodeRecord, decodeRecord, type ReturnRecord } from './components/peek';
 
-export * from './components/state';
-export * from './components/avatar';
-export * from './components/thumbnail';
+export { EmptyState, ErrorState, type EmptyStateProps, type ErrorStateProps } from './components/state';
+export { Avatar, initials, type AvatarProps } from './components/avatar';
+export { Thumbnail, type ThumbnailProps } from './components/thumbnail';
 
-export * from './components/select';
-export * from './components/dropdown-menu';
-export * from './components/toast';
-export * from './components/date-picker';
-export * from './components/tabs';
-export * from './components/breadcrumb';
-export * from './components/dialog';
-export * from './components/textarea';
-export * from './components/radio-group';
-export * from './components/switch';
-export * from './components/label';
-export * from './components/combobox';
-export * from './components/multi-select';
-export * from './components/collapsible';
-export * from './components/clamp-text';
-export * from './components/media-viewer';
-export * from './components/carousel';
-export * from './components/app-shell';
-export * from './components/pagination';
-export * from './components/sheet';
-export * from './components/file-upload';
+export {
+  Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator,
+  SelectScrollUpButton, SelectScrollDownButton,
+} from './components/select';
+export {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup,
+  DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup,
+} from './components/dropdown-menu';
+export { toast, Toaster } from './components/toast';
+export { DatePicker, type DatePickerProps, type DateRange } from './components/date-picker';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/tabs';
+export {
+  Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis,
+} from './components/breadcrumb';
+export {
+  Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
+  type DialogContentProps,
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from './components/dialog';
+export { Textarea, type TextareaProps } from './components/textarea';
+export { RadioGroup, RadioGroupItem } from './components/radio-group';
+export { Switch } from './components/switch';
+export { Label, type LabelProps } from './components/label';
+export {
+  Combobox, comboboxFilter,
+  type ComboboxProps, type SingleComboboxProps, type MultipleComboboxProps, type ComboboxOption,
+} from './components/combobox';
+export { MultiSelect, type MultiSelectProps, type MultiSelectOption } from './components/multi-select';
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/collapsible';
+export { ClampText, type ClampTextProps } from './components/clamp-text';
+export { MediaViewer, type Media, type MediaViewerProps } from './components/media-viewer';
+export { Carousel, CarouselSlide, type CarouselProps } from './components/carousel';
+export {
+  AppShell, SideNav, SideNavGroup, SideNavItem, PageHeader,
+  type AppShellProps, type SideNavProps, type SideNavGroupProps, type SideNavItemProps, type PageHeaderProps,
+} from './components/app-shell';
+export { Pagination, type PaginationProps } from './components/pagination';
+export { SheetContent, SheetBody, type SheetContentProps } from './components/sheet';
+export { FileUpload, type FileUploadProps, type FileUploadItem } from './components/file-upload';
 export { StatTile, type StatTileProps } from './components/stat-tile/stat-tile';
-export * from './components/segmented-control';
-export * from './components/steps';
+export { SegmentedControl, type SegmentedControlProps, type SegmentedControlOption } from './components/segmented-control';
+export { Steps, type StepsProps, type StepItem, type StepStatus } from './components/steps';
