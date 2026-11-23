@@ -13,6 +13,7 @@ import { StoreShell } from './screens-shell';
  * 필드 피치 98px(레이블 20+4 · 입력 38 · 4 · 오류 예약 20 · 간격 12)는 Field 기본값 그대로다.
  * 같은 줄 두 Field 는 FormRow 로 묶는다 — 한쪽만 설명이 있어도 입력칸 윗선이 같다(DESIGN §11.9).
  * 폼 카드 묶음·하단 고정 액션 줄 부품은 없어 Card 와 sticky 유틸리티로 조립했다.
+ * 금액 칸(판매가·정가·공급가)의 단위는 설명 줄이 아니라 Input unit="원"(§17.1.1, 2026-11-23 디자인 총괄 요청)이다.
  */
 const meta = { title: 'Screens/ProductCreate', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
@@ -61,12 +62,12 @@ function ProductCreateScreen({ errors = false }: { errors?: boolean }) {
             {/* 한쪽만 설명 ② — 오른쪽 */}
             <FormRow data-screen-row="price">
               <Field label="판매가" required error={errors ? '판매가를 1원 이상으로 입력하세요' : undefined}>
-                <Input numeric inputMode="numeric" defaultValue={errors ? '0' : '39,000'} /></Field>
-              <Field label="정가" description="할인 전 가격입니다. 비우면 판매가와 같게 표시합니다."><Input numeric inputMode="numeric" defaultValue="49,000" /></Field>
+                <Input numeric inputMode="numeric" unit="원" defaultValue={errors ? '0' : '39,000'} /></Field>
+              <Field label="정가" description="할인 전 가격입니다. 비우면 판매가와 같게 표시합니다."><Input numeric inputMode="numeric" unit="원" defaultValue="49,000" /></Field>
             </FormRow>
             <FormRow data-screen-row="tax">
               <Field label="과세 유형"><SelectField value="과세" options={['과세', '면세', '영세']} /></Field>
-              <Field label="공급가"><Input numeric inputMode="numeric" defaultValue="35,455" /></Field>
+              <Field label="공급가"><Input numeric inputMode="numeric" unit="원" defaultValue="35,455" /></Field>
             </FormRow>
           </Section>
           <Section title="재고·배송">

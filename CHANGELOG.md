@@ -19,6 +19,7 @@
   접미사는 값이 아니다: `aria-describedby` 맨 앞에 붙어 낭독기가 "39,000 원"으로 읽고(Field 오류·설명·앱 id 와 합친다),
   span은 `aria-hidden`·`user-select: none`이라 복사·붙여넣기·제출에 섞이지 않는다. 슬롯 `data-slot="input-unit"`.
   이름은 StatTile·BulletRow의 `unit`과 같다. DatePicker는 Input props를 이어받지만 `unit`은 뺐다.
+  기준 화면 Storybook `Screens/ProductCreate`의 판매가·정가·공급가에 `unit="원"`을 넣었다(같은 줄 정렬·필드 피치 그대로).
   - MCP: `get_component Input`에 `unit` prop·규칙 1개·검색어 3개(접미사·단위 접미사·퍼센트 입력), 2,007 → 2,595바이트(+588).
     `get_component DatePicker` +22바이트(상속 표기 `| 'unit'`·정적 슬롯 `input-unit`). 색인·목록은 바이트가 같다.
     which_component 정답 세트에 5문항을 더해 top-1 57/105 · top-3 77/105(기존 100문항 순위 변화 0).

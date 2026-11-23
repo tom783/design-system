@@ -1,6 +1,7 @@
 // FormRow 같은 줄 정렬과 Screens/ProductCreate(F98 · (b)) 검증. 2026-11-22 오너 확정 기준:
 //  ① 한쪽만 설명이 있는 줄의 입력칸 y 차이 0  ② 둘 다 설명이 없으면 높이 증가 0
 //  ③ 오류 2개에도 입력칸 이동 0              ④ 한 열로 접히는 좁은 폭에서 빈 예약 행 없음
+//  금액 칸(판매가·정가·공급가)은 Input unit="원"(2026-11-23 디자인 총괄 요청) — 접미사가 있어도 ①~③ 이 그대로다.
 // 필드 피치 98(레이블 20+4 · 입력 38 · 4 · 오류 20 · 간격 12)도 함께 잰다. 1440×900, 라이트·다크.
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -35,6 +36,22 @@ const controls = () => ev(`[...${CANVAS}.querySelectorAll('form [data-slot="fiel
   return { label: field.querySelector('[data-slot="field-label"]').firstChild.textContent, top: control.getBoundingClientRect().top,
     labelTop: field.querySelector('[data-slot="field-label"]').getBoundingClientRect().top };
 })`);
+// 금액 칸 단위 접미사(§17.1.1): 경계 1 + 여백 12 안쪽, 값 칸과 4px, 낭독 설명의 맨 앞.
+const units = () => ev(`[...${CANVAS}.querySelectorAll('[data-slot="input-unit"]')].map(unit => {
+  const input = unit.closest('[data-slot="input-control"]').querySelector('[data-slot="input"]'), s = getComputedStyle(input);
+  const r = input.getBoundingClientRect(), u = unit.getBoundingClientRect();
+  return { label: unit.closest('[data-slot="field"]').querySelector('[data-slot="field-label"]').firstChild.textContent, text: unit.textContent,
+    inset: r.right - u.right, gap: u.left - (r.right - parseFloat(s.borderRightWidth) - parseFloat(s.paddingRight)),
+    describedFirst: input.getAttribute('aria-describedby').split(' ')[0] === unit.id };
+})`);
+function assertUnits(list) {
+  assert.deepEqual(list.map(u => [u.label, u.text]), [['판매가', '원'], ['정가', '원'], ['공급가', '원']]);
+  for (const u of list) {
+    assert.ok(Math.abs(u.inset - 13) <= 0.01 && Math.abs(u.gap - 4) <= 0.01, `${u.label} 접미사 자리 ${u.inset}·간격 ${u.gap}`);
+    assert.ok(u.describedFirst, `${u.label} 접미사가 aria-describedby 맨 앞이 아니다`);
+  }
+  return list.map(u => `${u.label} ${u.text}`);
+}
 const rowTops = () => ev(`Object.fromEntries([...${CANVAS}.querySelectorAll('[data-screen-row]')].map(row => [row.dataset.screenRow,
   [...row.querySelectorAll('[data-slot="input"], [data-slot="select-trigger"]')].map(el => el.getBoundingClientRect().top)]))`);
 
@@ -52,8 +69,9 @@ try {
       const pitch = { '상품명→카테고리': byLabel['카테고리'].labelTop - byLabel['상품명'].labelTop,
         '재고 수량→배송비 유형': byLabel['배송비 유형'].labelTop - byLabel['재고 수량'].labelTop };
       assert.deepEqual(pitch, { '상품명→카테고리': 98, '재고 수량→배송비 유형': 98 });
+      const unit = assertUnits(await units());
       await browser.shot(`create-${theme}`);
-      return { diff, pitch, fields: base.length };
+      return { diff, pitch, fields: base.length, unit };
     });
     await check(`② 둘 다 설명이 없는 FormRow 높이 = Field 하나 높이(증가 0) ${theme}`, async () => {
       const m = await ev(`(() => { const single=${q('[data-slot="field"]')}.getBoundingClientRect().height;
@@ -74,8 +92,9 @@ try {
       assert.equal(moved, 0);
       const rows = await rowTops();
       for (const [key, [a, b]] of Object.entries(rows)) assert.equal(Math.abs(a - b), 0, `${key} 줄 오류 상태 y 차이`);
+      const unit = assertUnits(await units());
       await browser.shot(`create-errors-${theme}`);
-      return { moved, errors };
+      return { moved, errors, unit };
     });
   }
 
