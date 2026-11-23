@@ -48,11 +48,12 @@
     z-index: 50; max-width: calc(100vw - var(--space-16)); border: 1px solid var(--border-default); border-radius: var(--radius-lg);
     background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-overlay);
   }
-  .ds-filter-bar-more-content { min-width: 200px; width: max-content; max-width: min(320px, calc(100vw - var(--space-16))); padding: var(--space-12) var(--space-16) var(--space-16); }
+  /* 폭은 충돌 여백 안 가용 폭(바 안쪽 16px 까지 — filter-bar.tsx layerPad)을 넘지 않는다. */
+  .ds-filter-bar-more-content { min-width: 200px; width: max-content; max-width: min(320px, var(--radix-popover-content-available-width, calc(100vw - var(--space-32)))); padding: var(--space-12) var(--space-16) var(--space-16); }
   .ds-filter-bar-more-title { margin: 0 0 var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); font-weight: 600; }
   .ds-filter-bar-more-list { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); margin: 0; padding: 0; list-style: none; }
   .ds-filter-bar-more-list .ds-filter-bar-chip { max-width: 100%; }
-  .ds-filter-bar-panel { min-width: 280px; padding: var(--space-16); }
+  .ds-filter-bar-panel { min-width: 280px; max-width: var(--radix-popover-content-available-width, calc(100vw - var(--space-32))); padding: var(--space-16); }
 
   /* 좁은 바(720px 미만): 1줄 보기·필터·보기 저장, 2줄 검색 전체 폭, 3줄 칩.
      720 = 한 줄에 놓이는 최소 폭(보기 160 + 변경됨 66 + 검색 200 + 필터 74 + 보기 저장 84 + 간격 40 = 624)에

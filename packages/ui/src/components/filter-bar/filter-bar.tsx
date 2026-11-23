@@ -6,7 +6,6 @@ import { Input } from '../input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select';
 import { chipVariants } from '../status-chip';
 import { cn } from '../../lib/cn';
-import { layerCollisionPadding } from '../../lib/layer';
 import { fitChipCount } from './fit-chips';
 
 /**
@@ -54,6 +53,8 @@ export interface FilterBarProps extends Omit<React.ComponentProps<'div'>, 'child
 }
 
 const NO_FILTERS: readonly FilterBarFilter[] = [];
+/** 팝오버와 본문(바) 가장자리 사이 최소 간격. 검수 T1 합격 기준(16px). */
+const LAYER_EDGE = 16;
 
 /** X · defaultX · onXChange (DESIGN.md §6.3 규칙 1). value 가 undefined 면 비제어다. */
 function useControllable<T>(value: T | undefined, initial: T, onChange?: (next: T) => void) {
@@ -131,6 +132,25 @@ export function FilterBar({
   // 숨은 칩이 없어지면 팝오버를 닫는다(`+N` 자체가 사라진다).
   React.useEffect(() => { if (hidden.length === 0 && moreOpen) setMoreOpen(false); }, [hidden.length, moreOpen]);
 
+  // 팝오버가 갈 수 있는 곳은 바(=본문) 가로 범위 안쪽 16px 까지다(디자인 검수 T1). 기본 충돌 여백은 화면 기준이라
+  // 1440 에서 `+N` 팝오버가 본문 오른쪽 끝을 넘어 스크롤바 위까지 나갔다. 화면 기준 여백을 바 바깥 폭 + 16 으로 준다.
+  const [layerPad, setLayerPad] = React.useState<number | Partial<Record<'top' | 'right' | 'bottom' | 'left', number>>>(LAYER_EDGE);
+  const layerOpen = moreOpen || (filterOpen && filterContent !== undefined);
+  React.useLayoutEffect(() => {
+    if (!layerOpen) return;
+    const update = () => {
+      const bar = rowRef.current?.getBoundingClientRect();
+      if (!bar) return;
+      // Floating UI 의 화면 경계는 문서 스크롤바를 뺀 clientWidth 다.
+      const viewport = document.documentElement.clientWidth;
+      setLayerPad({ top: LAYER_EDGE, bottom: LAYER_EDGE,
+        left: Math.max(LAYER_EDGE, bar.left + LAYER_EDGE), right: Math.max(LAYER_EDGE, viewport - bar.right + LAYER_EDGE) });
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [layerOpen]);
+
   // 해제 뒤 포커스: 측정이 끝난 렌더(fit.key === filtersKey)에서 목적지를 고른다. 측정 전에 고르면
   // 바뀐 보이는 개수를 모른 채 칩이 줄에 있는지 `+N` 안에 있는지를 틀린다.
   React.useLayoutEffect(() => {
@@ -195,7 +215,7 @@ export function FilterBar({
         <Popover.Trigger asChild>{trigger}</Popover.Trigger>
         <Popover.Portal>
           <Popover.Content data-slot="filter-bar-panel" className="ds-filter-bar-panel" aria-label="필터"
-            align="start" side="bottom" sideOffset={4} collisionPadding={layerCollisionPadding}>
+            align="start" side="bottom" sideOffset={4} collisionPadding={layerPad}>
             {filterContent}
           </Popover.Content>
         </Popover.Portal>
@@ -213,7 +233,7 @@ export function FilterBar({
           </Popover.Trigger>
           <Popover.Portal>
             <Popover.Content data-slot="filter-bar-more-content" className="ds-filter-bar-more-content"
-              aria-labelledby={`${id}-more-title`} align="start" side="bottom" sideOffset={4} collisionPadding={layerCollisionPadding}
+              aria-labelledby={`${id}-more-title`} align="end" side="bottom" sideOffset={4} collisionPadding={layerPad}
               onCloseAutoFocus={event => { if (keepFocus.current) { event.preventDefault(); keepFocus.current = false; } }}>
               <p id={`${id}-more-title`} data-slot="filter-bar-more-title" className="ds-filter-bar-more-title">숨은 필터 {hidden.length}개</p>
               <ul ref={moreListRef} className="ds-filter-bar-more-list">{hidden.map(item => chip(item))}</ul>

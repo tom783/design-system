@@ -174,7 +174,11 @@ try {
       await sleep(250); // 등장 전환이 끝난 뒤 잰다.
       const m = await ev(`(() => { ${helpers}
         const more = ${q('[data-slot="filter-bar-more"]')}, pop = ${q('[data-slot="filter-bar-more-content"]')}, s = getComputedStyle(more);
-        return { more: box(more), pop: box(pop), expanded: more.getAttribute('aria-expanded'), hidden: Number(more.textContent.replace('+','')),
+        // 본문 = AppShell 본문 스크롤 영역의 내용 상자(여백 안쪽, 스크롤바 제외).
+        const main = ${q('[data-slot="app-shell-main"]')}, ms = getComputedStyle(main), mr = main.getBoundingClientRect();
+        const body = { left: mr.left + main.clientLeft + parseFloat(ms.paddingLeft), right: mr.left + main.clientLeft + main.clientWidth - parseFloat(ms.paddingRight),
+          top: mr.top + main.clientTop + parseFloat(ms.paddingTop), bottom: mr.top + main.clientTop + main.clientHeight - parseFloat(ms.paddingBottom) };
+        return { more: box(more), pop: box(pop), body, expanded: more.getAttribute('aria-expanded'), hidden: Number(more.textContent.replace('+','')),
           bg: rgb(s.backgroundColor), color: rgb(s.color), ink: token('--status-neutral-fg'), surface: token('--bg-surface'), outline: s.outlineStyle,
           title: pop.querySelector('[data-slot="filter-bar-more-title"]').textContent, items: pop.querySelectorAll('[data-slot="filter-bar-chip"]').length,
           role: pop.getAttribute('role'), name: pop.getAttribute('aria-labelledby') && document.getElementById(pop.getAttribute('aria-labelledby')).textContent }; })()`);
@@ -182,9 +186,13 @@ try {
       // review-r2 1: 팝오버는 +N 아래에 붙고, +N 은 포커스 링이 아니라 눌린 모양.
       assert.ok(m.pop.top >= m.more.bottom && m.pop.top - m.more.bottom <= 8, `팝오버 위치 ${m.pop.top} / +N 아래 ${m.more.bottom}`);
       assert.ok(m.pop.left <= m.more.left + 1 && m.pop.right >= m.more.right - 1, '팝오버가 +N 가로 범위를 덮는다');
+      // 검수 T1(4e925e9): 1440 에서 팝오버가 본문 오른쪽 끝을 넘어 스크롤바 위까지 나갔다. 네 변이 본문 안, 가장자리와 16px 이상.
+      const edges = { left: m.pop.left - m.body.left, right: m.body.right - m.pop.right, top: m.pop.top - m.body.top, bottom: m.body.bottom - m.pop.bottom };
+      assert.ok(Object.values(edges).every(gap => gap >= 16 - 0.5), `팝오버와 본문 가장자리 ${JSON.stringify(edges)}`);
       assert.ok(m.bg.every((v, i) => Math.abs(v - m.ink[i]) <= 1) && m.color.every((v, i) => Math.abs(v - m.surface[i]) <= 1), `눌린 모양 ${m.bg}/${m.color}`);
       assert.equal(m.outline, 'none');
       await browser.shot(`${theme}-${width}-popover`);
+      m.edges = edges;
       // 팝오버 안에서 첫 숨은 칩을 Enter 로 해제 → 포커스는 팝오버 안 다음 칩. Esc → +N 으로 복귀.
       await ev(`${q('[data-slot="filter-bar-more-content"] [data-slot="filter-bar-chip-remove"]')}.focus()`);
       const before = await ev(`[...document.querySelectorAll('[data-slot="filter-bar-more-content"] [data-slot="filter-bar-chip"]')].map(el => el.textContent)`);
