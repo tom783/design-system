@@ -1,6 +1,15 @@
-// 작업 전에 고정한 전체 질의 집합을 비교한다. 새 키워드로 기준선이 바뀌지 않게 한다.
+// 검색 1순위 회귀 대조 — packages/mcp/match.mjs 가 고르는 1순위를 R38 작업 전에 고정한 전체 질의 기준선
+// (fixtures/r38-match-baseline.json, 439건)과 비교한다. 새 키워드로 기준선이 몰래 바뀌지 않게 한다 —
+// intendedChanges 에 적은 변화 외에 1순위가 하나라도 바뀌면 실패다.
+//
+//   node docs/qa/compare-match-baseline.mjs   # 대조하고 r38-match-ranking.md 표를 다시 쓴다
+//
+// packages/mcp/match.test.mjs 가 compareRankings() 로 같은 대조를 단위 시험에서 돈다.
+// (옛 이름 r38-match-compare.mjs — 만든 작업 번호만 있고 하는 일이 드러나지 않아 바꿨다.)
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { matchComponents } from '../../packages/mcp/match.mjs';
 
 export const intendedChanges = new Map([
@@ -26,7 +35,7 @@ export async function compareRankings() {
   });
 }
 
-if (process.argv[1]?.endsWith('/r38-match-compare.mjs') || process.argv[1] === 'docs/qa/r38-match-compare.mjs') {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const rows = await compareRankings();
   const changed = rows.filter(row => row.before !== row.after);
   assert.deepEqual(rows.filter(row => row.after !== row.expected), [], '의도하지 않은 1순위 변화');

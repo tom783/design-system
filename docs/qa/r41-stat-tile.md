@@ -125,7 +125,7 @@ Storybook 빌드에는 기존 대형 청크 안내가 있으며 종료 코드는
 | 수정: 공개 진입점·CSS·기존 조립 | packages/ui/src/index.ts · packages/ui/src/components.css · packages/ui/src/stories/card.stories.tsx |
 | 수정: 규칙·변경 기록 | DESIGN.md · CHANGELOG.md · docs/research/component-intent.mjs |
 | 수정: MCP 생성물·회귀 | packages/mcp/manifest.json · packages/mcp/build.test.mjs · packages/mcp/match.test.mjs · packages/mcp/server.test.mjs |
-| 수정: QA 연결·실제 MCP·검색 기대값 | docs/qa/run-all.mjs · docs/qa/mcp-client-verify.mjs · docs/qa/r38-match-compare.mjs |
+| 수정: QA 연결·실제 MCP·검색 기대값 | docs/qa/run-all.mjs · docs/qa/mcp-client-verify.mjs · docs/qa/compare-match-baseline.mjs |
 
 CHANGELOG의 0.3.1 미게시 추가 항목에 R41을 기록했다. 버전 범프·새 색 토큰·스파크라인·
 내장 차트·독립 그리드 부품·전역 설치·커밋·푸시는 하지 않았다. 토큰 산출물은 verify에서

@@ -179,7 +179,7 @@ test('R38 연속 구절 우선·모든 낱말 필수·순서가 달라도 후보
 });
 
 test('R38 기존 모든 keywords·useWhen·purpose의 1순위에 의도하지 않은 변화가 없다', async () => {
-  const { compareRankings } = await import('../../docs/qa/r38-match-compare.mjs');
+  const { compareRankings } = await import('../../docs/qa/compare-match-baseline.mjs');
   const rows = await compareRankings();
   assert.equal(rows.length, 439);
   assert.deepEqual(rows.filter(row => row.after !== row.expected), []);

@@ -20,7 +20,7 @@
 | `packages/mcp/README.md` | 실제 매칭 점수 설명 |
 | `docs/qa/fixtures/get-component-baseline.json` | SelectTrigger가 상속하는 Select 규칙의 문구만 동기화 |
 | `docs/qa/fixtures/r38-match-baseline.json` (신규) | 작업 전 전체 439개 질의와 1순위 고정 |
-| `docs/qa/r38-match-compare.mjs` (신규) | 전체 질의 대조·허용 변화 검사·표 생성 |
+| `docs/qa/compare-match-baseline.mjs` (신규) | 전체 질의 대조·허용 변화 검사·표 생성 |
 | `docs/qa/r38-match-ranking.md` (신규) | 변화 전부 및 439개 전체 질의 표 |
 | `docs/qa/app-shell-render-verify.mjs` | 바깥 여백 0·24px 간격·예시 위치 ±1px 하네스 작성 |
 | `docs/qa/render-verify.mjs` | 선택 없는 전체·부분 로드 내보내기 하네스 작성 |
@@ -78,7 +78,7 @@ c.keywords.some(keyword => keywordMatch(query, queryWords, keyword))
 | 저장·오류 알림을 표시한다. | Field | Toaster | 저장+알림은 입력 검증이 아닌 작업 결과 |
 | 표시할 데이터가 없음을 알리고 선택적 액션을 제공한다. | Button | EmptyState | 데이터+없음은 빈 결과 안내 |
 
-전체 표: [r38-match-ranking.md](./r38-match-ranking.md). 재현: `node docs/qa/r38-match-compare.mjs`.
+전체 표: [r38-match-ranking.md](./r38-match-ranking.md). 재현: `node docs/qa/compare-match-baseline.mjs`.
 
 ## 하네스 단정 변경 목록
 

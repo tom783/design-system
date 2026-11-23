@@ -110,7 +110,7 @@ GUI Chrome이나 샌드박스 해제로 우회하지 않았다. 재현 코드는
 - `packages/ui/docs/04-forms.mdx`·`DESIGN.md` — 여러 단계 폼·FormFlow 연결
 - `docs/research/component-intent.mjs`·`packages/mcp/manifest.json` — 의도·규칙·검색·생성 산출물
 - `packages/mcp/build.test.mjs`·`match.test.mjs`·`server.test.mjs` — 응답 크기·검색·직렬화 회귀
-- `docs/qa/mcp-client-verify.mjs`·`r38-match-compare.mjs`·`run-all.mjs` — 실제 응답 검사·의도한 검색 변경·하네스 등록
+- `docs/qa/mcp-client-verify.mjs`·`compare-match-baseline.mjs`·`run-all.mjs` — 실제 응답 검사·의도한 검색 변경·하네스 등록
 - `CHANGELOG.md` — 0.3.1 미게시의 R43 항목. 패키지 버전은 유지
 
 ## 검증 결과와 범위
