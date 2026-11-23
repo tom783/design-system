@@ -145,10 +145,17 @@ for (const [name, marker] of Object.entries(markers)) assert(css.replaceAll('"',
 assert(!/@import|@tailwind|@source/.test(css), '사전 컴파일 CSS에는 미해결 지시문이 없어야 한다');
 assert(!/@font-face/i.test(css), 'ui CSS는 글꼴 면을 포함하지 않는다');
 assert.match(css, /--control-h-md/);
-const js = await readFile(join(installed, 'ui/dist/index.js'), 'utf8');
-assert(js.startsWith('"use client";'));
-assert.match(js, /from "react(?:\/jsx-runtime)?"/);
-assert(!/\.css["']/.test(js), 'JS 번들에는 CSS import가 없어야 한다');
+// 목표 57: 소스 모듈마다 dist 파일 하나. 부품·lib 모듈은 "use client" 로 시작하고, 공개 진입점(index·icons)은 재export
+// 뿐이라 붙이지 않는다 — 붙이면 Next 서버 컴포넌트가 진입점 전체(icons 는 lucide 2,102개)를 클라이언트 번들로 보낸다.
+const distFiles = (await readdir(join(installed, 'ui/dist'), { recursive: true })).filter((file) => file.endsWith('.js'));
+assert(distFiles.length > 50, `ui dist 는 모듈별 파일이어야 한다(지금 ${distFiles.length}개)`);
+for (const file of distFiles) {
+  const code = await readFile(join(installed, 'ui/dist', file), 'utf8');
+  const entry = file === 'index.js' || file === 'icons.js';
+  assert.equal(code.startsWith('"use client";'), !entry, `${file}: ${entry ? '공개 진입점에는 "use client" 가 없어야' : '모듈은 "use client" 로 시작해야'} 한다`);
+  assert(!/\.css["']/.test(code), `${file}: JS 에는 CSS import 가 없어야 한다`);
+}
+assert.match(await readFile(join(installed, 'ui/dist/components/button.js'), 'utf8'), /from "react(?:\/jsx-runtime)?"/);
 console.log(`CSS ${Buffer.byteLength(css)}바이트 · 컴포넌트 CSS ${imports.length}개 포함`);
 // 두 번째 설치 경로도 실제 설치된 dist JS를 스캔해 확인한다.
 await mkdir(join(consumer, 'src'), { recursive: true });

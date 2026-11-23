@@ -50,6 +50,28 @@
 
 ### 바뀐 동작 (마이그레이션)
 
+- **앱 번들 크기 — 쓴 부품만 받는다** (목표 57 · `docs/qa/bundle-size.md`). Button 하나만 가져온 앱이 lucide 전체와
+  tokens.json 원본까지 받던 것을 고쳤다. tarball 을 Vite 앱처럼 묶은 값(react 외부, 축소, kB=1000):
+
+  | 앱이 가져온 것 | 0.4.0 | 지금 |
+  |---|---|---|
+  | Button 하나 | 1,097.1kB · gzip 280.4kB | 34.5kB · gzip 11.3kB |
+  | 목록 화면 10개 | 1,343.4kB · gzip 349.6kB | 385.9kB · gzip 117.1kB |
+  | 전체 `export *` | 1,533.7kB · gzip 408.7kB | 636.0kB · gzip 192.0kB |
+
+  Next 16 App Router 빈 앱(서버 페이지가 Button·StatusChip·Card·`icons` 의 Check 를 import)의 클라이언트 JS 는 1,694kB → 590kB
+  (전송 466 → 179kB), 클라이언트 청크의 lucide 아이콘 2,102 → 8개.
+  - 원인 셋: carousel 이 공개 `icons` 진입점(`export * from 'lucide-react'`)을 가져와 lucide 전체가 이름공간 객체로 복사됐다(→ `lucide-react` 직접).
+    `dist/index.js` 한 파일이라 앱 번들러가 쓰지 않는 부품을 덜어내지 못했다(→ 소스 파일마다 dist 파일, `preserveModules`).
+    `lib/layer.ts`·`lib/use-delayed-loading.ts` 가 생성 JSON 전체를 import 했다(→ 값 3개만 담은 생성 상수 `lib/runtime-tokens.ts`, 값은 그대로 — 8px·200ms·400ms).
+  - `"use client"` 는 부품·lib 모듈마다 붙고 공개 진입점 `index.js`·`icons.js`(재export 뿐)에는 붙지 않는다. 진입점에 붙어 있던 0.4.0 은
+    서버 페이지가 Button 하나를 써도 부품 전부와 lucide 전체를 클라이언트로 보냈고, `next build --webpack` 은
+    `"export *" in a client boundary` 로 **빌드가 실패했다**. 이제 `@s2life/ui/icons` 의 아이콘은 서버에서 그려진다(lucide 자체 경계).
+  - 공개 API(`exports`·이름·타입)는 그대로다. 깊은 경로(`@s2life/ui/dist/components/…`)는 여전히 열려 있지 않다.
+  - 앱이 할 일: Turbopack(Next 16 기본)·Vite 는 없다. **`next build --webpack` 앱은 `experimental.optimizePackageImports: ['@s2life/ui']`** 를
+    켠다 — 없으면 webpack 이 서버 그래프에서 닿는 부품 전부를 클라이언트 번들에 싣는다(1,103kB → 켜면 583kB).
+    `cn()`·`buttonVariants()` 같은 함수를 서버 컴포넌트에서 부를 수 없는 것은 0.4.0 과 같다.
+
 - **StatusChip의 기준선은 라벨 글자다** (목표 49 설명 목록 검수 D1 · DESIGN.md §2.3). 이전에는 첫 항목인 아이콘의 아래 끝이
   칩 기준선이라, 칩과 같은 줄의 글자가 칩 글자보다 약 3px 아래에 섰다. 칩 안 배치는 그대로다. 칩이 있는 스토리 58개 전후 대조에서
   41개(DataTable 15개·주문 목록 8개·목록 화면·Peek·대시보드·FileUpload 등)는 화면이 같고, 설명 목록 6개 밖에서는 글자 줄에 놓인
@@ -111,6 +133,9 @@
 
 ### 문서
 
+- 시작하기(`01-getting-started.mdx`)·ui README 의 Next 안내 — 부품 파일마다 `"use client"`, 아이콘은 서버에서 그려짐, webpack 빌드는
+  `optimizePackageImports`. `docs/qa/bundle-size.md`(재는 방법·전후 표·Next 표·`"use client"` 판단·상한 올리는 법). DESIGN.md §15.6.1.
+
 - DESIGN.md §16.7 설명 목록 — 디자인 총괄 규칙 표 0.5.0, 측정 예시와 다른 곳(규칙 표 우선), 카드 폭 경계의 부품 폭 환산(606·326px),
   주문 상세 교체 실측.
 
@@ -119,6 +144,17 @@
   스토리·문서 예제의 DatePicker를 `onValueChange`로, §13.3의 Button `extends` 예시를 지금 표기로 바꿨다.
 
 ### 내부
+
+- 크기 회귀 검사 `pnpm size`(목표 57, `scripts/bundle-size-check.mjs`): `npm pack` → 빈 앱에 격리 설치 → 묶음 셋(Button·목록 화면 10개·전체)을
+  Vite 로 묶어 min·gzip 을 잰다. Button ≤ 60kB · lucide 아이콘 ≤ 80개(쓰지 않는 아이콘 이름 없음) · tokens.json 원본 없음 · 목록 ≤ 500kB ·
+  전체 ≤ 820kB. `pnpm verify` 마지막 단계(약 5초). GitHub Actions 에는 걸지 않았다(DevOps — 명령·시간은 bundle-size.md).
+  0.4.0 코드에서 9건으로 실패한다.
+- 빌드 가드(`scripts/build-ui.mjs`): dist JS 마다 대응하는 src 파일이 있어야 하고(src 밖 모듈 차단 — tokens.json 이 `dist/docs/research/tokens.js` 로
+  나왔다), 모듈은 `"use client"` 로 시작하고, 진입점은 배너 없이 재export 만이어야 한다. `pack-verify` 도 설치된 tarball 에서 같은 규칙을 본다.
+- 경계 검사(`scripts/check-boundaries.mjs`): 부품·lib 이 공개 진입점(`icons`·`index`)이나 `tokens.json` 을 import 하면 실패한다(스토리는 예외).
+- 생성 파일 `packages/ui/src/lib/runtime-tokens.ts`(`pnpm tokens`, 목록 `docs/research/ui-runtime-tokens.mjs`)를 pre-commit 생성물 대조에 넣었다.
+  CI `checks` 는 tokens.json 만 대조하므로 `runtime-tokens.test.mjs` 가 커밋된 파일을 tokens.json 에서 다시 만든 것과 바이트로 비교한다.
+- `docs/qa/measure/next-consumer.mjs`: Next 16 빈 앱(Turbopack·`--webpack`·`--optimize`)의 SSR·하이드레이션·Select·클라이언트 JS 계측. 게이트 밖.
 
 - 공개 API 규약 검사(목표 49): `scripts/check-api-conventions.mjs`가 매니페스트·루트 `index.ts`·소스를 읽어 DESIGN.md §6.3을
   검사하고 `pnpm test`·pre-commit(`packages/ui/src/lib/api-conventions.test.mjs`)에서 돈다. 기존 위반 11건은

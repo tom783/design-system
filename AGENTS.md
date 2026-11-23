@@ -19,6 +19,7 @@ React 19.3.1 · Storybook 10.6.7 · Tailwind CSS **4**.3.5 · TypeScript **7**.0
 | `packages/tokens/tokens.css` | `docs/research/tokens-build.mjs` |
 | `packages/tokens/theme.css` | 동일 |
 | `docs/research/tokens.json` | 동일 |
+| `packages/ui/src/lib/runtime-tokens.ts` | 동일 — 부품이 JS 로 읽는 토큰 값만(목록 `docs/research/ui-runtime-tokens.mjs`) |
 
 색·활자·간격 수치는 **`docs/research/tokens-build.mjs` 안에서만** 고치고 `pnpm tokens`로 재생성한다.
 생성된 CSS를 직접 편집하면 다음 재생성에서 날아가고, 검증도 우회된다.
@@ -29,7 +30,8 @@ React 19.3.1 · Storybook 10.6.7 · Tailwind CSS **4**.3.5 · TypeScript **7**.0
 pnpm tokens       # 토큰 재생성 + 대비 · 의미분리 · 테마 3상태 검증
 pnpm typecheck
 pnpm build-storybook
-pnpm verify       # 위 세 개를 순서대로
+pnpm size         # 앱 번들 크기 — tarball 을 Vite 앱처럼 묶어 Button ≤ 60kB · lucide 전체·tokens.json 없음 (docs/qa/bundle-size.md)
+pnpm verify       # 위 네 개를 순서대로
 ```
 
 ### 게이트는 자동으로 돈다
@@ -195,7 +197,8 @@ success는 3.89:1이다. "600단계는 안전하다"는 규칙은 없다. 실측
 **패키지 안에서 자기 이름(`@s2life/ui`, `@s2life/ui/icons`)으로 import 하지 마라.** 자기 참조는
 exports 를 거쳐 `packages/ui/dist/` 로 해석된다. dist 는 빌드 뒤에만 생기는 .gitignore 대상이라
 오래된 dist 가 남은 로컬은 통과하고 깨끗한 CI 는 TS2307 로 깨진다(실측: R31~R43b 원격 CI 11회 연속
-실패를 로컬 게이트가 못 봤다). 소스 안에서는 `../icons`·`../index` 상대 경로를 쓴다.
+실패를 로컬 게이트가 못 봤다). 소스 안에서는 상대 경로를 쓴다 — 스토리는 `../icons`·`../index`, **부품·lib 은 `lucide-react`·부품 파일을
+직접**(공개 진입점을 가져오면 앱 번들이 진입점 전체를 받는다 — lucide 전체가 실렸다, DESIGN.md §15.6.1).
 `scripts/check-boundaries.mjs` 가 pre-commit 에서 막고, pre-push 는 임시 git worktree 에서
 dist 없이 typecheck 한다(`pnpm typecheck:clean [커밋]`).
 

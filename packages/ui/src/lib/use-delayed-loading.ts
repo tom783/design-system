@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import tokens from '../../../../docs/research/tokens.json';
+// tokens.json 전체가 아니라 생성 상수를 읽는다 — JSON 원본이 앱 번들에 들어가지 않게 한다(목표 57).
+import { runtimeTokens } from './runtime-tokens';
 import { nextPhase, type LoadingPhase } from './loading-state';
 
 export interface DelayedLoadingOptions { delay?: number; minVisible?: number }
 
-function duration(name: keyof typeof tokens.loading): number {
+function duration(name: keyof typeof runtimeTokens.loading): number {
   // CSS 덮어쓰기를 존중하며 SSR·스타일 미주입 환경도 생성된 토큰을 기본값으로 쓴다.
   const css = typeof document === 'undefined' ? '' : getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
-  const value = css || tokens.loading[name];
+  const value: string = css || runtimeTokens.loading[name];
   const parsed = Number.parseFloat(value) * (value.endsWith('ms') ? 1 : 1000);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : Number.parseFloat(tokens.loading[name]);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : Number.parseFloat(runtimeTokens.loading[name]);
 }
 
 export function useDelayedLoading(isLoading: boolean, opts: DelayedLoadingOptions = {}): boolean {

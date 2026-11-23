@@ -1792,6 +1792,20 @@ eslint 를 쓰지 않는다 — 지금까지와 같은 생성기 게이트 방�
 
 이 경계가 있어야 나중에 Radix 를 바꿀 수 있다. 컴포넌트가 쌓인 뒤에는 긋기 어렵다.
 
+### 15.6.1 앱은 쓴 부품만 받는다 (목표 57)
+
+0.4.0 은 Button 하나만 가져온 앱이 1,097kB 를 받았다(lucide 전체 2,102개 + tokens.json 원본 + 부품 전부). 지금 34.5kB.
+수치·재는 방법·Next 실측은 `docs/qa/bundle-size.md`. 지키는 규칙은 넷이다.
+
+- **부품은 공개 진입점을 가져오지 않는다.** `icons` 는 `export * from 'lucide-react'` 라 단일 번들에서 lucide 전체가 이름공간
+  객체로 복사됐다. 부품은 `lucide-react` 와 부품 파일을 직접 가져온다(스토리는 앱 예시라 예외). `check-boundaries.mjs` 가 막는다.
+- **dist 는 소스 파일마다 한 파일**(`preserveModules`). `sideEffects` 는 CSS 만이라 앱 번들러가 쓰지 않는 부품을 덜어낸다.
+- **`"use client"` 는 모듈마다, 공개 진입점(`index.js`·`icons.js`)에는 없다.** 진입점에 붙이면 진입점 전체가 클라이언트 참조
+  하나가 되어 Next 서버 페이지가 부품 전부와 lucide 전체를 클라이언트로 보낸다(webpack 은 빌드를 거부했다). 진입점은 재export 뿐이다.
+- **부품은 tokens.json 을 import 하지 않는다.** JS 가 읽는 토큰 값은 생성 상수 `lib/runtime-tokens.ts`(목록 `ui-runtime-tokens.mjs`).
+
+`pnpm size`(= `pnpm verify` 마지막 단계)가 tarball 을 Vite 앱처럼 묶어 Button ≤ 60kB · lucide 전체 없음 · tokens.json 없음을 본다.
+
 ### 15.7 배포는 리허설로 확인한다
 
 "배포되겠지" 가 아니라 **확인한다.** `pnpm qa:pack` 이 tarball 세 개를 만들어

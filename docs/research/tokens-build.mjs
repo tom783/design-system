@@ -15,6 +15,7 @@
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { renderUiRuntimeTokens, UI_RUNTIME_TOKENS_PATH } from './ui-runtime-tokens.mjs';
 
 // ─────────────────────────────── 색공간 ───────────────────────────────
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
@@ -867,6 +868,8 @@ const files = [
   write('packages/tokens/theme.css', tw),
   write('docs/research/tokens.json', JSON.stringify(json, null, 2)),
   write('packages/tokens/tokens.json', JSON.stringify(json, null, 2)),
+  // 부품이 JS 로 읽는 값만 — tokens.json 전체가 앱 번들에 들어가지 않게 한다(목표 57).
+  write(UI_RUNTIME_TOKENS_PATH, renderUiRuntimeTokens(json)),
 ];
 
 // ═══════════════════════════ 9. 보고 ═══════════════════════════

@@ -46,7 +46,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 }
 ```
 
-Next.js App Router에서 동작합니다. 패키지의 공개 JS에는 이미 `"use client"`가 붙어 있어 서버 컴포넌트 페이지에서도 import할 수 있습니다. 이벤트 핸들러나 React 상태를 직접 정의하는 앱 컴포넌트에는 앱의 `"use client"`가 필요합니다.
+Next.js App Router에서 동작합니다. 부품 파일마다 `"use client"`가 붙어 있어 서버 컴포넌트 페이지에서도 import할 수 있고, 페이지가 쓴 부품만 클라이언트 번들에 들어갑니다. `@s2life/ui/icons`의 아이콘은 서버에서 그려집니다. 이벤트 핸들러나 React 상태를 직접 정의하는 앱 컴포넌트에는 앱의 `"use client"`가 필요합니다. `cn()`·`buttonVariants()` 같은 함수는 클라이언트 컴포넌트에서 호출합니다.
+
+Next 16 기본 빌드(Turbopack)는 설정이 필요 없습니다. webpack으로 빌드하면(`next build --webpack`) `next.config`에 `experimental: { optimizePackageImports: ['@s2life/ui'] }`를 넣어야 쓰지 않는 부품이 빠집니다 — 빠뜨리면 모든 부품이 클라이언트 번들에 실립니다.
 
 ```tsx
 // app/orders/page.tsx — 서버 컴포넌트 페이지

@@ -64,3 +64,42 @@ test('예시 코드 문자열 속 @s2life/ui 와 상대 경로 import 는 허용
     await checkBoundaries(dir);
   } finally { await rm(dir, { recursive: true }); }
 });
+
+// 공개 진입점을 부품이 가져오면 앱이 진입점 전체를 받는다(목표 57: carousel → ../../icons 로 lucide 전체, Button 하나 1,423kB).
+for (const [label, file, source] of [
+  ['부품의 icons 진입점 import', 'components/carousel/carousel.tsx', "import { ChevronLeft } from '../../icons';"],
+  ['부품의 icons.ts 확장자 import', 'components/carousel/carousel.tsx', "import { ChevronLeft } from '../../icons.ts';"],
+  ['lib 의 icons 재export', 'lib/x.ts', "export { Check } from '../icons';"],
+  ['부품의 index 진입점 import', 'components/button.tsx', "import { cn } from '../index';"],
+  ['부품의 동적 index import', 'components/x/y.tsx', "const ui = await import('../../index');"],
+]) test(`${label}를 차단한다`, async () => {
+  const dir = await mkdtemp(join(tmpdir(), 's2-boundary-'));
+  try {
+    await mkdir(join(dir, file, '..'), { recursive: true });
+    await writeFile(join(dir, file), source);
+    await assert.rejects(checkBoundaries(dir), /공개 진입점/);
+  } finally { await rm(dir, { recursive: true }); }
+});
+test('스토리의 공개 진입점 import 와 부품의 lucide-react·부품 파일 import 는 허용한다', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 's2-boundary-'));
+  try {
+    await mkdir(join(dir, 'stories'));
+    await mkdir(join(dir, 'components/carousel'), { recursive: true });
+    await writeFile(join(dir, 'stories/a.stories.tsx'), "import { Ellipsis } from '../icons';\nimport { Button } from '../index';");
+    await writeFile(join(dir, 'components/carousel/carousel.tsx'), "import { ChevronLeft } from 'lucide-react';\nimport { Button } from '../button';\nimport { cn } from '../../lib/cn';\nimport { iconsMeta } from '../../lib/icons-meta';");
+    await writeFile(join(dir, 'icons.ts'), "export * from 'lucide-react';");
+    await writeFile(join(dir, 'index.ts'), "export { Carousel } from './components/carousel/carousel';");
+    await checkBoundaries(dir);
+  } finally { await rm(dir, { recursive: true }); }
+});
+test('부품의 tokens.json import 를 차단하고 스토리는 허용한다', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 's2-boundary-'));
+  try {
+    await mkdir(join(dir, 'stories'));
+    await writeFile(join(dir, 'stories/foundation.stories.tsx'), "import tokens from '../../../../docs/research/tokens.json';");
+    await checkBoundaries(dir);
+    await mkdir(join(dir, 'lib'));
+    await writeFile(join(dir, 'lib/layer.ts'), "import tokens from '../../../../docs/research/tokens.json';");
+    await assert.rejects(checkBoundaries(dir), /tokens\.json/);
+  } finally { await rm(dir, { recursive: true }); }
+});

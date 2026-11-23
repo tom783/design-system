@@ -19,7 +19,7 @@ fail() { printf '\n\033[31m✗ %s\033[0m\n' "$1"; exit 1; }
 pnpm -s tokens    > /dev/null || fail "토큰 검증 실패 — pnpm tokens 출력을 읽어라"
 pnpm -s mcp:build > /dev/null || fail "MCP 매니페스트 검증 실패 — pnpm mcp:build 출력을 읽어라"
 
-GENERATED="packages/tokens docs/research/tokens.json packages/mcp/manifest.json"
+GENERATED="packages/tokens docs/research/tokens.json packages/ui/src/lib/runtime-tokens.ts packages/mcp/manifest.json"
 if ! git diff --quiet -- $GENERATED; then
   printf '\n\033[31m✗ 생성 파일이 소스와 어긋나 있다.\033[0m\n'
   git --no-pager diff --stat -- $GENERATED

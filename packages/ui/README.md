@@ -16,7 +16,7 @@ import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '@s2life/ui/styles.css';
 ```
 
-두 줄의 CSS는 앱 공통 진입점에서 한 번 불러온다. Next.js App Router는 루트 `app/layout.tsx`, Vite는 `src/main.tsx`에 둔다. 토큰·유틸리티·모든 컴포넌트 스타일이 사전 컴파일되어 있어 Tailwind 설치가 필요 없다. 이벤트·상태를 쓰는 Next.js 컴포넌트는 클라이언트 컴포넌트에서 사용한다.
+두 줄의 CSS는 앱 공통 진입점에서 한 번 불러온다. Next.js App Router는 루트 `app/layout.tsx`, Vite는 `src/main.tsx`에 둔다. 토큰·유틸리티·모든 컴포넌트 스타일이 사전 컴파일되어 있어 Tailwind 설치가 필요 없다. 이벤트·상태를 쓰는 Next.js 컴포넌트는 클라이언트 컴포넌트에서 사용한다. 부품은 파일마다 `"use client"`가 있어 서버 컴포넌트에서 import하면 쓴 부품만 클라이언트 번들에 들어간다. `next build --webpack`으로 빌드하면 `experimental.optimizePackageImports: ['@s2life/ui']`를 켠다(Next 16 기본 Turbopack은 필요 없다).
 
 `styles.css`는 앱 전체에 적용되는 기본 초기화(Tailwind preflight)와 유틸리티를 포함한다. **앱 전체를 이 디자인 시스템으로 만드는 것을 전제로 한다.** 기존 앱의 일부 화면에만 넣는 부품 전용 CSS(preflight 없는 파일)는 제공하지 않는다 — `styles.css`든 `tailwind.css`든 불러오면 앱 전체의 기본 스타일이 함께 바뀐다. 우리 고유 클래스는 `ds-`로 시작한다. 앱 CSS 클래스는 `ds-`로 시작하지 않으며, `.flex`·`.hidden` 같은 유틸리티 이름을 다시 정의하지 않는다.
 

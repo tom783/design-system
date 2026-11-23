@@ -8,7 +8,7 @@
     "build-storybook": "node scripts/build-storybook.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:clean": "node scripts/typecheck-clean.mjs",
-    "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm test && pnpm build-storybook --quiet",
+    "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm test && pnpm build-storybook --quiet && pnpm size",
     "mcp": "node packages/mcp/server.mjs",
     "mcp:build": "node docs/research/mcp-build.mjs",
     "qa": "node docs/qa/run-all.mjs",
@@ -17,6 +17,7 @@
     "build": "pnpm --filter @s2life/tokens build && pnpm --filter @s2life/mcp build && pnpm --filter @s2life/ui build",
     "version:set": "node scripts/version-set.mjs",
     "qa:pack": "node docs/qa/pack-verify.mjs",
+    "size": "node scripts/bundle-size-check.mjs",
     "publish:check": "node scripts/npm-publish-check.mjs",
     "test": "node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs packages/mcp/*.test.mjs docs/qa/*.test.mjs"
   },
