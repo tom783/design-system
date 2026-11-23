@@ -275,10 +275,21 @@ const intents = [
       'filters는 {id,label} 칩이다. 칩은 한 줄이고 넘치면 +N 팝오버다. 칩 해제·초기화는 onFiltersChange로 남은 목록을 알린다.',
       '0개면 트리거는 필터, 초기화는 숨고 칩 줄 높이는 남는다. 해제 뒤 포커스는 다음 칩, 없으면 필터 트리거다.',
       'filterContent는 트리거 팝오버 내용이다. 없으면 filterOpen·onFilterOpenChange만 바뀌어 앱이 Sheet 등을 연다.',
-      '바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다.'
+      '바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다. 행 선택 중에는 BulkActionBar children으로 넣어 숨긴다.'
     ],['views','view','defaultView','onViewChange','viewChanged','onSaveView','query','defaultQuery','onQueryChange','searchLabel','searchPlaceholder','filters','defaultFilters','onFiltersChange','filterContent','filterOpen','defaultFilterOpen','onFilterOpenChange'],
     ['filter-bar','filter-bar-controls','filter-bar-search','filter-bar-trigger','filter-bar-chips','filter-bar-chip','filter-bar-chip-remove','filter-bar-more','filter-bar-reset'],
-    ['DataTable','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','filter bar','filter chips']),
+    ['DataTable','BulkActionBar','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','filter bar','filter chips']),
+  entry('BulkActionBar','table','표에서 행을 선택하면 툴바 자리에 선택 건수와 일괄 작업을 보인다.',
+    ['선택한 주문을 한 번에 출력·처리·취소할 때'],
+    ['필터 툴바와 동시에 보이게 두지 마라','바탕을 브랜드·오류색으로 칠하지 마라'],'4.2',[
+      'selectedCount는 표의 선택 수다. 선택은 DataTable selectedIds·onSelectedIdsChange(제어형)가 소유하고 onClear에서 비운다.',
+      '1건 이상이면 children(FilterBar) 자리를 같은 높이로 대체하고 표 위에 sticky로 붙는다. 표와 같은 부모에 둔다.',
+      '순서는 N건 선택 → 선택 해제 → actions(secondary sm 2~3개) → 구분선 → dangerAction(danger sm 하나)이다.',
+      '선택 중에는 필터를 바꿀 수 없다. N건 선택은 늘 있는 live region이다. 720px 미만은 액션이 둘째 줄이다.',
+      '위험 액션은 AlertDialog로 확정한다. 확정 뒤 선택을 비우면 바가 사라지므로 툴바로 포커스를 돌린다.'
+    ],['selectedCount','onClear','actions','dangerAction','children'],
+    ['bulk-action-bar','bulk-action-bar-replaced','bulk-action-bar-panel','bulk-action-bar-count','bulk-action-bar-clear','bulk-action-bar-actions','bulk-action-bar-divider'],
+    ['DataTable','FilterBar','Button','AlertDialog'],['일괄 작업','일괄 작업 바','선택 해제','건 선택','선택한 행','체크한 행','선택한 주문','선택 건수','벌크 액션','bulk action']),
   entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
     "state로 loading·empty·error를 구분해 준다."
   ],['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),

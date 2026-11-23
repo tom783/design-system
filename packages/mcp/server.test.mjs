@@ -103,8 +103,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
     if (result.uri === 'design://components') {
       assert.equal(result.text, JSON.stringify(componentIndex(manifest)));
       // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
-      // 목표 49 FilterBar +362B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362, '색인 전송량을 잰다');
+      // 목표 49 FilterBar +362B · BulkActionBar +341B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -191,9 +191,12 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     name: 'StatTile', kind: 'component', purpose: '대시보드의 단일 지표 값과 비교 기간의 증감을 보여준다.',
     import: "import { StatTile } from '@s2life/ui';",
   }, entry] : [entry]).flatMap(entry => entry.name === 'SELECTION_COLUMN_ID' ? [entry, {
-    // 목표 49: 목록 툴바 FilterBar 를 DataTable 묶음 뒤에 더한다.
+    // 목표 49: 목록 툴바 FilterBar·BulkActionBar 를 DataTable 묶음 뒤에 더한다.
     name: 'FilterBar', kind: 'component', purpose: '목록 위에 저장된 보기·검색·필터 트리거와 적용 필터 칩을 한 툴바로 둔다.',
     import: "import { FilterBar } from '@s2life/ui';",
+  }, {
+    name: 'BulkActionBar', kind: 'component', purpose: '표에서 행을 선택하면 툴바 자리에 선택 건수와 일괄 작업을 보인다.',
+    import: "import { BulkActionBar } from '@s2life/ui';",
   }] : [entry]).flatMap(entry => entry.name === 'Field' ? [entry, {
     // 2026-11-22: 같은 줄 정렬 FormRow 를 Field 의 부품으로 더한다.
     name: 'FormRow', kind: 'component', purpose: '같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.',

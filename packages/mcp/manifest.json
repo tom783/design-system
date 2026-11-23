@@ -7444,12 +7444,13 @@
           "source": "4.2"
         },
         {
-          "text": "바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다.",
+          "text": "바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다. 행 선택 중에는 BulkActionBar children으로 넣어 숨긴다.",
           "source": "4.2"
         }
       ],
       "related": [
         "DataTable",
+        "BulkActionBar",
         "Select",
         "Input"
       ],
@@ -7581,6 +7582,101 @@
         "select-trigger",
         "select-value",
         "select-viewport"
+      ]
+    },
+    {
+      "name": "BulkActionBar",
+      "category": "table",
+      "purpose": "표에서 행을 선택하면 툴바 자리에 선택 건수와 일괄 작업을 보인다.",
+      "useWhen": [
+        "선택한 주문을 한 번에 출력·처리·취소할 때"
+      ],
+      "dont": [
+        "필터 툴바와 동시에 보이게 두지 마라",
+        "바탕을 브랜드·오류색으로 칠하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "selectedCount는 표의 선택 수다. 선택은 DataTable selectedIds·onSelectedIdsChange(제어형)가 소유하고 onClear에서 비운다.",
+          "source": "4.2"
+        },
+        {
+          "text": "1건 이상이면 children(FilterBar) 자리를 같은 높이로 대체하고 표 위에 sticky로 붙는다. 표와 같은 부모에 둔다.",
+          "source": "4.2"
+        },
+        {
+          "text": "순서는 N건 선택 → 선택 해제 → actions(secondary sm 2~3개) → 구분선 → dangerAction(danger sm 하나)이다.",
+          "source": "4.2"
+        },
+        {
+          "text": "선택 중에는 필터를 바꿀 수 없다. N건 선택은 늘 있는 live region이다. 720px 미만은 액션이 둘째 줄이다.",
+          "source": "4.2"
+        },
+        {
+          "text": "위험 액션은 AlertDialog로 확정한다. 확정 뒤 선택을 비우면 바가 사라지므로 툴바로 포커스를 돌린다.",
+          "source": "4.2"
+        }
+      ],
+      "related": [
+        "DataTable",
+        "FilterBar",
+        "Button",
+        "AlertDialog"
+      ],
+      "keywords": [
+        "일괄 작업",
+        "일괄 작업 바",
+        "선택 해제",
+        "건 선택",
+        "선택한 행",
+        "체크한 행",
+        "선택한 주문",
+        "선택 건수",
+        "벌크 액션",
+        "bulk action"
+      ],
+      "source": "components/bulk-action-bar/bulk-action-bar.tsx",
+      "props": [
+        {
+          "name": "selectedCount",
+          "type": "number",
+          "required": true,
+          "doc": "선택한 행 수. 0 이면 바가 숨고 children 이 보인다."
+        },
+        {
+          "name": "onClear",
+          "type": "(() => void)",
+          "doc": "선택 해제 버튼을 눌렀다. 앱이 표의 selectedIds 를 비운다."
+        },
+        {
+          "name": "actions",
+          "type": "ReactNode",
+          "doc": "안전한 일괄 액션 — Button secondary sm 2~3개."
+        },
+        {
+          "name": "dangerAction",
+          "type": "ReactNode",
+          "doc": "되돌릴 수 없는 액션 하나 — Button danger sm. 구분선 뒤 맨 끝에 놓인다. 확인 단계(AlertDialog)는 앱이 연다."
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "doc": "선택이 없을 때 이 자리에 보이는 목록 툴바(FilterBar)."
+        }
+      ],
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "slots": [
+        "bulk-action-bar",
+        "bulk-action-bar-actions",
+        "bulk-action-bar-clear",
+        "bulk-action-bar-count",
+        "bulk-action-bar-divider",
+        "bulk-action-bar-panel",
+        "bulk-action-bar-replaced",
+        "bulk-action-bar-summary",
+        "button"
       ]
     },
     {

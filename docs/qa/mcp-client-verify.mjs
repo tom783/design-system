@@ -332,8 +332,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const list = (await t('list_components', {})).content[0].text;
   const rules = (await t('get_rules', {})).content[0].text;
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
-  // 목표 49 FilterBar 색인 +362B·목록 +206B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362],['목록',list,19_950 + 206],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B.
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341],['목록',list,19_950 + 206 + 203],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }

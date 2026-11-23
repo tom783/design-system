@@ -85,3 +85,4 @@ export { StatTile, type StatTileProps } from './components/stat-tile/stat-tile';
 export { SegmentedControl, type SegmentedControlProps, type SegmentedControlOption } from './components/segmented-control';
 export { Steps, type StepsProps, type StepItem, type StepStatus } from './components/steps';
 export { FilterBar, type FilterBarProps, type FilterBarFilter, type FilterBarView } from './components/filter-bar';
+export { BulkActionBar, type BulkActionBarProps } from './components/bulk-action-bar';

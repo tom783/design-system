@@ -24,14 +24,19 @@
     `get_component DatePicker` +22바이트(상속 표기 `| 'unit'`·정적 슬롯 `input-unit`). 색인·목록은 바이트가 같다.
     which_component 정답 세트에 5문항을 더해 top-1 57/105 · top-3 77/105(기존 100문항 순위 변화 0).
   - 앱이 할 일: 없다. 단위를 설명 줄이나 겹친 span으로 그리던 곳은 `unit`으로 바꾼다.
-- **목록 툴바 — `FilterBar`** (목표 49 · 0.5.0 디자인 총괄 확정 규격 · DESIGN.md §4.2).
-  저장된 보기 Select → 검색 → 필터 트리거(`필터 N`, 0개면 `필터`) → (보기가 바뀌면 '변경됨' + 보기 저장) 한 줄과
+- **목록 툴바 — `FilterBar` · `BulkActionBar`** (목표 49 · 0.5.0 디자인 총괄 확정 규격 · DESIGN.md §4.2).
+  `FilterBar`: 저장된 보기 Select → 검색 → 필터 트리거(`필터 N`, 0개면 `필터`) → (보기가 바뀌면 '변경됨' + 보기 저장) 한 줄과
   적용 필터 칩 한 줄. 칩은 실제 폭으로 넘침을 정해 나머지를 `+N` 팝오버(`+N` 아래, 하나씩 해제, Esc 로 `+N` 복귀)로 보내고,
   0개여도 칩 줄 높이를 남겨 표 시작점이 고정된다. 칩 해제 뒤 포커스는 다음 칩(없으면 필터 트리거), 초기화 뒤 필터 트리거.
   값은 `view`·`query`·`filters`·`filterOpen` 이 각각 `defaultX`·`onXChange` 쌍이고, `filterContent` 를 주면 트리거가 조건 패널
-  팝오버를 연다. 바 폭 720px 미만은 검색이 둘째 줄 전체 폭이다. 새 토큰 없음.
-  - MCP: 색인 +362바이트 · `list_components` +206바이트, 상세 4,208바이트. `which_component` 정답 세트에 4문항(한국어 3·영어 1)을
-    더해 접미사 5문항과 합친 109문항 top-1 61 · top-3 81(기존 문항의 순위는 그대로).
+  팝오버를 연다. 바 폭 720px 미만은 검색이 둘째 줄 전체 폭이다.
+  `BulkActionBar`: 행을 선택하면 children(필터 바) 자리를 같은 높이로 대체하고 표 위에 sticky 로 붙는다. `N건 선택`(늘 있는
+  live region) → 선택 해제 → 안전 액션 → 구분선 → 위험 액션 하나. 바탕은 중립 `bg/sunken`. 선택 중 필터 바는 `inert`.
+  선택은 DataTable `selectedIds`·`onSelectedIdsChange`(제어형)가 소유하고 바는 `selectedCount`·`onClear` 만 받는다.
+  새 토큰 없음. AppShell 본문 여백을 `--app-shell-gutter` 변수로도 둬 sticky 바가 본문 윗변에 딱 붙는다(값은 그대로).
+  - MCP: 색인 +703바이트(FilterBar 362 · BulkActionBar 341) · `list_components` +409바이트(206 · 203), 상세 4,292 · 2,625바이트.
+    `which_component` 정답 세트에 8문항(부품마다 한국어 3·영어 1)을 더해 접미사 5문항과 합친 113문항 top-1 65 · top-3 85
+    (기존 문항의 순위는 그대로).
 
 ### 바뀐 동작 (마이그레이션)
 
