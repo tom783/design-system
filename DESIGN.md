@@ -505,7 +505,7 @@ pagination-render-verify.mjs는 경계 번호·현재 ARIA·비활성·범위·�
   읽히지 않을 수 있어, 선택이 없을 때도 바를 시각적으로만 숨기고 빈 글자로 남긴다.
 - 좁은 폭(바 720px 미만, 필터 바와 같은 기준): 1줄 `N건 선택 · 선택 해제`, 2줄 액션.
 - 위험 액션은 §6.2 와 같이 AlertDialog 로 확정한다(기본 포커스 = 안전한 쪽). 확정 뒤 앱이 선택을 비우면 바와 함께 트리거가
-  사라지므로 `onCloseAutoFocus` 에서 돌아온 툴바(검색)로 포커스를 돌린다.
+  사라지므로 `onCloseAutoFocus` 에서 돌아온 툴바(검색)로 포커스를 돌린다 — Screens/OrderList 가 그렇게 한다.
 - 선택 행 바탕(`--bg-selected-row`)은 표 행 전체 폭이다(r1 F1). DataTable 이 표 폭 100% 라 그대로 만족한다.
 
 **DataTable 선택과 잇는 법(§6.3).** 선택 값은 DataTable **하나가** 소유한다 — `selectedIds` · `onSelectedIdsChange` 제어형으로
@@ -514,7 +514,9 @@ pagination-render-verify.mjs는 경계 번호·현재 ARIA·비활성·범위·�
 비제어 바는 표의 선택을 알 길이 없다. 비제어 DataTable(내부 선택)의 선택 수는 앱이 모르므로 일괄 작업 바를 쓰려면 표를 제어형으로 둔다.
 FilterBar 의 값 셋은 규칙 1 그대로다 — `view`·`query`·`filters`·`filterOpen` 이 각각 `defaultX`·`onXChange` 를 갖는다.
 
-검증은 `fit-chips.test.mjs`(넘침 개수 계산)가 맡는다.
+검증은 `docs/qa/list-toolbar-render-verify.mjs`(칩 넘침 개수·한 줄·높이 고정·`+N` 팝오버 위치와 눌린 모양·Esc 복귀·칩 해제와
+초기화 뒤 포커스·Tab 순서·선택 전후 같은 높이·sticky·중립 바탕·구분선·live region·좁은 폭 줄 수, 라이트·다크 × 1440·1024·768)와
+`fit-chips.test.mjs` 가 맡는다.
 
 ---
 

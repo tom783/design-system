@@ -46,18 +46,20 @@ try {
   await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   for (const theme of ['light', 'dark']) {
     await check(`목록: 제목 T34·툴바 한 줄·검색 폭 320·N건 선택·페이지 범위 ${theme}`, async () => {
-      await load('screens-orderlist--기본', theme);
+      // 0.5.0 목록 툴바: 선택이 있으면 BulkActionBar 가 FilterBar 자리를 대체한다(필터 바는 보이지 않게 남아 높이를 정한다).
+      // 필터 0개 + 3건 선택 스토리 — '취소 요청' 행(ORD-20475)이 선택에 들어 있어 아래 칩 대비 검사도 이 화면에서 한다.
+      await load('screens-orderlist--필터없음선택됨', theme);
       const t = await title(); assertTitle(t);
       const m = await ev(`(() => { ${colorHelpers}
-        const bar=${q('[data-screen="toolbar"]')}, control=bar.querySelector('[data-slot="input-control"]');
-        const tops=[...bar.children].map(el => Math.round(el.getBoundingClientRect().top));
+        const bar=${q('[data-screen="toolbar"]')}, controls=bar.querySelector('[data-slot="filter-bar-controls"]'), control=bar.querySelector('[data-slot="filter-bar-search"]');
+        const tops=[...controls.children].map(el => Math.round(el.getBoundingClientRect().top));
         const selected=[...document.querySelectorAll('[data-slot="data-table-row"][data-selected]')];
         const row=selected[0], surface=token('--bg-surface'), rowBg=rgb(getComputedStyle(row.querySelector('td')).backgroundColor);
         // 툴바 아래 간격: Field 밖 DatePicker 의 오류는 입력 아래 20px 에 걸친다(2026-11-22 기준 변경). 툴바에
-        // DatePicker 가 있으면 아래 요소까지 20px 이상이어야 한다. 지금 목록의 기간은 Select 라 해당하지 않는다.
+        // DatePicker 가 있으면 아래 요소까지 20px 이상이어야 한다. 지금 목록의 기간은 필터 칩이라 해당하지 않는다.
         const below={ gap:bar.nextElementSibling.getBoundingClientRect().top - bar.getBoundingClientRect().bottom, datePicker:!!bar.querySelector('[data-slot="date-picker"]') };
         return { tops, below, search:control.getBoundingClientRect().width, barHeight:bar.getBoundingClientRect().height,
-          status:${q('[data-screen="bulk"] [role="status"]')}.textContent, selected:selected.map(r => r.dataset.rowId),
+          status:${q('[data-slot="bulk-action-bar-count"]')}.textContent, selected:selected.map(r => r.dataset.rowId),
           range:${q('[data-slot="pagination-range"]')}?.textContent, rows:document.querySelectorAll('[data-slot="data-table-row"]').length,
           primary:[...document.querySelectorAll('button, a')].filter(el => same(rgb(getComputedStyle(el).backgroundColor), token('--action-primary-bg'))).map(el => el.textContent.trim()),
           selectedRow:{ background:rowBg, selectedToken:token('--bg-selected-row'), vsSurface:contrast(rowBg, surface) } }; })()`);
@@ -100,15 +102,17 @@ try {
       await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 1, y: 1 });
       return m;
     });
-    await check(`목록: 검색어가 표·전체 건수·선택을 함께 바꾼다 ${theme}`, async () => {
+    await check(`목록: 검색어가 표·전체 건수를 함께 바꾼다 ${theme}`, async () => {
+      // 선택 중에는 필터 바가 inert 라 검색할 수 없다(0.5.0 규격). 선택 없는 필터 0개 화면에서 잰다.
+      await load('screens-orderlist--필터없음', theme);
       // 제어 입력이라 네이티브 setter + input 이벤트로 React onChange 를 부른다.
       await ev(`(() => { const input=${q('[data-screen="toolbar"] input[type="search"]')};
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'ORD-204'); input.dispatchEvent(new Event('input',{bubbles:true})); })()`);
-      // ORD-20481 ~ ORD-20400 의 82건이 남는다. 1페이지의 선택(20480·20479·20477)은 화면에 남아 유지된다.
+      // ORD-20481 ~ ORD-20400 의 82건이 남는다.
       await wait(`${q('[data-slot="pagination-range"]')}?.textContent === '1–20 / 82건'`, '검색 결과 82건');
       const m = await ev(`({ rows:document.querySelectorAll('[data-slot="data-table-row"]').length,
-        status:${q('[data-screen="bulk"] [role="status"]')}.textContent, clear:!!${q('[aria-label="검색어 지우기"]')} })`);
-      assert.deepEqual(m, { rows: 20, status: '3건 선택', clear: true });
+        status:${q('[data-slot="bulk-action-bar-count"]')}.textContent, clear:!!${q('[aria-label="검색어 지우기"]')} })`);
+      assert.deepEqual(m, { rows: 20, status: '', clear: true });
       return m;
     });
 

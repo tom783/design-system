@@ -34,6 +34,8 @@
   live region) → 선택 해제 → 안전 액션 → 구분선 → 위험 액션 하나. 바탕은 중립 `bg/sunken`. 선택 중 필터 바는 `inert`.
   선택은 DataTable `selectedIds`·`onSelectedIdsChange`(제어형)가 소유하고 바는 `selectedCount`·`onClear` 만 받는다.
   새 토큰 없음. AppShell 본문 여백을 `--app-shell-gutter` 변수로도 둬 sticky 바가 본문 윗변에 딱 붙는다(값은 그대로).
+  `Screens/OrderList` 와 `QA/ListScreen` 의 손 조합 툴바를 이 부품으로 바꿨고, OrderList 에 검수 매트릭스 상태(칩 0·3·8 ×
+  선택 전/후 · `+N` 열림 · 보기 변경됨)와 주문 취소 확인(AlertDialog)을 더했다. 하네스 `list-toolbar-render-verify`(54건).
   - MCP: 색인 +703바이트(FilterBar 362 · BulkActionBar 341) · `list_components` +409바이트(206 · 203), 상세 4,292 · 2,625바이트.
     `which_component` 정답 세트에 8문항(부품마다 한국어 3·영어 1)을 더해 접미사 5문항과 합친 113문항 top-1 65 · top-3 85
     (기존 문항의 순위는 그대로).
