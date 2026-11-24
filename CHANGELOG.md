@@ -14,9 +14,35 @@
 
 ## 미출시
 
-0.6.0 에 들어갈 변경(목표 64). **깨지는 변경이 있다**(2b 옛 이름 정리) — 0.4.0·0.5.0 이 예고한 이름을 공개 API 에서 뺐고
-DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
-0.4.0·0.5.0 은 게시하지 않아 이 이름을 쓰는 게시본 앱은 없다. 미게시 빌드를 먼저 받아 쓴 앱만 아래 표대로 바꾼다.
+(아직 없음)
+
+---
+
+## 0.6.0 — 미게시
+
+반복 입력 줄·섹션 제목 줄 두 부품을 더하고(목표 64 3a·3b), `which_component` 추천 정확도를 올리고(2a), 0.4.0·0.5.0 이
+예고한 옛 이름을 공개 API 에서 뺐다(2b). 공개 컴포넌트 119개 → **121개**(`FieldList`·`SectionHeader`). 비제어 초기값 3개를 더하고,
+필수 표시 `aria-required` 의 자리(Combobox·MultiSelect·FileUpload)와 넘치는 DataTable 스크롤 영역의 키보드 접근(3c)을 고쳤다.
+새 부품·공개 API 추가·**호환 깨짐**이 있어 0.x.0 이다. 게시하지 않았다(태그·npm 없음).
+
+- **깨지는 변경 2가지(아래 제거):** 내부 도우미 12개와 딸린 타입 6개를 공개 진입점에서 뺐고, DatePicker 의 옛 값 알림
+  `onChange` 별칭을 없앴다. 0.4.0·0.5.0 은 게시하지 않아 이 이름을 쓰는 게시본 앱은 없다 — 미게시 빌드를 먼저 받아 쓴 앱만 바꾼다.
+- **마이그레이션 표:** 아래 "앱이 할 일 — 마이그레이션 표"(옛 이름 → 새 이름·대체 방법).
+- **추천 정확도:** `which_component` 정답 세트 198문항 top-1 180 · top-3 196 · 후보 0개 0(0.5.0 은 그중 186문항에서 top-1 96/184 ·
+  top-3 129/184 · 후보 0개 28/186). 하한 176 · 194 · 0 이 `pnpm test` 에 걸려 있다.
+
+### 앱이 할 일 (요약 — 자세한 것은 각 항목)
+
+- **코드(깨지는 변경):** 빠진 이름의 import 와 `<DatePicker onChange>` 를 아래 표대로 바꾼다. 타입 없이(JS) 넘긴 `onChange` 는
+  오류 없이 불리지 않으니 JS 앱은 꼭 `onValueChange` 로 바꾼다.
+- **테스트 갱신(코드 수정 없음):** 트리거 `button[aria-required]` 를 찾던 테스트는 라벨의 "필수 입력"이나 열린 검색 입력·목록의
+  `aria-required` 를 본다. 넘치는 DataTable 은 Tab 정지점이 하나 는다(`role=region`, 이름 = caption) — Tab 횟수를 세는 테스트에 넣는다.
+- **시각 기준선:** 넘치는 DataTable 스크롤 영역을 포커스했을 때의 포커스 링뿐이다. 그 밖의 화면 변화는 없다.
+- **지침:** 목록 단위 오류(품목 0개 등)는 FieldList `error` 다. 0.5.0 임시 지침(추가 버튼 `aria-invalid` + 제출 때 `toast.error`)대로
+  만들었다면 옮긴다.
+- **선택(바꾸면 좋은 것):** 줄마다 상자를 만든 품목 입력 → `FieldList`, `h2` + flex div 섹션 머리 → `SectionHeader`, 처음 값만
+  주려고 둔 제어형 → `defaultExpanded`·`defaultValue`·`defaultSelectedIds`. Field 없이 `required` 만 준 Combobox·MultiSelect 는
+  라벨에 필수 표시를 둔다. caption 없는 DataTable 에는 업무 대상과 범위를 말하는 caption 을 준다.
 
 ### 앱이 할 일 — 마이그레이션 표
 
@@ -39,18 +65,17 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
 
 ### 제거 (깨지는 변경)
 
-- **내부 도우미 12개와 딸린 타입 6개를 공개 API 에서 뺐다** (목표 64 · DESIGN.md §6.3 규칙 4). 0.4.0 이 예고한 8개(`placeFallback`·
-  `resolveStep`·`useAnchored`·`supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`)와 목표 49 가 예고한 4개
-  (`initials`·`encodeRecord`·`decodeRecord`·`useElementWidth`), 그 함수에만 쓰이던 타입 `Rect`·`Placement`·`FocusCandidate`·
-  `ValidationTiming`·`LoadingPhase`·`LoadingInput`. 루트 `index.ts` 와 부품 폴더 `index.ts`(guide·form·peek·avatar)에서 내보내기를
-  지우고 `@deprecated` 를 "내부" 표기로 바꿨다. `ReturnRecord` 는 `useReturnContext` 반환 타입이라 남겼다.
+- **내부 도우미 12개와 딸린 타입 6개를 공개 API 에서 뺐다** (목표 64 2b · DESIGN.md §6.3 규칙 4). 0.4.0 이 예고한 8개와
+  목표 49(0.5.0)가 예고한 4개, 그 함수에만 쓰이던 타입 6개다 — 이름은 위 표. 루트 `index.ts` 와 부품 폴더 `index.ts`
+  (guide·form·peek·avatar)에서 내보내기를 지우고 `@deprecated` 를 "내부" 표기로 바꿨다. `ReturnRecord` 는 `useReturnContext`
+  반환 타입이라 남겼다.
   - 어디서 쓰였나: 모두 부품 안 — `placeFallback`(useAnchored)·`useAnchored`·`supportsAnchor`(Tooltip·Hint·Tour·Peek)·`resolveStep`(Tour)·
     `nextFocusable`(FormFlow)·`focusNextFormStop`(Combobox)·`nextPhase`(useDelayedLoading)·`initials`(Avatar)·`encodeRecord`·`decodeRecord`
     (useReturnContext)·`useElementWidth`(ChartFrame)·`shouldValidate`(부품 사용 없음, 단위 시험만). 스토리·문서 예제·MCP 매니페스트는
     이 이름을 쓰지 않았다(MCP 는 부품만 싣는다 — 응답 변화 없음).
   - `scripts/api-conventions-allow.mjs` 의 `helpers` 에서 12개를 지웠다. 공개 소문자 값은 16개다.
   - 앱이 할 일: 위 표.
-- **DatePicker `onChange` 옛 별칭을 뺐다** (목표 64 · DESIGN.md §6.3 규칙 2·5 · 2026-11-24 디자인 총괄 동의). 확정 값 알림은
+- **DatePicker `onChange` 옛 별칭을 뺐다** (목표 64 2b · DESIGN.md §6.3 규칙 2·5 · 2026-11-24 디자인 총괄 동의). 확정 값 알림은
   `onValueChange` 하나다. 목표 49(0.5.0)에서 이름을 바꾸며 `@deprecated` 별칭으로 남겼던 것 — 타입의 `onChange` prop 과
   런타임 `onValueChange ?? onChange` 를 지웠다. 감싼 Input 의 DOM `onChange` 는 원래 공개 타입에서 빠져 있어(초안 처리용) 이제
   DatePicker props 에 `onChange` 는 없다.
@@ -63,14 +88,14 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
 
 ### 추가
 
-- **비제어 초기값 3개 — `ClampText defaultExpanded` · `MultiSelect defaultValue` · `DataTable defaultSelectedIds`** (목표 64 ·
+- **비제어 초기값 3개 — `ClampText defaultExpanded` · `MultiSelect defaultValue` · `DataTable defaultSelectedIds`** (목표 64 2b ·
   DESIGN.md §6.3 규칙 1 `X`·`defaultX`·`onXChange`). 셋 다 내부 상태(비제어)가 이미 있었는데 처음 값을 줄 방법이 없어 규약 위반
   허용 목록(`pair/no-default`)에 있었다. 제어 값(`expanded`·`value`·`selectedIds`)을 주지 않을 때 첫 렌더에만 읽고, 둘 다 주면
   제어 값이 이긴다. 기본값은 지금 동작과 같다(접힘 · `[]` · `[]`). `defaultSelectedIds` 는 `useDataTable` 옵션에도 생겼고,
   `data` 에 없는 id 는 지금의 선택 정책(§4.1 교집합)대로 선택으로 세지 않는다. 이름을 바꾼 것이 아니라 새로 더한 것이라 별칭은 없다.
-  - 허용 목록 `pair/no-default` 3건을 지웠다(11 → 8건).
+  - 허용 목록 `pair/no-default` 3건을 지웠다(11 → 8건. 3a 의 제어 전용 `FieldList.value` 가 이유와 함께 더해져 지금 9건).
   - 앱이 할 일: 없다. 처음 펼친 글·처음 고른 값·처음 선택한 행을 위해 제어형으로 두던 곳은 `default*` 로 줄일 수 있다.
-- **반복 입력 줄 — `FieldList`** (타입 `FieldListColumn`·`FieldListCellContext`·`FieldListRowError`, 0.6.0 3a · 디자인 총괄 확정
+- **반복 입력 줄 — `FieldList`** (타입 `FieldListColumn`·`FieldListCellContext`·`FieldListRowError`, 목표 64 3a · 디자인 총괄 확정
   규칙 표 L-1~L-17 · Figma 203:4~7 r1 · DESIGN.md §11.10). 출고 품목·상품 옵션처럼 같은 칸 묶음(1~4칸)을 여러 줄 입력받는다.
   도그푸딩 6 에서 부품이 없어 AI 가 카드 안에 줄마다 테두리 상자를 만들고(390 에서 품목 5개 = 화면 3장) 품목 0개 오류를 회색
   글자로 썼다(D3·D4).
@@ -92,13 +117,13 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
   - 기준 화면 `Screens/ShipmentCreate`(Figma 추천 조합 7상태 + 묶음 오류 둘), 부품 스토리 `Components/FieldList`, 문서 04 폼 만들기·
     02 컴포넌트 고르기(FieldList·DataTable·SheetContent 갈림길). 하네스 `field-list-render-verify`(87건: 라이트·다크 × 1440·1024·768·
     390 × 9상태 자가 점검 + 포커스·min/max·되돌리기·오류 수·IME). axe(wcag2a~22aa) 76회 위반 0(일회성 주입 — 저장소에 axe 없음).
-  - MCP: FieldList 항목(디자인 총괄 지침 purpose·useWhen·dont + 규칙 8), 색인 25,520 → 26,189B(+669) · 목록 +204B · 상세 5,311B
-    (상한 7,000 — 최대는 그대로 DataTable 6,118). which_component: 정답 세트 공백이던 품목 줄 2문항(도그푸딩 6)을 FieldList 로 채우고
-    r060 6문항(한국어 4·영어 2 — '품목 반복 입력'·'repeat rows'·'line items' 등)을 더해 192문항 top-1 174 · top-3 190 · 후보 0개 0
-    (하한 170 · 188 · 0으로 올림). 기존 186문항의 정답 순위·보류 세트 37 · 47·R38 439건 1순위는 그대로다. 검색어에 '입력'을 넣지 않았다 —
+  - MCP: FieldList 항목(디자인 총괄 지침 purpose·useWhen·dont + 규칙 8), 색인 25,520 → 26,189B(+669) · 목록 20,693 → 20,897B(+204) ·
+    상세 5,311B. which_component: 정답 세트 공백이던 품목 줄 2문항(도그푸딩 6)을 FieldList 로 채우고
+    r060 6문항(한국어 4·영어 2 — '품목 반복 입력'·'repeat rows'·'line items' 등)을 더해 3a 시점 192문항 top-1 174 · top-3 190 · 후보 0개 0
+    (하한 170 · 188 · 0으로 올림, 최종은 3b 뒤 수치 — 아래 섹션 제목 줄). 기존 186문항의 정답 순위·보류 세트 37 · 47·R38 439건 1순위는 그대로다. 검색어에 '입력'을 넣지 않았다 —
     '입력'이 든 키워드 부품이 4개를 넘으면 흔한 낱말로 덜 쳐져 R38 '입력 창을 닫는 버튼을 제공한다.'가 Input → Button 으로 바뀌었다.
   - 앱이 할 일: 없다. 카드 안에 줄마다 상자를 만들어 품목을 입력받던 곳은 이 부품으로 바꿀 수 있다.
-- **섹션 제목 줄** — `SectionHeader` (타입 `SectionHeaderProps`·`SectionHeaderAction`, 목표 64 · 0.6.0 3b · DESIGN.md §24.6 ·
+- **섹션 제목 줄** — `SectionHeader` (타입 `SectionHeaderProps`·`SectionHeaderAction`, 목표 64 3b · DESIGN.md §24.6 ·
   디자인 총괄 규칙 표 S-1~S-11 r1.1 · Figma 203:8~11). 페이지 안, 카드 밖 섹션의 제목·개수·설명·섹션 동작을 한 줄로 두고
   `<section aria-labelledby=제목 id>` 로 내용(`children`)과 묶는다. 층은 PageHeader(h1) > SectionHeader(카드 밖) > CardHeader(카드 안).
   - 제목 `as` 기본 h2(h3 가능) title-sm 20/28 600, 개수 `count` 는 제목 옆 8·같은 크기 400·보조색·고정폭 숫자, 설명 body-sm 14/20
@@ -116,14 +141,14 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
     물류 데이터) · 다크. 하네스 `section-header-render-verify`(21건: 라이트·다크 × 1440·1024·768·390 × 두 화면 + 작은 스토리 5,
     스크린샷 16장). `02 컴포넌트 고르기` 에 PageHeader·SectionHeader·CardHeader 갈림길.
   - MCP: SectionHeader 항목(디자인 총괄 purpose·useWhen·dont 초안), PageHeader·Card(→ CardHeader 상속) 규칙에 층 구분(S-1) 한 줄씩.
-    색인 26,189 → 26,926B(+737) · 목록 +244B · 상세 3,969B(상한 7,000 — 최대는 그대로 DataTable 6,118). which_component: 정답 세트 r060 에
-    6문항(한국어 4·영어 2)을 더해 198문항 top-1 180 · top-3 196 · 후보 0개 0(하한 176 · 194 · 0으로 올림). 기존 192문항 정답 순위·보류 세트
+    색인 26,189 → 26,926B(+737) · 목록 20,897 → 21,142B(+245) · 상세 3,969B. which_component: 정답 세트 r060 에
+    6문항(한국어 4·영어 2)을 더해 최종 198문항 top-1 180 · top-3 196 · 후보 0개 0(하한 176 · 194 · 0으로 올림). 기존 192문항 정답 순위·보류 세트
     37 · 47·R38 439건 1순위는 그대로다. '섹션 제목'·'section header'·'섹션 머리' 첫 후보.
   - 앱이 할 일: 없다. `h2` + flex div 로 만든 섹션 머리와 표 위 별도 동작 줄은 이 부품으로 바꿀 수 있다.
 
 ### 바뀐 동작
 
-- **필수 표시를 button 에 `aria-required` 로 두지 않는다 — Combobox(단일)·MultiSelect·FileUpload** (목표 64 · DESIGN.md §18.1).
+- **필수 표시를 button 에 `aria-required` 로 두지 않는다 — Combobox(단일)·MultiSelect·FileUpload** (목표 64 2b · DESIGN.md §18.1).
   세 부품이 `required`(Field 가 넣는 값 포함)와 앱이 넘긴 `aria-required` 를 트리거 `<button>` 에 붙였는데, button 역할은 그
   속성을 받지 않아 axe `aria-allowed-attr` 위반이었다(QA/CreateScreen 등록 화면 예시 1건으로 보고됨, 같은 원인으로 Combobox 필드·
   MultiSelect 오류·필드·FileUpload Field안 스토리까지 6스토리 × 2테마 12건). 이제 필수는 값을 다루는 요소가 갖는다 — Combobox 는 열린 뒤
@@ -134,10 +159,10 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
   - 앱이 할 일: 코드 수정은 없다. 트리거 `button[aria-required]` 를 찾던 테스트는 라벨(접근 이름의 "필수 입력")이나 열린 검색 입력·
     목록의 `aria-required` 를 본다. Field 없이 `required` 만 준 Combobox·MultiSelect 는 닫힌 트리거에서 필수가 읽히지 않으니 라벨에
     필수 표시를 둔다(Field 를 쓰면 저절로 된다).
-- **넘치는 표의 스크롤 영역이 Tab 으로 닿는다 — DataTable** (0.6.0 3c · 목표 64 · DESIGN.md §4.5). 표가 가로(좁은 폭)나 세로(높이
+- **넘치는 표의 스크롤 영역이 Tab 으로 닿는다 — DataTable** (목표 64 3c · DESIGN.md §4.5). 표가 가로(좁은 폭)나 세로(높이
   제한·가상화)로 넘칠 때만 스크롤 영역(`data-table-scroll`)이 `tabIndex=0` · `role="region"` · 이름 = 표 `caption`(`aria-labelledby`)이
   된다. 포커스한 뒤 ←·→·↑·↓·PageUp/PageDown 으로 민다(브라우저 기본 스크롤). 전에는 늘 `tabIndex=-1` 이라 정렬 버튼·링크가 없는
-  표가 좁은 폭에서 넘치면 오른쪽 열을 키보드로 볼 수 없었다(axe `scrollable-region-focusable` serious — 0.6.0 3b 섹션 제목 줄 검사의
+  표가 좁은 폭에서 넘치면 오른쪽 열을 키보드로 볼 수 없었다(axe `scrollable-region-focusable` serious — 3b 섹션 제목 줄 검사의
   출고 상세 390). 넘치지 않는 표는 그대로(-1 · role 없음)라 Tab 순서·랜드마크가 늘지 않는다. 링은 전역 2px 중립 링(새 토큰 없음)이고
   화면 변화는 포커스 링뿐이다.
   - 검증: axe-core 4.10.3(WCAG 2.0·2.1 A·AA, 2.2 AA) — DataTable 이 그려지는 스토리·문서 63개 × 390·1440 × 라이트·다크
@@ -151,10 +176,10 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
 
 ### 고침
 
-- **`which_component` 추천 정확도 — 영어 질의와 0.5.0 부품** (0.6.0 목표 64 · 2a · DESIGN.md §13.4 · `docs/qa/r38-match-ranking.md`).
+- **`which_component` 추천 정확도 — 영어 질의와 0.5.0 부품** (목표 64 2a · DESIGN.md §13.4 · `docs/qa/r38-match-ranking.md`).
   도그푸딩 6 사전 점검에서 영어 16개 중 9개가 후보 0개, 한국어 16개 중 5개를 놓쳤다. 정답 세트를 128 → 186문항(도그푸딩 6 표 32 ·
   0.5.0 부품 26)으로 늘리고, 같은 세트에서 **top-1 96 → 166/184 · top-3 129 → 182/184 · 후보 0개 28 → 0/186**(영어 후보 0개 27 → 0/50).
-  튜닝에 쓰지 않은 보류 세트 48문항은 top-1 19 → 37 · top-3 23 → 47 · 후보 0개 15 → 0이다. 0.5.0 에서 1위·3위 안이던 문항이 밀려난 것은 두 세트 모두 0개다. 원인별로 고쳤다 — 특정 질의 하드코딩은 없다.
+  3a·3b 가 12문항을 더한 최종 198문항은 top-1 180 · top-3 196 · 후보 0개 0 이다(위 '추가'). 튜닝에 쓰지 않은 보류 세트 48문항은 top-1 19 → 37 · top-3 23 → 47 · 후보 0개 15 → 0이다. 0.5.0 에서 1위·3위 안이던 문항이 밀려난 것은 두 세트 모두 0개다. 원인별로 고쳤다 — 특정 질의 하드코딩은 없다.
   - **영어 동의어:** 영어 낱말·구절을 메타데이터의 한국어 어휘로 옮기는 대응표(약 320개, `filter`→필터, `stuck … bottom`→하단 고정).
     메타데이터는 한국어 하나로 둔다.
   - **토큰화:** 영어 복수형·진행형·과거형 줄기, 한국어 조사·어미를 뗀 줄기(목적·쓰임새 문장과 떨어진 키워드 낱말), 한국어 활용형
@@ -163,31 +188,47 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
     (`filter bar`)만 센다. 한 부품 안에서 긴 키워드에 든 짧은 키워드를 다시 더하지 않는다. 흔한 단일 낱말 키워드('선택'·'목록')는 덜 친다.
   - **메타데이터:** 키워드 누락 20개 부품에 보강(넣어 보고 다른 문항을 밀어낸 키워드 — FilterBar '필터 조건'·Breadcrumb '위치 표시'·DataTable '합계' — 는 뺐다. FilterBar '필터'·'목록 필터', DatePicker '예정일'·'날짜 선택', DescriptionList '기본 정보'·
     '항목과 값', BulkActionBar '일괄', Checkbox '행 선택'·'일부 선택', Combobox '초성' 등).
-  - 회귀 검사: 정답 세트 하한 **top-1 162 · top-3 180 · 후보 0개 0**(`which-component-golden.test.mjs`, pnpm test = verify·pre-commit·CI).
-    R38 전체 질의 439건의 1순위 변화는 5건(부품 문장 4건이 가족 루트로, 1건은 전후 모두 가족 밖)이며 모두 대조 표에 적었다.
+  - 회귀 검사: 정답 세트 하한(`which-component-golden.test.mjs`, pnpm test = verify·pre-commit·CI)을 2a 에서 **top-1 162 · top-3 180 ·
+    후보 0개 0** 으로 걸었고, 3a·3b 가 문항을 더하며 최종 **176 · 194 · 0** 으로 올렸다.
+    R38 전체 질의 439건의 1순위 변화는 목표 64 에서 5건(부품 문장 3건이 가족 루트로, AppShell 목적 문장이 SideNav 에서 AppShell 로,
+    1건은 전후 모두 가족 밖)이며 모두 대조 표(`docs/qa/r38-match-ranking.md`)에 적었다.
   - MCP: `which_component` 응답 형태는 그대로다(후보·점수·근거). 점수와 `reasons` 문구가 바뀐다. `get_component` 는 20개 부품의
-    `keywords` 만 늘었다(가장 큰 DataTable 은 2a 로는 그대로 5,940바이트 — 2b 의 `defaultSelectedIds` 뒤 6,118 / 7,000, 아래 바뀐 지침).
-    색인·목록·규칙·토큰 응답은 바이트가 같다
-    (`mcp-response-diff` 0.5.0 c1bda98 ↔ 이 변경 1,543건 중 다름은 which_component 584 · get_component 20).
-  - 남은 것: 반복 입력 줄(품목 줄 추가) 공백 2문항은 0.6.0 3a FieldList 로 채웠다(위 '추가'). 스켈레톤 가족의
+    `keywords` 만 늘었다(DataTable 은 2a 로는 그대로 5,940바이트). 색인·목록·규칙·토큰 응답은 바이트가 같다
+    (`mcp-response-diff` 0.5.0 c1bda98 ↔ 2a 1,543건 중 다름은 which_component 584 · get_component 20).
+  - 남은 것: 반복 입력 줄(품목 줄 추가) 공백 2문항은 3a FieldList 로 채웠다(위 '추가'). 스켈레톤 가족의
     "X 모양 자리 표시"는 일반 Skeleton 이 1위다(2위에 해당 프리셋).
   - 앱이 할 일: 없다.
 
 ### 바뀐 지침 (MCP)
 
+- **응답 크기(0.5.0 → 0.6.0, compact UTF-8 실측):** `design://components` 색인 25,520 → 26,926B(상한 40,000) · `list_components`
+  20,693 → 21,142B(상한 36,000) — 늘어난 것은 FieldList·SectionHeader 두 항목뿐이다. `get_component` 상세 상위 3개는 DataTable 6,118 ·
+  FormActionBar 5,490 · FieldList 5,311B(상한 7,000, 아래).
 - `get_component DatePicker` 의 props 에서 `onChange`(옛 이름) 항목이 빠졌다 — 3,091 → 2,909바이트(−182). 상속 표기·규칙은 그대로다.
 - `get_component` ClampText·MultiSelect·DataTable 에 위 prop 이 제어 값 바로 뒤에 한 줄씩 생겼다(이름·타입·`required:false`·설명).
   실제 stdio 서버 응답의 props 이름 집합·타입이 TypeScript 부품 props 타입과 같은지 타입 단정으로 대조했다(셋 다 일치).
   색인·`list_components` 는 바이트가 같다.
 - **`get_component` 한 건 운영 상한 6,000 → 7,000바이트** (2026-11-24 개발 총괄 결정 · `packages/mcp/budget.mjs`). DataTable 이
   5,940 → 6,118바이트(+178)로 6,000 을 넘었다(JSDoc 없이도 6,017). R49 원칙(실측 최대 × 약 1.15~1.3)대로 올렸고 남은 여유는 882바이트다.
-  회귀 상한(`build.test.mjs`)은 늘어난 178바이트만 올렸다. 상세 상위 3개: DataTable 6,118 · FormActionBar 5,270 · FilterBar 4,330.
-- **목록 단위 오류는 FieldList `error` — FormActionBar 묶음 오류 지침을 바꿨다** (0.6.0 3a · 규칙 표 L-14·L-15 · DESIGN.md §11.10·§19.5·§24.5).
+  회귀 상한(`build.test.mjs`·`mcp-client-verify`)은 늘어난 178바이트만 올렸다.
+- **목록 단위 오류는 FieldList `error` — FormActionBar 묶음 오류 지침을 바꿨다** (목표 64 3a · 규칙 표 L-14·L-15 · DESIGN.md §11.10·§19.5·§24.5).
   0.5.0 의 임시 지침(추가 버튼에 `aria-invalid` + 제출 때 `toast.error`)은 쓰지 않는다 — 목록 머리 아래 위험색 한 줄(fieldset
   `aria-invalid`)이다. `errorCount` 에 묶음 오류도 1개로 센다. `오류 N개` 를 눌렀을 때 첫 `aria-invalid` 가 FieldList 의 fieldset 이면
   빈 목록은 추가 버튼, 아니면 그 목록의 첫 오류 칸(없으면 첫 칸)으로 간다(FormActionBar 동작 고침 — 전에는 fieldset 에 `focus()` 를
   불러 아무 일도 없었을 것이다). MCP `get_component FormActionBar` 규칙 1개 교체·관련 부품 +FieldList(상세 5,270 → 5,490B).
   - 앱이 할 일: 0.5.0 지침대로 추가 버튼에 `aria-invalid`·`toast.error` 를 달았다면 FieldList `error` 로 옮긴다.
+
+### 내부
+
+- 추천 정확도 측정(2a): 정답 세트 `docs/qa/fixtures/which-component-golden.json`(128 → 198문항, 출처 표시 `logistics06`·`r050`·`r060`)과
+  튜닝에 쓰지 않는 보류 세트 `which-component-holdout.json`(48문항, 게이트 없음). `which-component-golden.mjs` 가 언어별·세트별 정확도를,
+  `.test.mjs` 가 형식·질의의 이름 일치 금지·하한을 본다. `compare-match-baseline.mjs` 가 `docs/qa/r38-match-ranking.md` 에 순위 규칙·
+  정답 세트·보류 세트 수치와 R38 1순위 대조를 함께 다시 쓴다.
+- 하네스: `field-list-render-verify`(3a)·`section-header-render-verify`(3b)를 `run-plan.mjs` 에 더했다. `render-verify` 에 넘치는 표의
+  Tab 정지점 검사 +7건(3c), `mcp-client-verify` 에 FieldList·SectionHeader 질의·지침 검사와 상세 회귀 상한 6,118B(2b),
+  `multi-select-render-verify` 는 필수 표시를 트리거가 아니라 목록(`role=listbox`)에서 본다(2b).
+- 공개 API 규약 허용 목록(`scripts/api-conventions-allow.mjs`): `helpers` 의 deprecated 12개를 지우고 `deprecatedProps` 를 비웠다.
+- `release.yml` 소요 시간 주석을 실측(pnpm gate 약 7분, release dry-run 6분 52초)으로 고쳤다(b82491d). 제한 60분은 그대로다.
 
 ---
 
