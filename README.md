@@ -74,3 +74,16 @@ JS는 기존 Vite 라이브러리 빌드로 ESM만 만들고, 기존 TypeScript�
 `pnpm qa:pack`은 실행마다 새 임시 폴더에 tarball을 만들고 최소 앱을 구성한다(통과하면 지우고, 실패하면 경로를 알리고 남긴다). 경로를 고정하려면 `S2_PACK_DIR`, `S2_CONSUMER_DIR`를 준다. 미리보기 서버도 빈 포트를 쓴다. 소비 앱의 React는 기본으로 저장소와 같은 버전이고, `S2_PACK_REACT=19.0.0 pnpm qa:pack`처럼 정확한 버전을 주면 React·React DOM은 그 버전, `@types/react`·`@types/react-dom`은 같은 minor로 설치해 peer 하한을 확인한다. 어느 쪽이든 번들에 들어간 React 버전이 하나인지 검사한다. 헤드리스 브라우저는 기존 `docs/qa/browser.mjs`만 사용하며 없거나 실행할 수 없으면 렌더 검증 실패로 보고한다. npm 레지스트리 접근이 필요하다.
 
 `src/internal/`의 Radix 재export 모듈만 `@radix-ui/*`를 직접 참조한다. 컴포넌트 구현은 기존 위치를 유지하며 이 경계를 사용한다. MCP 생성기와 UI 빌드에서 경계 밖의 정적 import·재export·동적 import·require, JS에서의 CSS import를 차단한다.
+
+## 소개 사이트 (로컬 전용)
+
+부품·파운데이션·조립 화면을 실제 렌더로 보는 사이트다. `apps/site`(Vite + React Router 정적 SPA)에 있고 **배포하지 않는다** — 저장소에서 띄워 본다.
+
+```sh
+pnpm site           # 개발 서버 http://localhost:6200 (포트 고정 — 차 있으면 다른 포트로 옮기지 않고 멈춘다)
+pnpm site:build     # 정적 빌드 → apps/site/dist
+pnpm site:preview   # 빌드 결과를 http://localhost:6201 로 띄운다
+```
+
+내용은 이 커밋의 생성물에서만 읽는다 — 부품은 `packages/mcp/manifest.json`, 토큰은 `@s2life/tokens/tokens.json`, 규칙 출처의 절 이름은 `DESIGN.md`, 렌더 예시는 Storybook 스토리(`packages/ui/src/stories`, 각 meta 의 `parameters.manifest`)를 그대로 쓴다.
+사이트는 소비 앱처럼 앱 루트에서 Pretendard CSS 와 `@s2life/ui/styles.css` 를 한 번 불러온다. `@s2life/ui` 는 workspace 소스로 해석하고(스토리와 같은 모듈 한 벌, `pnpm build` 불필요), CSS 는 배포 `dist/styles.css` 와 같은 입력(`scripts/ui-styles-source.mjs`)으로 컴파일한다.

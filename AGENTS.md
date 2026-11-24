@@ -82,6 +82,19 @@ DS_SB_URL=<그 주소> node docs/qa/render-verify.mjs     # DS_SB_URL 이 없으
 
 일회성 사전 계측 스크립트(R40~R43 CoreText·폭 계측)는 `docs/qa/measure/` 에 있다. 게이트·CI 는 돌리지 않는다.
 
+### 소개 사이트 (apps/site · 로컬 전용)
+
+```bash
+pnpm site           # 개발 서버 http://localhost:6200 — 고정(strictPort). 6006 Storybook·6099 하네스와 겹치지 않는다
+pnpm site:build     # 정적 빌드 → apps/site/dist (.gitignore). CI 에 넣을지는 DevOps 몫
+pnpm site:preview   # 빌드 결과를 6201 로
+```
+
+배포하지 않는다(2026-11-24 오너 결정). 6200 을 쓰기 전에 `lsof -nP -iTCP:6200 -sTCP:LISTEN` 으로 주인(작업 폴더)을 확인하고,
+끌 때는 띄운 PID 로만 끈다. `pnpm typecheck` 가 `apps/site/tsconfig.json` 도 검사하고, `docs/qa/site.test.mjs` 가
+사이트의 경계(공개 진입점만 import · `site-` 클래스·의미 토큰만 · 토큰 분류 전부 파운데이션에 실림 · 포트)를 막는다.
+사이트 데이터는 생성물(manifest.json·tokens.json·DESIGN.md·스토리)에서만 읽는다 — 부품 목록·값을 사이트에 손으로 옮겨 적지 않는다.
+
 ## main 통합
 
 main 에는 브랜치 보호가 걸려 있고 **관리자도 예외가 아니다**(`enforce_admins`).
