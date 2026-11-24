@@ -87,7 +87,8 @@ function OrderListScreen({ filterCount = 3, initialSelected = [], viewChanged: i
             filters={filters} onFiltersChange={next => changeFilters(next.map(filter => filter.id))}
             filterContent={<OrderFilterPanel ids={filterIds} onIdsChange={changeFilters} />} />
         </BulkActionBar>
-        <DataTable data={rows} columns={columns} getRowId={order => order.id} selectionMode="multi"
+        {/* 상태 열은 늘 오른쪽 고정(§4.4) — 390 에서도 행의 상태가 화면 안에 남는다. 고정선은 표가 넘칠 때만 보인다. */}
+        <DataTable data={rows} columns={columns} getRowId={order => order.id} selectionMode="multi" pinnedEnd={['status']}
           selectedIds={selected} onSelectedIdsChange={setSelected} align={{ amount: 'end' }}
           caption={`주문 목록 ${filtered.length.toLocaleString('ko-KR')}건 중 ${page}페이지`} />
         <Pagination page={page} pageSize={pageSize} totalCount={filtered.length} onPageChange={setPage}

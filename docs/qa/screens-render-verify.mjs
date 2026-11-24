@@ -41,6 +41,8 @@ const colorHelpers = `
 const title = () => ev(`(() => { const h=${q('[data-slot="page-header-title"]')}, s=getComputedStyle(h);
   return { size:s.fontSize, lineHeight:s.lineHeight, weight:s.fontWeight, h1:${CANVAS}.querySelectorAll('h1').length }; })()`);
 function assertTitle(m) { assert.deepEqual(m, { size: '34px', lineHeight: '40px', weight: '700', h1: 1 }); }
+// 폭을 바꾼 뒤 ResizeObserver(넘침 판정)가 반영될 두 프레임.
+const frames2 = () => ev('new Promise(d => requestAnimationFrame(() => requestAnimationFrame(d)))');
 
 try {
   await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -181,6 +183,37 @@ try {
       await browser.shot(`dashboard-${theme}`);
       return { title: t, ...m };
     });
+    await check(`목록 390: 상태 열 고정 — 첫 화면 오른쪽 끝에 보이고 고정선, 1440 은 선 없음 ${theme}`, async () => {
+      // 디자인 검수 2026-11-24 조건: 기준 화면이 상태 열을 고정해야 AI 도 따라 한다(§4.4). 선택 3건 화면에서 잰다.
+      const probe = () => ev(`(() => { const root=${q('[data-slot="data-table"]')}, scroll=root.querySelector('[data-slot="data-table-scroll"]');
+        const sb=scroll.getBoundingClientRect(), inner=sb.right - scroll.clientLeft - (scroll.offsetWidth - scroll.clientWidth - 2*scroll.clientLeft);
+        const head=root.querySelector('[data-slot="data-table-head"][data-column-id="status"]'), cell=root.querySelector('[data-slot="data-table-row"] [data-column-id="status"]');
+        const h=head.getBoundingClientRect(), s=getComputedStyle(head);
+        return { overflow: scroll.scrollWidth - scroll.clientWidth > 1, flag: root.hasAttribute('data-overflow-x'), pinned: cell.style.position,
+          headInside: h.left >= sb.left && h.right <= inner + 1, rightGap: Math.round(inner - h.right),
+          edge: s.borderLeftWidth + ' ' + (/rgba\\(\\d+, \\d+, \\d+, 0\\)/.test(s.borderLeftColor) ? 'clear' : 'visible'),
+          chip: cell.querySelector('[data-slot="status-chip"]')?.textContent ?? null }; })()`);
+      await cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
+      try {
+        await load('screens-orderlist--선택됨', theme);
+        await frames2();
+        const narrow = await probe();
+        assert.ok(narrow.overflow && narrow.flag, `390 은 표가 넘친다 ${JSON.stringify(narrow)}`);
+        assert.equal(narrow.pinned, 'sticky'); assert.ok(narrow.headInside, `상태 머리 칸이 스크롤 영역 안 ${JSON.stringify(narrow)}`);
+        assert.ok(Math.abs(narrow.rightGap) <= 1, `상태 열이 오른쪽 끝 ${narrow.rightGap}`);
+        assert.equal(narrow.edge, '1px visible'); assert.ok(narrow.chip, '상태 칩이 보인다');
+        await browser.shot(`orderlist-390-status-pinned-${theme}`);
+        await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+        await load('screens-orderlist--선택됨', theme);
+        await frames2();
+        const wide = await probe();
+        assert.ok(!wide.overflow && !wide.flag && wide.edge === '1px clear', `1440 은 넘치지 않고 고정선 없음 ${JSON.stringify(wide)}`);
+        return { narrow, wide };
+      } finally {
+        await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+      }
+    });
+
     await check(`Screens 실행 중 콘솔 오류 없음 ${theme}`, () => {
       assert.deepEqual(browser.errors().filter(m => !/Warning:|DevTools|favicon|preload/i.test(m)), []);
     });

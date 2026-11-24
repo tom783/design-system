@@ -57,7 +57,8 @@ function ListScreen() {
         </SelectContent></Select></Field>
       </div>} />
     <p role="status" className="tabular">총 {filtered.length}건</p>
-    <DataTable data={filtered} columns={columns} getRowId={order => order.id} caption="기간 및 상태로 조회한 주문 목록" />
+    {/* 상태 열과 그 뒤 행 작업 열을 오른쪽에 고정한다(§4.4) — 고정 열은 끝으로 모이므로 상태만 주면 작업 열 뒤로 간다. */}
+    <DataTable data={filtered} columns={columns} getRowId={order => order.id} pinnedEnd={['status', 'actions']} caption="기간 및 상태로 조회한 주문 목록" />
   </main>;
 }
 export const 목록화면: Story = { render: () => <ListScreen />, play: async ({ canvasElement: root }) => {

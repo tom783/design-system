@@ -49,7 +49,8 @@ export function AppShellExample({ narrowNavigation }: Pick<AppShellProps, 'narro
           </Select></Field>
         </div>
         <p role="status" className="tabular my-4">총 {filtered.length}건</p>
-        <DataTable data={filtered} columns={columns} getRowId={order => order.id} caption="기간 및 상태로 조회한 주문 목록" />
+        {/* 상태 열은 오른쪽 고정 — 좁은 폭에서도 상태가 보인다. 고정선은 표가 가로로 넘칠 때만 생긴다. */}
+        <DataTable data={filtered} columns={columns} getRowId={order => order.id} pinnedEnd={['status']} caption="기간 및 상태로 조회한 주문 목록" />
       </div>
     </div>
   </AppShell>;

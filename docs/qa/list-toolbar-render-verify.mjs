@@ -59,7 +59,9 @@ const snapshot = () => ev(`(() => { ${helpers}
   const table = ${q('[data-slot="data-table-table"]')};
   const selectedRows = [...document.querySelectorAll('[data-slot="data-table-row"][data-selected]')].map(tr => {
     const cells = [...tr.children];
+    // 마지막 칸이 고정 열(상태 pinnedEnd, §4.4)이면 표가 넘칠 때 보이는 영역 오른쪽 끝에 붙는다 — 그때 행 바탕의 끝은 그 자리다.
     return { left: cells[0].getBoundingClientRect().left, right: cells.at(-1).getBoundingClientRect().right,
+      lastPinned: cells.at(-1).style.position === 'sticky',
       allSelectedBg: cells.every(td => same(rgb(getComputedStyle(td).backgroundColor), token('--bg-selected-row'))) };
   });
   return {
@@ -77,6 +79,7 @@ const snapshot = () => ev(`(() => { ${helpers}
       more: layer.querySelector('[data-measure="more"]').getBoundingClientRect().width, reset: layer.querySelector('[data-measure="reset"]').getBoundingClientRect().width } : null,
     rootHeight: root.getBoundingClientRect().height, filterBarHeight: fb.getBoundingClientRect().height,
     tableTop: table.getBoundingClientRect().top, tableLeft: table.getBoundingClientRect().left, tableRight: table.getBoundingClientRect().right,
+    visibleRight: (() => { const sc = table.parentElement; return sc.getBoundingClientRect().left + sc.clientLeft + sc.clientWidth; })(),
     active: root.hasAttribute('data-active'), position: getComputedStyle(root).position,
     replaced: { inert: replaced.hasAttribute('inert'), visibility: getComputedStyle(replaced).visibility },
     panel: { ...box(panel), visibility: panelStyle.visibility, bg: rgb(panelStyle.backgroundColor), border: rgb(panelStyle.borderTopColor),
@@ -145,8 +148,9 @@ function assertBulkBar(m, before) {
   if (m.panel.width >= NARROW) assert.ok(near(m.buttons[0].top, danger.top, 2), '넓은 바는 한 줄');
   else assert.ok(danger.top >= m.status.box.bottom, '좁은 바는 액션이 둘째 줄'); // review-r2 4: 구분선은 위에서 함께 단정
   // 선택 행 바탕은 표 행 전체 폭(r1 F1).
-  assert.ok(m.selectedRows.length === 3 && m.selectedRows.every(r => r.allSelectedBg && near(r.left, m.tableLeft) && near(r.right, m.tableRight)),
-    JSON.stringify(m.selectedRows));
+  assert.ok(m.selectedRows.length === 3 && m.selectedRows.every(r => r.allSelectedBg && near(r.left, m.tableLeft)
+    && near(r.right, r.lastPinned ? Math.min(m.tableRight, m.visibleRight) : m.tableRight)),
+    JSON.stringify({ rows: m.selectedRows, tableRight: m.tableRight, visibleRight: m.visibleRight }));
 }
 
 try {

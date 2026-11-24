@@ -99,6 +99,9 @@
   - 화면이 바뀌는 곳: 넓은 화면에서 넘치지 않는 선택 표(Screens/OrderList·QA/ListScreen·DataTable 선택 스토리)는 선택 열 뒤 세로선이,
     `Screens/OrderDetail` 1440 은 (원래 없던) 금액 열 앞 선이 계속 없다. 넘치는 표(390·`가상화-컬럼고정`)는 그대로 선이 있다.
   - `Screens/OrderDetail` 은 넘침을 재서 `pinnedEnd` 를 켜고 끄던 스토리 쪽 우회를 지우고 금액 열을 늘 고정한다.
+  - 기준 화면이 상태 열을 고정한다(디자인 검수 2026-11-24 조건 — AI 는 기준 화면을 따라 한다). `Screens/OrderList` `pinnedEnd={['status']}`,
+    `QA/ListScreen` `['status', 'actions']`(고정 열은 끝으로 모여 상태만 주면 행 작업 열 뒤로 간다), AppShell 문서 예제의 주문 목록. 390 에서
+    상태 칩이 첫 화면 오른쪽 끝에 보이고(고정선 있음), 1440 은 그대로다(선 없음). 하네스 `screens-render-verify` 가 라이트·다크로 단정한다.
   - 앱이 할 일: 코드 수정은 없다. 폭에 따라 `pinnedEnd`·`pinnedStart` 를 켜고 끄던 코드는 늘 주는 것으로 줄일 수 있다.
     선택 표의 시각 기준선을 갱신한다. 서버 렌더 첫 그림은 선이 없고, 넘치는 표는 하이드레이션 뒤 선이 생긴다.
 - **주문 상세 카드 겹침** (목표 57 2c). `Screens/OrderDetail` 카드 세 장이 1024 이하에서 겹쳤다 — Card 최소 폭 240 × 3 + 간격 32 =
