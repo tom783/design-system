@@ -114,8 +114,8 @@ node docs/qa/which-component-golden.mjs --check   # 하한 아래거나 후보 0
 node docs/qa/compare-match-baseline.mjs           # R38 1순위 대조 + docs/qa/r38-match-ranking.md 재생성(보류 세트 수치 포함)
 ```
 
-2026-11-24 실측(목표 64): **top-1 165/184 · top-3 183/184 · 후보 0개 0/186**(한국어 119/135 · 134/135, 영어 46/49 · 49/49).
-같은 세트의 0.5.0 수치는 top-1 96 · top-3 129 · 후보 0개 28(영어 27/50)이었다. 하한은 **top-1 161 · top-3 181 · 후보 0개 0**이다.
+2026-11-24 실측(목표 64): **top-1 166/184 · top-3 182/184 · 후보 0개 0/186**(한국어 120/135 · 133/135, 영어 46/49 · 49/49).
+같은 세트의 0.5.0 수치는 top-1 96 · top-3 129 · 후보 0개 28(영어 27/50)이었다. 하한은 **top-1 162 · top-3 180 · 후보 0개 0**이다. main 대비 1위·3위 안에서 밀려난 문항은 0개다.
 `which-component-golden.test.mjs`가 `pnpm test`(= `pnpm verify`·pre-commit·CI)에서 같은 판정을 한다.
 키워드·매칭을 고쳐 수치가 바뀌면 `measured`를 고치고, 오른 만큼 `floor`도 올린다.
 

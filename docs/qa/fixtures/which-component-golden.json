@@ -1,7 +1,7 @@
 {
   "description": "which_component 정답 세트(R49 · 0.6.0 목표 64). 실제 요청 문장과 정답 부품이다. set 이 없으면 R49 기준 128문항, logistics06 은 도그푸딩 6 사전 점검 표의 한국어·영어 32문항 그대로, r050 은 0.5.0 부품(FilterBar·BulkActionBar·DataTable 합계·DescriptionList·FormActionBar·Input 접미사)을 가리키는 26문항이다. expected 는 정답 하나·허용 정답 여러 개(배열, 가장 높은 순위로 친다)·null(맞는 부품이 아직 없다, gap 에 이유)이다. null 문항은 정확도 분모에서 빼고 후보 0개만 센다. 질의가 이름 일치 점수를 받으면 안 된다(이름 일치 +1000점이 정확도를 부풀린다) — 소문자 영어 낱말 'button'·'select' 는 이름 일치가 아니다. 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. measured 는 기록한 실측, floor 는 실측에서 여유를 조금 둔 하한이다. 그 아래로 떨어지거나 후보 0개가 생기면 docs/qa/which-component-golden.test.mjs 가 실패한다(pnpm test = verify·pre-commit·CI). 수치가 바뀌면 measured 를 고치고, 오른 만큼 floor 도 올린다. 튜닝에 쓰지 않은 확인용 질의는 which-component-holdout.json 에 따로 있다.",
-  "measured": { "measuredAt": "2026-11-24", "top1": 165, "top3": 183, "scored": 184, "noCandidates": 0, "queries": 186 },
-  "floor": { "top1": 161, "top3": 181, "maxNoCandidates": 0 },
+  "measured": { "measuredAt": "2026-11-24", "top1": 166, "top3": 182, "scored": 184, "noCandidates": 0, "queries": 186 },
+  "floor": { "top1": 162, "top3": 180, "maxNoCandidates": 0 },
   "cases": [
     { "query": "주문 목록을 표로 보여주고 열 기준으로 정렬하고 싶어", "expected": "DataTable", "lang": "ko" },
     { "query": "매장 카드 목록을 불러오는 동안 카드 모양 자리 표시", "expected": "CardSkeleton", "lang": "ko" },

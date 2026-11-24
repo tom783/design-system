@@ -145,7 +145,7 @@ const intents = [
     rule("마지막 항목에는 링크 대신 BreadcrumbPage를 쓴다.", "16.2"),
     rule("긴 경로는 첫 항목·BreadcrumbEllipsis·마지막 둘로 조립한다.", "16.2"),
     rule("앱이 consume으로 기록을 읽고 필터·스크롤·재방문 행을 복원한다.", "16.2")
-  ],["aria-label"],["breadcrumb"],["BreadcrumbList", "BreadcrumbPage"],["경로", "빵부스러기", "뒤로", "목록으로 돌아가는 경로", "위치 표시", "상위 경로"]),
+  ],["aria-label"],["breadcrumb"],["BreadcrumbList", "BreadcrumbPage"],["경로", "빵부스러기", "뒤로", "목록으로 돌아가는 경로", "상위 경로"]),
   part("BreadcrumbList", "Breadcrumb", "경로 항목의 순서 목록이다.", [], ["breadcrumb-list"]),
   part("BreadcrumbItem", "Breadcrumb", "경로의 개별 항목이다.", [], ["breadcrumb-item"]),
   part("BreadcrumbLink", "Breadcrumb", "라우터를 지정하지 않는 상위 경로 링크다.", ["asChild", "href"], ["breadcrumb-link"]),
@@ -298,7 +298,7 @@ const intents = [
       '바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다. 행 선택 중에는 BulkActionBar children으로 넣어 숨긴다.'
     ],['views','view','defaultView','onViewChange','viewChanged','onSaveView','query','defaultQuery','onQueryChange','searchLabel','searchPlaceholder','filters','defaultFilters','onFiltersChange','filterContent','filterOpen','defaultFilterOpen','onFilterOpenChange'],
     ['filter-bar','filter-bar-controls','filter-bar-search','filter-bar-trigger','filter-bar-chips','filter-bar-chip','filter-bar-chip-remove','filter-bar-more','filter-bar-reset'],
-    ['DataTable','BulkActionBar','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','필터','목록 필터','필터 조건','filter bar','filter chips']),
+    ['DataTable','BulkActionBar','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','필터','목록 필터','filter bar','filter chips']),
   entry('BulkActionBar','table','표에서 행을 선택하면 툴바 자리에 선택 건수와 일괄 작업을 보인다.',
     ['선택한 주문을 한 번에 출력·처리·취소할 때'],
     ['필터 툴바와 동시에 보이게 두지 마라','바탕을 브랜드·오류색으로 칠하지 마라'],'4.2',[

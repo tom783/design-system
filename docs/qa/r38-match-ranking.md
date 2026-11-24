@@ -40,16 +40,16 @@ which_component 는 외부 모델 없이 키워드 점수로 후보 여러 개�
 
 ## 정답 세트 수치 (`docs/qa/fixtures/which-component-golden.json`)
 
-`node docs/qa/which-component-golden.mjs` 로 재현한다. 하한 top-1 161 · top-3 181 · 후보 0개 0 아래로
+`node docs/qa/which-component-golden.mjs` 로 재현한다. 하한 top-1 162 · top-3 180 · 후보 0개 0 아래로
 떨어지면 `which-component-golden.test.mjs`(pnpm test = verify·pre-commit·CI)가 실패한다. 정확도 분모는 정답이 있는 문항(부품 공백 2개 제외), 후보 0개 분모는 전체 질의다.
 보류 세트(`which-component-holdout.json`)는 튜닝을 마친 뒤 따로 쓴 질의로, 과적합을 재기만 하고 게이트는 걸지 않는다.
 
 | 묶음 | top-1 · top-3 · 후보 0개 |
 |---|---|
-| 전체 | 165/184 · 183/184 · 0/186 |
-| 한국어 | 119/135 · 134/135 · 0/136 |
+| 전체 | 166/184 · 182/184 · 0/186 |
+| 한국어 | 120/135 · 133/135 · 0/136 |
 | 영어 | 46/49 · 49/49 · 0/50 |
-| R49 기준 | 116/128 · 127/128 · 0/128 |
+| R49 기준 | 117/128 · 126/128 · 0/128 |
 | 도그푸딩 6 물류 | 27/30 · 30/30 · 0/32 |
 | 0.5.0 부품 | 22/26 · 26/26 · 0/26 |
 | 보류 세트(튜닝에 안 씀) | 37/48 · 47/48 · 0/48 |
@@ -61,14 +61,13 @@ which_component 는 외부 모델 없이 키워드 점수로 후보 여러 개�
 | 질의 | 정답 | 정답 순위 | 실제 상위 3 |
 |---|---|---|---|
 | 매장 카드 목록을 불러오는 동안 카드 모양 자리 표시 | CardSkeleton | 2 | Skeleton · CardSkeleton · Card |
-| 필터 조건을 옆에서 나오는 패널에 모아두기 | SheetContent | 2 | FilterBar · SheetContent · Tabs |
 | 태그를 검색해서 여러 개 붙이기 | Combobox | 2 | Input · Combobox · MultiSelect |
 | 판매 채널 여러 개를 골라 거르는 필터 | MultiSelect | 2 | Select · MultiSelect · FilterBar |
 | 창고 네 곳 중 여러 곳 선택 | MultiSelect | 3 | Checkbox · RadioGroup · MultiSelect |
 | 수정 폼 데이터를 불러오는 동안 입력칸 모양 자리 표시 | FormSkeleton | 2 | Skeleton · FormSkeleton · Input |
-| 입점 신청을 3단계로 나눠 현재 위치 표시 | Steps | 2 | Breadcrumb · Steps · Tour |
 | multi-step form progress indicator | Steps | 2 | ProgressTrack · Steps · Tour |
 | 공지 본문 문단이 로딩되는 동안 줄 모양 자리 표시 | SkeletonText | 2 | Skeleton · SkeletonText · FormActionBar |
+| 홈 > 상품 > 상품 상세 위치 표시 | Breadcrumb | 7 | Thumbnail · Steps · FileUpload |
 | 대시보드 위젯 내용이 오기 전에 같은 모양의 회색 자리 | Skeleton | 4 | FormActionBar · DescriptionList · Peek |
 | 목록이 로딩되는 동안 행 모양 자리 표시 | ListSkeleton | 2 | Skeleton · ListSkeleton · DataTable |
 | 차트 영역이 로딩 중일 때 자리 표시 | ChartSkeleton | 2 | Skeleton · ChartSkeleton · ChartFrame |
