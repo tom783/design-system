@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
-/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 차트 폭은 ChartFrame이 잰다. */
+/** 내부 — ChartFrame 이 쓴다. 0.6.0 에서 공개 API 에서 뺐다(0.5.0 예고). */
 export function useElementWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
   const ref = useRef<T>(null);
   const [width, setWidth] = useState(0);

@@ -1,6 +1,6 @@
 // Unicode Script 판별로 한글·한자·가나가 섞인 이름도 이름 쪽 두 글자를 우선한다.
 const cjk = /[\p{Script=Hangul}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
-/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 이름 글자는 Avatar가 그린다. */
+/** 내부 — Avatar 가 쓴다. 0.6.0 에서 공개 API 에서 뺐다(0.5.0 예고). */
 export function initials(name: string): string {
   const trimmed = name.trim();
   if (!trimmed) return '';

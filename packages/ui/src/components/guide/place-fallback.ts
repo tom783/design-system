@@ -1,7 +1,7 @@
 export type Rect = { top: number; left: number; width: number; height: number };
 export type Placement = 'top' | 'bottom';
 
-/** @deprecated 다음 마이너에서 공개 API에서 뺀다. 위치는 Tooltip·Hint·Tour가 정한다. */
+/** 내부 — useAnchored 의 앵커 위치 지원이 없을 때의 위치 계산. 0.6.0 에서 공개 API 에서 뺐다(0.4.0 예고). */
 export function placeFallback(
   target: Rect,
   tip: { width: number; height: number },

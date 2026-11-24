@@ -747,7 +747,10 @@ Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·traili
 내보내는 순간 그것까지 공개 API가 된다 — `initials`·`encodeRecord`·`decodeRecord`가 그렇게 새었다.
 - 대문자 값(부품·상수)은 매니페스트 항목이 있어야 한다(§13.2).
 - 소문자 값(함수·훅)은 공개 도우미 목록에 용도를 적어야 통과한다. 부품이 쓰는 내부 계산은 내보내지 않는다.
-  이미 내보낸 것은 `@deprecated`로 예고하고 다음 마이너에서 뺀다(지금 12개 — 0.4.0 예고 8 + 목표 49 4).
+  이미 내보낸 것은 `@deprecated`로 예고하고 다음 마이너에서 뺀다. 0.4.0 예고 8개와 목표 49의 4개는 0.6.0에서 뺐다
+  (`placeFallback`·`resolveStep`·`useAnchored`·`supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·
+  `nextPhase`·`initials`·`encodeRecord`·`decodeRecord`·`useElementWidth`, 딸린 타입 6개 — 대체는 CHANGELOG 0.6.0 마이그레이션 표).
+  부품이 안에서 쓰는 것은 모듈 파일에 그대로 있고 공개 진입점만 닫았다.
 
 **5. 이름 바꾸기 — 깨지 않는다.** 0.x minor에서도 옛 이름을 바로 지우지 않는다. 새 이름을 더하고 옛 이름은
 `@deprecated` 별칭으로 한 마이너 남긴다. 둘 다 주면 새 이름이 이긴다.
@@ -1266,7 +1269,7 @@ shouldValidate({ trigger, hasErrored, isComposing })
   = !isComposing && (trigger !== 'change' || hasErrored)
 ```
 
-앱은 이 식을 직접 쓴다. `shouldValidate` 도우미는 0.4.0 에서 공개 API 제외를 예고했고(`@deprecated`),
+앱은 이 식을 직접 쓴다. `shouldValidate` 도우미는 0.4.0 에서 예고하고 0.6.0 에서 공개 API 에서 뺐다(내부 단위 시험만 쓴다).
 문서 예시·스토리도 식을 풀어 쓴다.
 
 | 시점 | 검증하나 | 왜 |

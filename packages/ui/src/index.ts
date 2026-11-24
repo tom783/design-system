@@ -4,7 +4,6 @@ export { StatusChip, chipVariants, type StatusChipProps } from './components/sta
 export { Card, CardHeader, CardTitle, CardBody, CardFooter } from './components/card';
 export { DescriptionList, type DescriptionListProps, type DescriptionListItem } from './components/description-list';
 export { cn } from './lib/cn';
-export { useElementWidth } from './lib/use-element-width';
 export {
   ChartFrame, TrendBand, BulletRow, CompositionArea,
   type ChartFrameProps, type ChartLegendItem, type TrendBandProps,
@@ -25,20 +24,18 @@ export {
   type ProgressTrackProps, type TaskProgressProps,
 } from './components/loading';
 export { useDelayedLoading, type DelayedLoadingOptions } from './lib/use-delayed-loading';
-export { nextPhase, type LoadingPhase, type LoadingInput } from './lib/loading-state';
-export { Tooltip, Hint, Tour, useTour, placeFallback, resolveStep, useAnchored, supportsAnchor,
-  type TooltipProps, type HintProps, type TourStep, type TourProps, type UseTourOptions,
-  type Rect, type Placement } from './components/guide';
-export { Field, FormRow, FormFlow, useFormFlow, focusNextFormStop, useComposition, nextFocusable, shouldValidate,
-  type FieldProps, type FormRowProps, type FormFlowOptions, type FormFlowProps, type FocusCandidate, type ValidationTiming } from './components/form';
+export { Tooltip, Hint, Tour, useTour,
+  type TooltipProps, type HintProps, type TourStep, type TourProps, type UseTourOptions } from './components/guide';
+export { Field, FormRow, FormFlow, useFormFlow, useComposition,
+  type FieldProps, type FormRowProps, type FormFlowOptions, type FormFlowProps } from './components/form';
 // 공개 이름은 여기서 하나씩 나열한다(DESIGN.md §6.3 내보내기 범위). export * 는 부품 폴더가 내부 도우미를
-// 내보내는 순간 그것까지 공개 API 로 만든다 — initials·encodeRecord 가 그렇게 새어 나왔다.
+// 내보내는 순간 그것까지 공개 API 로 만든다 — initials·encodeRecord 가 그렇게 새어 나왔고 0.6.0 에서 뺐다.
 export { Peek, type PeekProps, type PeekItem } from './components/peek';
-export { useReturnContext, type ReturnContextOptions, type ReturnStorage } from './components/peek';
-export { encodeRecord, decodeRecord, type ReturnRecord } from './components/peek';
+// ReturnRecord 는 useReturnContext 의 capture·consume 이 주고받는 값이라 공개 타입으로 남긴다.
+export { useReturnContext, type ReturnContextOptions, type ReturnStorage, type ReturnRecord } from './components/peek';
 
 export { EmptyState, ErrorState, type EmptyStateProps, type ErrorStateProps } from './components/state';
-export { Avatar, initials, type AvatarProps } from './components/avatar';
+export { Avatar, type AvatarProps } from './components/avatar';
 export { Thumbnail, type ThumbnailProps } from './components/thumbnail';
 
 export {

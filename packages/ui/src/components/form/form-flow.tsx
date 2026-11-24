@@ -28,7 +28,7 @@ function destinationFrom(stops: HTMLElement[], from: HTMLElement, direction: 1 |
 
 /**
  * 폼 안의 다음 Tab 정지점으로 포커스를 옮긴다. FormFlow 폼이 아니면 아무것도 하지 않는다.
- * @deprecated 다음 마이너에서 공개 API에서 뺀다. Enter 이동은 FormFlow가 맡는다.
+ * 내부 — Combobox 가 선택 뒤 다음 칸으로 옮길 때 쓴다. 0.6.0 에서 공개 API 에서 뺐다(0.4.0 예고).
  */
 export function focusNextFormStop(from: HTMLElement): boolean {
   const form = from.closest<HTMLFormElement>('form[data-form-flow]');

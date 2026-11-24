@@ -24,20 +24,8 @@ export const helpers = {
   useTour: { use: 'Tour 의 단계 상태. Tour 가 이 반환값을 props 로 받는다' },
   useFormFlow: { use: 'FormFlow 를 쓰지 않는 form 에 Enter 다음 칸 이동을 붙일 때(DESIGN.md §11.5)' },
   useComposition: { use: '한글 IME 조합 중인지 리렌더 없이 읽는다 — 직접 만든 입력의 Enter·검증 시점(DESIGN.md §11.1)' },
-  // 0.4.0 에서 예고했다(CHANGELOG 0.4.0 바뀐 동작). 부품이 쓰는 내부 계산이다.
-  placeFallback: { deprecated: '위치는 Tooltip·Hint·Tour 가 정한다', source: 'components/guide/place-fallback.ts' },
-  resolveStep: { deprecated: '단계 고르기는 Tour 가 맡는다', source: 'components/guide/resolve-step.ts' },
-  useAnchored: { deprecated: '앵커 배치는 Tooltip·Hint·Tour·Peek 이 맡는다', source: 'components/guide/use-anchored.ts' },
-  supportsAnchor: { deprecated: '앵커 배치는 Tooltip·Hint·Tour·Peek 이 맡는다', source: 'components/guide/use-anchored.ts' },
-  nextFocusable: { deprecated: 'Enter 이동은 FormFlow 가 맡는다', source: 'components/form/next-focusable.ts' },
-  focusNextFormStop: { deprecated: 'Enter 이동은 FormFlow 가 맡는다', source: 'components/form/form-flow.tsx' },
-  shouldValidate: { deprecated: '같은 판단식을 앱에 둔다(DESIGN.md §11.2)', source: 'components/form/should-validate.ts' },
-  nextPhase: { deprecated: '로딩 표시 지연은 useDelayedLoading 을 쓴다', source: 'lib/loading-state.ts' },
-  // 목표 49 조사(2026-11-23)에서 찾았다. 부품 폴더 index 가 내보내 export * 로 새어 나왔다.
-  initials: { deprecated: '이름 글자는 Avatar 가 그린다', source: 'components/avatar/initials.ts' },
-  encodeRecord: { deprecated: '저장·복원은 useReturnContext 가 맡는다', source: 'components/peek/return-record.ts' },
-  decodeRecord: { deprecated: '저장·복원은 useReturnContext 가 맡는다', source: 'components/peek/return-record.ts' },
-  useElementWidth: { deprecated: '차트 폭은 ChartFrame 이 잰다', source: 'lib/use-element-width.ts' },
+  // 0.4.0 예고 8개·목표 49 의 4개(placeFallback·…·useElementWidth)는 0.6.0 에서 뺐다(CHANGELOG 0.6.0 마이그레이션 표).
+  // 다시 deprecated 도우미를 둘 때는 { deprecated: '대체 수단', source: '<packages/ui/src 아래 경로>' } 로 적는다.
 };
 
 /** 이름을 바꾸며 남긴 옛 이름. 새 이름이 함께 있어야 하고 소스 prop 에 @deprecated JSDoc 이 있어야 한다. */

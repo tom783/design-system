@@ -14,6 +14,41 @@
 
 ## 미출시
 
+0.6.0 에 들어갈 변경(목표 64). **깨지는 변경이 있다**(2b 옛 이름 정리) — 0.4.0·0.5.0 이 예고한 이름을 공개 API 에서 뺐다.
+0.4.0·0.5.0 은 게시하지 않아 이 이름을 쓰는 게시본 앱은 없다. 미게시 빌드를 먼저 받아 쓴 앱만 아래 표대로 바꾼다.
+
+### 앱이 할 일 — 마이그레이션 표
+
+빠진 이름을 import 하면 TypeScript 는 TS2305(`has no exported member`), 번들러는 "is not exported" 로 멈춘다.
+부품이 안에서 쓰는 계산은 그대로라 부품 동작은 같다 — 공개 진입점(`@s2life/ui`)에서만 닫았다.
+
+| 옛 이름 (0.5.0) | 0.6.0 | 새 이름 · 대체 방법 |
+|---|---|---|
+| `placeFallback` · 타입 `Rect` · `Placement` | 뺐다 | 말풍선 위치는 `Tooltip`·`Hint`·`Tour`·`Peek` 이 정한다. 직접 그린 말풍선이면 그 계산(위 자리가 없으면 아래, 화면 안 가두기)을 앱에 둔다 |
+| `resolveStep` | 뺐다 | `Tour` + `useTour` 가 단계를 고른다. 대상이 없는 단계는 `Tour` 의 `onMissingTarget`(`'skip'`·`'center'`) |
+| `useAnchored` · `supportsAnchor` | 뺐다 | `Tooltip`·`Hint`·`Tour`·`Peek`. 앵커 위치 지원 판별은 `CSS.supports('anchor-name', '--x')` |
+| `nextFocusable` · 타입 `FocusCandidate` | 뺐다 | Enter 다음 칸 이동은 `FormFlow`(form 을 감싼다) 또는 `useFormFlow`(앱 form 에 붙인다) |
+| `focusNextFormStop` | 뺐다 | 같음 — `FormFlow`·`useFormFlow`. Combobox 는 선택 뒤 다음 칸 이동을 스스로 한다 |
+| `shouldValidate` · 타입 `ValidationTiming` | 뺐다 | 같은 식을 앱에 둔다: `!isComposing && (trigger !== 'change' \|\| hasErrored)` — 조합 여부는 `useComposition()` (DESIGN.md §11.2) |
+| `nextPhase` · 타입 `LoadingPhase` · `LoadingInput` | 뺐다 | `useDelayedLoading(isLoading, { delay, minVisible })` 가 보일지 여부(boolean)를 준다 |
+| `initials` | 뺐다 | `Avatar name="…"` 가 이름 글자를 그린다 |
+| `encodeRecord` · `decodeRecord` | 뺐다 | `useReturnContext` 의 `capture`·`consume`. 타입 `ReturnRecord` 는 그대로 공개다(`consume()` 이 돌려준다) |
+| `useElementWidth` | 뺐다 | 차트 폭은 `ChartFrame` 이 잰다. 다른 요소 폭은 앱이 `ResizeObserver` 로 잰다 |
+
+### 제거 (깨지는 변경)
+
+- **내부 도우미 12개와 딸린 타입 6개를 공개 API 에서 뺐다** (목표 64 · DESIGN.md §6.3 규칙 4). 0.4.0 이 예고한 8개(`placeFallback`·
+  `resolveStep`·`useAnchored`·`supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`)와 목표 49 가 예고한 4개
+  (`initials`·`encodeRecord`·`decodeRecord`·`useElementWidth`), 그 함수에만 쓰이던 타입 `Rect`·`Placement`·`FocusCandidate`·
+  `ValidationTiming`·`LoadingPhase`·`LoadingInput`. 루트 `index.ts` 와 부품 폴더 `index.ts`(guide·form·peek·avatar)에서 내보내기를
+  지우고 `@deprecated` 를 "내부" 표기로 바꿨다. `ReturnRecord` 는 `useReturnContext` 반환 타입이라 남겼다.
+  - 어디서 쓰였나: 모두 부품 안 — `placeFallback`(useAnchored)·`useAnchored`·`supportsAnchor`(Tooltip·Hint·Tour·Peek)·`resolveStep`(Tour)·
+    `nextFocusable`(FormFlow)·`focusNextFormStop`(Combobox)·`nextPhase`(useDelayedLoading)·`initials`(Avatar)·`encodeRecord`·`decodeRecord`
+    (useReturnContext)·`useElementWidth`(ChartFrame)·`shouldValidate`(부품 사용 없음, 단위 시험만). 스토리·문서 예제·MCP 매니페스트는
+    이 이름을 쓰지 않았다(MCP 는 부품만 싣는다 — 응답 변화 없음).
+  - `scripts/api-conventions-allow.mjs` 의 `helpers` 에서 12개를 지웠다. 공개 소문자 값은 16개다.
+  - 앱이 할 일: 위 표.
+
 ### 고침
 
 - **`which_component` 추천 정확도 — 영어 질의와 0.5.0 부품** (0.6.0 목표 64 · 2a · DESIGN.md §13.4 · `docs/qa/r38-match-ranking.md`).
