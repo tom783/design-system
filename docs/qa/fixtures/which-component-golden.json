@@ -1,6 +1,6 @@
 {
   "description": "which_component 정답 세트(R49). 실제 요청 문장의 핵심 100문항과 정답 부품 하나. 질의에 컴포넌트 이름을 넣지 않는다(이름 일치 +1000점이 정확도를 부풀린다). 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. baseline 은 이 세트를 만든 날 현재 matchComponents 의 실측이며, 그 아래로 떨어지면 docs/qa/which-component-golden.test.mjs 가 실패한다. 올라가면 baseline 을 함께 올린다.",
-  "baseline": { "measuredAt": "2026-11-24", "top1": 80, "top3": 100 },
+  "baseline": { "measuredAt": "2026-11-24", "top1": 86, "top3": 106 },
   "cases": [
     { "query": "주문 목록을 표로 보여주고 열 기준으로 정렬하고 싶어", "expected": "DataTable", "lang": "ko" },
     { "query": "매장 카드 목록을 불러오는 동안 카드 모양 자리 표시", "expected": "CardSkeleton", "lang": "ko" },
@@ -129,6 +129,12 @@
     { "query": "정산 내역 표에서 금액 열 합계를 보여줘", "expected": "DataTable", "lang": "ko" },
     { "query": "이 페이지 합계와 전체 합계를 표 마지막 줄에", "expected": "DataTable", "lang": "ko" },
     { "query": "totals row at the bottom of the order items table", "expected": "DataTable", "lang": "en" },
-    { "query": "배송비와 할인, 결제 금액 내역을 표 아래 오른쪽에", "expected": "DescriptionList", "lang": "ko" }
+    { "query": "배송비와 할인, 결제 금액 내역을 표 아래 오른쪽에", "expected": "DescriptionList", "lang": "ko" },
+    { "query": "품목 반복 입력", "expected": "FieldList", "lang": "ko" },
+    { "query": "출고 품목을 여러 줄로 입력하고 줄을 추가·삭제", "expected": "FieldList", "lang": "ko" },
+    { "query": "상품 옵션을 줄마다 입력받는 폼", "expected": "FieldList", "lang": "ko" },
+    { "query": "품목이 하나도 없을 때 목록 전체 오류 표시", "expected": "FieldList", "lang": "ko" },
+    { "query": "repeat rows", "expected": "FieldList", "lang": "en" },
+    { "query": "line items", "expected": "FieldList", "lang": "en" }
   ]
 }

@@ -17,6 +17,7 @@ import { DropdownMenuItem, DropdownMenuShortcut } from './dropdown-menu';
 import { FilterBar } from './filter-bar';
 import { BulkActionBar } from './bulk-action-bar';
 import { FormActionBar } from './form-action-bar';
+import { FieldList } from './field-list';
 
 const button = React.createRef<HTMLButtonElement>();
 const input = React.createRef<HTMLInputElement>();
@@ -26,6 +27,7 @@ const heading = React.createRef<HTMLHeadingElement>();
 const span = React.createRef<HTMLSpanElement>();
 const element = React.createRef<HTMLElement>();
 const anchor = React.createRef<HTMLAnchorElement>();
+const fieldset = React.createRef<HTMLFieldSetElement>();
 
 void [
   <Button ref={button}>저장</Button>,
@@ -51,6 +53,8 @@ void [
   <FilterBar ref={div} />,
   <BulkActionBar ref={div} selectedCount={0} />,
   <FormActionBar ref={div} />,
+  <FieldList ref={fieldset} label="품목" value={[{ name: '' }]} onValueChange={() => {}} createItem={() => ({ name: '' })}
+    columns={[{ key: 'name', label: '품목명', render: item => <Input value={item.name} readOnly /> }]} />,
   <DropdownMenuShortcut ref={span}>⌘C</DropdownMenuShortcut>,
 ];
 

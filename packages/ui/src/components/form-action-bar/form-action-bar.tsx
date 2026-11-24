@@ -7,6 +7,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../dialog';
 import { cn } from '../../lib/cn';
+import { fieldListErrorTarget } from '../field-list/error-target';
 
 /**
  * 폼 하단 고정 액션 줄 — 등록·편집 폼의 취소·저장(과 편집의 삭제)을 AppShell 본문 바닥에 고정한다
@@ -43,9 +44,11 @@ export interface FormActionBarProps extends Omit<React.ComponentProps<'div'>, 'c
   saving?: boolean;
   /** 저장하지 않은 변경이 있다. 상태 자리에 '저장하지 않은 변경 있음'을 보인다. */
   dirty?: boolean;
-  /** 저장에 실패한 칸 수. 1 이상이면 상태 자리가 '오류 N개' 링크다. 폼 위 오류 요약은 앱이 그대로 둔다. */
+  /** 저장에 실패한 칸 수. 반복 입력 줄(FieldList)의 묶음 오류도 1개로 센다. 1 이상이면 상태 자리가 '오류 N개' 링크다.
+   * 폼 위 오류 요약은 앱이 그대로 둔다. */
   errorCount?: number;
-  /** '오류 N개'를 눌렀다. 생략하면 폼 안 첫 aria-invalid 칸으로 포커스를 옮긴다. */
+  /** '오류 N개'를 눌렀다. 생략하면 폼 안 첫 aria-invalid 칸으로 포커스를 옮긴다 — 첫 오류가 FieldList 묶음 오류면
+   * 빈 목록은 추가 버튼, 아니면 그 목록의 첫 오류 칸이다. */
   onErrorClick?: () => void;
   /** 편집 화면의 삭제를 확인창에서 확정했다. 주면 왼쪽 끝에 삭제(480px 미만은 더 보기 메뉴)가 생긴다. */
   onDelete?: () => void;
@@ -96,7 +99,9 @@ export function FormActionBar({
   const goToFirstError = () => {
     if (onErrorClick) { onErrorClick(); return; }
     const scope = owner() ?? root.current?.ownerDocument;
-    scope?.querySelector<HTMLElement>(INVALID)?.focus();
+    const first = scope?.querySelector<HTMLElement>(INVALID);
+    // 반복 입력 줄의 묶음 오류는 fieldset 에 걸린다(포커스를 받지 못한다). 빈 목록이면 추가 버튼, 아니면 첫 오류 칸(L-15).
+    (first?.matches('[data-slot="field-list"]') ? fieldListErrorTarget(first) : first)?.focus();
   };
 
   const status = errors > 0 ? null : saving ? null : dirty ? '저장하지 않은 변경 있음' : null;

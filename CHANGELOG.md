@@ -14,7 +14,42 @@
 
 ## 미출시
 
-(아직 없음)
+### 추가
+
+- **반복 입력 줄 — `FieldList`** (타입 `FieldListColumn`·`FieldListCellContext`·`FieldListRowError`, 0.6.0 3a · 디자인 총괄 확정
+  규칙 표 L-1~L-17 · Figma 203:4~7 r1 · DESIGN.md §11.10). 출고 품목·상품 옵션처럼 같은 칸 묶음(1~4칸)을 여러 줄 입력받는다.
+  도그푸딩 6 에서 부품이 없어 AI 가 카드 안에 줄마다 테두리 상자를 만들고(390 에서 품목 5개 = 화면 3장) 품목 0개 오류를 회색
+  글자로 썼다(D3·D4).
+  - `fieldset` + `legend`(`hideLabel` 로 카드 제목과 같은 말을 숨긴다). 부품 폭 640 이상은 표 형 줄 — 열 머리 한 번(caption 500,
+    필수 `*`) + 아래 4, 줄 피치 46(입력 38 + 8), 열 간격 16, 글자 칸 `minmax(0, 2fr)`·숫자 칸 `minmax(8rem, 1fr)`·삭제 38, 같은 열
+    Δx 0. 640 미만은 줄 머리(`품목 2` + 삭제) → 첫 칸 전체 폭 → 숫자 칸 둘씩(간격 12), 줄 사이 `border-subtle`·위아래 16, 칸마다
+    레이블. CSS 컨테이너 쿼리라 서버 첫 그림과 같다. 390 에서 3칸 줄 5개 카드 1,140px(목표 ≤ 1,200).
+  - 입력 이름은 부품이 `품목 2 수량`으로 붙이고 id·`aria-describedby`·`aria-invalid`·required 를 Field 처럼 연결한다.
+  - 삭제 = ghost 38×38 `품목 N 삭제`(확인창 없음), 입력이 있던 줄은 토스트 `품목 N 삭제됨 · 되돌리기`(5초, 같은 자리·같은 값으로).
+    추가 = secondary `품목 추가`(목록 아래 12) → 새 줄 첫 칸 포커스. 삭제 뒤 포커스는 다음 줄 삭제 → 이전 줄 삭제 → 추가 버튼.
+    `min` 에 닿으면 삭제 비활성(자리 유지), `max` 에 닿으면 추가 비활성 + `최대 N개`. `min` ≥ 1 이면 빈 줄로 시작, 0 이면 빈 상태
+    `품목이 없습니다`.
+  - 오류 세 층: 칸(`columns[].error` — Field 오류 모양, 자리 예약 없음) · 줄(`rowError` — 줄 아래, `{ message, column }` 이면 원인 칸
+    테두리도 위험색) · 묶음(`error` — 목록 머리 아래 한 줄, 아이콘 16 + body-sm 위험색, `role=alert`, fieldset `aria-invalid`·
+    `aria-describedby`). 새 토큰·새 Alert 모양 없음.
+  - 값은 앱이 소유한다(제어 전용 `value`·`onValueChange` + `createItem` — 되돌리기가 지운 객체를 그대로 다시 넣는다. API 규약
+    허용 목록에 이유). 열의 `render(item, { index, update })` 가 칸 입력 하나를 돌려준다. 줄 키는 항목 `id`(또는 `getKey`), 없으면
+    부품이 추가·삭제를 따라 붙인다 — 입력 중 줄이 다시 그려지지 않아 한글 조합이 끊기지 않는다.
+  - 기준 화면 `Screens/ShipmentCreate`(Figma 추천 조합 7상태 + 묶음 오류 둘), 부품 스토리 `Components/FieldList`, 문서 04 폼 만들기·
+    02 컴포넌트 고르기(FieldList·DataTable·SheetContent 갈림길). 하네스 `field-list-render-verify`(87건: 라이트·다크 × 1440·1024·768·
+    390 × 9상태 자가 점검 + 포커스·min/max·되돌리기·오류 수·IME). axe(wcag2a~22aa) 76회 위반 0(일회성 주입 — 저장소에 axe 없음).
+  - MCP: FieldList 항목(디자인 총괄 지침 purpose·useWhen·dont + 규칙 8), 색인 +624B · 목록 +204B · 상세 5,188B. which_component 정답
+    세트 +6문항(한국어 4·영어 2 — '품목 반복 입력'·'repeat rows'·'line items' 등)으로 134문항 top-1 86 · top-3 106(기존 128문항 80·100 그대로).
+  - 앱이 할 일: 없다. 카드 안에 줄마다 상자를 만들어 품목을 입력받던 곳은 이 부품으로 바꿀 수 있다.
+
+### 바뀐 지침
+
+- **목록 단위 오류는 FieldList `error` — FormActionBar 묶음 오류 지침을 바꿨다** (0.6.0 3a · 규칙 표 L-14·L-15 · DESIGN.md §11.10·§19.5·§24.5).
+  0.5.0 의 임시 지침(추가 버튼에 `aria-invalid` + 제출 때 `toast.error`)은 쓰지 않는다 — 목록 머리 아래 위험색 한 줄(fieldset
+  `aria-invalid`)이다. `errorCount` 에 묶음 오류도 1개로 센다. `오류 N개` 를 눌렀을 때 첫 `aria-invalid` 가 FieldList 의 fieldset 이면
+  빈 목록은 추가 버튼, 아니면 그 목록의 첫 오류 칸(없으면 첫 칸)으로 간다(FormActionBar 동작 고침 — 전에는 fieldset 에 `focus()` 를
+  불러 아무 일도 없었을 것이다). MCP `get_component FormActionBar` 규칙 1개 교체·관련 부품 +FieldList(상세 5,270 → 5,490B).
+  - 앱이 할 일: 0.5.0 지침대로 추가 버튼에 `aria-invalid`·`toast.error` 를 달았다면 FieldList `error` 로 옮긴다.
 
 ---
 

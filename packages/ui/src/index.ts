@@ -88,3 +88,6 @@ export { Steps, type StepsProps, type StepItem, type StepStatus } from './compon
 export { FilterBar, type FilterBarProps, type FilterBarFilter, type FilterBarView } from './components/filter-bar';
 export { BulkActionBar, type BulkActionBarProps } from './components/bulk-action-bar';
 export { FormActionBar, type FormActionBarProps } from './components/form-action-bar';
+export {
+  FieldList, type FieldListProps, type FieldListColumn, type FieldListCellContext, type FieldListRowError,
+} from './components/field-list';
