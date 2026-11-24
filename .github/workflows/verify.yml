@@ -40,6 +40,10 @@ jobs:
         run: pnpm build
       - name: Storybook 정적 빌드
         run: pnpm build-storybook --quiet
+      # 소개 사이트는 workspace 소스를 직접 해석하므로 앞선 산출물과 무관하다.
+      # 배포·artifact 업로드 없이, 같은 build job에서 빌드 회귀만 확인한다.
+      - name: 소개 사이트 빌드
+        run: pnpm site:build
 
       # 같은 run의 하네스만 이 산출물을 받는다. 다음 run의 캐시로는 쓰지 않는다.
       - name: 빌드 산출물 전달
