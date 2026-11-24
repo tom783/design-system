@@ -10,6 +10,7 @@ import { homeAiSteps, homeHero, homePrinciples } from '../../content/home';
 import { MENU, THEME_OPTIONS } from '../../layout/SiteShell';
 import { useTheme, type ThemeChoice } from '../../layout/theme';
 import { OrderSample, componentName } from './OrderSample';
+import { useMediaQuery } from './useMediaQuery';
 import './home.css';
 import './effects.css';
 
@@ -41,25 +42,20 @@ function Scenery() {
   </div>;
 }
 
-/** 좁은 화면 — home.css 의 @media (max-width: 600px) 와 같은 경계. 상단 바 메뉴를 Sheet 로 옮긴다. */
-const narrowQuery = '(max-width: 600px)';
-const subscribeNarrow = (notify: () => void) => {
-  const media = window.matchMedia(narrowQuery);
-  media.addEventListener('change', notify);
-  return () => media.removeEventListener('change', notify);
-};
-const useNarrow = () => React.useSyncExternalStore(subscribeNarrow, () => window.matchMedia(narrowQuery).matches);
+/** 메뉴 단추 화면 — home.css 의 @media (max-width: 1023px) 와 같은 경계. 상단 바 메뉴를 Sheet 로 옮긴다. */
+const menuSheetQuery = '(max-width: 1023px)';
 
 /**
  * 첫 화면 전용 상단 바 — 메뉴 항목·경로는 다른 페이지의 사이드 메뉴(MENU)와 같다. 맨 위에선 투명, 내리면 반투명 표면 + 블러.
- * 600px 이하는 브랜드 + '메뉴' 단추만 두고, 메뉴 7개와 테마 3상태를 오른쪽 Sheet 에 싣는다(가로로 밀어 글자가 잘리지 않게).
- * 보이고 숨기는 것은 CSS 가, Sheet 를 열 수 있는지는 같은 경계의 useNarrow 가 정한다(AppShell 서랍과 같은 방식).
+ * 1023px 이하는 브랜드 + '메뉴' 단추만 두고, 메뉴 7개와 테마 3상태를 오른쪽 Sheet 에 싣는다(가로로 밀어 글자가 잘리지 않게).
+ * 1024px 이상은 메뉴 7개가 한 줄에 다 들어간다(디자인 총괄 결정, 실측).
+ * 보이고 숨기는 것은 CSS 가, Sheet 를 열 수 있는지는 같은 경계의 useMediaQuery 가 정한다(AppShell 서랍과 같은 방식).
  */
 function HomeBar({ main }: { main: React.RefObject<HTMLElement | null> }) {
   const [theme, setTheme] = useTheme();
   const top = React.useRef<HTMLDivElement>(null);
   const atTop = useInView(top);
-  const narrow = useNarrow();
+  const narrow = useMediaQuery(menuSheetQuery);
   const [menuOpen, setMenuOpen] = React.useState(false);
   // 넓어지면 Sheet 를 닫는다 — 메뉴는 다시 상단 바에 있다.
   React.useEffect(() => { if (!narrow) setMenuOpen(false); }, [narrow]);

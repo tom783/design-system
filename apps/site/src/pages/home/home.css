@@ -21,7 +21,8 @@
   font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: 700; letter-spacing: var(--text-title-sm-ls); }
 .site-home-brand-sub { padding-inline-start: var(--space-12); border-inline-start: var(--border-width) solid var(--border-default);
   font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 600; }
-/* 600px 초과에서 메뉴가 바 폭보다 길면 메뉴 칸만 가로로 민다(키보드 포커스가 가면 브라우저가 보이게 옮긴다). 600px 이하는 '메뉴' Sheet. */
+/* 1024px 이상에서 메뉴 7개가 한 줄에 다 들어간다(실측). 그래도 바 폭보다 길어지면(글자 확대 등) 메뉴 칸만 가로로 민다
+   (키보드 포커스가 가면 브라우저가 보이게 옮긴다). 1023px 이하는 '메뉴' Sheet. */
 .site-home-nav { display: flex; flex: 1 1 auto; align-self: stretch; gap: var(--space-24); min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .site-home-nav-link { position: relative; display: flex; flex: none; align-items: center; color: var(--text-secondary); text-decoration: none;
   font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 500; white-space: nowrap; }
@@ -32,7 +33,7 @@
 .site-home-nav-link[aria-current="page"]::after { content: ''; position: absolute; inset: auto 0 calc(-1 * var(--border-width)); height: var(--space-2);
   background: var(--action-primary-border); }
 
-/* 좁은 화면 메뉴(600px 이하) — 상단 바엔 브랜드 + '메뉴' 단추, 메뉴 7개와 테마 3상태는 오른쪽 Sheet(@s2life/ui) 안.
+/* 좁은 화면 메뉴(1023px 이하) — 상단 바엔 브랜드 + '메뉴' 단추, 메뉴 7개와 테마 3상태는 오른쪽 Sheet(@s2life/ui) 안.
    Sheet 는 문서 끝(포털)에 그려지므로 아래 규칙은 .site-home-page 밖에서도 맞게 site- 클래스만 쓴다. */
 .site-home-menu { display: none; }
 .site-home-menu-list { display: flex; flex-direction: column; margin: 0 calc(-1 * var(--space-12)); padding: 0; list-style: none; }
@@ -98,19 +99,24 @@
   color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); }
 .site-home-footer > strong { color: var(--text-primary); font-weight: 600; }
 
+/* 메뉴 7개를 가로로 밀면 글자가 중간에 잘린다(검수 고침 2) — 1023px 이하는 상단 바에서 빼고 '메뉴' 단추의 Sheet 로(디자인 총괄 결정) */
+@media (max-width: 1023px) {
+  .site-home-nav, .site-home-bar-theme { display: none; }
+  .site-home-menu { display: block; margin-inline-start: auto; }
+}
+/* 두 단 배치는 960px 부터 — 959px 이하는 한 단(표본이 본문 폭 그대로). 960px 두 단에서도 표본 표 3열이 들어간다(디자인 총괄 결정) */
+@media (max-width: 959px) {
+  .site-home-opening { grid-template-columns: minmax(0, 1fr); gap: var(--space-24); min-height: 0; }
+}
 @media (max-width: 900px) {
   .site-home-bar-inner { width: calc(100% - 40px); gap: var(--space-24); }
   .site-home, .site-home-footer { width: calc(100% - 40px); }
-  .site-home-opening { grid-template-columns: minmax(0, 1fr); gap: var(--space-24); min-height: 0; }
   .site-home-principles { grid-template-columns: minmax(0, 1fr); gap: var(--space-16); }
 }
 @media (max-width: 600px) {
   .site-home-bar-inner { width: calc(100% - 32px); height: 56px; gap: var(--space-12); }
   .site-home-brand { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); }
   .site-home-brand-sub { display: none; }
-  /* 메뉴 7개를 가로로 밀면 글자가 중간에 잘린다(검수 고침 2) — 상단 바에서 빼고 '메뉴' 단추의 Sheet 로 */
-  .site-home-nav, .site-home-bar-theme { display: none; }
-  .site-home-menu { display: block; margin-inline-start: auto; }
   .site-home, .site-home-footer { width: calc(100% - 32px); }
   .site-home-opening { padding-block: var(--space-32); }
   .site-home-version { margin-block-end: var(--space-16); }

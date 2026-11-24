@@ -99,7 +99,7 @@ pnpm site:preview   # 빌드 결과를 6201 로
 바꾸면 `pnpm site:build` 가 멈춘다** — 에러가 가리키는 `README_TEXT`·`MCP_README_TEXT` 를 함께 고친다.
 디자인 컨셉 문안은 `apps/site/src/content/concept.ts`(디자인 총괄 문안 그대로, 수치는 tokens.json 에서 — site.test 가 손으로 쓴 hex·ms·대비를 막는다).
 목차·코드 블록(`apps/site/src/blocks`)은 사이트 전용이다 — 디자인 시스템 부품 후보가 아니다.
-첫 화면(`apps/site/src/pages/home`)은 자기 상단 바를 쓴다(메뉴는 다른 페이지 사이드 메뉴의 `MENU` 그대로 — 사이트 전체 셸은 바꾸지 않았다. 600px 이하는 브랜드 + '메뉴' 단추가 `@s2life/ui` Sheet 로 메뉴·테마를 연다).
+첫 화면(`apps/site/src/pages/home`)은 자기 상단 바를 쓴다(메뉴는 다른 페이지 사이드 메뉴의 `MENU` 그대로 — 사이트 전체 셸은 바꾸지 않았다. 1023px 이하는 브랜드 + '메뉴' 단추가 `@s2life/ui` Sheet 로 메뉴·테마를 연다 · 표본은 960px 부터 두 단).
 문안은 `apps/site/src/content/home.ts`(웹디자이너 시안 r4 그대로, 원칙 이름은 concept.ts 의 것, 수치는 tokens.json — site.test 가 막는다).
 번짐·격자·블러·조립 움직임은 **사이트 효과 층 `effects.css` 한 파일**에만 있고, site.test 의 좁은 예외는 그 파일에만 준다:
 원시 색은 크림슨(`--color-brand-*`)·중립(`--color-neutral-*`)만, 효과 값은 그 파일이 정의한 `--site-*` 변수, 색 값 직접 쓰기 금지,
