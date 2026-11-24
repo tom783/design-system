@@ -105,7 +105,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
       // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
       // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
       // 목표 57 FormActionBar 553B · DataTable summary 313B · DescriptionList 금액 내역 69B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255, '색인 전송량을 잰다');
+      // 목표 64(0.6.0 3b) SectionHeader +736B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 736, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -166,7 +167,7 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     if (name === 'SelectTrigger') adjusted = { ...adjusted, extends: ['React.ComponentProps<typeof SelectPrimitive.Trigger>'] };
     checkBaseline(await call(c, 'get_component', { name }), adjusted);
   }
-  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl·R43 Steps·FormRow·목표 49 DescriptionList만 명시적으로 더한다.
+  // 기존 순서·구조·직렬화를 보존하고 R40 일시 안내·R41 StatTile·R42 SegmentedControl·R43 Steps·FormRow·목표 49 DescriptionList·목표 64 SectionHeader만 명시적으로 더한다.
   checkBaseline(await call(c, 'list_components', {}), { components: [{
     name: 'Steps', kind: 'component', purpose: '여러 단계 폼의 현재 위치와 완료·오류·예정을 표시한다.',
     import: "import { Steps } from '@s2life/ui';",
@@ -194,6 +195,10 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
   }, {
     name: 'PageHeader', kind: 'component', purpose: '페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',
     import: "import { PageHeader } from '@s2life/ui';",
+  }, {
+    // 목표 64(0.6.0 3b): 카드 밖 섹션 제목 줄 SectionHeader 를 PageHeader 다음에 더한다.
+    name: 'SectionHeader', kind: 'component', purpose: '카드 밖 페이지 섹션의 제목·보조 설명·섹션 동작을 한 줄로 두고 섹션을 그 제목 이름으로 묶는다.',
+    import: "import { SectionHeader } from '@s2life/ui';",
   }, {
     name: 'Carousel', kind: 'component', purpose: '배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.',
     import: "import { Carousel } from '@s2life/ui';",

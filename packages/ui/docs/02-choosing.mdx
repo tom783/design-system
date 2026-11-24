@@ -62,6 +62,12 @@ UI의 뜻 한 줄은 Tooltip, 새 기능 알림은 Hint, 요청한 단계 안내
 
 <div className="intent-grid"><Intent name="FormActionBar" /><Intent name="DialogFooter" /><Intent name="BulkActionBar" /></div>
 
+## PageHeader·SectionHeader·CardHeader
+
+제목은 세 층입니다. 페이지 맨 위 h1 하나는 PageHeader, 카드 밖에서 페이지를 섹션으로 나누는 h2는 SectionHeader, 카드 안 제목은 CardHeader를 고릅니다. 카드 하나만 담는 섹션은 SectionHeader 없이 CardHeader만 씁니다. 섹션의 '전체 보기'·'CSV 내보내기'·기간 선택은 SectionHeader 오른끝 한 묶음에 두고, 주요 버튼은 PageHeader에 둡니다. 여백과 좁은 폭 규칙은 <DesignLink section="24.6">DESIGN.md §24.6</DesignLink>를 확인하세요.
+
+<div className="intent-grid"><Intent name="PageHeader" /><Intent name="SectionHeader" /><Intent name="Card" /></div>
+
 ## DatePicker와 네이티브 날짜 입력
 
 업무 날짜·기간 필터는 DatePicker를 우선하고, 네이티브 날짜 입력이 꼭 필요한 경우에만 `<input type="date">`의 문자열 value를 사용합니다.

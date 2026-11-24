@@ -25,6 +25,7 @@
 @import "./components/media-viewer/media-viewer.css";
 @import "./components/carousel/carousel.css";
 @import "./components/app-shell/app-shell.css";
+@import "./components/section-header/section-header.css";
 @import "./components/pagination/pagination.css";
 @import "./components/sheet/sheet.css";
 @import "./components/file-upload/file-upload.css";

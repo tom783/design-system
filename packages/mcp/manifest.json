@@ -4927,6 +4927,10 @@
         {
           "text": "상세 화면은 그 레코드의 주요 행동(확정·취소·편집)을 actions에 둔다. 카드 아래·페이지 끝에 따로 두지 않는다.",
           "source": "24.5"
+        },
+        {
+          "text": "페이지 안 섹션 제목은 SectionHeader(h2), 카드 안 제목은 CardHeader다. PageHeader는 페이지 맨 위 h1 하나다.",
+          "source": "24.6"
         }
       ],
       "related": [
@@ -4976,6 +4980,133 @@
         "page-header-description",
         "page-header-status",
         "page-header-title"
+      ]
+    },
+    {
+      "name": "SectionHeader",
+      "category": "layout",
+      "purpose": "카드 밖 페이지 섹션의 제목·보조 설명·섹션 동작을 한 줄로 두고 섹션을 그 제목 이름으로 묶는다.",
+      "useWhen": [
+        "한 페이지에 섹션이 둘 이상이고, 섹션이 카드 여러 개·표·지표 묶음을 담을 때",
+        "섹션 제목 옆에 전체 보기·내보내기·기간 선택을 둘 때"
+      ],
+      "dont": [
+        "h2와 flex div로 섹션 머리를 직접 만들지 마라",
+        "카드 하나뿐인 섹션은 CardHeader를 쓴다",
+        "주요(primary) 버튼을 넣지 마라. 주요 행동은 PageHeader actions다",
+        "섹션 동작을 표 위 별도 줄로 빼지 마라",
+        "섹션 제목과 같은 말을 바로 아래 레이블·legend로 반복하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "children이 섹션 내용이다. section과 제목의 aria-labelledby, 머리에서 내용까지 12px를 부품이 갖는다.",
+          "source": "24.6"
+        },
+        {
+          "text": "페이지 배치 gap 24 안에 둔다. 페이지 머리 바로 아래 첫 섹션은 제목까지 24px, 다음 섹션은 앞 섹션 끝에서 32px다.",
+          "source": "24.6"
+        },
+        {
+          "text": "title은 h2이고 섹션 안의 섹션이면 as=\"h3\"다. count는 숫자만 준다(괄호·개 없이). description은 한두 줄이다.",
+          "source": "24.6"
+        },
+        {
+          "text": "actions는 label·kind(link·button)·href·onSelect·icon 데이터다. control 포함 2개까지 줄에, 나머지는 ⋯ 메뉴다.",
+          "source": "24.6"
+        },
+        {
+          "text": "control에는 기간 SegmentedControl size=\"sm\" 하나를 넣고 aria-label에 섹션 이름을 넣는다.",
+          "source": "24.6"
+        },
+        {
+          "text": "동작 이름은 제목 + label로 읽힌다(최근 출고 전체 보기). label에 섹션 이름을 다시 쓰지 않는다.",
+          "source": "24.6"
+        },
+        {
+          "text": "머리 폭 480px 미만에서 다 들어가지 않으면 링크형 하나(control이 있으면 control) + ⋯ 메뉴로 접힌다.",
+          "source": "24.6"
+        },
+        {
+          "text": "층은 PageHeader(h1) > SectionHeader(카드 밖) > CardHeader(카드 안)다. 구분선을 넣지 않는다.",
+          "source": "24.6"
+        }
+      ],
+      "related": [
+        "PageHeader",
+        "Card",
+        "SegmentedControl",
+        "DataTable",
+        "StatTile"
+      ],
+      "keywords": [
+        "섹션 제목",
+        "섹션 머리",
+        "섹션 헤더",
+        "섹션 제목 줄",
+        "섹션 구분",
+        "소제목",
+        "섹션 동작",
+        "전체 보기",
+        "section header",
+        "section title",
+        "section heading"
+      ],
+      "source": "components/section-header/section-header.tsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "doc": "섹션 제목. 섹션의 접근성 이름이고 동작 이름 앞에 붙는다."
+        },
+        {
+          "name": "as",
+          "type": "\"h2\" | \"h3\"",
+          "doc": "제목 수준. 기본 h2 — 섹션 안의 섹션이면 h3. 크기는 같다."
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "doc": "제목 옆 개수(숫자만, 괄호·'개' 없이). 고정폭 숫자·보조 글자색."
+        },
+        {
+          "name": "description",
+          "type": "ReactNode",
+          "doc": "제목 아래 보조 설명(한두 줄)."
+        },
+        {
+          "name": "control",
+          "type": "ReactNode",
+          "doc": "값을 바꾸는 컨트롤 하나(기간 SegmentedControl size=\"sm\"). 동작 2개 중 하나로 세고 좁은 폭에서도 접지 않는다."
+        },
+        {
+          "name": "actions",
+          "type": "readonly SectionHeaderAction[]",
+          "doc": "섹션 동작. control 과 합쳐 2개까지 줄에, 나머지는 ⋯ 메뉴."
+        }
+      ],
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'title'>"
+      ],
+      "slots": [
+        "button",
+        "dropdown-menu-content",
+        "dropdown-menu-destructive-icon",
+        "dropdown-menu-item",
+        "dropdown-menu-trigger",
+        "section-header",
+        "section-header-actions",
+        "section-header-button",
+        "section-header-compact",
+        "section-header-control",
+        "section-header-count",
+        "section-header-description",
+        "section-header-full",
+        "section-header-head",
+        "section-header-link",
+        "section-header-more",
+        "section-header-row",
+        "section-header-title"
       ]
     },
     {
@@ -7098,6 +7229,10 @@
         {
           "text": "카드 제목과 같은 말을 안의 Field 라벨로 반복하지 않는다. 필드가 하나뿐이면 CardHeader 없이 Field 라벨만 둔다.",
           "source": "24.5"
+        },
+        {
+          "text": "카드 밖 섹션 제목은 SectionHeader다. 카드 하나만 담는 섹션은 SectionHeader 없이 CardHeader만 쓴다.",
+          "source": "24.6"
         }
       ],
       "related": [

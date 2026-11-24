@@ -13,7 +13,8 @@ const CASES = 100
   + 4 // 목표 49 FilterBar(한국어 3·영어 1)
   + 4 // 목표 49 BulkActionBar(한국어 3·영어 1)
   + 5 // 목표 49 설명 목록(DescriptionList)
-  + 10; // 목표 57 FormActionBar 5(한국어 4·영어 1)·DataTable 합계 행 4(한국어 3·영어 1)·DescriptionList 금액 내역 1
+  + 10 // 목표 57 FormActionBar 5(한국어 4·영어 1)·DataTable 합계 행 4(한국어 3·영어 1)·DescriptionList 금액 내역 1
+  + 5; // 목표 64 섹션 제목 줄(SectionHeader, 한국어 4·영어 1)
 test('정답 세트는 100문항(+부품 증가분)·한국어 위주·질의마다 정답 하나이며 선택 가능한 부품을 가리킨다', () => {
   assert.equal(golden.cases.length, CASES);
   assert.equal(new Set(golden.cases.map(item => item.query)).size, CASES, '같은 질의가 두 번 들어가면 정확도가 부풀려진다');

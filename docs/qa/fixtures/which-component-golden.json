@@ -1,6 +1,6 @@
 {
   "description": "which_component 정답 세트(R49). 실제 요청 문장의 핵심 100문항과 정답 부품 하나. 질의에 컴포넌트 이름을 넣지 않는다(이름 일치 +1000점이 정확도를 부풀린다). 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. baseline 은 이 세트를 만든 날 현재 matchComponents 의 실측이며, 그 아래로 떨어지면 docs/qa/which-component-golden.test.mjs 가 실패한다. 올라가면 baseline 을 함께 올린다.",
-  "baseline": { "measuredAt": "2026-11-24", "top1": 80, "top3": 100 },
+  "baseline": { "measuredAt": "2026-11-24", "top1": 85, "top3": 105 },
   "cases": [
     { "query": "주문 목록을 표로 보여주고 열 기준으로 정렬하고 싶어", "expected": "DataTable", "lang": "ko" },
     { "query": "매장 카드 목록을 불러오는 동안 카드 모양 자리 표시", "expected": "CardSkeleton", "lang": "ko" },
@@ -86,6 +86,11 @@
     { "query": "현재 보고 있는 메뉴를 강조하는 사이드 내비게이션", "expected": "SideNav", "lang": "ko" },
     { "query": "화면 맨 위에 페이지 제목과 등록 버튼 배치", "expected": "PageHeader", "lang": "ko" },
     { "query": "page title area with a primary create action at the top", "expected": "PageHeader", "lang": "en" },
+    { "query": "대시보드 섹션마다 제목과 전체 보기 링크를 한 줄로", "expected": "SectionHeader", "lang": "ko" },
+    { "query": "최근 출고 표 위에 섹션 제목과 CSV 내보내기 버튼", "expected": "SectionHeader", "lang": "ko" },
+    { "query": "상세 화면 품목 섹션 제목 옆에 개수 표시", "expected": "SectionHeader", "lang": "ko" },
+    { "query": "카드 밖에서 페이지를 여러 구역으로 나누는 소제목", "expected": "SectionHeader", "lang": "ko" },
+    { "query": "dashboard section title with a view all link", "expected": "SectionHeader", "lang": "en" },
     { "query": "폼 하단 저장 버튼", "expected": "Button", "lang": "ko" },
     { "query": "아이콘만 있는 새로고침 버튼", "expected": "Button", "lang": "ko" },
     { "query": "저장 완료를 화면 구석에 잠깐 알리기", "expected": "Toaster", "lang": "ko" },

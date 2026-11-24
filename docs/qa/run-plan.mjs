@@ -50,6 +50,7 @@ export const HARNESSES = [
   ['list-toolbar-render-verify.mjs', '목록 툴바 필터 바·일괄 작업 바 매트릭스'],
   ['form-row-render-verify.mjs', '같은 줄 정렬·등록 화면 F98·(b)'],
   ['form-summary-render-verify.mjs', '폼 하단 고정 줄·표 합계 행 매트릭스'],
+  ['section-header-render-verify.mjs', '섹션 제목 줄·여백·동작 한 묶음·좁은 폭 접힘 매트릭스'],
   ['create-render-verify.mjs', '등록·Enter 계약·목록 왕복'],
   ['docs-render-verify.mjs', '사용 문서·매니페스트 일치'],
 ];

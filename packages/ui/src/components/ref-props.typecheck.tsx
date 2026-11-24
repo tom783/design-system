@@ -17,6 +17,7 @@ import { DropdownMenuItem, DropdownMenuShortcut } from './dropdown-menu';
 import { FilterBar } from './filter-bar';
 import { BulkActionBar } from './bulk-action-bar';
 import { FormActionBar } from './form-action-bar';
+import { SectionHeader } from './section-header';
 
 const button = React.createRef<HTMLButtonElement>();
 const input = React.createRef<HTMLInputElement>();
@@ -51,6 +52,7 @@ void [
   <FilterBar ref={div} />,
   <BulkActionBar ref={div} selectedCount={0} />,
   <FormActionBar ref={div} />,
+  <SectionHeader ref={element} title="최근 출고" />,
   <DropdownMenuShortcut ref={span}>⌘C</DropdownMenuShortcut>,
 ];
 
