@@ -1,4 +1,4 @@
-/* 섹션 제목 줄 — DESIGN.md §24.6 · 규칙 표 S-1~S-11 r1(Figma 203:8~11). 새 토큰 없이 기존 토큰만 쓴다(S-11).
+/* 섹션 제목 줄 — DESIGN.md §24.6 · 규칙 표 S-1~S-11 r1.1(Figma 203:8~11 · 첫 구현 검수 impl-review-2). 새 토큰 없이 기존 토큰만 쓴다(S-11).
    자식 결합자(>)만 쓴다. 섹션 안에 섹션이 들어가도 바깥 규칙이 새지 않는다. */
 @layer components {
   /* 머리 → 내용 12(S-7, SD-2 A). 바깥 여백은 없다 — 페이지 배치의 gap 24(§24.3)가 섹션 사이를 맡는다. */
@@ -19,21 +19,23 @@
     container: ds-section-header / inline-size;
     min-width: 0;
   }
-  /* 왼쪽 제목(+개수) · 오른쪽 동작 묶음, 사이 최소 16(S-2 · 기간 선택은 제목과 ≥ 16). */
-  .ds-section-header-head > .ds-section-header-row {
-    /* 동작 높이: sm 버튼·SegmentedControl sm 32, ⋯ 이 보이면 38(아래 규칙). 28 줄 밖으로 넘치는 양을 정한다. */
+  /* 배치는 격자 한 장이다 — 좁은 그릇에서 control 을 제목 아래 줄로 옮기려면 control 이 동작 묶음과 같은 높이의 형제여야 한다.
+     넓은 그릇: [제목(+개수)] [control] [동작] / [설명 — 머리 전체 폭]. 칸 사이 여백은 margin 으로 준다 — 빈 control 칸에도
+     column-gap 이 남아 간격이 두 번 생기지 않게. 제목 ↔ 동작·control 최소 16(S-2), control ↔ 동작 8(S-6). */
+  .ds-section-header-head > .ds-section-header-layout {
+    /* 동작 높이: sm 버튼 32, ⋯ 이 보이면 38(아래 규칙). 28 줄 밖으로 넘치는 양을 정한다. */
     --ds-section-header-actions-h: var(--control-h-sm);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-16);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "title control actions" "description description description";
+    align-items: start;
     min-width: 0;
   }
-  .ds-section-header-head[data-more="full"] > .ds-section-header-row { --ds-section-header-actions-h: var(--control-h-md); }
+  .ds-section-header-head[data-more="full"] > .ds-section-header-layout { --ds-section-header-actions-h: var(--control-h-md); }
 
   /* 제목 h2(as 로 h3) title-sm 20/28 600, 줄바꿈 허용(S-3). */
-  .ds-section-header-row > .ds-section-header-title {
-    flex: 1 1 auto;
+  .ds-section-header-layout > .ds-section-header-title {
+    grid-area: title;
     min-width: 0;
     margin: 0;
     color: var(--text-primary);
@@ -53,7 +55,8 @@
     white-space: nowrap;
   }
   /* 설명: body-sm 14/20 보조 글자색, 제목 아래 4(S-3). 폭은 머리 전체 — 동작 아래까지 쓴다. */
-  .ds-section-header-head > .ds-section-header-description {
+  .ds-section-header-layout > .ds-section-header-description {
+    grid-area: description;
     margin-block-start: var(--space-4);
     color: var(--text-secondary);
     font-size: var(--text-body-sm);
@@ -61,24 +64,37 @@
     font-weight: var(--text-body-sm-weight);
   }
 
-  /* 동작 묶음: 높이 = 동작 높이(32 · ⋯ 38), 위로 (높이 − 28)/2 끌어올려 세로 가운데 = 제목 첫 줄(28) 가운데다(S-6).
+  /* control·동작 묶음: 높이 = 동작 높이(32 · ⋯ 38), 위로 (높이 − 28)/2 끌어올려 세로 가운데 = 제목 첫 줄(28) 가운데다(S-6).
      설명이 있어도, 제목이 두 줄이어도 첫 줄 기준이다. 동작 간격 8.
      - 설명이 없으면 아래로 넘친 만큼(2 · 5) 줄이 길어져 동작 아래 → 내용도 12 다(Figma 203:11). 제목이 두 줄이면 제목이 더
        아래라 그대로다 — 조건 없이 margin 상자로 정해진다.
      - 설명이 있으면 아래도 같은 만큼 당겨 설명이 제목 아래 4 에 선다(동작은 설명 줄 위 4px 틈으로 넘친다, Figma 와 같다). */
-  .ds-section-header-row > .ds-section-header-actions {
+  .ds-section-header-layout > .ds-section-header-control {
+    grid-area: control;
+    display: flex;
+    align-items: center;
+    /* control 은 기간 SegmentedControl sm(32) 하나다(S-5). md 를 넣으면 같은 가운데로 위아래 3씩 더 넘친다. */
+    height: var(--control-h-sm);
+    margin-block-start: calc((var(--text-title-sm-lh) - var(--control-h-sm)) / 2);
+    margin-inline-start: var(--space-16);
+  }
+  .ds-section-header-layout > .ds-section-header-actions {
+    grid-area: actions;
     position: relative;
     display: flex;
-    flex: none;
     align-items: center;
     gap: var(--space-8);
     height: var(--ds-section-header-actions-h);
     margin-block-start: calc((var(--text-title-sm-lh) - var(--ds-section-header-actions-h)) / 2);
+    margin-inline-start: var(--space-16);
   }
-  .ds-section-header-head[data-description] > .ds-section-header-row > .ds-section-header-actions {
+  .ds-section-header-layout > .ds-section-header-control + .ds-section-header-actions { margin-inline-start: var(--space-8); }
+  .ds-section-header-head[data-description] > .ds-section-header-layout > .ds-section-header-control {
+    margin-block-end: calc((var(--text-title-sm-lh) - var(--control-h-sm)) / 2);
+  }
+  .ds-section-header-head[data-description] > .ds-section-header-layout > .ds-section-header-actions {
     margin-block-end: calc((var(--text-title-sm-lh) - var(--ds-section-header-actions-h)) / 2);
   }
-  .ds-section-header-actions > .ds-section-header-control { display: flex; align-items: center; }
   .ds-section-header-actions > .ds-section-header-group {
     display: flex;
     align-items: center;
@@ -87,11 +103,32 @@
   }
   .ds-section-header-actions > .ds-section-header-compact { display: none; }
 
-  /* 그릇 < 480 에서 다 들어가지 않으면 링크형 1개(또는 기간 선택) + ⋯(SD-3 A). 서버 첫 그림은 접힌 쪽이고, 실제로
-     재서 들어가면(data-fit=full) 그대로 둔다. 숨긴 전체 묶음은 폭을 재야 해서 display:none 이 아니라 보이지 않게만
-     둔다(visibility:hidden 은 Tab·화면 낭독기에서도 빠진다). 오른쪽 끝에 붙여 가로 넘침을 만들지 않는다. */
   @container ds-section-header (width < 480px) {
-    .ds-section-header-head[data-compact]:not([data-fit="full"]) > .ds-section-header-row { --ds-section-header-actions-h: var(--control-h-md); }
+    /* 그릇 < 480 이고 control 이 있으면 control 을 제목(과 설명) 아래 줄로 내린다(r1.1): 위 8, 그릇 가득 폭, 세그먼트 균등.
+       제목 줄에는 제목과 링크·버튼만 남아 짧은 제목이 두 단어 사이에서 끊기지 않는다(impl-review-2 판단 2). 동작은 제목 줄 아래로
+       넘치지 않게 위아래를 함께 당긴다 — control 이 제목 아래 8 에 선다. SegmentedControl 자체 폭(sm)은 바꾸지 않는다. */
+    .ds-section-header-head[data-control] > .ds-section-header-layout {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: "title actions" "description description" "control control";
+    }
+    .ds-section-header-head[data-control] > .ds-section-header-layout > .ds-section-header-control {
+      display: flex;
+      height: auto;
+      margin: var(--space-8) 0 0;
+    }
+    .ds-section-header-head[data-control] > .ds-section-header-layout > .ds-section-header-control > * { flex: 1 1 auto; min-width: 0; }
+    /* SegmentedControl fullWidth 와 같은 규칙 — 앱이 넘긴 노드의 prop 을 바꾸지 않고 data-slot 으로 덮어쓴다(AGENTS 상시 규칙 8). */
+    .ds-section-header-head[data-control] > .ds-section-header-layout > .ds-section-header-control > [data-slot="segmented-control"] { display: flex; width: 100%; }
+    .ds-section-header-head[data-control] > .ds-section-header-layout > .ds-section-header-control > [data-slot="segmented-control"] > [data-slot="segmented-control-item"] { flex: 1 1 0; }
+    .ds-section-header-head[data-control] > .ds-section-header-layout > .ds-section-header-actions {
+      margin-inline-start: var(--space-16);
+      margin-block-end: calc((var(--text-title-sm-lh) - var(--ds-section-header-actions-h)) / 2);
+    }
+
+    /* 다 들어가지 않으면 링크형 1개(control 이 있으면 링크·버튼 모두 ⋯) + ⋯(SD-3 A · 판단 1). 서버 첫 그림은 접힌 쪽이고,
+       실제로 재서 들어가면(data-fit=full) 그대로 둔다. 숨긴 전체 묶음은 폭을 재야 해서 display:none 이 아니라 보이지 않게만
+       둔다(visibility:hidden 은 Tab·화면 낭독기에서도 빠진다). 오른쪽 끝에 붙여 가로 넘침을 만들지 않는다. */
+    .ds-section-header-head[data-compact]:not([data-fit="full"]) > .ds-section-header-layout { --ds-section-header-actions-h: var(--control-h-md); }
     .ds-section-header-head[data-compact]:not([data-fit="full"]) .ds-section-header-actions > .ds-section-header-full {
       position: absolute;
       inset-block-start: 0;

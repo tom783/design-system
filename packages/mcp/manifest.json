@@ -5023,7 +5023,7 @@
           "source": "24.6"
         },
         {
-          "text": "머리 폭 480px 미만에서 다 들어가지 않으면 링크형 하나(control이 있으면 control) + ⋯ 메뉴로 접힌다.",
+          "text": "머리 폭 480px 미만이면 control은 제목 아래 줄 가득 폭이다. 링크·버튼이 넘치면 링크형 하나(control이 있으면 없음) + ⋯ 메뉴다.",
           "source": "24.6"
         },
         {
@@ -5077,7 +5077,7 @@
         {
           "name": "control",
           "type": "ReactNode",
-          "doc": "값을 바꾸는 컨트롤 하나(기간 SegmentedControl size=\"sm\"). 동작 2개 중 하나로 세고 좁은 폭에서도 접지 않는다."
+          "doc": "값을 바꾸는 컨트롤 하나(기간 SegmentedControl size=\"sm\"). 동작 2개 중 하나로 센다. 그릇 480 미만에서는 제목 아래 줄 가득 폭."
         },
         {
           "name": "actions",
@@ -5103,9 +5103,9 @@
         "section-header-description",
         "section-header-full",
         "section-header-head",
+        "section-header-layout",
         "section-header-link",
         "section-header-more",
-        "section-header-row",
         "section-header-title"
       ]
     },

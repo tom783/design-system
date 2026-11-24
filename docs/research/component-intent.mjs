@@ -100,10 +100,10 @@ const intents = [
       'actions는 label·kind(link·button)·href·onSelect·icon 데이터다. control 포함 2개까지 줄에, 나머지는 ⋯ 메뉴다.',
       'control에는 기간 SegmentedControl size="sm" 하나를 넣고 aria-label에 섹션 이름을 넣는다.',
       '동작 이름은 제목 + label로 읽힌다(최근 출고 전체 보기). label에 섹션 이름을 다시 쓰지 않는다.',
-      '머리 폭 480px 미만에서 다 들어가지 않으면 링크형 하나(control이 있으면 control) + ⋯ 메뉴로 접힌다.',
+      '머리 폭 480px 미만이면 control은 제목 아래 줄 가득 폭이다. 링크·버튼이 넘치면 링크형 하나(control이 있으면 없음) + ⋯ 메뉴다.',
       '층은 PageHeader(h1) > SectionHeader(카드 밖) > CardHeader(카드 안)다. 구분선을 넣지 않는다.'
     ],['title','as','count','description','control','actions'],
-    ['section-header','section-header-head','section-header-row','section-header-title','section-header-count','section-header-description',
+    ['section-header','section-header-head','section-header-layout','section-header-title','section-header-count','section-header-description',
       'section-header-actions','section-header-control','section-header-full','section-header-compact','section-header-link','section-header-button','section-header-more'],
     ['PageHeader','Card','SegmentedControl','DataTable','StatTile'],
     ['섹션 제목','섹션 머리','섹션 헤더','섹션 제목 줄','섹션 구분','소제목','섹션 동작','전체 보기','section header','section title','section heading']),

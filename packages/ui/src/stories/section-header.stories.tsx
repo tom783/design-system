@@ -10,7 +10,7 @@ import { SectionHeaderExample } from '../../docs/examples/section-header';
 import primarySource from '../../docs/examples/section-header.tsx?raw';
 
 /**
- * 섹션 제목 줄 — 디자인 총괄 규칙 표 S-1~S-11 r1(DESIGN.md §24.6, Figma 203:8~11).
+ * 섹션 제목 줄 — 디자인 총괄 규칙 표 S-1~S-11 r1.1(DESIGN.md §24.6, Figma 203:8~11, 첫 구현 검수 impl-review-2).
  * 추천 조합(SD-1 A 머리 오른끝 한 묶음 · SD-2 A 위 32/아래 12 · SD-3 A 넘치면 링크 1개 + ⋯)을 Figma 203:11 과 같은 물류 데이터로 그린다.
  * 하네스 section-header-render-verify 가 '추천 조합' 두 화면을 1440·1024·768·390 × 라이트·다크로 열어 수치를 단정하고 찍는다.
  * 데이터는 가상의 물류 출고 데이터다(실제 회사·인물 아님).
@@ -174,13 +174,21 @@ export const 넘침: Story = {
     await waitFor(() => expect(c.getByRole('button', { name: '최근 출고 더 보기' })).toHaveFocus());
   }),
 };
-/** 좁은 그릇(294 = 390 화면의 본문) — 다 들어가지 않으면 링크형 1개 + ⋯ 안에 나머지(SD-3 A). 기간 선택은 들어가면 그대로. */
+/**
+ * 좁은 그릇(294 = 390 화면의 본문) — 다 들어가지 않으면 링크형 1개 + ⋯ 안에 나머지(SD-3 A).
+ * 기간 선택(control)은 제목 아래 줄 가득 폭(위 8, 세그먼트 균등)으로 내려가고 제목은 한 줄이다(r1.1). control 이 있으면
+ * 제목 줄의 링크·버튼은 들어가면 그대로(창고별 출고), 넘치면 모두 ⋯(창고별 반품 사유 추이 · 판단 1).
+ */
 export const 좁은폭: Story = {
   name: '좁은 폭 294',
   render: () => <div style={{ width: 294 }} className="flex flex-col gap-6">
     <SectionHeader title="오늘 핵심 지표" data-section="metrics"
       control={<SegmentedControl size="sm" aria-label="오늘 핵심 지표 조회 기간" options={PERIODS} defaultValue="today" />}><p>지표</p></SectionHeader>
     <SectionHeader title="최근 출고" description="출고 예정일이 최근인 다섯 건입니다." actions={recentActions} data-section="recent"><p>최근 출고 표</p></SectionHeader>
+    <SectionHeader title="창고별 출고" data-section="warehouse" actions={[{ kind: 'link', label: '전체 보기', href: '#warehouses' }]}
+      control={<SegmentedControl size="sm" aria-label="창고별 출고 조회 기간" options={PERIODS} defaultValue="week" />}><p>창고별 표</p></SectionHeader>
+    <SectionHeader title="창고별 반품 사유 추이" data-section="returns" actions={[{ kind: 'link', label: '전체 보기', href: '#returns' }, recentActions[1]!]}
+      control={<SegmentedControl size="sm" aria-label="창고별 반품 사유 추이 조회 기간" options={PERIODS} defaultValue="month" />}><p>반품 사유 차트</p></SectionHeader>
   </div>,
   play: outsideDocs(async root => {
     const c = within(root);
@@ -188,6 +196,9 @@ export const 좁은폭: Story = {
     await expect(c.getByRole('link', { name: '최근 출고 전체 보기' })).toBeVisible();
     await expect(c.queryByRole('button', { name: '최근 출고 CSV 내보내기' })).toBeNull();
     await expect(c.getByRole('radiogroup', { name: '오늘 핵심 지표 조회 기간' })).toBeVisible();
+    await expect(c.getByRole('link', { name: '창고별 출고 전체 보기' })).toBeVisible();
+    await waitFor(() => expect(c.getByRole('button', { name: '창고별 반품 사유 추이 더 보기' })).toBeVisible());
+    await expect(c.queryByRole('link', { name: '창고별 반품 사유 추이 전체 보기' })).toBeNull();
     await userEvent.click(c.getByRole('button', { name: '최근 출고 더 보기' }));
     const menu = await within(root.ownerDocument.body).findByRole('menu');
     await expect(within(menu).getByRole('menuitem', { name: 'CSV 내보내기' })).toBeVisible();

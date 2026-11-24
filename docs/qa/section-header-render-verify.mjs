@@ -1,4 +1,4 @@
-// 목표 64(0.6.0 3b) — 섹션 제목 줄(SectionHeader · 규칙 표 S-1~S-11 r1 · Figma 203:8~11).
+// 목표 64(0.6.0 3b) — 섹션 제목 줄(SectionHeader · 규칙 표 S-1~S-11 r1.1 · Figma 203:8~11 · 첫 구현 검수 impl-review-2).
 // 디자인 총괄 자가 점검 목록을 수치로 단정한다: 라이트·다크 × 1440·1024·768·390 ×
 //   Components/SectionHeader 추천 조합 · 대시보드(기간 선택 섹션 + 링크·버튼 섹션) · 출고 상세(제목 + 개수)
 // 동작 0·1·2·넘침(⋯)·좁은 폭은 같은 파일의 작은 스토리로 본다.
@@ -72,8 +72,9 @@ const HELPERS = `
     const count = head.querySelector('[data-slot="section-header-count"]');
     const desc = head.querySelector('[data-slot="section-header-description"]');
     const content = root.children[1];
-    const actionEls = [...head.querySelectorAll('[data-slot="section-header-actions"] a, [data-slot="section-header-actions"] button, [data-slot="section-header-actions"] [role="radiogroup"]')]
-      .filter(el => visible(el) && !el.closest('[role="radiogroup"] button') && !(el.matches('button') && el.closest('[role="radiogroup"]')));
+    // 링크·버튼(제목 줄 오른끝)과 control(기간 선택 — 넓으면 같은 줄, 그릇 < 480 이면 제목 아래 줄)을 따로 잰다.
+    const actionEls = [...head.querySelectorAll('[data-slot="section-header-actions"] a, [data-slot="section-header-actions"] button')].filter(visible);
+    const controlEl = head.querySelector('[data-slot="section-header-control"] > *');
     const ts = getComputedStyle(title);
     const actions = actionEls.map(el => ({ ...box(el), name: el.getAttribute('aria-label') ?? el.textContent.trim(),
       role: el.getAttribute('role') ?? el.tagName.toLowerCase(), primary: same(rgb(getComputedStyle(el).backgroundColor), token('--action-primary-bg')) && getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)' }));
@@ -86,6 +87,8 @@ const HELPERS = `
         numeric: getComputedStyle(count).fontVariantNumeric, secondary: same(rgb(getComputedStyle(count).color), token('--text-secondary')) } : null,
       desc: desc ? { ...box(desc), font: [getComputedStyle(desc).fontSize, getComputedStyle(desc).lineHeight], secondary: same(rgb(getComputedStyle(desc).color), token('--text-secondary')) } : null,
       head: box(head), root: box(root), content: box(content), actions,
+      control: controlEl ? { ...box(controlEl), name: controlEl.getAttribute('aria-label'),
+        items: [...controlEl.querySelectorAll('[data-slot="segmented-control-item"]')].map(el => el.getBoundingClientRect().width) } : null,
       borders: [rs.borderTopWidth, rs.borderBottomWidth, hs.borderTopWidth, hs.borderBottomWidth], shadow: rs.boxShadow,
       link: (() => { const l = [...head.querySelectorAll('[data-slot="section-header-link"]')].find(visible); return l ? { color: same(rgb(getComputedStyle(l).color), token('--text-link')) } : null; })(),
     };
@@ -108,12 +111,21 @@ function assertSection(s, label) {
     near(s.count.left - s.titleTextRight, 8, `${label}: 개수는 제목 옆 8(S-4)`);
   }
   const lineCenter = s.title.top + 14;
-  for (const a of s.actions) {
+  // control 이 제목 줄에 있으면 동작 묶음의 하나로 본다. 제목 아래로 내려갔으면(그릇 < 480, r1.1) 따로 단정한다.
+  const controlBelow = !!s.control && s.control.top >= s.title.bottom - 0.5;
+  const row = [...s.actions, ...(s.control && !controlBelow ? [s.control] : [])];
+  if (controlBelow) {
+    near(s.control.top - Math.max(s.title.bottom, s.desc?.bottom ?? 0), 8, `${label}: control 은 제목(·설명) 아래 8(r1.1)`);
+    near(s.control.left, s.head.left, `${label}: control 왼끝 = 그릇 왼끝`); near(s.control.right, s.head.right, `${label}: control 오른끝 = 그릇 오른끝(가득 폭)`);
+    assert.ok(Math.max(...s.control.items) - Math.min(...s.control.items) <= 1, `${label}: 세그먼트 균등 ${s.control.items.join('/')}`);
+    assert.equal(s.titleLines, 1, `${label}: 제목 한 줄 유지(r1.1)`);
+  }
+  for (const a of row) {
     near((a.top + a.bottom) / 2, lineCenter, `${label}: '${a.name}' 세로 가운데 = 제목 첫 줄(28) 가운데(S-6)`);
     assert.ok(!a.primary, `${label}: 주요 버튼 0(S-5)`);
   }
-  if (s.actions.length) {
-    const sorted = [...s.actions].sort((x, y) => x.left - y.left);
+  if (row.length) {
+    const sorted = [...row].sort((x, y) => x.left - y.left);
     for (let i = 1; i < sorted.length; i++) near(sorted[i].left - sorted[i - 1].right, 8, `${label}: 동작 간격 8`);
     near(sorted.at(-1).right, s.head.right, `${label}: 동작 묶음 = 머리 오른끝(SD-1 A)`);
     assert.ok(sorted[0].left - Math.max(s.title.left, s.titleTextRight ?? 0, s.count?.right ?? 0) >= 16 - 0.5, `${label}: 제목과 동작 ≥ 16(S-2)`);
@@ -121,11 +133,13 @@ function assertSection(s, label) {
     assert.ok(sorted.every(a => Math.abs((a.top + a.bottom) / 2 - lineCenter) <= 0.5), `${label}: 동작은 한 줄`);
   }
   // 머리 → 내용 12: 머리 = 제목·설명·동작 중 가장 아래.
-  const headBottom = Math.max(s.title.bottom, s.desc?.bottom ?? 0, ...s.actions.map(a => a.bottom));
+  const headBottom = Math.max(s.title.bottom, s.desc?.bottom ?? 0, ...s.actions.map(a => a.bottom), s.control?.bottom ?? 0);
   near(s.content.top - headBottom, 12, `${label}: 머리 → 내용 12(S-7)`);
   assert.deepEqual(s.borders, ['0px', '0px', '0px', '0px'], `${label}: 구분선 없음(S-8)`); assert.equal(s.shadow, 'none');
-  return { headToContent: +(s.content.top - headBottom).toFixed(2), actionCenterDelta: s.actions.map(a => +(((a.top + a.bottom) / 2) - lineCenter).toFixed(2)),
-    actions: s.actions.map(a => `${a.name} ${a.width.toFixed(0)}×${a.height.toFixed(0)}`), descGap: s.desc ? +(s.desc.top - s.title.bottom).toFixed(2) : null,
+  return { headToContent: +(s.content.top - headBottom).toFixed(2), actionCenterDelta: row.map(a => +(((a.top + a.bottom) / 2) - lineCenter).toFixed(2)),
+    actions: row.map(a => `${a.name} ${a.width.toFixed(0)}×${a.height.toFixed(0)}`), descGap: s.desc ? +(s.desc.top - s.title.bottom).toFixed(2) : null,
+    control: s.control ? { below: controlBelow, gap: controlBelow ? +(s.control.top - Math.max(s.title.bottom, s.desc?.bottom ?? 0)).toFixed(2) : null,
+      width: +s.control.width.toFixed(2), head: +s.head.width.toFixed(2), items: s.control.items.map(w => +w.toFixed(1)), titleLines: s.titleLines } : null,
     countGap: s.count ? +(s.count.left - s.titleTextRight).toFixed(2) : null };
 }
 
@@ -146,8 +160,9 @@ try {
       near(m.recent.title.top - m.metrics.content.bottom, 32, '앞 섹션 끝 → 제목 32(S-7)');
       assert.equal(m.metrics.tag, 'h2'); assert.equal(m.recent.tag, 'h2');
       assert.ok(m.recent.link?.color, '링크형 동작 = text-link');
-      // 기간 선택은 들어가면 그대로(390 도).
-      assert.deepEqual(m.metrics.actions.map(x => x.name), ['오늘 핵심 지표 조회 기간'], '기간 선택은 접지 않는다');
+      // 기간 선택은 접지 않는다. 넓으면 제목 줄 오른끝, 그릇 < 480 이면 제목 아래 줄 가득 폭(r1.1 — assertSection 이 단정).
+      assert.equal(m.metrics.control?.name, '오늘 핵심 지표 조회 기간', '기간 선택은 접지 않는다');
+      assert.equal(m.metrics.control.top >= m.metrics.title.bottom, width < 480, '그릇 < 480 에서만 control 이 제목 아래 줄');
       if (width >= 480) {
         assert.deepEqual(m.recent.actions.map(x => x.name), ['최근 출고 전체 보기', '최근 출고 CSV 내보내기'], '넓은 폭: 링크 + 버튼 한 묶음');
         assert.equal(m.more, null, '넓은 폭에 ⋯ 없음');
@@ -193,16 +208,22 @@ try {
     assert.deepEqual(m.inline, ['최근 출고 전체 보기', '최근 출고 CSV 내보내기', '최근 출고 더 보기']);
     return m;
   });
-  await check('좁은 폭 294: 다 들어가면 그대로(기간 선택), 넘치면 링크 1개 + ⋯ · 메뉴에 CSV', async () => {
+  await check('좁은 폭 294: 넘치면 링크 1개 + ⋯ · control 은 제목 아래 줄 가득 폭 · control 이 있으면 링크·버튼은 들어가면 그대로, 넘치면 ⋯', async () => {
     await cdp('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
     const r = await open('components-sectionheader--좁은폭'); assert.equal(r.sbError, null);
     await frames();
-    const m = await inPage(`const metrics = document.querySelector('[data-section="metrics"] [data-slot="section-header-head"]'), recent = document.querySelector('[data-section="recent"] [data-slot="section-header-head"]');
-      return { metricsFit: metrics.dataset.fit ?? null, recentFit: recent.dataset.fit, recentWidth: recent.getBoundingClientRect().width,
-        visibleNames: [...recent.querySelectorAll('a, button')].filter(visible).map(el => el.getAttribute('aria-label')) };`);
-    assert.equal(m.recentFit, 'compact'); assert.deepEqual(m.visibleNames, ['최근 출고 전체 보기', '최근 출고 더 보기']);
+    const m = await inPage(`const head = name => document.querySelector('[data-section="' + name + '"] [data-slot="section-header-head"]');
+      const names = name => [...head(name).querySelectorAll('[data-slot="section-header-actions"] a, [data-slot="section-header-actions"] button')].filter(visible).map(el => el.getAttribute('aria-label'));
+      return { recentFit: head('recent').dataset.fit, recentWidth: head('recent').getBoundingClientRect().width, recent: names('recent'),
+        warehouseFit: head('warehouse').dataset.fit, warehouse: names('warehouse'), returnsFit: head('returns').dataset.fit, returns: names('returns'),
+        sections: ['metrics', 'warehouse', 'returns'].map(section) };`);
+    assert.equal(m.recentFit, 'compact'); assert.deepEqual(m.recent, ['최근 출고 전체 보기', '최근 출고 더 보기']);
     near(m.recentWidth, 294, '그릇 294');
-    return m;
+    assert.equal(m.warehouseFit, 'full'); assert.deepEqual(m.warehouse, ['창고별 출고 전체 보기'], 'control 이 있어도 링크가 들어가면 그대로');
+    assert.equal(m.returnsFit, 'compact'); assert.deepEqual(m.returns, ['창고별 반품 사유 추이 더 보기'], 'control 이 있고 넘치면 링크·버튼 모두 ⋯(판단 1)');
+    const measured = m.sections.map((s, i) => assertSection(s, ['기간 선택', '창고별 출고', '창고별 반품 사유 추이'][i]));
+    assert.ok(m.sections.every(s => s.control.top >= s.title.bottom), 'control 은 모두 제목 아래 줄');
+    return { recent: m.recent, warehouse: m.warehouse, returns: m.returns, measured };
   });
   await check('넓어지면 다시 펼친다(그릇 폭을 다시 잰다)', async () => {
     await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
