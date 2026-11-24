@@ -65,14 +65,14 @@ const intents = [
     '조회 중에는 disabled를 주고 표는 state="loading"으로 둔다. 진행 표시는 표 스켈레톤이 맡는다. 새 응답 전까지 기존 선택은 유지된다.',
     '0건이면 숨고 한 페이지면 범위만 표시한다. 좁은 폭에서는 이전·다음과 현재 위치를 표시한다.',
     'URL 동기화와 서버 조회는 앱이 맡는다. 여러 페이지 일괄 처리는 서버의 조건 전체 선택으로 설계한다.'
-  ],['page','pageSize','totalCount','onPageChange','pageSizeOptions','onPageSizeChange','disabled'],['pagination','pagination-range','pagination-controls','pagination-page','pagination-position','pagination-previous','pagination-next','pagination-size','pagination-pages','pagination-ellipsis'],['DataTable','Select','Button','EmptyState'],['페이지','페이징','페이지 이동','페이지 크기','몇 개씩']),
+  ],['page','pageSize','totalCount','onPageChange','pageSizeOptions','onPageSizeChange','disabled'],['pagination','pagination-range','pagination-controls','pagination-page','pagination-position','pagination-previous','pagination-next','pagination-size','pagination-pages','pagination-ellipsis'],['DataTable','Select','Button','EmptyState'],['페이지','페이징','페이지 이동','페이지 크기','몇 개씩','건씩','페이지 단위']),
   entry('AppShell','layout','사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',['제품의 공통 화면 틀을 구성할 때'],['본문 안에 main을 다시 넣지 마라'],'24',[
     'sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.',
     '본문·건너뛰기 링크와 여백(24px, 좁으면 16px)은 내장이다. 페이지 루트에 padding을 다시 주지 않는다. 화면 요소 사이는 gap 24px.',
     '본문은 기본 최대 폭 제한이 없다. 필요한 화면만 contentMaxWidth를 지정한다.',
     'narrowNavigation=drawer는 1024px 미만에서 메뉴 버튼·왼쪽 Sheet를 쓴다. 항목 선택 시 닫히며 기본은 rail이다.',
     '높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.'
-  ],['sidebar','header','children','contentMaxWidth','narrowNavigation'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀']),
+  ],['sidebar','header','children','contentMaxWidth','narrowNavigation'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀','전체 틀','메뉴와 본문']),
   entry('SideNav','navigation','브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.',['사이드바에 제품 메뉴를 배치할 때'],['출시 예정 항목에 이동 동작을 넣지 마라'],'24',[
     'SideNavGroup으로 묶고 SideNavItem에 icon·label을 준다. 현재 위치는 current로 표시한다.',
     '다른 링크 컴포넌트를 쓰면 SideNavItem의 asChild 안에 단일 링크를 넣는다.',
@@ -104,7 +104,7 @@ const intents = [
     rule("이미지에는 내용을 설명하는 alt를 준다.", "22.2"),
     rule("영상에 poster·captions를 제공하고 내장 재생 컨트롤을 쓴다.", "22.2"),
     rule("PiP를 금지할 영상에는 disablePictureInPicture를 준다.", "22.3")
-  ],['media','open','onOpenChange','mode','placement','title'],['media-viewer','media-viewer-stage','media-viewer-image','media-viewer-video','media-viewer-pip','media-viewer-close'],['Dialog','Thumbnail','Skeleton','ErrorState'],['이미지 확대','라이트박스','사진 크게','동영상 재생','영상 팝업','떠 있는 창','화면 속 화면','PiP','이미지 크게 보기','영상 보면서 작업']),
+  ],['media','open','onOpenChange','mode','placement','title'],['media-viewer','media-viewer-stage','media-viewer-image','media-viewer-video','media-viewer-pip','media-viewer-close'],['Dialog','Thumbnail','Skeleton','ErrorState'],['이미지 확대','라이트박스','사진 크게','동영상 재생','영상 팝업','떠 있는 창','화면 속 화면','PiP','이미지 크게 보기','영상 보면서 작업','확대']),
   entry('Collapsible','disclosure',"고급 설정 같은 내용을 항상 보이는 버튼으로 접고 펼친다.",['고급 설정 접기','패널을 접고 펼칠 때'],['긴 글의 줄 제한에는 ClampText를 쓴다','아코디언으로 쓰지 마라'],'21',[
     "트리거 라벨은 앱이 제공한다.",
     "닫힌 입력값·자식 상태를 보존하려면 CollapsibleContent에 forceMount를 준다."
@@ -128,7 +128,7 @@ const intents = [
     rule("FormFlow 안 단일 선택은 고르면 다음 칸으로 간다. 별도 포커스 이동을 붙이지 않는다.", "11.5"),
     rule("트리거에 data-form-control=advance를 붙이지 않는다.", "11.5"),
     rule("폼 밖 선택·Escape는 트리거로 돌아간다. 포커스를 다시 옮기지 않는다.", "11.5")
-  ],['multiple','options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','MultiSelect','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택','검색해서 여러 개 고르기','태그 선택']),
+  ],['multiple','options','value','onValueChange','placeholder','searchPlaceholder','emptyText','filter','disabled','invalid','maxHeight'],['combobox-trigger','combobox-input','combobox-list','combobox-option','combobox-empty'],['Select','MultiSelect','Field'],['콤보박스','자동완성','검색 선택','많은 옵션','초성 검색','목록에서 찾기','타이핑으로 찾기','초성으로 찾기','많은 옵션에서 검색해 선택','검색해서 여러 개 고르기','태그 선택','초성']),
   entry('MultiSelect','form',"요약 트리거와 체크 목록으로 여러 값을 고른다.",['여러 사업장 고르기','검색 없이 여러 개 선택할 때'],['검색은 Combobox multiple을 쓴다','고를 때 닫거나 data-form-control=advance를 붙이지 마라'],'20',[
     rule("선택 수가 늘어도 트리거 높이는 같다. 태그가 필요하면 Combobox multiple을 쓴다.", "20.1"),
     rule("선택 뒤에도 머문다. 앱이 닫거나 다음 입력으로 보내지 않는다.", "20.1"),
@@ -145,7 +145,7 @@ const intents = [
     rule("마지막 항목에는 링크 대신 BreadcrumbPage를 쓴다.", "16.2"),
     rule("긴 경로는 첫 항목·BreadcrumbEllipsis·마지막 둘로 조립한다.", "16.2"),
     rule("앱이 consume으로 기록을 읽고 필터·스크롤·재방문 행을 복원한다.", "16.2")
-  ],["aria-label"],["breadcrumb"],["BreadcrumbList", "BreadcrumbPage"],["경로", "빵부스러기", "뒤로", "목록으로 돌아가는 경로"]),
+  ],["aria-label"],["breadcrumb"],["BreadcrumbList", "BreadcrumbPage"],["경로", "빵부스러기", "뒤로", "목록으로 돌아가는 경로", "위치 표시", "상위 경로"]),
   part("BreadcrumbList", "Breadcrumb", "경로 항목의 순서 목록이다.", [], ["breadcrumb-list"]),
   part("BreadcrumbItem", "Breadcrumb", "경로의 개별 항목이다.", [], ["breadcrumb-item"]),
   part("BreadcrumbLink", "Breadcrumb", "라우터를 지정하지 않는 상위 경로 링크다.", ["asChild", "href"], ["breadcrumb-link"]),
@@ -166,7 +166,7 @@ const intents = [
     useWhen: ['목록에서 상세·편집·필터를 열거나 좁은 화면 메뉴를 서랍으로 열 때'],
     dont: ['가운데 확인·짧은 입력은 DialogContent, 읽기 전용 요약은 Peek을 쓴다'],
     related: ['DialogContent','SheetBody','Peek'],
-    keywords: ['옆 패널','사이드 패널','서랍','드로어','슬라이드 패널'] },
+    keywords: ['옆 패널','사이드 패널','서랍','드로어','슬라이드 패널','오른쪽 패널','오른쪽에서 열리는','목록을 유지'] },
   part('SheetBody', 'Dialog', 'SheetContent의 스크롤 본문이다. 헤더·푸터는 이 바깥에 둔다.', [], ['sheet-body']),
   part("DialogHeader", "Dialog", "입력 창 제목·설명 그룹이다.", [], ["dialog-header"]),
   part("DialogTitle", "Dialog", "입력 창의 필수 제목이다.", [], ["dialog-title"]),
@@ -176,7 +176,7 @@ const intents = [
   entry("AlertDialog","overlay","삭제 확인 등 되돌릴 수 없는 선택을 요구하는 확인창이다.",["영구 삭제·작성 취소 확인이 필요할 때"],["폼을 넣지 마라. 입력은 Dialog다", "Cancel을 생략하지 마라"],"16",[
     rule("Cancel이 초기 포커스를 받는다. 앱이 파괴적 액션으로 옮기지 않는다.", "16.4"),
     rule("바깥 클릭은 유지, Escape는 닫기다. 앱이 덮어쓰지 않는다.", "16.4")
-  ],["open", "onOpenChange"],[],["AlertDialogContent", "AlertDialogCancel", "Dialog"],["확인창", "삭제 확인", "되돌릴 수 없", "취소 확인"]),
+  ],["open", "onOpenChange"],[],["AlertDialogContent", "AlertDialogCancel", "Dialog"],["확인창", "삭제 확인", "되돌릴 수 없", "취소 확인", "작성 취소", "경고창"]),
   part("AlertDialogTrigger", "AlertDialog", "확인 창을 여는 트리거다.", ["asChild"], ["alert-dialog-trigger"]),
   part("AlertDialogContent", "AlertDialog", "되돌릴 수 없는 선택을 확인하는 내용을 표시한다.", [], ["alert-dialog-content", "alert-dialog-overlay"]),
   part("AlertDialogHeader", "AlertDialog", "확인 제목·설명 그룹이다.", [], ["alert-dialog-header"]),
@@ -196,7 +196,7 @@ const intents = [
     ['SelectSeparator', "선택 그룹을 구분한다.", ['select-separator'], 'Select'],
     ['SelectScrollUpButton', "선택 목록을 위로 넘긴다.", ['select-scroll-up-button'], 'Select'],
     ['SelectScrollDownButton', "선택 목록을 아래로 넘긴다.", ['select-scroll-down-button'], 'Select'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다. 필터 줄에서는 SelectTrigger에 폭을 지정한다(기본은 칸을 채운다).', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하'])),
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'form', purpose, ['20개 이하의 상태·정렬 옵션을 선택할 때'], ['20개 초과는 Combobox를 사용한다'], '11.4', 'Field에는 SelectTrigger를 넣는다. 선택 키 처리는 컴포넌트에 맡긴다. 필터 줄에서는 SelectTrigger에 폭을 지정한다(기본은 칸을 채운다).', [], slots, ['Field', 'Combobox', 'MultiSelect'], ['선택 필터', '셀렉트', '상태 필터', '20개 이하', '정렬 기준', '옵션 목록'])),
   ...[
     ['DropdownMenu', "행에서 실행할 액션을 메뉴로 제공한다.", [], null],
     ['DropdownMenuTrigger', "행 액션 메뉴를 연다.", ['dropdown-menu-trigger'], 'DropdownMenu'],
@@ -213,14 +213,14 @@ const intents = [
     ['DropdownMenuSubContent', "하위 메뉴 목록을 표시한다.", ['dropdown-menu-sub-content'], 'DropdownMenu'],
     ['DropdownMenuSubTrigger', "하위 메뉴를 연다.", ['dropdown-menu-sub-trigger'], 'DropdownMenu'],
     ['DropdownMenuRadioGroup', "메뉴에서 하나만 고를 항목을 묶는다.", [], 'DropdownMenu'],
-  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', ['destructive 항목에는 삭제 아이콘을 함께 표시한다.', '행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.'], [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션'])),
-  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림']),
+  ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', ['destructive 항목에는 삭제 아이콘을 함께 표시한다.', '행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.'], [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션', '행 액션', '액션 목록', '점 세 개', '더보기 메뉴'])),
+  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림', '완료 알림', '성공 알림', '알림 메시지']),
   entry('DatePicker', 'form', '한국어 단일 날짜·일시·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1',[
     "onValueChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
     rule('예약·발송·캠페인은 single 전용 time(기본 10분). 최근접 분 칸·동률 올림, 첫 시각 09:00. 브라우저 지역 시간이며 ISO·UTC 변환은 앱 몫이다.', '11.1.1'),
     rule('Field 밖에 둘 때 오류가 입력 아래로 20px 걸친다. 필터 툴바 아래에 20px 이상 간격을 둔다.', '11.3'),
     rule('폼 안 날짜 칸은 폭을 고정한다(단일 15rem·기간 20rem, className). 폼 열 전체로 늘리지 않는다.', '24.5')
-  ], ['mode', 'time', 'value', 'onValueChange', 'today', 'defaultMonth'], ['date-picker', 'date-picker-error', 'date-picker-presets', 'date-picker-time', 'date-picker-notice'], ['Field'], ['날짜', '기간 필터', '달력', '날짜 시간', '시각', '예약 발행', '일시']),
+  ], ['mode', 'time', 'value', 'onValueChange', 'today', 'defaultMonth'], ['date-picker', 'date-picker-error', 'date-picker-presets', 'date-picker-time', 'date-picker-notice'], ['Field'], ['날짜', '기간 필터', '달력', '날짜 시간', '시각', '예약 발행', '일시', '날짜 선택', '기간 선택', '예정일', '조회 기간']),
 
   entry('Button','action','명시적인 사용자 동작을 실행한다.',['저장·취소·삭제 버튼이 필요할 때'],['primary를 여러 개 쓰지 마라','아이콘 전용 버튼의 aria-label을 빼지 마라'],'6',[
     "variant=danger는 되돌릴 수 없는 작업에만 쓴다.",
@@ -252,7 +252,7 @@ const intents = [
   entry('Label','form','컨트롤 옆의 레이블로 입력 이름을 연결한다.',['Field를 쓰지 않는 Switch·Checkbox·Radio 옆에 입력 이름이 필요할 때'],['Field를 Label로 재구현하지 마라'],'17',[
     rule("htmlFor에 컨트롤 id를 준다.", "17.5"),
     rule("필수 표시와 별개로 컨트롤에도 required를 준다.", "17.5")
-  ],['htmlFor','required'],['label','label-required'],['Field','Switch','Checkbox','RadioGroup'],['레이블','입력 이름']),
+  ],['htmlFor','required'],['label','label-required'],['Field','Switch','Checkbox','RadioGroup'],['레이블','입력 이름','라벨','항목 이름']),
   entry('StatusChip','status','레코드의 상태를 라벨과 실루엣으로 표시한다.',['완료·경고·오류 상태를 표시할 때'],['같은 원형 점의 색만 바꾸지 마라'],'2.3','아이콘 모양과 텍스트로 상태를 구분한다.',['tone','icon','hideIcon'],['status-chip'],['DataTable'],['상태','완료','경고','칩','주문 상태','배송 상태','상태 표시']),
   ...[
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
@@ -272,10 +272,10 @@ const intents = [
       '여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.'
     ],['items','columns','align','labelWidth'],
     ['description-list','description-list-items','description-list-item','description-list-term','description-list-details','description-list-empty'],
-    ['Card','StatusChip','DataTable','Peek'],['키-값','키 값','라벨과 값','주문 정보','설명 목록','정보 목록','합계 묶음','결제 금액 합계','금액 내역','정보 나열','key value','description list']),
+    ['Card','StatusChip','DataTable','Peek'],['키-값','키 값','라벨과 값','주문 정보','설명 목록','정보 목록','합계 묶음','결제 금액 합계','금액 내역','정보 나열','기본 정보','항목과 값','라벨 값','key value','description list']),
   entry('Checkbox','form',"선택·해제·일부 선택 상태를 표시한다.",['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17',[
     "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다."
-  ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),
+  ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합','행 선택','일부 선택']),
   entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때','금액·수량처럼 더할 수 있는 열이 있고 합을 확인해야 하는 표(summary 합계 행)'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라','표 밖 dl·div로 열 합계를 만들지 마라',"페이지 일부 합을 '합계'라고만 쓰지 마라('이 페이지 합계')",'배송비·할인은 합계 행이 아니라 DescriptionList에 둔다','FilterBar·BulkActionBar와 쓰는 표에 exportFileName을 주지 마라','5행 이하 표에 정렬(enableSorting:false로 끈다)·내보내기를 달지 마라'],'4',[
     "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
     "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
@@ -298,7 +298,7 @@ const intents = [
       '바 폭 720px 미만이면 검색이 둘째 줄 전체 폭이다. 행 선택 중에는 BulkActionBar children으로 넣어 숨긴다.'
     ],['views','view','defaultView','onViewChange','viewChanged','onSaveView','query','defaultQuery','onQueryChange','searchLabel','searchPlaceholder','filters','defaultFilters','onFiltersChange','filterContent','filterOpen','defaultFilterOpen','onFilterOpenChange'],
     ['filter-bar','filter-bar-controls','filter-bar-search','filter-bar-trigger','filter-bar-chips','filter-bar-chip','filter-bar-chip-remove','filter-bar-more','filter-bar-reset'],
-    ['DataTable','BulkActionBar','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','filter bar','filter chips']),
+    ['DataTable','BulkActionBar','Select','Input'],['필터 바','필터 칩','적용된 필터','저장된 보기','목록 툴바','검색 필터 툴바','조건 칩','필터','목록 필터','필터 조건','filter bar','filter chips']),
   entry('BulkActionBar','table','표에서 행을 선택하면 툴바 자리에 선택 건수와 일괄 작업을 보인다.',
     ['선택한 주문을 한 번에 출력·처리·취소할 때'],
     ['필터 툴바와 동시에 보이게 두지 마라','바탕을 브랜드·오류색으로 칠하지 마라'],'4.2',[
@@ -310,7 +310,7 @@ const intents = [
       '선택 수는 이 바 한 곳이다. 선택 행 내보내기는 actions에서 downloadCsv로, 전체 내보내기는 PageHeader actions에 둔다.'
     ],['selectedCount','onClear','actions','dangerAction','children'],
     ['bulk-action-bar','bulk-action-bar-replaced','bulk-action-bar-panel','bulk-action-bar-count','bulk-action-bar-clear','bulk-action-bar-actions','bulk-action-bar-divider'],
-    ['DataTable','FilterBar','Button','AlertDialog'],['일괄 작업','일괄 작업 바','선택 해제','건 선택','선택한 행','체크한 행','선택한 주문','선택 건수','벌크 액션','bulk action']),
+    ['DataTable','FilterBar','Button','AlertDialog'],['일괄 작업','일괄 작업 바','선택 해제','건 선택','선택한 행','체크한 행','선택한 주문','선택 건수','벌크 액션','일괄','일괄 처리','bulk action']),
   entry('ChartFrame','chart',"차트의 제목·범례와 로딩·빈 상태·오류를 함께 표시한다.",['차트 공통 외곽과 상태가 필요할 때'],['빈 데이터와 실패를 합치지 마라'],'7.5.6',[
     "state로 loading·empty·error를 구분해 준다."
   ],['summary','title','legend','state','children'],['chart-frame'],['TrendBand','BulletRow','CompositionArea'],['차트 프레임','범례']),
@@ -336,16 +336,16 @@ const intents = [
   ],['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','구성 비율','비중','누적','면적','점유율','비율 변화','시간별 구성']),
   entry('EmptyState','state','표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.',['필터 결과가 비었을 때'],['실패를 빈 상태로 표시하지 마라'],'7.5.6',[
     "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다."
-  ],['title','description','graphic','action'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화']),
+  ],['title','description','graphic','action'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화','결과 없음','비었을 때']),
   entry('ErrorState','state','불러오기 실패와 재시도 경로를 제공한다.',['데이터 요청이 실패했을 때'],['빈 상태와 합치지 마라'],'7.5.6',[
     "다시 요청할 수 있는 오류에는 onRetry를 연결한다."
-  ],['title','description','graphic','onRetry'],['error-state'],['EmptyState'],['불러오기 실패','재시도','데이터 오류']),
+  ],['title','description','graphic','onRetry'],['error-state'],['EmptyState'],['불러오기 실패','재시도','데이터 오류','다시 시도','불러오지 못']),
   entry('Avatar','media','사진이나 이니셜로 사람을 식별한다.',['사용자 이름과 사진을 표시할 때'],['상태색 팔레트로 사람을 구분하지 마라'],'2.4',[
     rule("name에는 이니셜 대신 보조기기가 읽을 전체 이름을 준다.", "14.4")
   ],['name','src','size','decorative'],['avatar'],['Thumbnail'],['아바타','이니셜','사용자 사진']),
   entry('Thumbnail','media','이미지 공간을 예약하고 실패를 대체한다.',['상품·미디어 이미지를 표시할 때'],['빈 src로 이미지 요청을 보내지 마라'],'9.2',[
     "ratio를 실제 이미지 비율과 맞춰 자리를 예약한다."
-  ],['src','alt','ratio'],['thumbnail'],['Skeleton','Avatar'],['썸네일','상품 사진','이미지 실패']),
+  ],['src','alt','ratio'],['thumbnail'],['Skeleton','Avatar'],['썸네일','상품 사진','이미지 실패','대체 이미지','작은 이미지']),
   entry('Skeleton','loading','알려진 콘텐츠 형태의 자리 표시자다.',['콘텐츠 모양을 미리 알 때'],['형태를 모르면 쓰지 마라'],'9.2','실제 콘텐츠와 같은 치수를 쓴다.',['variant','width','height','animation','textStyle'],['skeleton'],['SkeletonText','ProgressTrack'],['스켈레톤','자리 표시','로딩','불러오는','불러오기','데이터 대기','콘텐츠 대기','로딩 중']),
   entry('SkeletonText','loading','문단 형태의 로딩 자리 표시자다.',['여러 줄 텍스트를 기다릴 때'],["문단 모양을 바꿀 때 마지막 줄까지 같은 길이로 채우지 마라"],'9.2',[
     "textStyle은 실제 본문에 맞춘다."
@@ -360,7 +360,7 @@ const intents = [
   entry('TaskProgress','loading','드문 장기 작업의 단계와 진행을 표시한다.',['대량 내보내기·일괄 작업을 기다릴 때'],['자주 짧게 기다리는 곳에 장식 모션을 쓰지 마라','여러 단계 폼의 위치는 Steps를 쓴다'],'9.3',[],['title','value','steps','etaSeconds','onDismiss'],['task-progress'],['ProgressTrack','Steps'],['대량','일괄','장기 작업','내보내기','오래 걸리는','진행 상황','진행률','작업 단계','백그라운드 작업']),
   entry('Tooltip','guide','컨트롤의 뜻을 한 줄로 설명한다.',['호버·키보드 포커스로 UI 의미를 확인할 때'],['데이터 요약이나 액션을 넣지 마라','여러 문장을 넣지 마라'],'10.4',[
     "Tooltip 안으로 포커스를 옮기지 않는다. 컨트롤에 그대로 둔다."
-  ],['children','content','disabled'],['guide-tooltip'],['Hint','Tour','Peek'],['툴팁','호버','한 줄','컨트롤 설명','UI 설명']),
+  ],['children','content','disabled'],['guide-tooltip'],['Hint','Tour','Peek'],['툴팁','호버','한 줄','컨트롤 설명','UI 설명','마우스 오버','짧은 설명']),
   entry('Hint','guide','새 기능·놓치기 쉬운 UI를 한 번 알린다.',['새 기능을 2~3줄과 액션으로 알릴 때'],['레코드 요약용으로 쓰지 마라'],'10.2','닫은 안내를 반복하지 않도록 앱이 기억한다.',['children','open','title','body','onDismiss','action'],['guide-hint'],['Tooltip','Tour','Peek'],['힌트','새 기능','한 번','맥락형 안내']),
   entry('Tour','guide','사용자가 요청한 UI 흐름을 단계로 안내한다.',['사용자가 전체 흐름 학습을 요청할 때'],['자동 실행하지 마라','닫기·Escape를 막지 마라'],'10.1','최대 3단계이며 항상 건너뛸 수 있다.',['steps','active','next','previous','skip'],['guide-hint'],['Tooltip','Hint','Peek'],['투어','온보딩','단계','단계별','단계별 안내','사용법','흐름 학습','기능 흐름','처음 온 사용자','둘러보기','시작 안내']),
   entry('Field','form','레이블·설명·오류와 입력 접근성을 연결한다.',['폼 필드의 설명과 검증 오류를 표시할 때'],["Field가 입력값을 관리한다고 가정하지 마라"],'11.4',[

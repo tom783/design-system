@@ -4592,7 +4592,9 @@
         "페이징",
         "페이지 이동",
         "페이지 크기",
-        "몇 개씩"
+        "몇 개씩",
+        "건씩",
+        "페이지 단위"
       ],
       "source": "components/pagination/pagination.tsx",
       "props": [
@@ -4698,7 +4700,9 @@
         "공통 화면",
         "레이아웃",
         "사이드바와 본문",
-        "화면 틀"
+        "화면 틀",
+        "전체 틀",
+        "메뉴와 본문"
       ],
       "source": "components/app-shell/app-shell.tsx",
       "props": [
@@ -5138,7 +5142,8 @@
         "화면 속 화면",
         "PiP",
         "이미지 크게 보기",
-        "영상 보면서 작업"
+        "영상 보면서 작업",
+        "확대"
       ],
       "source": "components/media-viewer/media-viewer.tsx",
       "props": [
@@ -5403,7 +5408,8 @@
         "초성으로 찾기",
         "많은 옵션에서 검색해 선택",
         "검색해서 여러 개 고르기",
-        "태그 선택"
+        "태그 선택",
+        "초성"
       ],
       "source": "components/combobox/combobox.tsx",
       "props": [
@@ -5688,7 +5694,9 @@
         "경로",
         "빵부스러기",
         "뒤로",
-        "목록으로 돌아가는 경로"
+        "목록으로 돌아가는 경로",
+        "위치 표시",
+        "상위 경로"
       ],
       "parts": [
         "BreadcrumbList",
@@ -5909,7 +5917,10 @@
         "사이드 패널",
         "서랍",
         "드로어",
-        "슬라이드 패널"
+        "슬라이드 패널",
+        "오른쪽 패널",
+        "오른쪽에서 열리는",
+        "목록을 유지"
       ],
       "source": "components/sheet/sheet.tsx",
       "props": [
@@ -6045,7 +6056,9 @@
         "확인창",
         "삭제 확인",
         "되돌릴 수 없",
-        "취소 확인"
+        "취소 확인",
+        "작성 취소",
+        "경고창"
       ],
       "parts": [
         "AlertDialogTrigger",
@@ -6183,7 +6196,9 @@
         "선택 필터",
         "셀렉트",
         "상태 필터",
-        "20개 이하"
+        "20개 이하",
+        "정렬 기준",
+        "옵션 목록"
       ],
       "parts": [
         "SelectTrigger",
@@ -6330,7 +6345,11 @@
       ],
       "keywords": [
         "행 메뉴",
-        "드롭다운 액션"
+        "드롭다운 액션",
+        "행 액션",
+        "액션 목록",
+        "점 세 개",
+        "더보기 메뉴"
       ],
       "parts": [
         "DropdownMenuTrigger",
@@ -6536,7 +6555,10 @@
       ],
       "keywords": [
         "토스트",
-        "저장 알림"
+        "저장 알림",
+        "완료 알림",
+        "성공 알림",
+        "알림 메시지"
       ],
       "source": "components/toast/toast.tsx",
       "extends": [
@@ -6584,7 +6606,11 @@
         "날짜 시간",
         "시각",
         "예약 발행",
-        "일시"
+        "일시",
+        "날짜 선택",
+        "기간 선택",
+        "예정일",
+        "조회 기간"
       ],
       "source": "components/date-picker/date-picker.tsx",
       "props": [
@@ -7006,7 +7032,9 @@
       ],
       "keywords": [
         "레이블",
-        "입력 이름"
+        "입력 이름",
+        "라벨",
+        "항목 이름"
       ],
       "source": "components/label/label.tsx",
       "props": [
@@ -7231,6 +7259,9 @@
         "결제 금액 합계",
         "금액 내역",
         "정보 나열",
+        "기본 정보",
+        "항목과 값",
+        "라벨 값",
         "key value",
         "description list"
       ],
@@ -7292,7 +7323,9 @@
       "keywords": [
         "체크",
         "선택",
-        "혼합"
+        "혼합",
+        "행 선택",
+        "일부 선택"
       ],
       "source": "components/checkbox.tsx",
       "props": [
@@ -7610,6 +7643,9 @@
         "목록 툴바",
         "검색 필터 툴바",
         "조건 칩",
+        "필터",
+        "목록 필터",
+        "필터 조건",
         "filter bar",
         "filter chips"
       ],
@@ -7785,6 +7821,8 @@
         "선택한 주문",
         "선택 건수",
         "벌크 액션",
+        "일괄",
+        "일괄 처리",
         "bulk action"
       ],
       "source": "components/bulk-action-bar/bulk-action-bar.tsx",
@@ -8462,7 +8500,9 @@
       "keywords": [
         "빈 상태",
         "데이터 없음",
-        "필터 초기화"
+        "필터 초기화",
+        "결과 없음",
+        "비었을 때"
       ],
       "source": "components/state/empty-state.tsx",
       "props": [
@@ -8518,7 +8558,9 @@
       "keywords": [
         "불러오기 실패",
         "재시도",
-        "데이터 오류"
+        "데이터 오류",
+        "다시 시도",
+        "불러오지 못"
       ],
       "source": "components/state/empty-state.tsx",
       "props": [
@@ -8629,7 +8671,9 @@
       "keywords": [
         "썸네일",
         "상품 사진",
-        "이미지 실패"
+        "이미지 실패",
+        "대체 이미지",
+        "작은 이미지"
       ],
       "source": "components/thumbnail/thumbnail.tsx",
       "props": [
@@ -9134,7 +9178,9 @@
         "호버",
         "한 줄",
         "컨트롤 설명",
-        "UI 설명"
+        "UI 설명",
+        "마우스 오버",
+        "짧은 설명"
       ],
       "source": "components/guide/tooltip.tsx",
       "props": [

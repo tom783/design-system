@@ -161,6 +161,8 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
         { text: '라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건.', source: 'DESIGN.md 4.3' },
         { text: 'pinnedEnd로 상태 열(목록)·금액 열(합계 표)을 고정한다. 좁은 폭에서도 보이고 고정선은 표가 넘칠 때만 생긴다.', source: 'DESIGN.md 4.4' }],
     };
+    // 0.6.0 목표 64: which_component 키워드 '초성' 하나만 끝에 더한다("초성만 쳐도 찾게"가 SideNav '브랜드'로 갔다). 나머지 그대로다.
+    if (name === 'Combobox') adjusted = { ...adjusted, keywords: [...adjusted.keywords, '초성'] };
     // 목표 49(DESIGN.md §6.3): forwardRef → ref prop 으로 상속 표기만 바뀌었다. 런타임 동일.
     if (name === 'Button') adjusted = { ...adjusted, extends: ["React.ComponentProps<'button'>", ...adjusted.extends.slice(1)] };
     if (name === 'SelectTrigger') adjusted = { ...adjusted, extends: ['React.ComponentProps<typeof SelectPrimitive.Trigger>'] };

@@ -33,7 +33,7 @@ claude mcp add s2life -- npx -y @s2life/mcp
 
 `component-intent.mjs`는 의도·사용 조건·금지사항·키워드와 소스 대조용 props·slots 목록을 소유한다. 생성기는 export 완전성, 실제 props, 실제 슬롯, DESIGN 절 제목, related 참조, 토큰 이름·참조를 검증한 뒤에만 출력한다. 토큰 값은 `tokens.json`에서, Tailwind 색 별칭은 이미 생성된 `packages/tokens/theme.css`에서 읽어 수동 매핑 중복을 피한다. 역할에 따라 쓰는 클래스가 다른 토큰은 Tailwind 목록이 비어 있을 수 있으며 `cssVariable`로 소비한다. 서체처럼 `tokens.json`에 없는 값은 추측해 추가하지 않는다.
 
-`which_component`는 순수 문자열 매칭이다. NFKC·소문자·공백 제거 후 전체 이름 일치 +2000, 설명 안 이름 포함 +1000, 키워드 완전 일치 +80, 포함 일치 +20(한 글자는 +4, 여러 낱말의 연속 구절은 +40)를 합산한다. 여러 낱말이 떨어져 있어도 모두 질의에 포함되면 일치한다. 각 질의 낱말의 앞부분에서 원래 순서대로 맞으면 +24, 순서가 다르거나 낱말 내부에서 맞으면 +8이며 겹치는 단일 키워드 점수는 중복 가산하지 않는다. 고유 검색어가 있는 부품의 후보 판정도 같은 비교를 쓴다. 설명 단어의 useWhen 일치는 +5, purpose 일치는 +2다. 동점은 이름순이며 기본 5개(최대 10개)를 반환한다. 의미·동의어 추론은 하지 않는다. 점수 근거·useWhen·dont를 함께 주며, 무매칭은 `isError: true`와 `list_components` 안내로 반환한다.
+`which_component`는 외부 모델 없는 문자열 매칭이다. 원문(NFKC·소문자·공백 제거)과, 같은 순서로 낱말을 메타데이터 어휘로 바꾼 번역 (영어 낱말·구절 대응표 약 320개, 한국어 활용형 `걸러`→필터·`한꺼번에`→일괄, 구두점 자리는 끊는다)을 함께 보고 더 센 일치를 쓴다. 전체 이름 일치 +2000, 이름을 식별자로 쓴 것(적힌 그대로 `Button`, 또는 두 낱말 이상 이름을 낱말 경계에서 `filter bar`) +1000 — 소문자 영어 낱말 `button`·`select`는 이름 일치가 아니다. 키워드 완전 일치 +80, 연속 포함 +20(한 글자는 +4, 여러 낱말의 연속 구절은 +40, 한 낱말은 그 낱말이 키워드에 든 부품이 4개를 넘으면 그만큼 덜 친다), 떨어진 낱말이 모두 있으면 순서대로 +24 · 아니면 +8(한국어는 활용형 줄기도 인정). 한 부품 안에서 긴 키워드에 든 짧은 키워드와 떨어진 일치에 겹친 단일 키워드는 다시 더하지 않는다. 설명 낱말(조사·어미 뗀 줄기 포함)의 useWhen 일치는 +5, purpose 일치는 +2다. 라틴 키워드는 낱말 경계와 영어 줄기(복수형·진행형)로 맞춘다. 동점은 이름순이며 기본 5개(최대 10개)를 반환한다. 점수 근거·useWhen·dont를 함께 주며, 무매칭은 `isError: true`와 `list_components` 안내로 반환한다. 규칙과 근거 전체는 `docs/qa/r38-match-ranking.md`.
 
 `manifest.json`은 파생 필드를 항목마다 반복하지 않고 최상위 `derived`에 복원 규칙을 보관한다.
 `importTemplate`의 `NAME`은 항목 이름이고, 전체 소스 경로는 `sourceRoot + source`다.
@@ -100,19 +100,24 @@ node docs/qa/mcp-response-diff.mjs --base main \
 `--expect`에 적지 않은 키가 한 바이트라도 다르거나, 적었는데 같으면 exit 1이다.
 `docs/qa/compare-guidance-baseline.mjs`는 커밋된 기준선 파일끼리 비교하는 재승인 도구라 이 증명을 대신하지 못한다.
 
-## `which_component` 정답 세트 (R49)
+## `which_component` 정답 세트 (R49 · 0.6.0 목표 64)
 
-`docs/qa/fixtures/which-component-golden.json`은 실제 요청 문장의 핵심 100문항(한국어 83 · 영어 17)과 정답 부품 하나씩이다.
-선택 후보가 될 수 있는 55개 전부를 한 번 이상 정답으로 쓴다. 질의에 컴포넌트 이름을 넣지 않는다(이름 일치 +1000점).
+`docs/qa/fixtures/which-component-golden.json`은 실제 요청 문장 186문항(한국어 136 · 영어 50)과 정답 부품이다 —
+R49 기준 128문항, 도그푸딩 6 사전 점검 표 32문항(`set: logistics06`), 0.5.0 부품 질의 26문항(`set: r050`).
+정답은 하나, 애매하면 허용 정답 여러 개(배열), 맞는 부품이 아직 없으면 `null`+`gap`(정확도 분모에서 빼고 후보 0개만 센다)이다.
+질의가 이름 일치 점수를 받으면 안 된다(이름 일치 +1000점은 정확도가 아니라 이름 검색을 잰다).
+`which-component-holdout.json` 48문항은 튜닝을 마친 뒤 따로 쓴 확인용이다 — 그 세트를 보고 고치지 않고 게이트도 걸지 않는다.
 
 ```sh
-node docs/qa/which-component-golden.mjs           # 정확도와 1위가 아닌 문항 표
-node docs/qa/which-component-golden.mjs --check   # 기준선 아래면 exit 1
+node docs/qa/which-component-golden.mjs           # 정확도(언어별·세트별)와 1위가 아닌 문항 표
+node docs/qa/which-component-golden.mjs --check   # 하한 아래거나 후보 0개가 있으면 exit 1
+node docs/qa/compare-match-baseline.mjs           # R38 1순위 대조 + docs/qa/r38-match-ranking.md 재생성(보류 세트 수치 포함)
 ```
 
-2026-11-23 기준선: **top-1 52/100 · top-3 72/100**(한국어 52/83 · 72/83, 영어 0/17 · 0/17 — 키워드가 한국어뿐이다).
-`which-component-golden.test.mjs`가 `pnpm test`(= `pnpm verify`·pre-commit)에서 같은 판정을 한다.
-키워드·매칭을 고쳐 수치가 오르면 기준선을 함께 올린다.
+2026-11-24 실측(목표 64): **top-1 165/184 · top-3 183/184 · 후보 0개 0/186**(한국어 119/135 · 134/135, 영어 46/49 · 49/49).
+같은 세트의 0.5.0 수치는 top-1 96 · top-3 129 · 후보 0개 28(영어 27/50)이었다. 하한은 **top-1 161 · top-3 181 · 후보 0개 0**이다.
+`which-component-golden.test.mjs`가 `pnpm test`(= `pnpm verify`·pre-commit·CI)에서 같은 판정을 한다.
+키워드·매칭을 고쳐 수치가 바뀌면 `measured`를 고치고, 오른 만큼 `floor`도 올린다.
 
 검증 명령:
 

@@ -196,3 +196,50 @@ for (const query of ['단계', '스텝', '진행 단계', '여러 단계 폼', '
     assert.equal(matchComponents(query, components)[0]?.name, 'Steps');
   });
 }
+
+// 0.6.0 목표 64 — 영어·활용형·이름·흔한 낱말 규칙(docs/qa/r38-match-ranking.md "지금 순위 규칙"). 정확도 자체는 정답 세트가 잰다.
+const reasonsOf = (query, name) => matchComponents(query, components, components.length).find(c => c.name === name)?.reasons ?? [];
+test('목표 64: 영어 줄기는 복수형·진행형·과거형·끝 e 를 한 줄기로 모은다', async () => {
+  const { stemEnglish } = await import('./match.mjs');
+  for (const [words, stem] of [[['row', 'rows'], 'row'], [['save', 'saves', 'saving', 'saved'], 'sav'], [['filter', 'filters', 'filtering', 'filtered'], 'filter'],
+    [['ship', 'shipping'], 'ship'], [['category', 'categories'], 'category'], [['box', 'boxes'], 'box']]) {
+    for (const word of words) assert.equal(stemEnglish(word), stem, word);
+  }
+  assert.notEqual(stemEnglish('status'), stemEnglish('stat'), 'status 는 s 를 떼지 않는다');
+});
+test('목표 64: 소문자 영어 낱말은 이름 일치가 아니고, 적힌 그대로의 이름·두 낱말 이름만 이름 일치다', () => {
+  assert.ok(!reasonsOf('page title with a primary create button', 'Button').some(r => r.startsWith('이름 일치')));
+  assert.equal(matchComponents('page title with a primary create button', components)[0]?.name, 'PageHeader');
+  assert.ok(!reasonsOf('period selector', 'Select').some(r => r.startsWith('이름 일치')), 'selector 는 Select 가 아니다');
+  assert.ok(reasonsOf('Button 옆에 아이콘', 'Button').includes('이름 일치: Button (+1000)'));
+  assert.ok(reasonsOf('filter bar above the table', 'FilterBar').includes('이름 일치: FilterBar (+1000)'));
+  assert.ok(reasonsOf('Field를 쓰지 않는 Switch', 'Switch').includes('이름 일치: Switch (+1000)'));
+});
+test('목표 64: 라틴 키워드는 낱말 경계로 맞춘다 — Enter 가 center 안에서 맞지 않는다', () => {
+  assert.ok(!reasonsOf('center aligned text', 'FormFlow').some(r => r.includes('Enter')));
+  assert.ok(reasonsOf('Enter 로 다음 칸', 'FormFlow').some(r => r.includes('키워드 일치: Enter')));
+});
+test('목표 64: 영어 낱말·한국어 활용형은 메타데이터 어휘로 번역해 맞추고 구두점 자리는 끊는다', () => {
+  assert.ok(reasonsOf('알림 수신을 바로 적용', 'Switch').some(r => r.startsWith('키워드 일치: 즉시 적용')));
+  assert.ok(reasonsOf('keep save and cancel buttons stuck to the bottom of a long form', 'FormActionBar').some(r => r.startsWith('키워드 일치: 하단 고정')));
+  assert.ok(reasonsOf('목록 위에서 걸러 보기', 'FilterBar').some(r => r.startsWith('키워드 일치: 필터')));
+  // "선택·해제" 의 '·' 는 구절을 끊는다 — 연속 구절 '선택 해제'(40)가 아니라 떨어진 낱말(24)이다.
+  const bulk = reasonsOf('선택·해제', 'BulkActionBar');
+  assert.ok(bulk.includes('키워드 낱말: 선택 해제 (+24)') && !bulk.some(r => r.startsWith('키워드 일치: 선택 해제')));
+  for (const query of ['filter', 'bulk', 'totals', 'paginate the shipment list', 'show shipment status badge']) {
+    assert.ok(matchComponents(query, components).length, `${query}: 영어 질의가 빈 손으로 가지 않는다`);
+  }
+});
+test('목표 64: 긴 연속 키워드에 든 짧은 키워드는 다시 더하지 않는다', () => {
+  const chip = reasonsOf('주문 상태 칩', 'StatusChip');
+  assert.ok(chip.some(r => r.startsWith('키워드 일치: 주문 상태')));
+  assert.ok(!chip.some(r => r.startsWith('키워드 일치: 상태 (')), chip.join(' / '));
+});
+test('목표 64: 흔한 낱말 키워드는 덜 쳐서 구체 낱말이 이긴다', () => {
+  const checkbox = reasonsOf('출고 예정일 선택', 'Checkbox').find(r => r.startsWith('키워드 일치: 선택'));
+  assert.ok(checkbox && Number(checkbox.match(/\+(\d+)/)[1]) < 20, checkbox);
+  assert.ok(reasonsOf('출고 예정일 선택', 'DatePicker').includes('키워드 일치: 예정일 (+20)'));
+  assert.equal(matchComponents('출고 예정일 선택', components)[0]?.name, 'DatePicker');
+  // 질의 전체가 키워드면(80) 흔해도 그대로다.
+  assert.equal(matchComponents('선택', components)[0]?.name, 'Checkbox');
+});
