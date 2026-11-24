@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@s2life/ui": ["../../packages/ui/src/index.ts"],
+      "@s2life/ui/icons": ["../../packages/ui/src/icons.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

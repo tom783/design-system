@@ -6,7 +6,7 @@
     "tokens": "node docs/research/tokens-build.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "node scripts/build-storybook.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/site/tsconfig.json",
     "typecheck:clean": "node scripts/typecheck-clean.mjs",
     "verify": "pnpm tokens && pnpm mcp:build && pnpm typecheck && pnpm test && pnpm build-storybook --quiet && pnpm size",
     "mcp": "node packages/mcp/server.mjs",
@@ -19,7 +19,10 @@
     "qa:pack": "node docs/qa/pack-verify.mjs",
     "size": "node scripts/bundle-size-check.mjs",
     "publish:check": "node scripts/npm-publish-check.mjs",
-    "test": "node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs packages/mcp/*.test.mjs docs/qa/*.test.mjs"
+    "test": "node --test packages/ui/src/lib/*.test.mjs packages/ui/src/components/*/*.test.mjs packages/mcp/*.test.mjs docs/qa/*.test.mjs",
+    "site": "pnpm --filter @s2life/site dev",
+    "site:build": "pnpm --filter @s2life/site build",
+    "site:preview": "pnpm --filter @s2life/site preview"
   },
   "devDependencies": {
     "@storybook/addon-docs": "^10.6.7",

@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import { sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkBoundaries } from './check-boundaries.mjs';
+import { publishedStylesInput } from './ui-styles-source.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const ui = `${root}packages/ui/`;
@@ -69,7 +70,7 @@ await mkdir(`${ui}dist`, { recursive: true });
 for (const file of ['tokens.css', 'theme.css', 'tokens.json']) {
   await copyFile(`${root}packages/tokens/${file}`, `${ui}dist/${file}`);
 }
-const source = styles.replace('@import "tailwindcss";', '@import "tailwindcss" source(none);\n@source "./";');
+const source = publishedStylesInput(styles);
 await writeFile(`${ui}src/.build.css`, source);
 try {
   execFileSync('pnpm', ['exec', 'tailwindcss', '-i', `${ui}src/.build.css`, '-o', `${ui}dist/styles.css`, '--minify'], { cwd: root, stdio: 'inherit' });
