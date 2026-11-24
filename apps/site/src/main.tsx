@@ -10,7 +10,8 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { SiteShell } from './layout/SiteShell';
 import { applyTheme, readTheme } from './layout/theme';
-import { HomePage, NotFoundPage } from './pages/Menus';
+import { NotFoundPage } from './pages/Menus';
+import { HomePage } from './pages/home/Home';
 import { AiPage } from './pages/ai/Ai';
 import { ConceptPage } from './pages/concept/Concept';
 import { StartPage } from './pages/start/Start';
@@ -22,10 +23,10 @@ import { PatternsPage } from './pages/patterns/Patterns';
 // 첫 그림 전에 고른 테마를 건다 — 반대 테마로 한 번 번쩍이지 않게.
 applyTheme(readTheme());
 
-const router = createBrowserRouter([{
+// 첫 화면은 자기 상단 바(시안 r4)를 쓴다 — 다른 페이지의 셸(사이드 메뉴 + 머리띠)은 그대로다.
+const router = createBrowserRouter([{ path: '/', element: <HomePage /> }, {
   element: <SiteShell />,
   children: [
-    { path: '/', element: <HomePage /> },
     { path: '/start', element: <StartPage /> },
     { path: '/concept', element: <ConceptPage /> },
     { path: '/foundations', element: <Navigate to="/foundations/color" replace /> },

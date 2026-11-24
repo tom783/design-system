@@ -41,19 +41,56 @@ test('사이트: 디자인 시스템은 공개 진입점으로만 가져온다',
   assert.deepEqual(hits, [], `공개 진입점이 아닌 import:\n  ${hits.join('\n  ')}`);
 });
 
+// 사이트 효과 층 — 첫 화면의 번짐·격자·상단 바 블러·순차 조립(디자인 총괄 기준 effects-boundary r1). 블러·그라데이션·움직임은
+// 소개 사이트 입구 전용이라 디자인 시스템 토큰에 없다. 이 파일 하나만 아래 두 가지를 받는다:
+//   ① 원시 색 중 크림슨(brand)·중립(neutral) 단계 — 기준이 "크림슨·따뜻한 중립만, 새 색상각 금지"라 의미 토큰으로는 그 경계를 말할 수 없다
+//   ② 이 파일이 정의한 --site-* 효과 변수
+const EFFECTS = join(site, 'src/pages/home/effects.css');
+const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '');
+
 test('사이트: 자체 CSS 는 site- 클래스와 의미 토큰만 쓴다', () => {
   // README: 앱 CSS 클래스는 ds- 로 시작하지 않고 Tailwind 유틸리티 이름을 다시 정의하지 않는다.
   // AGENTS.md 상시 규칙 2: 원시 색(--color-*)을 직접 쓰지 않는다. 없는 토큰 이름은 조용히 무시돼 화면만 틀어진다.
   const tokens = new Set(manifest.tokens.map((t) => t.cssVariable));
   const hits = [];
   for (const file of css) {
-    const src = read(file).replace(/\/\*[\s\S]*?\*\//g, '');
+    const src = stripComments(read(file));
+    const effects = file === EFFECTS;
+    const effectVars = new Set([...src.matchAll(/(?:@property\s+|[\s;{(])(--site-[\w-]+)\s*[:{]/g)].map((m) => m[1]));
     for (const [, name] of src.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) if (!name.startsWith('site-')) hits.push(`${rel(file)}: .${name} — site- 로 시작해야 한다`);
     for (const [, name] of src.matchAll(/var\((--[\w-]+)/g)) {
-      if (name.startsWith('--color-')) hits.push(`${rel(file)}: ${name} — 원시 색 대신 의미 토큰`);
+      if (effects && name.startsWith('--site-')) {
+        if (!effectVars.has(name)) hits.push(`${rel(file)}: ${name} — 효과 층에서 정의하지 않은 변수`);
+      } else if (effects && /^--color-(?:brand|neutral)-\d+$/.test(name)) {
+        if (!tokens.has(name)) hits.push(`${rel(file)}: ${name} — 매니페스트에 없는 원시 색`);
+      } else if (name.startsWith('--color-')) hits.push(`${rel(file)}: ${name} — 원시 색 대신 의미 토큰${effects ? '(효과 층도 크림슨·중립 단계만)' : ''}`);
       else if (!tokens.has(name)) hits.push(`${rel(file)}: ${name} — 매니페스트에 없는 토큰`);
     }
     if (/@import\s+["']tailwindcss|@tailwind\b|@apply\b/.test(src)) hits.push(`${rel(file)}: Tailwind 지시문 — 사이트는 사전 컴파일 styles.css 의 소비자다`);
+  }
+  assert.deepEqual(hits, [], hits.join('\n  '));
+});
+
+test('사이트 효과 층: 색 값을 직접 쓰지 않고, 움직임은 움직임 줄이기가 꺼졌을 때만, 끝없는 움직임은 하나', () => {
+  // 기준(effects-boundary r1): 새 색 금지 · prefers-reduced-motion 이면 애니메이션 0개 · 무한 반복은 배경 흐름 1개.
+  // 블러·그라데이션·마스크·키프레임은 효과 층에만 둔다 — 다른 사이트 CSS 와 실물 부품 쪽으로 새지 않게.
+  const src = stripComments(read(EFFECTS));
+  const hits = [];
+  for (const [m] of src.matchAll(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(/g)) hits.push(`${rel(EFFECTS)}: ${m} — 색은 토큰 변수로만`);
+  // 움직임 선언(animation)은 모두 @media (prefers-reduced-motion: no-preference) { … } 안에 있어야 한다.
+  const open = src.indexOf('@media (prefers-reduced-motion: no-preference)');
+  assert.ok(open >= 0, '움직임 블록 @media (prefers-reduced-motion: no-preference) 가 없다');
+  let depth = 0, close = -1;
+  for (let i = src.indexOf('{', open); i < src.length; i += 1) {
+    if (src[i] === '{') depth += 1;
+    else if (src[i] === '}' && --depth === 0) { close = i; break; }
+  }
+  for (const m of src.matchAll(/\banimation(?:-name)?\s*:/g)) if (m.index < open || m.index > close) hits.push(`${rel(EFFECTS)}: ${m[0]} — 움직임 줄이기 블록 밖`);
+  const infinite = (src.match(/\binfinite\b/g) ?? []).length;
+  if (infinite !== 1) hits.push(`${rel(EFFECTS)}: infinite ${infinite}개 — 끝없는 움직임은 번짐 흐름 하나만`);
+  for (const file of css.filter((f) => f !== EFFECTS)) {
+    const other = stripComments(read(file));
+    for (const [m] of other.matchAll(/backdrop-filter|\bblur\(|gradient\(|mask-image|@keyframes|\banimation\s*:/g)) hits.push(`${rel(file)}: ${m} — 효과는 ${rel(EFFECTS)} 에만`);
   }
   assert.deepEqual(hits, [], hits.join('\n  '));
 });
@@ -84,18 +121,19 @@ test('배포 CSS 입력: 사이트와 build-ui 가 같은 변환을 쓴다', () 
   assert.match(read(join(site, 'vite.config.ts')), /publishedStylesInput\(/);
 });
 
-test('사이트: 디자인 컨셉 문안의 수치는 손으로 쓰지 않고 tokens.json 에서 넣는다', () => {
-  // 문안(디자인 총괄)의 색·선 두께·대비·시간은 토큰이 바뀌면 같이 바뀌어야 한다. 주석은 빼고 본다.
-  const file = join(site, 'src/content/concept.ts');
-  const src = read(file).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+test('사이트: 디자인 컨셉·첫 화면 문안의 수치는 손으로 쓰지 않고 tokens.json 에서 넣는다', () => {
+  // 문안(디자인 총괄·웹디자이너 시안)의 색·선 두께·대비·시간은 토큰이 바뀌면 같이 바뀌어야 한다. 주석은 빼고 본다.
   const tokens = JSON.parse(read(join(root, 'packages/tokens/tokens.json')));
-  const hits = [
-    ...[...src.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((m) => `${m[0]} — 색은 tokens.semantic 에서`),
-    ...[...src.matchAll(/\b\d+\s*ms\b/g)].map((m) => `${m[0]} — 시간은 tokens.motion 에서`),
-    ...[...src.matchAll(/\b\d+(?:\.\d+)?:1\b/g)].map((m) => `${m[0]} — 대비는 tokens.decisions.contrastFloor 에서`),
-    ...[...src.matchAll(new RegExp(`\\b${tokens.shape['border-width']}\\b`, 'g'))].map((m) => `${m[0]} — 선 두께는 tokens.shape 에서`),
-  ];
-  assert.deepEqual(hits, [], `${rel(file)}: 손으로 쓴 수치\n  ${hits.join('\n  ')}`);
+  for (const file of [join(site, 'src/content/concept.ts'), join(site, 'src/content/home.ts')]) {
+    const src = read(file).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const hits = [
+      ...[...src.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((m) => `${m[0]} — 색은 tokens.semantic 에서`),
+      ...[...src.matchAll(/\b\d+\s*ms\b/g)].map((m) => `${m[0]} — 시간은 tokens.motion 에서`),
+      ...[...src.matchAll(/\b\d+(?:\.\d+)?:1\b/g)].map((m) => `${m[0]} — 대비는 tokens.decisions.contrastFloor 에서`),
+      ...[...src.matchAll(new RegExp(`\\b${tokens.shape['border-width']}\\b`, 'g'))].map((m) => `${m[0]} — 선 두께는 tokens.shape 에서`),
+    ];
+    assert.deepEqual(hits, [], `${rel(file)}: 손으로 쓴 수치\n  ${hits.join('\n  ')}`);
+  }
   // 문안이 쓰는 값이 tokens.json 에 실제로 있어야 페이지가 그려진다(없으면 모듈이 던진다).
   const brand = tokens.semantic.light['action-primary-bg'];
   const danger = tokens.semantic.light['action-danger-bg'];
