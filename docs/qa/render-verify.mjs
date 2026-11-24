@@ -19,7 +19,7 @@
 //  2026-11-14 에 실제로 이것 때문에 멀쩡한 포커스 복구 코드를 버그로 오판했다.
 // ============================================================================
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { launchBrowser, storybook, storybookBase } from './browser.mjs';
+import { actions, launchBrowser, storybook, storybookBase } from './browser.mjs';
 
 const BASE = await storybookBase(), OUT = process.argv[2] || './shots';
 mkdirSync(OUT, { recursive: true });
@@ -67,7 +67,7 @@ const results = [];
 const check = (label, pass, detail) => { results.push({ label, pass, detail }); console.log(`  ${pass ? '✓' : '✗'} ${label}${detail ? ` — ${detail}` : ''}`); };
 
 const STORIES = ['기본','정렬지정','단일선택','복수선택','행클릭과선택','컬럼고정','밀도','상태','내보내기',
-  '가상화-1만행','무한스크롤','무한스크롤-선택유지','가상화-컬럼고정','부분로드-전체선택'];
+  '가상화-1만행','무한스크롤','무한스크롤-선택유지','가상화-컬럼고정','부분로드-전체선택','가로스크롤-키보드'];
 
 // ══ A. play 함수 실행 결과 ══
 console.log('── A. play(상호작용 테스트) 실행 결과 ──');
@@ -184,6 +184,73 @@ const back = await evalIn(edgeProbe);
 check('폭을 줄이면 선이 생기고 되돌리면 사라진다',
   !wide.overflow && wide.visible === 0 && narrow.overflow && narrow.visible === narrow.edges && !back.overflow && back.visible === 0,
   JSON.stringify({ wide, narrow, back }));
+
+console.log('\n── B. 넘치는 스크롤 영역만 키보드로 닿는다 (DESIGN.md §4.5) ──');
+// 0.6.0 3c: 정렬 버튼·링크가 없는 표가 넘치면 스크롤 영역이 tabIndex=-1 이라 키보드로 밀 수 없었다(axe scrollable-region-focusable).
+// 이제 넘칠 때만 tabIndex 0 · role=region · 이름 = caption 이다. 넘치지 않으면 Tab 순서에 끼지 않는다.
+const { key } = actions(session);
+const regionProbe = `[...document.querySelectorAll('[data-slot="data-table-scroll"]')].map((s) => {
+  const ref = s.getAttribute('aria-labelledby');
+  return { x: s.scrollWidth - s.clientWidth > 1, y: s.scrollHeight - s.clientHeight > 1, tabIndex: s.tabIndex, role: s.getAttribute('role'),
+    name: ref ? document.getElementById(ref)?.textContent ?? '(끊긴 참조)' : null, caption: s.querySelector('caption')?.textContent };
+})`;
+const focusProbe = `(() => { const scrolls = [...document.querySelectorAll('[data-slot="data-table-scroll"]')], el = document.activeElement;
+  const s = getComputedStyle(el), p = document.createElement('i'); p.style.color = 'var(--border-focus)'; document.body.append(p);
+  const focus = getComputedStyle(p).color; p.remove();
+  return { at: scrolls.indexOf(el), tag: el.tagName, visible: el.matches(':focus-visible'), style: s.outlineStyle, width: s.outlineWidth,
+    offset: s.outlineOffset, color: s.outlineColor, focus, scrollLeft: scrolls[0]?.scrollLeft ?? 0, docX: window.scrollX }; })()`;
+// 화살표 스크롤은 부드러운 스크롤(애니메이션)이라 값이 멈출 때까지 기다린 뒤 읽는다.
+const settled = async (expr, ms = 3000) => {
+  let prev = null, same = 0;
+  for (let t = 0; t < ms && same < 3; t += 80) { const v = await evalIn(expr); same = v === prev ? same + 1 : 0; prev = v; await sleep(80); }
+  return prev;
+};
+await openStory('components-datatable--가로스크롤-키보드');
+const [wideRegion, fitRegion] = await evalIn(regionProbe);
+check('넘치는 표: tabIndex 0 · role=region · 이름 = caption', wideRegion.x && wideRegion.tabIndex === 0 && wideRegion.role === 'region' &&
+  wideRegion.name === wideRegion.caption, JSON.stringify(wideRegion));
+check('넘치지 않는 표: tabIndex -1 · role 없음 · 이름 참조 없음', !fitRegion.x && !fitRegion.y && fitRegion.tabIndex === -1 &&
+  fitRegion.role === null && fitRegion.name === null, JSON.stringify(fitRegion));
+// 캔버스에 다른 조작 요소가 없다 — 첫 Tab 은 넘치는 영역, 다음 Tab 은 넘치지 않는 표를 건너뛴다.
+await evalIn('document.activeElement?.blur()');
+await key('Tab');
+const tab1 = await evalIn(focusProbe);
+check('Tab 이 넘치는 영역에 닿고 2px 중립 링(전역 :focus-visible — 실선 2px · 바깥 2px · border-focus)', tab1.at === 0 && tab1.visible &&
+  tab1.style === 'solid' && tab1.width === '2px' && tab1.offset === '2px' && tab1.color === tab1.focus, JSON.stringify(tab1));
+await shot('region-focus');
+const scrollLeftOf = `Math.round(document.querySelector('[data-slot="data-table-scroll"]').scrollLeft)`;
+await key('ArrowRight'); await key('ArrowRight'); await key('ArrowRight');
+await settled(scrollLeftOf);
+const right = await evalIn(focusProbe);
+await key('ArrowLeft'); await key('ArrowLeft'); await key('ArrowLeft');
+await settled(scrollLeftOf);
+const left = await evalIn(focusProbe);
+check('→ 로 가로 스크롤, ← 로 되돌린다 · 포커스는 영역에 남고 문서는 가로로 밀리지 않는다',
+  right.scrollLeft > 0 && left.scrollLeft === 0 && right.at === 0 && left.at === 0 && right.docX === 0 && left.docX === 0,
+  `scrollLeft 0 → ${right.scrollLeft} → ${left.scrollLeft} · 문서 scrollX ${right.docX}/${left.docX}`);
+await key('Tab');
+const tab2 = await evalIn(focusProbe);
+check('다음 Tab 은 넘치지 않는 표 영역에 닿지 않는다', tab2.at !== 1, JSON.stringify({ at: tab2.at, tag: tab2.tag }));
+// 같은 표를 넓히면(넘침 없음) 정지점에서 빠지고, 좁히면 다시 생긴다 — 스크롤 영역 크기 관찰.
+const frame = `document.querySelector('[data-slot="data-table"]').closest('section').parentElement`;
+await evalIn(`${frame}.style.maxWidth = 'none'; document.querySelector('[data-slot="data-table"]').style.width = '2400px'`);
+await sleep(300);
+const [widened] = await evalIn(regionProbe);
+await evalIn(`${frame}.style.maxWidth = ''; document.querySelector('[data-slot="data-table"]').style.width = ''`);
+await sleep(300);
+const [narrowed] = await evalIn(regionProbe);
+check('넓혀서 넘치지 않으면 -1·role 없음, 다시 좁히면 0·region', !widened.x && widened.tabIndex === -1 && widened.role === null &&
+  narrowed.x && narrowed.tabIndex === 0 && narrowed.role === 'region', JSON.stringify({ widened, narrowed }));
+// 세로로만 넘치는 표(높이 제한·가상화)도 같은 영역이다 — ↓ 로 내린다.
+await openStory('components-datatable--합계-세로스크롤');
+const [tall] = await evalIn(regionProbe);
+await evalIn('document.activeElement?.blur()');
+await key('Tab');
+const tallFocus = await evalIn(focusProbe);
+await key('ArrowDown'); await key('ArrowDown');
+const down = await settled(`Math.round(document.querySelector('[data-slot="data-table-scroll"]').scrollTop)`) > 0;
+check('세로로만 넘치는 표: tabIndex 0 · region · 첫 Tab 이 영역 · ↓ 로 내린다', tall.y && !tall.x && tall.tabIndex === 0 &&
+  tall.role === 'region' && tall.name === tall.caption && tallFocus.at === 0 && down, JSON.stringify({ tall, at: tallFocus.at, down }));
 
 console.log('\n── B. 다크 테마 토큰 적용 ──');
 await openStory('components-datatable--컬럼고정', '&globals=theme:dark');

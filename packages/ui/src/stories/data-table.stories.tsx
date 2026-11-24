@@ -263,6 +263,47 @@ export const 컬럼고정: Story = {
   render: () => <PinnedExample />,
 };
 
+// 정렬·선택·링크가 없어 표 안에 Tab 으로 닿을 곳이 없는 표(§24.5 '5행 이하 표에 정렬을 달지 않는다' 와 같은 모양).
+const plainColumns = helper.columns([
+  helper.accessor('id', { header: '주문번호', enableSorting: false }),
+  helper.accessor('recipient', { header: '수취인', enableSorting: false }),
+  helper.accessor('product', { header: '상품명', enableSorting: false }),
+  helper.accessor('amount', { header: '주문 금액', enableSorting: false, cell: (cell) => cell.getValue().toLocaleString('ko-KR') }),
+  helper.accessor('orderedAt', { header: '주문 일시', enableSorting: false }),
+  helper.accessor('channel', { header: '판매 채널', enableSorting: false }),
+  helper.accessor('address', { header: '배송지', enableSorting: false }),
+  helper.accessor('memo', { header: '배송 메모', enableSorting: false }),
+]);
+const fitColumns = helper.columns([
+  helper.accessor('id', { header: '주문번호', enableSorting: false }),
+  helper.accessor('quantity', { header: '수량', enableSorting: false }),
+]);
+
+/** 넘치는 스크롤 영역만 Tab 정지점이다(DESIGN.md §4.5). 이름은 caption, 포커스 뒤 화살표로 민다. */
+export const 가로스크롤_키보드: Story = {
+  name: '가로 스크롤 — 키보드',
+  parameters: { docs: { description: { story: '표가 가로·세로로 넘칠 때만 스크롤 영역이 Tab 으로 닿는 영역(region, 이름 = caption)이 됩니다. 포커스한 뒤 ←·→ 로 밀고, 링은 다른 부품과 같은 2px 중립 링입니다. 넘치지 않는 표는 Tab 순서에 끼지 않습니다.' } } },
+  render: () => <div className="flex min-w-0 max-w-[640px] flex-col gap-6">
+    <section className="min-w-0"><h2 className="mb-3 font-semibold">넘치는 표 — Tab 으로 닿는다</h2>
+      <DataTable data={orders.slice(0, 5)} columns={plainColumns} getRowId={getRowId} caption="배송지·메모까지 보이는 주문 5건" />
+    </section>
+    <section className="min-w-0"><h2 className="mb-3 font-semibold">넘치지 않는 표 — Tab 순서에 끼지 않는다</h2>
+      <DataTable data={orders.slice(0, 3)} columns={fitColumns} getRowId={getRowId} caption="주문번호와 수량 3건" />
+    </section>
+  </div>,
+  play: async ({ canvasElement }) => {
+    const [wide, fit] = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="data-table-scroll"]')];
+    // 넘침은 첫 레이아웃 뒤에 잰다(서버 첫 그림은 -1).
+    await waitFor(() => expect(wide).toHaveAttribute('tabindex', '0'));
+    await expect(wide).toHaveAttribute('role', 'region');
+    await expect(wide).toHaveAccessibleName('배송지·메모까지 보이는 주문 5건');
+    await expect(fit).toHaveAttribute('tabindex', '-1');
+    await expect(fit).not.toHaveAttribute('role');
+    await expect(fit).not.toHaveAttribute('aria-labelledby');
+    canvasElement.dataset.playComplete = 'true';
+  },
+};
+
 export const 밀도: Story = {
   parameters: { docs: { description: { story: '같은 데이터와 스타일 안에서 행 높이와 여백으로 밀도를 조절합니다. 36px은 조회량이 많은 데스크톱, 48px은 터치 작업, 40px은 일반 업무의 기준입니다.' } } },
   render: () => <div className="grid min-w-0 gap-6 lg:grid-cols-3">

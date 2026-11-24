@@ -68,6 +68,8 @@ export function DataTable<T extends RowData>({
   const ready = effectiveState === 'idle';
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const theadRef = React.useRef<HTMLTableSectionElement>(null);
+  // 넘치는 스크롤 영역의 이름 — 표 caption 을 그대로 쓴다(DESIGN.md §4.5).
+  const captionId = React.useId();
   // 첫 레이아웃 이전의 값도 DESIGN.md 4절의 고정 밀도와 일치시킨다. 이후 CSS 토큰을 읽는다.
   const [rowHeight, setRowHeight] = React.useState({ compact: 36, default: 40, comfortable: 48 }[density]);
   const [headerHeight, setHeaderHeight] = React.useState(rowHeight);
@@ -156,14 +158,21 @@ export function DataTable<T extends RowData>({
     return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
   }, [headerKey, density]);
 
-  // 가로 넘침 — 고정 경계선은 표가 실제로 가로 스크롤될 때만 보인다(data-table.css · DESIGN.md §4.3 TD-2 A).
-  // 스크롤 영역(폭)과 표(내용 폭)를 함께 관찰한다. 선은 색만 바뀌어 폭이 그대로라 관찰이 되먹임되지 않는다.
-  const [overflowX, setOverflowX] = React.useState(false);
+  // 넘침 — 고정 경계선은 표가 실제로 가로 스크롤될 때만 보인다(data-table.css · DESIGN.md §4.3 TD-2 A).
+  // 가로든 세로든 넘치면 스크롤 영역이 키보드로 닿는 이름 있는 영역이 된다(DESIGN.md §4.5).
+  // 스크롤 영역(폭·높이)과 표(내용 크기)를 함께 관찰한다. 선은 색만, 영역은 속성만 바뀌어 크기가 그대로라 관찰이 되먹임되지 않는다.
+  const [overflow, setOverflow] = React.useState({ x: false, y: false });
+  const overflowX = overflow.x;
+  const scrollable = overflow.x || overflow.y;
   React.useLayoutEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
     // 1px 여유: 소수점 열 폭이 반올림돼 scrollWidth 가 clientWidth 보다 1 큰 것은 넘침이 아니다(Screens/OrderDetail 실측과 같은 기준).
-    const measure = () => setOverflowX(container.scrollWidth - container.clientWidth > 1);
+    const measure = () => {
+      const x = container.scrollWidth - container.clientWidth > 1;
+      const y = container.scrollHeight - container.clientHeight > 1;
+      setOverflow((previous) => previous.x === x && previous.y === y ? previous : { x, y });
+    };
     measure();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
@@ -275,7 +284,12 @@ export function DataTable<T extends RowData>({
         </div>
       )}
       <div ref={scrollRef} data-slot="data-table-scroll" onFocusCapture={keepFocusVisible}
-        tabIndex={-1} onScroll={requestLoadMore}
+        // 넘칠 때만 Tab 정지점이 되는 이름 있는 영역이다(DESIGN.md §4.5 · axe scrollable-region-focusable). 정렬 버튼·링크가 없는
+        // 표는 넘쳐도 키보드로 닿을 곳이 없어 가로로 밀 수 없었다. 포커스되면 화살표·PageUp/Down·Home/End 는 브라우저 기본 스크롤이다.
+        // 넘치지 않으면 -1 — Tab 순서에 끼지 않고, 포커스된 행이 사라질 때 포커스를 받는 자리(위 useLayoutEffect)로만 남는다.
+        // 링은 전역 :focus-visible(2px border-focus, 바깥 2px) 그대로다.
+        tabIndex={scrollable ? 0 : -1} role={scrollable ? 'region' : undefined} aria-labelledby={scrollable ? captionId : undefined}
+        onScroll={requestLoadMore}
         onBlurCapture={(event) => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) focusedRow.current = null; }}
         // isolate: 머리·합계(z 20)·고정 열 층을 표 안에 가둔다. 그러지 않으면 표 머리가 표 밖 sticky 줄(FormActionBar z 5)
         // 위로 올라온다 — 폼 안 표가 줄 밑으로 지나갈 때 머리만 줄을 뚫고 보였다.
@@ -285,7 +299,7 @@ export function DataTable<T extends RowData>({
         <table data-slot="data-table-table" aria-busy={effectiveState === 'loading'}
           aria-rowcount={totalCount}
           className="w-full table-auto border-separate border-spacing-0 bg-surface">
-          <caption className="sr-only">{caption}</caption>
+          <caption id={captionId} className="sr-only">{caption}</caption>
           <thead ref={theadRef} data-slot="data-table-header" className="sticky top-0 z-20">
             {headerGroups.map((group) => (
               <tr key={group.id} aria-rowindex={1}>

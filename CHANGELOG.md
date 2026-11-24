@@ -134,6 +134,20 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
   - 앱이 할 일: 코드 수정은 없다. 트리거 `button[aria-required]` 를 찾던 테스트는 라벨(접근 이름의 "필수 입력")이나 열린 검색 입력·
     목록의 `aria-required` 를 본다. Field 없이 `required` 만 준 Combobox·MultiSelect 는 닫힌 트리거에서 필수가 읽히지 않으니 라벨에
     필수 표시를 둔다(Field 를 쓰면 저절로 된다).
+- **넘치는 표의 스크롤 영역이 Tab 으로 닿는다 — DataTable** (0.6.0 3c · 목표 64 · DESIGN.md §4.5). 표가 가로(좁은 폭)나 세로(높이
+  제한·가상화)로 넘칠 때만 스크롤 영역(`data-table-scroll`)이 `tabIndex=0` · `role="region"` · 이름 = 표 `caption`(`aria-labelledby`)이
+  된다. 포커스한 뒤 ←·→·↑·↓·PageUp/PageDown 으로 민다(브라우저 기본 스크롤). 전에는 늘 `tabIndex=-1` 이라 정렬 버튼·링크가 없는
+  표가 좁은 폭에서 넘치면 오른쪽 열을 키보드로 볼 수 없었다(axe `scrollable-region-focusable` serious — 0.6.0 3b 섹션 제목 줄 검사의
+  출고 상세 390). 넘치지 않는 표는 그대로(-1 · role 없음)라 Tab 순서·랜드마크가 늘지 않는다. 링은 전역 2px 중립 링(새 토큰 없음)이고
+  화면 변화는 포커스 링뿐이다.
+  - 검증: axe-core 4.10.3(WCAG 2.0·2.1 A·AA, 2.2 AA) — DataTable 이 그려지는 스토리·문서 63개 × 390·1440 × 라이트·다크
+    252 화면에서 DataTable 의 `scrollable-region-focusable` 2 → 0(섹션 제목 줄 추천 조합 상세 390). 넘치는 표 294개 모두 Tab
+    정지점, 넘치지 않는 표 154개 중 정지점 0. 같은 252 화면 픽셀 비교: 246장 바이트 동일, 나머지 6장은 DataTable 문서에 새 스토리가
+    끼어 아래가 밀린 4장(그 블록을 지우고 찍으면 4/4 동일)과 기준선끼리도 흔들리는 Peek 2장. 포커스 링은 390·1440 × 라이트·다크에서
+    네 변 모두 그려지고(잘림 없음) 버튼 링과 같은 값이다. 하네스 `render-verify` +7건, 스토리 `가로 스크롤 — 키보드`.
+  - 앱이 할 일: 코드 수정은 없다. 넘치는 표에는 Tab 정지점이 하나 는다(표 안 정렬 버튼·체크박스보다 먼저) — Tab 횟수를 세는 앱
+    테스트는 영역(`role=region`, 이름 = caption)을 넣는다. caption 을 생략한 표는 영역 이름이 기본값 '데이터 목록'이니 업무 대상과
+    범위를 말하는 caption 을 준다.
 
 ### 고침
 
