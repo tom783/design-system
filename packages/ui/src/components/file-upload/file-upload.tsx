@@ -131,7 +131,9 @@ export function FileUpload({ value, onValueChange, accept, maxSize, multiple = f
           <Button ref={trigger} data-slot="file-upload-trigger" className="ds-file-upload-trigger" disabled={disabled} {...accessible}
             aria-labelledby={accessible['aria-labelledby'] ? `${accessible['aria-labelledby']} ${generatedId}-action` : undefined}
             aria-label={accessible['aria-labelledby'] ? undefined : selected ? `${accessible['aria-label']} 바꾸기` : accessible['aria-label']}
-            aria-required={required || undefined} onClick={choose} leadingIcon={selected ? undefined : <Upload aria-hidden="true" />}>
+            // 필수는 숨은 파일 입력(Field 의 htmlFor 대상)이 갖고, 버튼 이름에는 Field 라벨의 '필수 입력'이 실린다.
+            // button 역할은 aria-required 를 받지 않는다(ARIA 1.2, axe aria-allowed-attr) — 앱이 넘긴 값도 여기서 지운다.
+            aria-required={undefined} onClick={choose} leadingIcon={selected ? undefined : <Upload aria-hidden="true" />}>
             <span id={`${generatedId}-action`}>{selected ? '바꾸기' : label}</span>
           </Button>
           {selected && <Button size="sm" variant="ghost" disabled={disabled} aria-label={`${selected.file.name} 삭제`} onClick={() => remove(selected)} leadingIcon={<Trash2 aria-hidden="true" />}>삭제</Button>}

@@ -26,7 +26,7 @@ const defaultSummary = (selected: MultiSelectOption[]) => selected.length === 1
 
 export function MultiSelect({ options, value, defaultValue, onValueChange, placeholder = '선택하세요',
   summary = defaultSummary, clearLabel = '전체 해제', disabled, invalid, required,
-  maxHeight = 240, className, ref, ...wiring }: MultiSelectProps) {
+  maxHeight = 240, className, ref, 'aria-required': ariaRequired, ...wiring }: MultiSelectProps) {
   const [localValue, setLocalValue] = React.useState<string[]>(() => defaultValue ?? []);
   const selectedValues = value ?? localValue;
   const [open, setOpen] = React.useState(false);
@@ -40,6 +40,9 @@ export function MultiSelect({ options, value, defaultValue, onValueChange, place
   const activeIndex = options.findIndex(option => option.value === activeValue);
   const selected = selectedValues.flatMap(v => { const option = options.find(o => o.value === v); return option ? [option] : []; });
   const text = selected.length ? summary(selected) : placeholder;
+  // aria-required 는 목록(role=listbox)에만 둔다. 트리거 button 은 그 속성을 받지 않는다(ARIA 1.2, axe aria-allowed-attr).
+  // 닫힌 트리거에서는 Field 라벨의 '필수 입력'이 이름에 실린다(Combobox 단일과 같은 규칙, DESIGN.md §18).
+  const isRequired = Boolean(required) || ariaRequired === true || ariaRequired === 'true';
   const update = (next: string[]) => { if (value === undefined) setLocalValue(next); onValueChange?.(next); };
   const toggle = (v: string) => update(selectedValues.includes(v) ? selectedValues.filter(item => item !== v) : [...selectedValues, v]);
   React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
@@ -57,7 +60,7 @@ export function MultiSelect({ options, value, defaultValue, onValueChange, place
       <button {...wiring} ref={triggerRef} type="button" data-slot="multi-select-trigger"
         className={cn('ds-multi-select-trigger', className)} disabled={disabled} title={text}
         aria-haspopup="listbox" aria-expanded={open && !disabled} aria-controls={open ? `${id}-list` : undefined}
-        aria-invalid={invalid || wiring['aria-invalid'] || undefined} aria-required={required || wiring['aria-required']}
+        aria-invalid={invalid || wiring['aria-invalid'] || undefined}
         data-placeholder={selected.length ? undefined : ''}
         onKeyDown={event => {
           if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
@@ -74,7 +77,7 @@ export function MultiSelect({ options, value, defaultValue, onValueChange, place
         <div ref={listRef} id={`${id}-list`} data-slot="multi-select-list" className="ds-multi-select-list"
           role="listbox" aria-multiselectable="true" tabIndex={0} style={{ maxHeight }}
           aria-label={wiring['aria-label'] ?? placeholder} aria-labelledby={wiring['aria-labelledby']}
-          aria-describedby={wiring['aria-describedby']} aria-required={required || wiring['aria-required']}
+          aria-describedby={wiring['aria-describedby']} aria-required={isRequired || undefined}
           aria-invalid={invalid || wiring['aria-invalid'] || undefined}
           aria-activedescendant={activeIndex >= 0 ? `${id}-option-${activeIndex}` : undefined}
           onKeyDown={event => {

@@ -78,12 +78,16 @@ export const 필드: Story = {
   play: async ({ canvasElement: root }) => {
     const button = trigger(root), label = root.querySelector('label')!;
     await expect(button.id).toBe(label.htmlFor);
-    await expect(button).toHaveAttribute('aria-required', 'true');
+    // button 역할은 aria-required 를 받지 않는다(axe aria-allowed-attr). 필수는 라벨의 '필수 입력'이 이름에 싣고,
+    // 열린 뒤 검색 입력(role=combobox)이 aria-required 를 갖는다(DESIGN.md §18).
+    await expect(button).not.toHaveAttribute('aria-required');
+    await expect(button).toHaveAccessibleName(/^출고 사업장\s*필수 입력$/);
     await expect(button).toHaveAttribute('aria-invalid', 'true');
     await expect(button).toHaveAttribute('aria-describedby', `${root.querySelector('[data-slot="field-error"]')!.id} ${root.querySelector('[data-slot="field-description"]')!.id}`);
     await userEvent.click(label);
     await waitFor(() => expect(search()).toHaveFocus());
     await expect(search()).toHaveAttribute('aria-describedby', button.getAttribute('aria-describedby'));
+    await expect(search()).toHaveAttribute('aria-required', 'true');
     await close(root);
   },
 };

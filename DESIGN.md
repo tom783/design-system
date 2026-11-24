@@ -2563,8 +2563,13 @@ segmented-control-render-verify.mjs는 역할·이름·선택·제어·키보드
 Combobox다. 다중 선택은 §20의 MultiSelect와 Combobox multiple로 구분한다. 목록은 maxHeight(기본 240px)와 스크롤을 쓴다.
 가상 스크롤은 제공하지 않으며 **500개를 넘기면 서버에서 걸러 내려주는 것이 앱 책임**이다.
 트리거는 Select와 같은 --control-h-md와 3:1 비텍스트 대비의 --border-input을 재사용한다.
-Field가 준 id·aria-describedby·aria-invalid·required는 실제 트리거에 전달한다.
+Field가 준 id·aria-describedby·aria-invalid는 실제 트리거에 전달한다.
 오류 문장과 아이콘은 Field가 소유하며 invalid는 기존 Input과 같은 이름이다.
+**필수(required)는 트리거 button에 aria-required로 두지 않는다**(0.6.0). button 역할은 그 속성을 받지 않아
+axe `aria-allowed-attr` 위반이다(QA/CreateScreen 실측). 닫힌 트리거에서는 Field 라벨의 "필수 입력"(`role=img`)이
+접근 이름에 실리고("출고 사업장 필수 입력"), 열린 뒤 값을 찾는 검색 입력(`role=combobox`)이 `aria-required`를 갖는다.
+트리거에 `role=combobox`를 주는 방법은 열린 동안 콤보박스가 둘이 되어 쓰지 않는다(§18.3). 같은 규칙을
+MultiSelect(필수는 `role=listbox` 목록)와 FileUpload(필수는 숨은 파일 입력)의 버튼에도 쓴다.
 
 ### 18.2 필터와 한글 조합
 

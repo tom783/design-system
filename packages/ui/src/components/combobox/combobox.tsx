@@ -43,7 +43,7 @@ const defaultFilter = (query: string, option: ComboboxOption) => comboboxFilter(
 
 function SingleCombobox({ multiple: _multiple, options, value, onValueChange, placeholder = '선택하세요',
   searchPlaceholder = '검색어를 입력하세요', emptyText = '결과가 없습니다', filter = defaultFilter,
-  disabled, invalid, required, maxHeight = 240, className, ref, ...wiring }: SingleComboboxProps) {
+  disabled, invalid, required, maxHeight = 240, className, ref, 'aria-required': ariaRequired, ...wiring }: SingleComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [composing, setComposing] = React.useState(false);
@@ -73,6 +73,7 @@ function SingleCombobox({ multiple: _multiple, options, value, onValueChange, pl
     }) : filtered;
   const selected = options.find(option => option.value === value);
   const hasError = invalid || wiring['aria-invalid'];
+  const isRequired = Boolean(required) || ariaRequired === true || ariaRequired === 'true';
   const changeOpen = (next: boolean) => {
     if (next) advanceAfterSelect.current = false;
     setOpen(next);
@@ -86,11 +87,14 @@ function SingleCombobox({ multiple: _multiple, options, value, onValueChange, pl
           실측에서 트리거와 cmdk 입력이 둘 다 role=combobox 로, 둘 다 aria-hidden 조상
           없이 같은 listbox 를 가리켰다. 스크린리더는 콤보박스 두 개를 본다.
           콤보박스는 aria-activedescendant 와 aria-controls 를 소유하는 **입력 하나**다.
-          트리거는 그 입력이 든 팝오버를 여는 버튼이다. (shadcn 은 둘 다 주지만 그건 흠이다.) */}
+          트리거는 그 입력이 든 팝오버를 여는 버튼이다. (shadcn 은 둘 다 주지만 그건 흠이다.)
+          그래서 aria-required 는 트리거에 두지 않는다 — button 역할은 그 속성을 받지 않는다(ARIA 1.2, axe
+          aria-allowed-attr). 필수 여부는 Field 라벨의 '필수 입력'이 트리거 이름에 실리고, 값을 찾는 검색 입력
+          (role=combobox)이 aria-required 를 갖는다. MultipleCombobox 는 입력이 곧 트리거라 그대로 둔다. */}
       <button {...wiring} ref={triggerRef} type="button" data-slot="combobox-trigger"
         className={cn('ds-combobox-trigger', className)} disabled={disabled}
         aria-haspopup="dialog" aria-expanded={open && !disabled}
-        aria-invalid={hasError || undefined} aria-required={required || wiring['aria-required']}
+        aria-invalid={hasError || undefined}
         onKeyDown={event => {
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault(); changeOpen(true);
@@ -124,7 +128,7 @@ function SingleCombobox({ multiple: _multiple, options, value, onValueChange, pl
           }}>
           <Command.Input ref={inputRef} data-slot="combobox-input" className="ds-combobox-input"
             placeholder={searchPlaceholder} value={query} onValueChange={setQuery}
-            aria-describedby={wiring['aria-describedby']} aria-invalid={hasError || undefined}
+            aria-describedby={wiring['aria-describedby']} aria-invalid={hasError || undefined} aria-required={isRequired || undefined}
             onCompositionStart={() => { composition.bind.onCompositionStart(); setComposing(true); }}
             onCompositionEnd={event => {
               composition.bind.onCompositionEnd(); setComposing(false); setQuery(event.currentTarget.value);

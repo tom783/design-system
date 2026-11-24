@@ -59,6 +59,20 @@
   - 허용 목록 `pair/no-default` 3건을 지웠다(11 → 8건).
   - 앱이 할 일: 없다. 처음 펼친 글·처음 고른 값·처음 선택한 행을 위해 제어형으로 두던 곳은 `default*` 로 줄일 수 있다.
 
+### 바뀐 동작
+
+- **필수 표시를 button 에 `aria-required` 로 두지 않는다 — Combobox(단일)·MultiSelect·FileUpload** (목표 64 · DESIGN.md §18.1).
+  세 부품이 `required`(Field 가 넣는 값 포함)와 앱이 넘긴 `aria-required` 를 트리거 `<button>` 에 붙였는데, button 역할은 그
+  속성을 받지 않아 axe `aria-allowed-attr` 위반이었다(QA/CreateScreen 등록 화면 예시 1건으로 보고됨, 같은 원인으로 Combobox 필드·
+  MultiSelect 오류·필드·FileUpload Field안 스토리까지 6스토리 × 2테마 12건). 이제 필수는 값을 다루는 요소가 갖는다 — Combobox 는 열린 뒤
+  검색 입력(`role=combobox`), MultiSelect 는 목록(`role=listbox`, 원래도 있었다), FileUpload 는 숨은 파일 입력(원래도 있었다).
+  닫힌 트리거의 필수 여부는 Field 라벨의 "필수 입력"이 접근 이름에 실린다("출고 사업장필수 입력"). 트리거에 `role=combobox` 를 주는
+  방법은 열린 동안 콤보박스가 둘이 되어 쓰지 않았다. 다중 Combobox 는 입력이 곧 트리거(`role=combobox`)라 그대로다. 화면 변화는 없다.
+  - axe-core 4.10.3(WCAG 2.0·2.1 A·AA, 2.2 AA) 관련 127 스토리 × 라이트·다크: `aria-allowed-attr` 12 → 0, QA/CreateScreen 2 스토리 위반 0.
+  - 앱이 할 일: 코드 수정은 없다. 트리거 `button[aria-required]` 를 찾던 테스트는 라벨(접근 이름의 "필수 입력")이나 열린 검색 입력·
+    목록의 `aria-required` 를 본다. Field 없이 `required` 만 준 Combobox·MultiSelect 는 닫힌 트리거에서 필수가 읽히지 않으니 라벨에
+    필수 표시를 둔다(Field 를 쓰면 저절로 된다).
+
 ### 고침
 
 - **`which_component` 추천 정확도 — 영어 질의와 0.5.0 부품** (0.6.0 목표 64 · 2a · DESIGN.md §13.4 · `docs/qa/r38-match-ranking.md`).

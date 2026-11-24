@@ -119,13 +119,15 @@ try {
   await check('MultiSelect Field 오류·필수·설명 배선', async () => {
     assert.equal(await ev(`${trigger}.id === ${q('[data-slot="field-label"]')}.htmlFor`), true);
     assert.equal(await ev(`${trigger}.getAttribute('aria-invalid')`), 'true');
-    assert.equal(await ev(`${trigger}.getAttribute('aria-required')`), 'true');
+    // 트리거 button 은 aria-required 를 받지 않는다(axe aria-allowed-attr) — 필수는 목록(listbox)과 라벨 '필수 입력'이 싣는다.
+    assert.equal(await ev(`${trigger}.hasAttribute('aria-required')`), false);
     assert.equal(await ev(`${trigger}.getAttribute('aria-describedby') === ${q('[data-slot="field-error"]')}.id`), true);
   });
   await story('components-multiselect--필드');
   await check('FormFlow MultiSelect 닫힌 Enter 열기·선택 후 머무름·Escape·Tab 이탈', async () => {
     await focus(trigger); await press('Enter', 13, `${multiList} && document.activeElement === ${multiList}`);
     assert.equal(await ev(`${trigger}.hasAttribute('data-form-control')`), false);
+    assert.equal(await ev(`${multiList}.getAttribute('aria-required')`), 'true', '필수는 목록(role=listbox)이 갖는다');
     await press('Enter', 13); await wait(`document.activeElement === ${multiList}`);
     assert.equal(await ev(`${trigger}.getAttribute('aria-expanded')`), 'true');
     await press('Escape', 27, `${trigger}.getAttribute('aria-expanded') === 'false'`);
