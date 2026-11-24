@@ -30,8 +30,8 @@ export const helpers = {
 
 /** 이름을 바꾸며 남긴 옛 이름. 새 이름이 함께 있어야 하고 소스 prop 에 @deprecated JSDoc 이 있어야 한다. */
 export const deprecatedProps = [
-  { component: 'DatePicker', prop: 'onChange', replacement: 'onValueChange', since: '0.4.0 다음 판(목표 49)',
-    reason: '값 알림이 Input 의 DOM 이벤트 onChange 와 이름만 같고 인자가 달랐다' },
+  // DatePicker.onChange(→ onValueChange, 목표 49)는 0.6.0 에서 뺐다(CHANGELOG 0.6.0 마이그레이션 표).
+  // 새 별칭은 { component, prop, replacement, since, reason } 로 적는다.
 ];
 
 /**

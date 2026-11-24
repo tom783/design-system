@@ -20,16 +20,12 @@ type Common = Omit<React.ComponentProps<typeof Input>, 'value' | 'defaultValue' 
   /** 빠른 선택의 기준일. 기본은 운영자의 로컬 오늘이며 스토리에서는 고정할 수 있다. */
   today?: Date;
 };
-// 값 알림은 onValueChange 다(DESIGN.md §6.3). onChange 는 옛 이름으로, Input 의 DOM 이벤트 onChange 와
-// 이름은 같고 인자가 달라 헷갈렸다. 둘 다 주면 onValueChange 만 부른다.
+// 값 알림은 onValueChange 다(DESIGN.md §6.3). 옛 이름 onChange 는 Input 의 DOM 이벤트 onChange 와 이름은 같고
+// 인자가 달라 헷갈렸다 — 목표 49 에서 별칭으로 한 판 남기고 0.6.0 에서 뺐다. Common 이 Input 의 onChange 도
+// 빼므로 타입에는 onChange 가 없다(TS 가 막는다). 타입 없이 넘긴 onChange 는 아래 Input 의 초안 핸들러에 덮여 불리지 않는다.
 type Handlers<T> = {
   /** 확정한 값을 받는다. 입력 중 초안은 보내지 않는다. */
   onValueChange?: (value: T | undefined) => void;
-  /**
-   * 옛 이름. onValueChange와 같다.
-   * @deprecated onValueChange로 바꿨다(목표 49). 다음 마이너에서 뺀다.
-   */
-  onChange?: (value: T | undefined) => void;
 };
 export type DatePickerProps = Common & (
   ({ mode: 'single'; value?: Date } & Handlers<Date> & {
@@ -38,9 +34,9 @@ export type DatePickerProps = Common & (
   ({ mode?: 'range'; value?: DateRange } & Handlers<DateRange> & { time?: never })
 );
 /** 기간 필터를 우선한다. 입력 초안과 확정값을 분리해 IME 조합·미완성 날짜가 필터를 망가뜨리지 않는다. */
-export function DatePicker({ mode = 'range', value, onValueChange, onChange, today, defaultMonth, time, className,
+export function DatePicker({ mode = 'range', value, onValueChange, today, defaultMonth, time, className,
   onBlur, onKeyDown, onCompositionStart, onCompositionEnd, disabled, ...inputProps }: DatePickerProps) {
-  const emit = (onValueChange ?? onChange) as ((next: Date | DateRange | undefined) => void) | undefined;
+  const emit = onValueChange as ((next: Date | DateRange | undefined) => void) | undefined;
   const hasTime = mode === 'single' && Boolean(time);
   // 조회 기간·조회 날짜·예약 일시의 작업 방향에 맞는 빠른 선택만 제공한다.
   const presets = mode === 'range'

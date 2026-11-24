@@ -14,7 +14,8 @@
 
 ## 미출시
 
-0.6.0 에 들어갈 변경(목표 64). **깨지는 변경이 있다**(2b 옛 이름 정리) — 0.4.0·0.5.0 이 예고한 이름을 공개 API 에서 뺐다.
+0.6.0 에 들어갈 변경(목표 64). **깨지는 변경이 있다**(2b 옛 이름 정리) — 0.4.0·0.5.0 이 예고한 이름을 공개 API 에서 뺐고
+DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
 0.4.0·0.5.0 은 게시하지 않아 이 이름을 쓰는 게시본 앱은 없다. 미게시 빌드를 먼저 받아 쓴 앱만 아래 표대로 바꾼다.
 
 ### 앱이 할 일 — 마이그레이션 표
@@ -34,6 +35,7 @@
 | `initials` | 뺐다 | `Avatar name="…"` 가 이름 글자를 그린다 |
 | `encodeRecord` · `decodeRecord` | 뺐다 | `useReturnContext` 의 `capture`·`consume`. 타입 `ReturnRecord` 는 그대로 공개다(`consume()` 이 돌려준다) |
 | `useElementWidth` | 뺐다 | 차트 폭은 `ChartFrame` 이 잰다. 다른 요소 폭은 앱이 `ResizeObserver` 로 잰다 |
+| `<DatePicker onChange={(value) => …}>` | 뺐다 | `onValueChange={(value) => …}` — 받는 값(`Date`·`DateRange`·`undefined`)과 부르는 때(확정할 때만)는 같다 |
 
 ### 제거 (깨지는 변경)
 
@@ -48,6 +50,16 @@
     이 이름을 쓰지 않았다(MCP 는 부품만 싣는다 — 응답 변화 없음).
   - `scripts/api-conventions-allow.mjs` 의 `helpers` 에서 12개를 지웠다. 공개 소문자 값은 16개다.
   - 앱이 할 일: 위 표.
+- **DatePicker `onChange` 옛 별칭을 뺐다** (목표 64 · DESIGN.md §6.3 규칙 2·5 · 2026-11-24 디자인 총괄 동의). 확정 값 알림은
+  `onValueChange` 하나다. 목표 49(0.5.0)에서 이름을 바꾸며 `@deprecated` 별칭으로 남겼던 것 — 타입의 `onChange` prop 과
+  런타임 `onValueChange ?? onChange` 를 지웠다. 감싼 Input 의 DOM `onChange` 는 원래 공개 타입에서 빠져 있어(초안 처리용) 이제
+  DatePicker props 에 `onChange` 는 없다.
+  - 어디서 쓰였나: 저장소 안 스토리·문서 예제·하네스는 0.5.0 에서 이미 `onValueChange` 로 바꿨다. 남은 곳은 별칭을 고정하던
+    타입 시험(`date-picker.typecheck.ts` — 이제 `onChange` 를 `@ts-expect-error` 로 거부함을 고정)과 허용 목록 `deprecatedProps`
+    (비었다)·MCP `get_component DatePicker` 의 `onChange` prop("옛 이름. onValueChange와 같다.")뿐이었다.
+  - TypeScript 앱은 `onChange` 를 넘기면 컴파일이 멈춘다. **타입 없이(JS) 넘긴 `onChange` 는 오류 없이 불리지 않는다** — 입력 초안
+    핸들러가 덮는다. JS 앱은 이름을 꼭 바꾼다.
+  - 앱이 할 일: 위 표 마지막 줄.
 
 ### 추가
 
@@ -99,6 +111,7 @@
 
 ### 바뀐 지침 (MCP)
 
+- `get_component DatePicker` 의 props 에서 `onChange`(옛 이름) 항목이 빠졌다 — 3,091 → 2,909바이트(−182). 상속 표기·규칙은 그대로다.
 - `get_component` ClampText·MultiSelect·DataTable 에 위 prop 이 제어 값 바로 뒤에 한 줄씩 생겼다(이름·타입·`required:false`·설명).
   실제 stdio 서버 응답의 props 이름 집합·타입이 TypeScript 부품 props 타입과 같은지 타입 단정으로 대조했다(셋 다 일치).
   색인·`list_components` 는 바이트가 같다.

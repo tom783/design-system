@@ -731,7 +731,7 @@ Button의 asChild는 단일 링크에 스타일을 합치고 leadingIcon·traili
   상속으로 갖고, 부품이 자체 prop으로 다시 정의하지 않는다.
 - 근거: DatePicker가 `onChange(date)`였다. 내부에서 감싼 Input의 `onChange(event)`와 이름은 같고 인자가 달라,
   `onChange`를 이벤트로 가정하는 코드(폼 라이브러리 어댑터 등)에 그대로 넘기면 깨진다. 목표 49에서 `onValueChange`로
-  바꾸고 옛 이름은 별칭으로 남겼다(규칙 5).
+  바꾸고 옛 이름은 별칭으로 한 판 남겼다가(규칙 5) 0.6.0에서 뺐다(2026-11-24 디자인 총괄 동의).
 
 **3. ref — prop으로 받고, DOM을 펼치면 그 요소 타입으로.** `forwardRef`를 쓰지 않는다. peer가 React `^19.0.0`(§15.7)
 이라 함수 부품이 `ref`를 prop으로 받는다. forwardRef는 19에서 불필요하고, 섞여 있으면 ref 타입을 꺼내는 법이

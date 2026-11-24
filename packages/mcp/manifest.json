@@ -6660,11 +6660,6 @@
           "doc": "확정한 값을 받는다. 입력 중 초안은 보내지 않는다."
         },
         {
-          "name": "onChange",
-          "type": "((value: Date | undefined) => void) | ((value: DateRange | undefined) => void)",
-          "doc": "옛 이름. onValueChange와 같다."
-        },
-        {
           "name": "time",
           "type": "true | { step: 1 | 5 | 10 | 15 | 30; }",
           "doc": "단일 날짜의 지역 시각 입력. true는 10분, step은 분 단위다."
