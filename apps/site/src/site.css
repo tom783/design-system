@@ -20,9 +20,37 @@
 .site-link { color: var(--text-link); text-decoration: underline; text-underline-offset: 2px; }
 .site-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
   background: var(--bg-sunken); border-radius: var(--radius-sm); padding: 0 var(--space-4); overflow-wrap: anywhere; }
-.site-codeblock { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh);
-  background: var(--bg-sunken); border: var(--border-width) solid var(--border-subtle); border-radius: var(--radius-md);
-  padding: var(--space-12) var(--space-16); overflow-x: auto; white-space: pre; }
+.site-lead { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); color: var(--text-secondary); max-width: 72ch; }
+.site-icon-label { display: inline-flex; align-items: center; gap: var(--space-8); }
+.site-icon-label > svg { flex: none; width: var(--space-20); height: var(--space-20); color: var(--text-secondary); }
+.site-quote { margin: 0; padding: var(--space-12) var(--space-16); border-inline-start: var(--border-width) solid var(--border-default);
+  background: var(--bg-surface); color: var(--text-primary); }
+
+/* 코드 블록(blocks/CodeBlock.tsx) — 머리줄(이름 · 복사) + 코드. 넘치면 코드 칸만 가로로 민다. */
+.site-codeblock { min-width: 0; border: var(--border-width) solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-sunken); }
+.site-codeblock-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-16); background: var(--bg-surface); border-bottom: var(--border-width) solid var(--border-subtle); }
+.site-codeblock-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); }
+.site-codeblock-pre { margin: 0; padding: var(--space-12) var(--space-16); overflow-x: auto; white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-primary); }
+
+/* 문서 배치(blocks/Toc.tsx DocLayout) — 본문 + 오른쪽 목차. 목차는 그릇이 넓을 때만(좁으면 본문 섹션 제목이 그대로 있다). */
+.site-doc { container-type: inline-size; min-width: 0; }
+.site-doc-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-40); align-items: start; }
+.site-doc-toc { display: none; }
+@container (min-width: 880px) {
+  .site-doc-grid { grid-template-columns: minmax(0, 1fr) 200px; }
+  .site-doc-toc { display: block; position: sticky; top: 0; max-height: 100%; }
+}
+.site-toc { display: flex; flex-direction: column; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+.site-toc-title { font-weight: 600; color: var(--text-primary); }
+.site-toc-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; border-inline-start: var(--border-width) solid var(--border-subtle); }
+.site-toc-link { display: block; margin-inline-start: calc(-1 * var(--border-width)); padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+  border-inline-start: var(--border-width) solid transparent; color: var(--text-secondary); text-decoration: none; overflow-wrap: anywhere; }
+.site-toc-link[data-depth="3"] { padding-inline-start: var(--space-24); }
+.site-toc-link:hover { color: var(--text-primary); background: var(--bg-hover); }
+.site-toc-link[aria-current] { color: var(--text-primary); font-weight: 600; border-inline-start-color: var(--action-primary-bg); }
 
 /* 부품 목록 카드 격자 — 카드 최소 폭은 토큰(card-min-w) */
 .site-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-w), 1fr)); gap: var(--space-16); }
@@ -35,6 +63,7 @@
 /* 목록(쓰는 때·쓰지 말 것·규칙) */
 .site-list { margin: 0; padding-inline-start: var(--space-20); display: flex; flex-direction: column; gap: var(--space-4); list-style: disc; }
 .site-list > li::marker { color: var(--text-tertiary); }
+.site-list-ordered { list-style: decimal; }
 
 /* 스토리 예시 틀 — Storybook preview 데코레이터와 같은 바탕·여백(bg-canvas · space-24, fullBleed 면 0) */
 .site-example { border: var(--border-width) solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-surface); }
@@ -45,6 +74,7 @@
 .site-example-canvas[data-full-bleed="true"] { padding: 0; }
 .site-example-canvas[data-frame="screen"] { height: 720px; padding: 0; }
 .site-example-error { color: var(--status-danger-fg); white-space: pre-wrap; }
+.site-example-picker { min-width: 200px; max-width: 100%; }
 
 /* 색 견본 */
 .site-swatch { display: inline-block; flex: none; width: var(--space-24); height: var(--space-24); border-radius: var(--radius-sm);

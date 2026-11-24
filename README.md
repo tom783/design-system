@@ -86,4 +86,5 @@ pnpm site:preview   # 빌드 결과를 http://localhost:6201 로 띄운다
 ```
 
 내용은 이 커밋의 생성물에서만 읽는다 — 부품은 `packages/mcp/manifest.json`, 토큰은 `@s2life/tokens/tokens.json`, 규칙 출처의 절 이름은 `DESIGN.md`, 렌더 예시는 Storybook 스토리(`packages/ui/src/stories`, 각 meta 의 `parameters.manifest`)를 그대로 쓴다.
+시작하기는 이 README, AI로 쓰기는 `packages/mcp/README.md` 의 단락·코드 블록을 빌드 때 읽고, MCP 도구·리소스·추천 예시는 빌드 때 서버를 띄워 받은 응답이다. 부품마다 "npm 게시판에 있음/없음"은 게시판 태그(`v0.3.0` 등)의 매니페스트로 판정한다.
 사이트는 소비 앱처럼 앱 루트에서 Pretendard CSS 와 `@s2life/ui/styles.css` 를 한 번 불러온다. `@s2life/ui` 는 workspace 소스로 해석하고(스토리와 같은 모듈 한 벌, `pnpm build` 불필요), CSS 는 배포 `dist/styles.css` 와 같은 입력(`scripts/ui-styles-source.mjs`)으로 컴파일한다.

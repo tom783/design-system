@@ -83,3 +83,32 @@ test('배포 CSS 입력: 사이트와 build-ui 가 같은 변환을 쓴다', () 
   assert.match(read(join(root, 'scripts/build-ui.mjs')), /publishedStylesInput\(styles\)/);
   assert.match(read(join(site, 'vite.config.ts')), /publishedStylesInput\(/);
 });
+
+test('사이트: 디자인 컨셉 문안의 수치는 손으로 쓰지 않고 tokens.json 에서 넣는다', () => {
+  // 문안(디자인 총괄)의 색·선 두께·대비·시간은 토큰이 바뀌면 같이 바뀌어야 한다. 주석은 빼고 본다.
+  const file = join(site, 'src/content/concept.ts');
+  const src = read(file).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const tokens = JSON.parse(read(join(root, 'packages/tokens/tokens.json')));
+  const hits = [
+    ...[...src.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((m) => `${m[0]} — 색은 tokens.semantic 에서`),
+    ...[...src.matchAll(/\b\d+\s*ms\b/g)].map((m) => `${m[0]} — 시간은 tokens.motion 에서`),
+    ...[...src.matchAll(/\b\d+(?:\.\d+)?:1\b/g)].map((m) => `${m[0]} — 대비는 tokens.decisions.contrastFloor 에서`),
+    ...[...src.matchAll(new RegExp(`\\b${tokens.shape['border-width']}\\b`, 'g'))].map((m) => `${m[0]} — 선 두께는 tokens.shape 에서`),
+  ];
+  assert.deepEqual(hits, [], `${rel(file)}: 손으로 쓴 수치\n  ${hits.join('\n  ')}`);
+  // 문안이 쓰는 값이 tokens.json 에 실제로 있어야 페이지가 그려진다(없으면 모듈이 던진다).
+  const brand = tokens.semantic.light['action-primary-bg'];
+  const danger = tokens.semantic.light['action-danger-bg'];
+  assert.ok(brand && danger, 'semantic.light action-primary-bg · action-danger-bg');
+  assert.ok(tokens.verification.separation.some((check) => check.a === brand.hex && check.b === danger.hex), '브랜드 액션 vs 에러 액션 색 차이 검사');
+  assert.equal(typeof tokens.decisions.contrastFloor?.text, 'number');
+  assert.ok(Object.keys(tokens.motion).some((name) => name.startsWith('dur-')));
+});
+
+test('사이트: 문안 출처의 DESIGN.md 절이 DESIGN.md 에 있다', () => {
+  // 출처는 그 절로 가는 링크로 그린다(blocks/Text.tsx DesignLink) — 절 번호가 바뀌면 여기서 먼저 걸린다.
+  const numbers = new Set([...read(join(root, 'DESIGN.md')).matchAll(/^#{2,4} (\d+(?:\.\d+)*)\.? +/gm)].map((m) => m[1]));
+  const cited = [...read(join(site, 'src/content/concept.ts')).matchAll(/design: '([^']+)'/g)].map((m) => m[1]);
+  assert.ok(cited.length > 0);
+  assert.deepEqual(cited.filter((n) => !numbers.has(n)), [], 'DESIGN.md 에 없는 절');
+});

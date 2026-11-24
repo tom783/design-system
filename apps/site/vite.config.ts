@@ -5,6 +5,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { publishedStylesInput } from '../../scripts/ui-styles-source.mjs';
+import { numberedSections, parseMarkdown } from './vite-plugins/markdown';
+import { siteDocs } from './vite-plugins/site-docs';
 
 // 소개 사이트 — 로컬 구동 전용(배포하지 않는다, 2026-11-24 오너 결정).
 // 포트는 고정한다. 6006 은 Storybook, 6099 는 하네스가 쓴다. 차 있으면 다른 포트로 옮기지 않고 멈춘다 —
@@ -74,13 +76,16 @@ function storyExportOrder(): Plugin {
  * - published: CHANGELOG.md 에서 날짜가 붙은 첫 판(= npm 에 게시된 최신판). `미게시` 판은 건너뛴다.
  * - sha·dirty: 사이트를 띄운(빌드한) 시점의 작업 폴더
  * - designSections: DESIGN.md 의 번호 붙은 제목 — 매니페스트 규칙 출처(`DESIGN.md 11.8`)에 이름을 붙인다.
+ * - designAnchors: 같은 절의 GitHub 앵커 — 출처를 그 절로 바로 가는 링크로 만든다.
+ * - published.components: 게시판 태그(v{게시판})의 매니페스트에 있는 이름 — 부품마다 "npm 게시판에 있음/없음".
+ *   태그를 못 읽으면(얕은 클론 등) null 이고 사이트는 "확인 불가"로 보인다.
  */
 function siteMeta(): Plugin {
   const virtualId = 'virtual:site-meta';
   const resolved = `\0${virtualId}`;
   const files = { ui: `${repo}packages/ui/package.json`, changelog: `${repo}CHANGELOG.md`, design: `${repo}DESIGN.md` };
   const git = (...args: string[]) => {
-    try { return execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim(); } catch { return null; }
+    try { return execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 16 * 1024 * 1024 }).trim(); } catch { return null; }
   };
   return {
     name: 'site:meta',
@@ -95,19 +100,24 @@ function siteMeta(): Plugin {
       // git+https://github.com/o/r.git → https://github.com/o/r
       const repository = typeof ui.repository?.url === 'string' ? ui.repository.url.replace(/^git\+/, '').replace(/\.git$/, '') : null;
       const published = /^## (\d+\.\d+\.\d+) — (\d{4}-\d{2}-\d{2})\s*$/m.exec(readFileSync(files.changelog, 'utf8'));
-      const designSections: Record<string, string> = {};
-      for (const [, number, title] of readFileSync(files.design, 'utf8').matchAll(/^#{2,4} (\d+(?:\.\d+)*)\.? +(.+)$/gm)) {
-        designSections[number!] ??= title!.trim();
-      }
+      const sections = numberedSections(parseMarkdown(readFileSync(files.design, 'utf8')).headings);
+      const designSections = Object.fromEntries(Object.entries(sections).map(([number, section]) => [number, section.title]));
+      const designAnchors = Object.fromEntries(Object.entries(sections).map(([number, section]) => [number, section.slug]));
       const sha = git('rev-parse', '--short', 'HEAD');
       const dirty = git('status', '--porcelain') ? true : false;
+      let publishedComponents: string[] | null = null;
+      if (published) {
+        const stored = git('show', `v${published[1]}:packages/mcp/manifest.json`);
+        try { publishedComponents = stored ? (JSON.parse(stored).components as { name: string }[]).map((c) => c.name) : null; } catch { publishedComponents = null; }
+      }
       const meta = {
         version,
-        published: published ? { version: published[1], date: published[2] } : null,
+        published: published ? { version: published[1], date: published[2], components: publishedComponents } : null,
         repository,
         sha,
         dirty,
         designSections,
+        designAnchors,
       };
       return `export default ${JSON.stringify(meta)};`;
     },
@@ -116,7 +126,7 @@ function siteMeta(): Plugin {
 
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
-  plugins: [uiStylesAsPublished(), storyExportOrder(), siteMeta(), react(), tailwindcss()],
+  plugins: [uiStylesAsPublished(), storyExportOrder(), siteMeta(), siteDocs(repo), react(), tailwindcss()],
   resolve: {
     alias: uiAliases,
     // 사이트와 packages/ui 가 같은 React 한 벌을 쓰게 한다(링크 경로가 달라도).

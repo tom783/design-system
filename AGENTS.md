@@ -94,6 +94,11 @@ pnpm site:preview   # 빌드 결과를 6201 로
 끌 때는 띄운 PID 로만 끈다. `pnpm typecheck` 가 `apps/site/tsconfig.json` 도 검사하고, `docs/qa/site.test.mjs` 가
 사이트의 경계(공개 진입점만 import · `site-` 클래스·의미 토큰만 · 토큰 분류 전부 파운데이션에 실림 · 포트)를 막는다.
 사이트 데이터는 생성물(manifest.json·tokens.json·DESIGN.md·스토리)에서만 읽는다 — 부품 목록·값을 사이트에 손으로 옮겨 적지 않는다.
+시작하기·AI로 쓰기는 README.md·packages/mcp/README.md 의 단락·코드 블록을 제목으로 찾아 싣고, MCP 도구·리소스·안내·추천 예시는
+빌드 때 `packages/mcp/server.mjs` 를 띄워 받은 응답이다(`apps/site/vite-plugins/site-docs.ts`). 그래서 **README 의 그 제목·첫 문장을
+바꾸면 `pnpm site:build` 가 멈춘다** — 에러가 가리키는 `README_TEXT`·`MCP_README_TEXT` 를 함께 고친다.
+디자인 컨셉 문안은 `apps/site/src/content/concept.ts`(디자인 총괄 문안 그대로, 수치는 tokens.json 에서 — site.test 가 손으로 쓴 hex·ms·대비를 막는다).
+목차·코드 블록(`apps/site/src/blocks`)은 사이트 전용이다 — 디자인 시스템 부품 후보가 아니다.
 
 ## main 통합
 
