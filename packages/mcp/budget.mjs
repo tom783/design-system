@@ -23,10 +23,14 @@ import { listComponents, getComponent, componentIndex } from './catalog.mjs';
 //   색인 23,191 + 4×2,047 = 31,379 → 40,000 (자유 8.6KB ≈ 평균 가족 20개)
 //   목록 19,873 + 4×2,783 = 31,005 → 36,000 (자유 5.0KB ≈ 평균 가족 13개)
 // 항목당 상한은 지금 최대의 약 1.4배다. 문장 하나가 비정상적으로 길어지면 여기서 걸린다.
+// 상세(get_component 1건) 6,000 → 7,000 (2026-11-24 목표 64 · 개발 총괄 결정): R49 는 당시 최대 4,576B(DataTable)의
+// 약 1.3배로 6,000 을 잡았다. 목표 57 의 합계·고정 열 지침으로 DataTable 이 5,940B 가 됐고, 0.6.0 에서 규약대로
+// 비제어 초기값 defaultSelectedIds 를 더하자 6,118B(JSDoc 없이도 6,017B)로 넘었다. 같은 원칙(실측 최대 × 약 1.15~1.3)으로 7,000 —
+// 0.6.0 의 다른 지침(반복 입력 줄·섹션 제목 줄·추천 정확도)이 DataTable 에 문장을 더할 여유 약 0.9KB.
 export const BUDGETS = {
   index: { total: 40_000, entry: 800 },
   list: { total: 36_000, entry: 320 },
-  detail: 6_000,
+  detail: 7_000,
   tokens: 80_000,
   rules: 8_000,
 };

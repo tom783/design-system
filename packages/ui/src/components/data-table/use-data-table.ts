@@ -35,6 +35,8 @@ export interface UseDataTableOptions<T extends RowData> {
   getRowId: (row: T) => string;
   selectionMode?: SelectionMode;
   selectedIds?: string[];
+  /** 비제어 초기값. selectedIds를 주지 않을 때 첫 렌더에만 읽는다. 기본 []. */
+  defaultSelectedIds?: string[];
   onSelectedIdsChange?: (ids: string[]) => void;
   pinnedStart?: string[];
   pinnedEnd?: string[];
@@ -48,10 +50,10 @@ export function useDataTable<T extends RowData>(options: UseDataTableOptions<T>)
 
 /** DataTable의 기존 state를 전달하는 비공개 경로. 공개 옵션에는 상태 prop을 추가하지 않는다. */
 export function useDataTableState<T extends RowData>({
-  data, totalCount, columns, getRowId, selectionMode = 'none', selectedIds, onSelectedIdsChange,
+  data, totalCount, columns, getRowId, selectionMode = 'none', selectedIds, defaultSelectedIds, onSelectedIdsChange,
   pinnedStart = NO_PINS, pinnedEnd = NO_PINS,
 }: UseDataTableOptions<T>, state: 'idle' | 'loading' | 'empty' | 'error') {
-  const [internalIds, setInternalIds] = React.useState<string[]>([]);
+  const [internalIds, setInternalIds] = React.useState<string[]>(() => defaultSelectedIds ?? []);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const ids = selectedIds ?? internalIds;
   const currentRowIds = React.useMemo(() => new Set(data.map(getRowId)), [data, getRowId]);

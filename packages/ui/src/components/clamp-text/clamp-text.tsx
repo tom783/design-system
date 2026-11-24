@@ -6,16 +6,18 @@ export interface ClampTextProps extends React.ComponentProps<'div'> {
   lines?: number;
   /** 제어하려면 주고, 아니면 스스로 관리한다. */
   expanded?: boolean;
+  /** 비제어 초기값. expanded를 주지 않을 때 첫 렌더에만 읽는다. 기본 false. */
+  defaultExpanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
   moreLabel?: string;
   lessLabel?: string;
 }
 
-export function ClampText({ lines = 2, expanded, onExpandedChange, moreLabel = '더보기',
+export function ClampText({ lines = 2, expanded, defaultExpanded = false, onExpandedChange, moreLabel = '더보기',
   lessLabel = '간략히', children, className, ...props }: ClampTextProps) {
   const textId = React.useId();
   const textRef = React.useRef<HTMLDivElement>(null);
-  const [localExpanded, setLocalExpanded] = React.useState(false);
+  const [localExpanded, setLocalExpanded] = React.useState(defaultExpanded);
   const [overflowing, setOverflowing] = React.useState(false);
   const isExpanded = expanded ?? localExpanded;
   const lineCount = Number.isFinite(lines) ? Math.max(1, Math.floor(lines)) : 2;

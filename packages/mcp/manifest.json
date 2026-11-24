@@ -5312,6 +5312,11 @@
           "doc": "제어하려면 주고, 아니면 스스로 관리한다."
         },
         {
+          "name": "defaultExpanded",
+          "type": "boolean",
+          "doc": "비제어 초기값. expanded를 주지 않을 때 첫 렌더에만 읽는다. 기본 false."
+        },
+        {
           "name": "onExpandedChange",
           "type": "((expanded: boolean) => void)"
         },
@@ -5536,6 +5541,11 @@
         {
           "name": "value",
           "type": "string[]"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string[]",
+          "doc": "비제어 초기값. value를 주지 않을 때 첫 렌더에만 읽는다. 기본 []."
         },
         {
           "name": "onValueChange",
@@ -7451,6 +7461,11 @@
         {
           "name": "selectedIds",
           "type": "string[]"
+        },
+        {
+          "name": "defaultSelectedIds",
+          "type": "string[]",
+          "doc": "비제어 초기값. selectedIds를 주지 않을 때 첫 렌더에만 읽는다. 기본 []."
         },
         {
           "name": "onSelectedIdsChange",

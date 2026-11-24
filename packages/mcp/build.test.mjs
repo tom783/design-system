@@ -106,7 +106,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
   assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206 + 203 + 199 + 212);
   // 목표 57: 최대 상세 DataTable 4,576B → 5,642B(summary 합계 행 지침). 운영 상한 6,000B 는 budget.mjs.
   // 목표 57 4단계: DataTable 5,642B → 5,940B(+298 — 금지 2개 · 상태 열·금액 열 고정 규칙, 합계 라벨 규칙에서 고정 문장을 옮김).
-  assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800 + 842 + 298);
+  // 목표 64(0.6.0): DataTable 5,940B → 6,118B(+178 — 비제어 초기값 defaultSelectedIds prop 과 JSDoc). 운영 상한은 7,000B 로 올렸다.
+  assert.ok(Math.max(...manifest.components.map(component => Buffer.byteLength(JSON.stringify(getComponent(manifest, component))))) <= 4_800 + 842 + 298 + 178);
   // 2026-11-22 표 선택 행 토큰(bg-selected-row) 추가: 토큰 67,503B + 297B. 운영 상한 80KB 는 유지한다.
   assert.ok(Buffer.byteLength(JSON.stringify(manifest.tokens)) <= 67_800);
   assert.ok(Buffer.byteLength(JSON.stringify({ rules: manifest.principles })) <= 4_400);
@@ -187,7 +188,7 @@ function fill(manifest, response, set, target) {
 }
 
 test('R49 예산 수치는 문서의 구조와 같다', () => {
-  assert.deepEqual(BUDGETS, { index: { total: 40_000, entry: 800 }, list: { total: 36_000, entry: 320 }, detail: 6_000, tokens: 80_000, rules: 8_000 });
+  assert.deepEqual(BUDGETS, { index: { total: 40_000, entry: 800 }, list: { total: 36_000, entry: 320 }, detail: 7_000, tokens: 80_000, rules: 8_000 });
   assert.equal(RESERVE_FAMILIES, 4);
 });
 

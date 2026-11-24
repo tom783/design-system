@@ -163,6 +163,16 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     };
     // 0.6.0 목표 64: which_component 키워드 '초성' 하나만 끝에 더한다("초성만 쳐도 찾게"가 SideNav '브랜드'로 갔다). 나머지 그대로다.
     if (name === 'Combobox') adjusted = { ...adjusted, keywords: [...adjusted.keywords, '초성'] };
+    // 목표 64(0.6.0 · DESIGN.md §6.3 규칙 1): 비제어 초기값 defaultX 를 제어 값 X 바로 뒤에 더한다. 나머지 props·순서는 그대로다.
+    const initial = { ClampText: ['expanded', 'defaultExpanded', 'boolean | undefined', '비제어 초기값. expanded를 주지 않을 때 첫 렌더에만 읽는다. 기본 false.'],
+      MultiSelect: ['value', 'defaultValue', 'string[] | undefined', '비제어 초기값. value를 주지 않을 때 첫 렌더에만 읽는다. 기본 [].'],
+      DataTable: ['selectedIds', 'defaultSelectedIds', 'string[] | undefined', '비제어 초기값. selectedIds를 주지 않을 때 첫 렌더에만 읽는다. 기본 [].'] }[name];
+    if (initial) {
+      const [after, prop, type, doc] = initial;
+      const at = adjusted.props.findIndex(item => item.name === after) + 1;
+      assert.ok(at > 0, `${name}.${after} 가 기준선에 있다`);
+      adjusted = { ...adjusted, props: adjusted.props.toSpliced(at, 0, { name: prop, type, required: false, doc }) };
+    }
     // 목표 49(DESIGN.md §6.3): forwardRef → ref prop 으로 상속 표기만 바뀌었다. 런타임 동일.
     if (name === 'Button') adjusted = { ...adjusted, extends: ["React.ComponentProps<'button'>", ...adjusted.extends.slice(1)] };
     if (name === 'SelectTrigger') adjusted = { ...adjusted, extends: ['React.ComponentProps<typeof SelectPrimitive.Trigger>'] };

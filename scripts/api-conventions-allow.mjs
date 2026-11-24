@@ -47,11 +47,6 @@ export const allow = [
   { rule: 'pair/no-default', target: 'FileUpload.value', reason: '업로드 상태·진행률·오류를 앱이 항목마다 갱신한다(DESIGN.md §11.7)' },
   { rule: 'pair/no-default', target: 'Pagination.page', reason: 'URL·조회 요청과 동기화는 앱이 맡는다(DESIGN.md §4.1)' },
   { rule: 'pair/no-default', target: 'Pagination.pageSize', reason: 'URL·조회 요청과 동기화는 앱이 맡는다(DESIGN.md §4.1)' },
-  // 내부 상태가 이미 있어 defaultX 는 초기값 한 줄이면 된다. 다만 세 부품 모두 MCP get_component 응답 기준선
-  // (docs/qa/fixtures/get-component-baseline.json · packages/mcp/server.test.mjs R28)에 고정돼 있어 응답 재승인과 함께 한다.
-  { rule: 'pair/no-default', target: 'ClampText.expanded', reason: '비제어 상태는 있으나 defaultExpanded 없음. MCP 응답 기준선 재승인과 함께 더한다' },
-  { rule: 'pair/no-default', target: 'MultiSelect.value', reason: '비제어 상태는 있으나 defaultValue 없음. MCP 응답 기준선 재승인과 함께 더한다' },
-  { rule: 'pair/no-default', target: 'DataTable.selectedIds', reason: '비제어 상태는 있으나 defaultSelectedIds 없음. MCP 응답 기준선 재승인과 함께 더한다' },
   // open 이 필수 prop 이다. 비제어를 더하면 open 을 선택으로 풀어야 해 별도 작업으로 둔다.
   { rule: 'pair/no-default', target: 'Peek.open', reason: 'open·onOpenChange 가 필수인 제어 전용. 비제어 추가는 후속' },
   { rule: 'pair/no-default', target: 'MediaViewer.open', reason: 'open·onOpenChange 가 필수인 제어 전용. 비제어 추가는 후속' },

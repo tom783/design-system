@@ -9,6 +9,8 @@ export interface MultiSelectProps extends Pick<React.ComponentPropsWithRef<'butt
   'id' | 'ref' | 'className' | 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid' | 'aria-required'> {
   options: MultiSelectOption[];
   value?: string[];
+  /** 비제어 초기값. value를 주지 않을 때 첫 렌더에만 읽는다. 기본 []. */
+  defaultValue?: string[];
   onValueChange?: (value: string[]) => void;
   placeholder?: string;
   /** 요약 문구를 앱이 바꾼다. 기본은 "{첫 라벨} 외 {n-1}개"다. */
@@ -22,10 +24,10 @@ export interface MultiSelectProps extends Pick<React.ComponentPropsWithRef<'butt
 const defaultSummary = (selected: MultiSelectOption[]) => selected.length === 1
   ? selected[0]!.label : `${selected[0]!.label} 외 ${selected.length - 1}개`;
 
-export function MultiSelect({ options, value, onValueChange, placeholder = '선택하세요',
+export function MultiSelect({ options, value, defaultValue, onValueChange, placeholder = '선택하세요',
   summary = defaultSummary, clearLabel = '전체 해제', disabled, invalid, required,
   maxHeight = 240, className, ref, ...wiring }: MultiSelectProps) {
-  const [localValue, setLocalValue] = React.useState<string[]>([]);
+  const [localValue, setLocalValue] = React.useState<string[]>(() => defaultValue ?? []);
   const selectedValues = value ?? localValue;
   const [open, setOpen] = React.useState(false);
   const [active, setActive] = React.useState<string>();

@@ -49,6 +49,16 @@
   - `scripts/api-conventions-allow.mjs` 의 `helpers` 에서 12개를 지웠다. 공개 소문자 값은 16개다.
   - 앱이 할 일: 위 표.
 
+### 추가
+
+- **비제어 초기값 3개 — `ClampText defaultExpanded` · `MultiSelect defaultValue` · `DataTable defaultSelectedIds`** (목표 64 ·
+  DESIGN.md §6.3 규칙 1 `X`·`defaultX`·`onXChange`). 셋 다 내부 상태(비제어)가 이미 있었는데 처음 값을 줄 방법이 없어 규약 위반
+  허용 목록(`pair/no-default`)에 있었다. 제어 값(`expanded`·`value`·`selectedIds`)을 주지 않을 때 첫 렌더에만 읽고, 둘 다 주면
+  제어 값이 이긴다. 기본값은 지금 동작과 같다(접힘 · `[]` · `[]`). `defaultSelectedIds` 는 `useDataTable` 옵션에도 생겼고,
+  `data` 에 없는 id 는 지금의 선택 정책(§4.1 교집합)대로 선택으로 세지 않는다. 이름을 바꾼 것이 아니라 새로 더한 것이라 별칭은 없다.
+  - 허용 목록 `pair/no-default` 3건을 지웠다(11 → 8건).
+  - 앱이 할 일: 없다. 처음 펼친 글·처음 고른 값·처음 선택한 행을 위해 제어형으로 두던 곳은 `default*` 로 줄일 수 있다.
+
 ### 고침
 
 - **`which_component` 추천 정확도 — 영어 질의와 0.5.0 부품** (0.6.0 목표 64 · 2a · DESIGN.md §13.4 · `docs/qa/r38-match-ranking.md`).
@@ -71,6 +81,15 @@
   - 남은 것: 반복 입력 줄(품목 줄 추가)은 맞는 부품이 없어 정답 세트에 공백으로 둔다(DESIGN.md §24 다음 판 후보). 스켈레톤 가족의
     "X 모양 자리 표시"는 일반 Skeleton 이 1위다(2위에 해당 프리셋).
   - 앱이 할 일: 없다.
+
+### 바뀐 지침 (MCP)
+
+- `get_component` ClampText·MultiSelect·DataTable 에 위 prop 이 제어 값 바로 뒤에 한 줄씩 생겼다(이름·타입·`required:false`·설명).
+  실제 stdio 서버 응답의 props 이름 집합·타입이 TypeScript 부품 props 타입과 같은지 타입 단정으로 대조했다(셋 다 일치).
+  색인·`list_components` 는 바이트가 같다.
+- **`get_component` 한 건 운영 상한 6,000 → 7,000바이트** (2026-11-24 개발 총괄 결정 · `packages/mcp/budget.mjs`). DataTable 이
+  5,940 → 6,118바이트(+178)로 6,000 을 넘었다(JSDoc 없이도 6,017). R49 원칙(실측 최대 × 약 1.15~1.3)대로 올렸고 남은 여유는 882바이트다.
+  회귀 상한(`build.test.mjs`)은 늘어난 178바이트만 올렸다. 상세 상위 3개: DataTable 6,118 · FormActionBar 5,270 · FilterBar 4,330.
 
 ---
 

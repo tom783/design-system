@@ -419,7 +419,8 @@ Pretendard Variable 14px/400·500, tabular-nums)) + 좌우 여백 28px`이다. �
 (태블릿 물류 화면은 48px을 기본으로 쓴다).
 
 DataTable 선택은 **현재 `data`에 있는 행에만** 적용한다. 필터 등으로 data에서 빠진 ID는
-교집합으로 자동 해제하고, 바뀐 경우에만 `onSelectedIdsChange`로 앱에 알린다(비제어도 동일).
+교집합으로 자동 해제하고, 바뀐 경우에만 `onSelectedIdsChange`로 앱에 알린다(비제어도 동일 — 비제어의 처음 선택은
+`defaultSelectedIds`, 0.6.0 · §6.3 규칙 1).
 보이지 않는 물류 건을 일괄 처리하지 않도록 앱의 `selectedIds`와 표의 선택을 일치시키는 정책이다.
 `state='loading'`·`'error'`는 확정된 조회 결과가 아니므로 선택을 줄이지 않는다.
 실제 빈 결과(`empty` 또는 idle의 빈 data)는 선택도 비운다. 무한 로드로 행이 덧붙으면
@@ -2767,6 +2768,7 @@ MultiSelect는 internal/popover 위의 독립 컴포넌트다. 두 다중 선택
 
 ### 20.1 MultiSelect — 높이를 보존하는 요약
 
+값은 value·onValueChange 제어형, 생략하면 내부 상태이고 처음 값은 defaultValue(0.6.0, §6.3 규칙 1)다.
 트리거는 선택 0·1·5개 모두 control-h-md 고정이다. 기본 요약은 첫 라벨과
 “외 n개”이며 summary로 교체한다. 긴 문구는 말줄임하고 title에 전체를 보존한다.
 패널은 listbox·aria-multiselectable=true, 항목은 option·aria-selected이며 메뉴 역할을 쓰지
@@ -2825,7 +2827,7 @@ Radix의 aria-expanded·aria-controls·data-state를 유지하고 높이 전환�
 입력과 DOM을 유지하면서 보조기기와 키보드에서는 제외한다. 안쪽 여백은 자식에 준다.
 
 ClampText는 기본 2줄이며 lines로 바꾼다. expanded·onExpandedChange는 제어 모드,
-생략하면 내부 상태다. moreLabel·lessLabel 기본값은 더보기·간략히다.
+생략하면 내부 상태이고 처음 펼침은 defaultExpanded(0.6.0, §6.3 규칙 1)로 준다. moreLabel·lessLabel 기본값은 더보기·간략히다.
 잘못된 lines는 유한한 양의 정수로 보정하고 비유한 값은 기본 2로 처리한다.
 -webkit-box·vertical·line-clamp·overflow:hidden으로 시각만 자르므로 전체 글은 DOM에
 남고 복사할 수 있다. 상호작용 없는 글에 사용한다. 자식 링크·입력을 접는 용도는 Collapsible다.
