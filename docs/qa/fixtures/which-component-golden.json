@@ -1,7 +1,7 @@
 {
-  "description": "which_component 정답 세트(R49 · 0.6.0 목표 64). 실제 요청 문장과 정답 부품이다. set 이 없으면 R49 기준 128문항, logistics06 은 도그푸딩 6 사전 점검 표의 한국어·영어 32문항 그대로, r050 은 0.5.0 부품(FilterBar·BulkActionBar·DataTable 합계·DescriptionList·FormActionBar·Input 접미사)을 가리키는 26문항이다. expected 는 정답 하나·허용 정답 여러 개(배열, 가장 높은 순위로 친다)·null(맞는 부품이 아직 없다, gap 에 이유)이다. null 문항은 정확도 분모에서 빼고 후보 0개만 센다. 질의가 이름 일치 점수를 받으면 안 된다(이름 일치 +1000점이 정확도를 부풀린다) — 소문자 영어 낱말 'button'·'select' 는 이름 일치가 아니다. 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. measured 는 기록한 실측, floor 는 실측에서 여유를 조금 둔 하한이다. 그 아래로 떨어지거나 후보 0개가 생기면 docs/qa/which-component-golden.test.mjs 가 실패한다(pnpm test = verify·pre-commit·CI). 수치가 바뀌면 measured 를 고치고, 오른 만큼 floor 도 올린다. 튜닝에 쓰지 않은 확인용 질의는 which-component-holdout.json 에 따로 있다.",
-  "measured": { "measuredAt": "2026-11-24", "top1": 166, "top3": 182, "scored": 184, "noCandidates": 0, "queries": 186 },
-  "floor": { "top1": 162, "top3": 180, "maxNoCandidates": 0 },
+  "description": "which_component 정답 세트(R49 · 0.6.0 목표 64). 실제 요청 문장과 정답 부품이다. set 이 없으면 R49 기준 128문항, logistics06 은 도그푸딩 6 사전 점검 표의 한국어·영어 32문항 그대로, r050 은 0.5.0 부품(FilterBar·BulkActionBar·DataTable 합계·DescriptionList·FormActionBar·Input 접미사)을 가리키는 26문항, r060 은 0.6.0 반복 입력 줄(FieldList) 6문항이다. logistics06 의 공백 2문항(품목 줄 추가)은 0.6.0 3a 에서 FieldList 로 채웠다. expected 는 정답 하나·허용 정답 여러 개(배열, 가장 높은 순위로 친다)·null(맞는 부품이 아직 없다, gap 에 이유)이다. null 문항은 정확도 분모에서 빼고 후보 0개만 센다. 질의가 이름 일치 점수를 받으면 안 된다(이름 일치 +1000점이 정확도를 부풀린다) — 소문자 영어 낱말 'button'·'select' 는 이름 일치가 아니다. 정답은 component-intent 의 useWhen·dont 갈림길을 따른다. measured 는 기록한 실측, floor 는 실측에서 여유를 조금 둔 하한이다. 그 아래로 떨어지거나 후보 0개가 생기면 docs/qa/which-component-golden.test.mjs 가 실패한다(pnpm test = verify·pre-commit·CI). 수치가 바뀌면 measured 를 고치고, 오른 만큼 floor 도 올린다. 튜닝에 쓰지 않은 확인용 질의는 which-component-holdout.json 에 따로 있다.",
+  "measured": { "measuredAt": "2026-11-24", "top1": 174, "top3": 190, "scored": 192, "noCandidates": 0, "queries": 192 },
+  "floor": { "top1": 170, "top3": 188, "maxNoCandidates": 0 },
   "cases": [
     { "query": "주문 목록을 표로 보여주고 열 기준으로 정렬하고 싶어", "expected": "DataTable", "lang": "ko" },
     { "query": "매장 카드 목록을 불러오는 동안 카드 모양 자리 표시", "expected": "CardSkeleton", "lang": "ko" },
@@ -155,8 +155,8 @@
     { "query": "period selector: today, this week, this month", "expected": ["SegmentedControl", "DatePicker"], "lang": "en", "set": "logistics06" },
     { "query": "오늘 출고 건수·지연 건수·완료율 같은 핵심 지표", "expected": "StatTile", "lang": "ko", "set": "logistics06" },
     { "query": "KPI cards for today shipments, delays and completion rate", "expected": "StatTile", "lang": "en", "set": "logistics06" },
-    { "query": "등록 폼에서 품목 줄 추가(품목·수량·중량)", "expected": null, "lang": "ko", "set": "logistics06", "gap": "반복 입력 줄 부품 없음 — 도그푸딩 6 D4, DESIGN.md §24 \"다음 판 후보\"" },
-    { "query": "add repeated line item rows in a form", "expected": null, "lang": "en", "set": "logistics06", "gap": "반복 입력 줄 부품 없음 — 도그푸딩 6 D4, DESIGN.md §24 \"다음 판 후보\"" },
+    { "query": "등록 폼에서 품목 줄 추가(품목·수량·중량)", "expected": "FieldList", "lang": "ko", "set": "logistics06" },
+    { "query": "add repeated line item rows in a form", "expected": "FieldList", "lang": "en", "set": "logistics06" },
     { "query": "왼쪽 메뉴로 화면 오가기", "expected": ["SideNav", "AppShell"], "lang": "ko", "set": "logistics06" },
     { "query": "left sidebar navigation between pages", "expected": ["SideNav", "AppShell"], "lang": "en", "set": "logistics06" },
     { "query": "페이지 제목과 출고 등록 버튼", "expected": "PageHeader", "lang": "ko", "set": "logistics06" },
@@ -188,6 +188,12 @@
     { "query": "sum of the amount column in the last row of the table", "expected": "DataTable", "lang": "en", "set": "r050" },
     { "query": "무게 입력칸 오른쪽에 kg 표시", "expected": "Input", "lang": "ko", "set": "r050" },
     { "query": "price field with a currency suffix inside the box", "expected": "Input", "lang": "en", "set": "r050" },
-    { "query": "percentage input with a % sign at the end", "expected": "Input", "lang": "en", "set": "r050" }
+    { "query": "percentage input with a % sign at the end", "expected": "Input", "lang": "en", "set": "r050" },
+    { "query": "품목 반복 입력", "expected": "FieldList", "lang": "ko", "set": "r060" },
+    { "query": "출고 품목을 여러 줄로 입력하고 줄을 추가·삭제", "expected": "FieldList", "lang": "ko", "set": "r060" },
+    { "query": "상품 옵션을 줄마다 입력받는 폼", "expected": "FieldList", "lang": "ko", "set": "r060" },
+    { "query": "품목이 하나도 없을 때 목록 전체 오류 표시", "expected": "FieldList", "lang": "ko", "set": "r060" },
+    { "query": "repeat rows", "expected": "FieldList", "lang": "en", "set": "r060" },
+    { "query": "line items", "expected": "FieldList", "lang": "en", "set": "r060" }
   ]
 }

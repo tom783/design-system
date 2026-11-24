@@ -45,6 +45,7 @@ export const allow = [
   { rule: 'pair/no-default', target: 'DatePicker.value', reason: 'value 생략 = 빈 기간. 앱이 필터를 비울 때 undefined 를 보낸다' },
   // 제어 전용이 설계다 — 앱이 값을 반드시 소유한다.
   { rule: 'pair/no-default', target: 'FileUpload.value', reason: '업로드 상태·진행률·오류를 앱이 항목마다 갱신한다(DESIGN.md §11.7)' },
+  { rule: 'pair/no-default', target: 'FieldList.value', reason: '칸 값·오류를 앱이 줄마다 검증하고, 되돌리기가 지운 항목 객체를 그대로 다시 넣는다(DESIGN.md §11.10)' },
   { rule: 'pair/no-default', target: 'Pagination.page', reason: 'URL·조회 요청과 동기화는 앱이 맡는다(DESIGN.md §4.1)' },
   { rule: 'pair/no-default', target: 'Pagination.pageSize', reason: 'URL·조회 요청과 동기화는 앱이 맡는다(DESIGN.md §4.1)' },
   // open 이 필수 prop 이다. 비제어를 더하면 open 을 선택으로 풀어야 해 별도 작업으로 둔다.

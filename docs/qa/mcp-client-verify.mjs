@@ -251,6 +251,24 @@ for (const [query, expected] of [['폼 아래에 취소와 저장 버튼을 항�
     && ['dl·div', '이 페이지 합계', 'DescriptionList'].every(w => table.dont.some(s => s.includes(w))));
 }
 
+// 0.6.0 3a: 반복 입력 줄 — 질의 첫 후보, 디자인 총괄 지침(purpose·useWhen·dont)·API, FormActionBar 묶음 오류 지침이 이 부품으로 바뀜.
+for (const query of ['품목 반복 입력', 'repeat rows', 'line items', '출고 품목을 여러 줄로 입력하고 줄을 추가·삭제', '품목이 하나도 없을 때 목록 전체 오류 표시']) {
+  const response = await t('which_component', { description: query });
+  check(`반복 입력 줄 검색: ${query} → FieldList`, response.structuredContent?.candidates[0]?.name === 'FieldList');
+}
+{
+  const list = (await t('get_component', { name: 'FieldList' })).structuredContent;
+  check('FieldList 상세는 지침(purpose·useWhen·dont)과 값·열·최소/최대·세 층 오류 API를 제공한다',
+    list?.purpose === '같은 칸 묶음을 여러 줄 입력받는다(출고 품목, 상품 옵션, 묶음 상품 구성).'
+    && list.useWhen.some(s => s.includes('1~4개')) && ['테두리 상자', '회색 보조 글자', 'Sheet', 'CSV'].every(w => list.dont.some(s => s.includes(w)))
+    && ['value', 'onValueChange', 'columns', 'createItem', 'min', 'max', 'error', 'rowError', 'hideLabel'].every(name => list.props.some(p => p.name === name))
+    && list.rules.some(r => r.text.includes('errorCount')) && list.rules.some(r => r.text.includes('되돌리기')));
+  const bar = (await t('get_component', { name: 'FormActionBar' })).structuredContent;
+  check('FormActionBar 목록 단위 오류 지침은 FieldList error 다(추가 버튼 aria-invalid·toast.error 지침 없음)',
+    bar?.rules.some(r => r.text.includes('FieldList error')) && !bar.rules.some(r => r.text.includes('toast.error'))
+    && bar.related.includes('FieldList'));
+}
+
 for (const query of ['날짜 시간', '시각', '예약 발행', '일시']) {
   const response = await t('which_component', { description: query });
   check(`날짜+시각 검색: ${query}`, response.structuredContent?.candidates[0]?.name === 'DatePicker');
@@ -364,7 +382,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const rules = (await t('get_rules', {})).content[0].text;
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
   // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255],['목록',list,19_950 + 206 + 203 + 199 + 212],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // 0.6.0 3a FieldList 색인 +669B·목록 +204B.
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }

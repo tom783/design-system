@@ -62,6 +62,12 @@ UI의 뜻 한 줄은 Tooltip, 새 기능 알림은 Hint, 요청한 단계 안내
 
 <div className="intent-grid"><Intent name="FormActionBar" /><Intent name="DialogFooter" /><Intent name="BulkActionBar" /></div>
 
+## FieldList·DataTable·SheetContent
+
+같은 칸 1~4개를 여러 줄 입력하면(출고 품목·상품 옵션) FieldList, 한 줄이 5칸 이상이거나 칸마다 설명이 필요하면 목록(DataTable) + 옆 패널(SheetContent) 편집을 고릅니다. 20줄이 넘을 것 같으면 표 편집이나 CSV 가져오기를 함께 냅니다.
+
+<div className="intent-grid"><Intent name="FieldList" /><Intent name="DataTable" /><Intent name="SheetContent" /></div>
+
 ## DatePicker와 네이티브 날짜 입력
 
 업무 날짜·기간 필터는 DatePicker를 우선하고, 네이티브 날짜 입력이 꼭 필요한 경우에만 `<input type="date">`의 문자열 value를 사용합니다.

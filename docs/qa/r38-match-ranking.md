@@ -40,18 +40,19 @@ which_component 는 외부 모델 없이 키워드 점수로 후보 여러 개�
 
 ## 정답 세트 수치 (`docs/qa/fixtures/which-component-golden.json`)
 
-`node docs/qa/which-component-golden.mjs` 로 재현한다. 하한 top-1 162 · top-3 180 · 후보 0개 0 아래로
-떨어지면 `which-component-golden.test.mjs`(pnpm test = verify·pre-commit·CI)가 실패한다. 정확도 분모는 정답이 있는 문항(부품 공백 2개 제외), 후보 0개 분모는 전체 질의다.
+`node docs/qa/which-component-golden.mjs` 로 재현한다. 하한 top-1 170 · top-3 188 · 후보 0개 0 아래로
+떨어지면 `which-component-golden.test.mjs`(pnpm test = verify·pre-commit·CI)가 실패한다. 정확도 분모는 정답이 있는 문항(부품 공백 0개 제외), 후보 0개 분모는 전체 질의다.
 보류 세트(`which-component-holdout.json`)는 튜닝을 마친 뒤 따로 쓴 질의로, 과적합을 재기만 하고 게이트는 걸지 않는다.
 
 | 묶음 | top-1 · top-3 · 후보 0개 |
 |---|---|
-| 전체 | 166/184 · 182/184 · 0/186 |
-| 한국어 | 120/135 · 133/135 · 0/136 |
-| 영어 | 46/49 · 49/49 · 0/50 |
+| 전체 | 174/192 · 190/192 · 0/192 |
+| 한국어 | 125/140 · 138/140 · 0/140 |
+| 영어 | 49/52 · 52/52 · 0/52 |
 | R49 기준 | 117/128 · 126/128 · 0/128 |
-| 도그푸딩 6 물류 | 27/30 · 30/30 · 0/32 |
+| 도그푸딩 6 물류 | 29/32 · 32/32 · 0/32 |
 | 0.5.0 부품 | 22/26 · 26/26 · 0/26 |
+| 0.6.0 반복 입력 줄 | 6/6 · 6/6 · 0/6 |
 | 보류 세트(튜닝에 안 씀) | 37/48 · 47/48 · 0/48 |
 
 목표 64 이전(0.5.0 main) 같은 세트 수치는 전체 top-1 96/184 · top-3 129/184 · 후보 0개 28/186(영어 27/50)이었다.
@@ -74,8 +75,6 @@ which_component 는 외부 모델 없이 키워드 점수로 후보 여러 개�
 | 출고 목록을 상태·기간·창고로 필터링 | FilterBar | 2 | DatePicker · FilterBar · Select |
 | 목록 위에서 상태·기간·창고로 걸러 보기 | FilterBar | 2 | DatePicker · FilterBar · Select |
 | 품목 표 맨 아래에 수량·금액 합계 | DataTable | 2 | Input · DataTable · BulletRow |
-| 등록 폼에서 품목 줄 추가(품목·수량·중량) | (부품 없음) | 공백 | Input · FormActionBar · DataTable |
-| add repeated line item rows in a form | (부품 없음) | 공백 | FilterBar · DataTable · FormSkeleton |
 | bulk | BulkActionBar | 2 | TaskProgress · BulkActionBar · FileUpload |
 | 선택한 상품 여러 개를 한 번에 숨김 처리 | BulkActionBar | 3 | Hint · MultiSelect · BulkActionBar |
 | action bar that replaces the toolbar when rows are selected | BulkActionBar | 3 | Checkbox · Button · BulkActionBar |

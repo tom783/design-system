@@ -1,0 +1,142 @@
+/* 반복 입력 줄 — DESIGN.md §11.10 · 디자인 총괄 규칙 표 L-1~L-17(Figma 203:4~7 r1). 새 토큰 없이 기존 역할만 쓴다(L-17). */
+@layer components {
+  /* fieldset 의 기본 테두리·여백·min-content 최소 폭을 지운다. 카드(또는 섹션) 안에 바로 놓이고 줄마다 상자를 만들지
+     않는다(L-3 — 카드 안 카드 금지). */
+  .ds-field-list { min-inline-size: 0; margin: 0; padding: 0; border: 0; color: var(--text-primary); }
+  /* 보이는 legend 는 Field 레이블과 같은 글자(caption 500). 카드 제목과 같은 말이면 hideLabel 로 숨긴다(L-1). */
+  .ds-field-list-legend {
+    padding: 0;
+    margin-block-end: var(--space-4);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: 500;
+    letter-spacing: .01em;
+  }
+  /* 넓은 폭·좁은 폭은 화면이 아니라 이 부품의 폭(그릇)으로 정한다 — 규칙 표 640 은 카드 안쪽 폭이다(Figma 768 화면의
+     카드 672 · 안쪽 624 는 좁은 폭, 1024 화면 안쪽 688 은 넓은 폭). 컨테이너 쿼리는 자기 자신을 잴 수 없어 몸통을 잰다. */
+  .ds-field-list-body { container: ds-field-list / inline-size; min-width: 0; }
+
+  /* 묶음 오류(L-14 · LD-2 A): 목록 머리 바로 아래 한 줄. Field 오류와 같은 아이콘 + 위험색, 크기만 body-sm 14/20.
+     비어 있으면 높이 0 — 알림 자리는 늘 DOM 에 둔다. 아래 12 는 Figma 203:5 A(오류 62 → 열 머리 94). */
+  .ds-field-list-error {
+    display: flex;
+    align-items: start;
+    gap: var(--space-4);
+    color: var(--status-danger-fg);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    overflow-wrap: anywhere;
+  }
+  .ds-field-list-error:not(:empty) { margin-block-end: var(--space-12); }
+  .ds-field-list-error > svg { width: var(--space-16); height: var(--space-16); flex-shrink: 0; margin-top: var(--space-2); }
+
+  /* 칸·줄 오류(L-12·L-13): Field 오류 모양 그대로 — caption + 아이콘 16 + 위험색. 다만 자리를 예약하지 않는다. */
+  .ds-field-list-message {
+    display: flex;
+    align-items: start;
+    gap: var(--space-4);
+    color: var(--status-danger-fg);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    overflow-wrap: anywhere;
+  }
+  .ds-field-list-message:not(:empty) { margin-block-start: var(--space-4); }
+  .ds-field-list-message > svg { width: var(--space-16); height: var(--space-16); flex-shrink: 0; margin-top: var(--space-2); }
+
+  [data-slot="field-list-required"] { color: var(--status-danger-fg); }
+
+  /* 빈 상태(L-11): 줄 자리에 한 줄, 위아래 12. 상자·일러스트 없음. */
+  .ds-field-list-empty {
+    margin: 0;
+    padding-block: var(--space-12);
+    color: var(--text-secondary);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+  }
+  /* 추가(L-8): 목록 아래 12, 왼끝. 최대에 닿으면 버튼 오른쪽 8 에 '최대 N개'(L-9). */
+  .ds-field-list-footer { display: flex; align-items: center; gap: var(--space-8); margin-block-start: var(--space-12); }
+  .ds-field-list-max { color: var(--text-secondary); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+
+  /* ── 좁은 폭(기본, 그릇 < 640 · L-6 · LD-3 A) ──
+     줄마다: 줄 머리('품목 2' + 오른끝 삭제) → 첫 칸 전체 폭 → 숫자 칸 둘씩(간격 12). 줄 사이 border-subtle 1px, 위아래 16.
+     레이블은 칸마다 보이고 Field 처럼 입력 위 4. 칸 사이 8. */
+  .ds-field-list-head { display: none; }
+  .ds-field-list-row { display: flex; flex-direction: column; min-width: 0; }
+  .ds-field-list-row + .ds-field-list-row {
+    margin-block-start: var(--space-16);
+    padding-block-start: var(--space-16);
+    border-top: var(--border-width) solid var(--border-subtle);
+  }
+  .ds-field-list-row-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-12);
+    row-gap: var(--space-8);
+    align-items: start;
+    min-width: 0;
+  }
+  .ds-field-list-row-head {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-8);
+    min-width: 0;
+  }
+  .ds-field-list-row-label {
+    min-width: 0;
+    color: var(--text-secondary);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: 500;
+    letter-spacing: .01em;
+  }
+  .ds-field-list-delete { flex: none; }
+  .ds-field-list-cell { grid-column: 1 / -1; display: flex; flex-direction: column; min-width: 0; }
+  .ds-field-list-cell[data-numeric] { grid-column: auto; }
+  .ds-field-list-cell-label {
+    margin-block-end: var(--space-4);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: 500;
+    letter-spacing: .01em;
+    overflow-wrap: anywhere;
+  }
+
+  /* ── 넓은 폭(그릇 ≥ 640 · L-4·L-5 · LD-1 B) ──
+     열 머리 한 줄(caption 500, 필수 표시) + 아래 4 → 줄들. 줄 안에 레이블 반복 없음. 줄 간격 8 → 오류 없을 때 피치 46.
+     열 폭: 글자 칸 minmax(0, 2fr) · 숫자 칸 minmax(8rem, 1fr) · 삭제 38 — 부품이 --field-list-columns 로 준다. 열 간격 16
+     (FormRow column-gap 과 같음). 머리와 줄이 같은 틀이라 같은 열 입력 왼끝·오른끝 Δx 0. */
+  @container ds-field-list (min-width: 640px) {
+    .ds-field-list-head {
+      display: grid;
+      grid-template-columns: var(--field-list-columns);
+      column-gap: var(--space-16);
+      margin-block-end: var(--space-4);
+      font-size: var(--text-caption);
+      line-height: var(--text-caption-lh);
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+    .ds-field-list-head > * { min-width: 0; overflow-wrap: anywhere; }
+    .ds-field-list-row + .ds-field-list-row { margin-block-start: var(--space-8); padding-block-start: 0; border-top: 0; }
+    .ds-field-list-row-grid { grid-template-columns: var(--field-list-columns); column-gap: var(--space-16); row-gap: 0; }
+    /* 줄 머리를 풀어 삭제를 마지막 열(38)에 놓는다. 줄 이름은 화면에서 숨기고 낭독기에 남긴다(줄 묶음 이름). */
+    .ds-field-list-row-head { display: contents; }
+    .ds-field-list-row-label {
+      position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+    }
+    .ds-field-list-delete { grid-row: 1; grid-column: -2 / -1; }
+    .ds-field-list-cell, .ds-field-list-cell[data-numeric] { grid-row: 1; grid-column: auto; }
+    .ds-field-list-cell-label { display: none; }
+    /* 줄 오류(L-13): 그 줄 아래, 첫 칸 왼끝에서 시작해 삭제 열 앞까지. */
+    .ds-field-list-row-error { margin-inline-end: calc(var(--control-h-md) + var(--space-16)); }
+  }
+}
+
+/* 레이어 밖(form.css 의 Field 와 같다): Input 의 테두리·최소 폭은 utilities 레이어 클래스라 components 레이어로는 못 이긴다.
+   - 오류 칸 테두리는 위험색(L-12, 줄 오류의 원인 칸도 — L-13). fieldset 자신의 aria-invalid(묶음 오류)는 제외한다.
+   - 칸 폭은 열이 정한다 — 같은 열 입력 왼끝·오른끝 Δx 0. Input 최소 폭 120(+ 접미사)은 숫자 열 최소 8rem(128)보다
+     넓어질 수 있어(120 + 4 + 'kg' 16 = 140) 640 경계에서 열을 넘쳤다. */
+.ds-field-list [aria-invalid="true"]:not(fieldset) { border-color: var(--status-danger-fg); }
+.ds-field-list-cell [data-slot="input"], .ds-field-list-cell [data-slot="input-control"] { min-width: 0; }

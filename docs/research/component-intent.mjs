@@ -377,6 +377,20 @@ const intents = [
     "textarea의 Enter·Shift+Enter는 줄바꿈이다. 다음 칸은 Tab, 제출은 Ctrl/Cmd+Enter를 쓴다.",
     rule("여러 단계 폼은 활성 단계마다 FormFlow 하나를 두고 이동 후 새 제목에 포커스한다.", "11.8")
   ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input','Steps'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
+  entry('FieldList','form','같은 칸 묶음을 여러 줄 입력받는다(출고 품목, 상품 옵션, 묶음 상품 구성).',
+    ['한 줄 칸이 1~4개이고 줄 수가 사용자 입력에 따라 바뀔 때','등록·편집 폼 카드 안에 바로 둘 때','품목·옵션 줄을 반복 입력할 때'],
+    ['줄마다 Card·테두리 상자를 만들지 마라','목록 전체 오류를 회색 보조 글자로 쓰지 마라(error prop을 쓴다)','5칸 이상이거나 칸마다 설명이 필요하면 쓰지 말고 목록 + Sheet 편집을 쓴다','20줄 넘게 예상되면 표 편집이나 CSV 가져오기를 함께 낸다'],'11.10',[
+      'value·onValueChange로 항목 배열을 앱이 소유한다. createItem은 추가할 빈 항목이고 항목에 id를 두거나 getKey를 준다.',
+      'columns는 key·label·required·numeric·render·error다. render가 돌려준 입력 하나에 이름(품목 2 수량)·오류 연결을 붙인다.',
+      'render의 update(patch)로 그 줄 값을 바꾼다. 숫자·단위 칸은 numeric 열에 Input numeric unit을 넣는다.',
+      '폭 640px 이상은 열 머리 한 번 + 줄마다 입력칸, 미만은 줄 머리 + 칸 레이블로 쌓는다. 그리드를 직접 짜지 않는다.',
+      'min에 닿으면 삭제, max에 닿으면 추가가 비활성이다. min이 1 이상이면 빈 줄 min개로 시작한다.',
+      '삭제는 확인창 없이 지우고 입력이 있던 줄은 5초 되돌리기 토스트를 띄운다. 화면에 Toaster를 둔다.',
+      '칸 오류는 열 error, 줄 오류는 rowError(원인 칸은 { message, column }), 목록 전체 오류는 error다.',
+      'FormActionBar errorCount에 묶음 오류도 1개로 센다. 카드 제목이 목록 이름과 같으면 hideLabel로 legend를 숨긴다.'
+    ],['label','hideLabel','itemLabel','columns','value','onValueChange','createItem','getKey','min','max','error','rowError','addLabel','emptyText'],
+    ['field-list','field-list-legend','field-list-error','field-list-head','field-list-row','field-list-cell','field-list-cell-error','field-list-row-error','field-list-delete','field-list-empty','field-list-add','field-list-max'],
+    ['Field','Input','FormActionBar','Toaster','SheetContent','DataTable'],['품목 반복','반복 줄','줄 추가','행 추가','품목 추가','항목 추가 삭제','여러 줄 품목','품목 목록','옵션 줄','묶음 상품 구성','동적 폼','품목 여러 개','묶음 오류','목록 전체 오류','품목 0개','repeat rows','line items','repeater','field array','dynamic rows','add row']),
   entry('FormActionBar','form','등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.',
     ['등록·편집 페이지, AppShell 본문 마지막에 한 번','저장 버튼이 스크롤 위치와 상관없이 같은 자리에 있어야 할 때'],
     ['sticky div·음수 여백으로 직접 만들지 마라','Sheet·Dialog에는 DialogFooter를 쓴다','주요 버튼을 둘 두거나 삭제를 저장 옆에 두지 마라','목록 선택 작업은 BulkActionBar를 쓴다','품목 0개 같은 목록 단위 오류를 회색 보조 글자로만 보이지 마라'],'19.5',[
@@ -386,10 +400,10 @@ const intents = [
       'saving이면 저장 버튼이 스피너·저장 중…이고 취소·삭제는 비활성, 다시 제출되지 않는다. 결과는 토스트나 페이지 이동으로 알린다.',
       'contentMaxWidth는 폼 열 최대 폭이다(기본 48rem). 페이지 루트·폼을 세로 flex로 두면 짧은 폼에서도 본문 바닥에 붙는다.',
       '480px 미만은 상태 문구를 숨기고 삭제를 더 보기 메뉴로 옮기며 취소·저장이 같은 폭이다.',
-      rule('목록 단위 오류(품목 0개)는 errorCount에 세고 추가 버튼에 aria-invalid를 단다. 제출 때 toast.error로도 알린다.', '24.5')
+      rule('목록 단위 오류(품목 0개)는 FieldList error로 목록 머리 아래에 보이고 errorCount에 1개로 센다. 오류 N개가 그 목록으로 간다.', '11.10')
     ],['submitLabel','form','onCancel','cancelLabel','saving','dirty','errorCount','onErrorClick','onDelete','deleteLabel','deleteDescription','contentMaxWidth'],
     ['form-action-bar','form-action-bar-content','form-action-bar-danger','form-action-bar-delete','form-action-bar-more','form-action-bar-actions','form-action-bar-status','form-action-bar-errors','form-action-bar-cancel','form-action-bar-submit'],
-    ['AppShell','FormFlow','Field','BulkActionBar','Dialog'],['하단 고정','아래 고정','화면 아래','고정 버튼','버튼 줄','저장 줄','취소 저장','고정 액션','액션 줄','저장하지 않은 변경','sticky footer','form actions','save bar','sticky save']),
+    ['AppShell','FormFlow','Field','FieldList','BulkActionBar','Dialog'],['하단 고정','아래 고정','화면 아래','고정 버튼','버튼 줄','저장 줄','취소 저장','고정 액션','액션 줄','저장하지 않은 변경','sticky footer','form actions','save bar','sticky save']),
   entry('Peek','overlay',"레코드를 열지 않고 핵심 내용을 요약해 보여준다.",['표의 행을 열지 않고 내용을 확인할 때'],['호버로 열지 마라','수정·삭제는 SheetContent를 쓴다'],'12.1','요약은 최대 6줄. 넘치면 상세 페이지다.',['open','onOpenChange','title','items','action','children'],['peek'],['Tooltip','Hint','Tour','DataTable','SheetContent'],['요약','미리보기','peek','팝오버','행 상세','레코드 내용']),
 ];
 

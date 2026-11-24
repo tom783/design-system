@@ -105,7 +105,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
       // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
       // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
       // 목표 57 FormActionBar 553B · DataTable summary 313B · DescriptionList 금액 내역 69B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255, '색인 전송량을 잰다');
+      // 0.6.0 3a FieldList +669B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -237,6 +238,10 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     name: 'DescriptionList', kind: 'component', purpose: '상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
     import: "import { DescriptionList } from '@s2life/ui';",
   }] : [entry]).flatMap(entry => entry.name === 'FormFlow' ? [entry, {
+    // 0.6.0 3a: 반복 입력 줄 FieldList 를 FormFlow 다음(FormActionBar 앞)에 더한다.
+    name: 'FieldList', kind: 'component', purpose: '같은 칸 묶음을 여러 줄 입력받는다(출고 품목, 상품 옵션, 묶음 상품 구성).',
+    import: "import { FieldList } from '@s2life/ui';",
+  }, {
     // 목표 57: 폼 하단 고정 액션 줄 FormActionBar 를 FormFlow 다음에 더한다.
     name: 'FormActionBar', kind: 'component', purpose: '등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.',
     import: "import { FormActionBar } from '@s2life/ui';",

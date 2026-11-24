@@ -91,7 +91,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const holdout = evaluateGolden(JSON.parse(await readFile(new URL('./fixtures/which-component-holdout.json', import.meta.url), 'utf8')).cases, await loadComponents());
   const escape = value => String(value ?? '후보 없음').replaceAll('|', '\\|');
   const cell = v => `${v.top1}/${v.total} · ${v.top3}/${v.total} · ${v.noCandidates}/${v.queries}`;
-  const SET_LABEL = { r49: 'R49 기준', logistics06: '도그푸딩 6 물류', r050: '0.5.0 부품' };
+  const SET_LABEL = { r49: 'R49 기준', logistics06: '도그푸딩 6 물류', r050: '0.5.0 부품', r060: '0.6.0 반복 입력 줄' };
   const accuracy = ['| 묶음 | top-1 · top-3 · 후보 0개 |', '|---|---|', `| 전체 | ${cell(result)} |`,
     ...Object.entries(result.byLang).map(([lang, v]) => `| ${lang === 'ko' ? '한국어' : '영어'} | ${cell(v)} |`),
     ...Object.entries(result.bySet).map(([set, v]) => `| ${SET_LABEL[set] ?? set} | ${cell(v)} |`),
