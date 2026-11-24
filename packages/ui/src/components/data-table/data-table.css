@@ -50,7 +50,14 @@
 [data-slot="data-table-row"][data-selected] { --data-table-row-bg: var(--bg-selected-row); }
 [data-slot="data-table-cell"] { background: var(--data-table-row-bg); }
 [data-slot="data-table"] .ds-data-table-pinned { z-index: 1; }
-[data-slot="data-table"] th.ds-data-table-pinned { background: var(--bg-surface); z-index: 2; }
+/* 고정 경계선은 표가 가로로 넘칠 때만 보인다(TD-2 A — 넘치지 않는 표의 금액 열·선택 열 뒤 세로선은 열 구분선처럼 읽혔다,
+   도그푸딩 6 상세 1440). 넘침은 DataTable 이 스크롤 영역 폭을 재서 data-overflow-x 로 준다. 선 굵기는 그대로 두고 색만
+   투명으로 바꾼다 — 굵기를 빼면 열 폭이 1px 바뀌어 넘침 경계에서 판정이 흔들릴 수 있다. 칸 바탕이 선 자리까지 칠해진다. */
+[data-slot="data-table"]:not([data-overflow-x]) .ds-data-table-pin-edge-start { border-right-color: transparent; }
+[data-slot="data-table"]:not([data-overflow-x]) .ds-data-table-pin-edge-end { border-left-color: transparent; }
+/* 고정 머리 칸은 다른 머리 칸과 같은 바탕(th 의 bg-canvas)이다. 전에는 surface 였다 — 넘치지 않는 표에서 선택 열·금액 열
+   머리만 흰 칸으로 떠 고정선 없이도 다른 열처럼 보였다(도그푸딩 6 상세 1440). canvas 도 불투명이라 스크롤되는 머리 칸을 가린다. */
+[data-slot="data-table"] th.ds-data-table-pinned { z-index: 2; }
 /* 고정 셀 배경 앞쪽, 스크롤 경계 안쪽에 링을 그린다. */
 [data-slot="data-table-row"]:focus-visible {
   outline-offset: calc(-1 * var(--focus-width));
@@ -80,7 +87,7 @@
 
 /* 합계 행(tfoot · 규칙 표 T-1~T-5). 셀 여백·행 높이는 본문 칸과 같다(--cell-px 14·--row-h) — 합계 숫자와 열 숫자의
    x 가 같다(1단계 표 밖 합계는 +15). 라벨·값 600·고정폭 숫자, 바탕은 머리와 같은 canvas.
-   클래스를 둘 겹쳐 고정 열 머리 칸 규칙(th.ds-data-table-pinned 의 surface 바탕)보다 우선한다 — 고정 열 칸도 같은 바탕. */
+   클래스를 둘 겹쳐 고정 열 칸 규칙보다 우선한다 — 고정 열 칸도 같은 바탕. */
 [data-slot="data-table"] .ds-data-table-summary-cell.ds-data-table-cell {
   background: var(--bg-canvas);
   font-weight: 600;

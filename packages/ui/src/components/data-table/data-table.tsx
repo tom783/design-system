@@ -156,6 +156,22 @@ export function DataTable<T extends RowData>({
     return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
   }, [headerKey, density]);
 
+  // 가로 넘침 — 고정 경계선은 표가 실제로 가로 스크롤될 때만 보인다(data-table.css · DESIGN.md §4.3 TD-2 A).
+  // 스크롤 영역(폭)과 표(내용 폭)를 함께 관찰한다. 선은 색만 바뀌어 폭이 그대로라 관찰이 되먹임되지 않는다.
+  const [overflowX, setOverflowX] = React.useState(false);
+  React.useLayoutEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    // 1px 여유: 소수점 열 폭이 반올림돼 scrollWidth 가 clientWidth 보다 1 큰 것은 넘침이 아니다(Screens/OrderDetail 실측과 같은 기준).
+    const measure = () => setOverflowX(container.scrollWidth - container.clientWidth > 1);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    if (container.firstElementChild) observer.observe(container.firstElementChild);
+    return () => observer.disconnect();
+  }, []);
+
   const startColumns = table.getPinnedVisibleLeafColumns('start');
   const endColumns = table.getPinnedVisibleLeafColumns('end');
   const widthOf = (column: Column<DataTableFeatures, T>) => widths[column.id] ?? 0;
@@ -200,8 +216,9 @@ export function DataTable<T extends RowData>({
       alignment === 'start' && 'text-left',
       alignment === 'center' && 'text-center',
       pinned && 'ds-data-table-pinned',
-      pinned === 'start' && column.id === startColumns.at(-1)?.id && 'border-r border-line-strong',
-      pinned === 'end' && column.id === endColumns[0]?.id && 'border-l border-line-strong',
+      // 고정 경계선 칸. 선 굵기는 늘 두고 색만 넘침에 따라 바꾼다(data-table.css) — 굵기를 뺐다 넣으면 열 폭이 1px 흔들린다.
+      pinned === 'start' && column.id === startColumns.at(-1)?.id && 'ds-data-table-pin-edge-start border-r border-line-strong',
+      pinned === 'end' && column.id === endColumns[0]?.id && 'ds-data-table-pin-edge-end border-l border-line-strong',
     );
   }
 
@@ -236,14 +253,17 @@ export function DataTable<T extends RowData>({
   }
 
   return (
-    <div data-slot="data-table" data-density={density} data-summary={showSummary || undefined} className={cn('min-w-0 max-w-full text-fg', className)}>
+    <div data-slot="data-table" data-density={density} data-summary={showSummary || undefined} data-overflow-x={overflowX || undefined} className={cn('min-w-0 max-w-full text-fg', className)}>
       {(exportFileName || partialSelectionNotice) && (
         <div data-slot="data-table-toolbar" className="flex flex-wrap items-center justify-between gap-3 pb-3">
+          {/* 선택 수('N건 선택')는 그리지 않는다 — 한 곳, 일괄 작업 바(BulkActionBar)가 맡는다(§4.2). 표 도구 줄에도
+              그리면 바와 두 번 보였고, 선택이 없을 때도 '0건 선택'이 남았다(도그푸딩 6 D1). 여기서는 범위 안내만 한다:
+              로드된 행을 모두 골랐는데 전체가 더 많을 때. live region 은 늘 두고 글자만 바꾼다(새로 끼운 영역은 안 읽힐 수 있다). */}
           {selectable && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
             {partialSelectionNotice
+              // 행은 '건'으로 센다 — Pagination(1–20 / 1,284건)·일괄 작업 바와 같은 단위.
               ? `로드된 ${rows.length.toLocaleString('ko-KR')}건이 선택됨 · 전체 ${totalCount.toLocaleString('ko-KR')}건`
-              // 행은 '건'으로 센다 — Pagination(1–20 / 1,284건)·부분 로드 안내와 같은 단위.
-              : `${selectedCount.toLocaleString('ko-KR')}건 선택`}
+              : ''}
           </span>}
           {exportFileName && partiallyLoaded && !selectedCount && <span role="status" className="text-[length:var(--text-body-sm)] text-fg-muted">
             {`전체 ${totalCount.toLocaleString('ko-KR')}건 중 ${rows.length.toLocaleString('ko-KR')}건`}

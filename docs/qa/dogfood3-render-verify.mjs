@@ -64,7 +64,8 @@ async function counts(expected, { mixed = false, checked = expected > 0 } = {}) 
       mixed: head.indeterminate, checked: head.checked,
     };
   })()`);
-  assert.deepEqual(actual, { app: expected, toolbar: `${expected.toLocaleString('ko-KR')}건 선택`, rows: expected, mixed, checked });
+  // 선택 수는 일괄 작업 바 한 곳이 보인다(§4.2) — 표 도구 줄의 live region 은 남되 'N건 선택'·'0건 선택'을 쓰지 않는다(도그푸딩 6 D1).
+  assert.deepEqual(actual, { app: expected, toolbar: '', rows: expected, mixed, checked });
 }
 async function selectedStory(suffix) {
   await story(`components-datatable--선택자동해제${suffix}`);

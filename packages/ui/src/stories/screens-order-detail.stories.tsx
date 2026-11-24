@@ -53,29 +53,10 @@ const manyItems: Item[] = Array.from({ length: 128 }, (_, i) => {
 const sumOf = (list: Item[]) => ({ qty: list.reduce((s, item) => s + item.qty, 0), amount: list.reduce((s, item) => s + item.qty * item.price, 0) });
 const manyTotal = sumOf(manyItems);
 
-/** 표가 가로로 넘칠 때만 금액 열을 고정한다 — 넘치지 않는 1440 에서는 고정선이 생기지 않는다. */
-function useOverflowing(ref: React.RefObject<HTMLElement | null>) {
-  const [overflowing, setOverflowing] = React.useState(false);
-  React.useLayoutEffect(() => {
-    const scroll = ref.current?.querySelector<HTMLElement>('[data-slot="data-table-scroll"]');
-    if (!scroll) return;
-    const measure = () => setOverflowing(scroll.scrollWidth > scroll.clientWidth + 1);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(scroll);
-    const table = scroll.querySelector('table');
-    if (table) observer.observe(table);
-    return () => observer.disconnect();
-  }, [ref]);
-  return overflowing;
-}
-
 type Variant = 'default' | 'paged' | 'selection' | 'empty' | 'loading';
 interface Props { menuOpen?: boolean; confirmOpen?: boolean; variant?: Variant }
 
 function OrderItems({ variant = 'default' }: { variant?: Variant }) {
-  const box = React.useRef<HTMLDivElement>(null);
-  const overflowing = useOverflowing(box);
   const [page, setPage] = React.useState(1);
   const [selected, setSelected] = React.useState<string[]>(['P-1031']);
   const pageSize = 3;
@@ -89,9 +70,10 @@ function OrderItems({ variant = 'default' }: { variant?: Variant }) {
   const count = variant === 'paged' ? manyItems.length : data.length;
   return <section aria-labelledby="order-items" className="flex min-w-0 flex-col gap-3">
     <h2 id="order-items" className="text-[length:var(--text-title-sm)] leading-[var(--text-title-sm-lh)] font-semibold">주문 상품 <span className="tabular">{count.toLocaleString('ko-KR')}</span>건</h2>
-    <div ref={box} className="min-w-0">
+    {/* 금액 열은 늘 고정한다(TD-2 A). 고정선은 표가 가로로 넘칠 때만 보인다 — 넘치지 않는 1440 에는 세로선이 없다. */}
+    <div className="min-w-0">
       <DataTable data={data} columns={columns} getRowId={item => item.id} align={{ qty: 'end', price: 'end', sum: 'end' }}
-        caption={`${ORDER_ID} 주문 상품`} summary={summary} pinnedEnd={overflowing ? ['sum'] : undefined}
+        caption={`${ORDER_ID} 주문 상품`} summary={summary} pinnedEnd={['sum']}
         state={variant === 'loading' ? 'loading' : 'idle'} totalCount={variant === 'paged' ? manyItems.length : undefined}
         emptyMessage="주문 상품이 없습니다"
         {...(variant === 'selection' ? { selectionMode: 'multi' as const, selectedIds: selected, onSelectedIdsChange: setSelected } : {})} />

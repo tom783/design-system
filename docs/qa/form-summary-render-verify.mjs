@@ -292,7 +292,7 @@ try {
       return { label: label?.textContent, scope: label?.getAttribute('scope'), labelColumn: label?.dataset.columnId, cells: cells.map(c => c.tagName + ':' + c.dataset.columnId + ':' + c.textContent),
         height: row.getBoundingClientRect().height, borderTop: [s.borderTopWidth, same(rgb(s.borderTopColor), token('--border-default')), same(rgb(s.borderTopColor), token('--border-subtle'))],
         bg: same(rgb(s.backgroundColor), token('--bg-canvas')), weight: s.fontWeight, size: s.fontSize, lineHeight: s.lineHeight, numeric: s.fontVariantNumeric,
-        sumRight: valueRight(sum), qtyRight: valueRight(qty), sumSticky: sum?.style.position === 'sticky' ? sum.style.right : null,
+        sumRight: valueRight(sum), qtyRight: valueRight(qty), sumSticky: sum?.style.position === 'sticky' ? sum.style.right : null, sumEdge: sum ? getComputedStyle(sum).borderLeftColor : null,
         skeletons: cells.filter(c => c.querySelector('[data-slot="skeleton"]')).map(c => c.dataset.columnId) }; });
     const bodySum = bodyRow ? cellOf(bodyRow, 'sum') : null;
     const totals = document.querySelector('[data-screen="totals"]');
@@ -303,7 +303,8 @@ try {
       const a = cards[i], b = cards[j]; overlap = Math.max(overlap, Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top))); }
     const lastBody = [...table.querySelectorAll('[data-slot="data-table-body"] > tr')].at(-1);
     return { summary, bodySumRight: valueRight(bodySum), bodyQtyRight: bodyRow ? valueRight(cellOf(bodyRow, 'qty')) : null,
-      bodySumSticky: bodySum?.style.position === 'sticky' ? bodySum.style.right : null, scrollable: scroll.scrollWidth - scroll.clientWidth,
+      bodySumSticky: bodySum?.style.position === 'sticky' ? bodySum.style.right : null,
+      bodySumEdge: bodySum ? getComputedStyle(bodySum).borderLeftColor : null, scrollable: scroll.scrollWidth - scroll.clientWidth,
       scrollRight: scroll.getBoundingClientRect().left + scroll.clientLeft + scroll.clientWidth, tableRight: scroll.getBoundingClientRect().right,
       lastBodyBorder: lastBody?.firstElementChild ? getComputedStyle(lastBody.firstElementChild).borderBottomWidth : null,
       dl, cards: cards.length, cardColumns: new Set(cards.map(c => Math.round(c.left))).size, overlap, pageOverflow: main.scrollWidth - main.clientWidth,
@@ -344,13 +345,21 @@ try {
           assert.deepEqual(m.summary.map(r => r.label), ['이 페이지 합계', '전체 합계 · 128건'], '2행 라벨(T-7)');
           assert.ok(m.summary[1].borderTop[2], '둘째 행은 본문 행 선');
         }
+        // 금액 열은 늘 pinnedEnd 다(TD-2 A). 고정선은 표가 가로로 넘칠 때만 보인다 — 넘치지 않는 표의 세로선은
+        // 열 구분선처럼 읽혔다(도그푸딩 6 상세 1440). 선 굵기는 그대로이고 색만 투명이다(열 폭이 흔들리지 않게).
+        const clear = color => /^rgba\(\d+, \d+, \d+, 0\)$|^transparent$/.test(color ?? '');
+        assert.equal(first.sumSticky, '0px', `금액 열 고정 — 합계 칸도 같은 sticky(TD-2 A)`);
         if (m.scrollable > 0.5) {
-          assert.equal(first.sumSticky, '0px', `가로 스크롤 표는 금액 열 고정 — 합계 칸도 같은 sticky(TD-2 A)`);
+          assert.ok(!clear(first.sumEdge), `넘치면 고정선이 보인다 ${first.sumEdge}`);
           if (state !== '로딩') {
             assert.equal(m.bodySumSticky, '0px', '본문 금액 칸 고정');
+            assert.ok(!clear(m.bodySumEdge), `넘치면 본문 고정선이 보인다 ${m.bodySumEdge}`);
             near(m.bodySumRight, m.scrollRight - 14, '고정 금액 열이 첫 화면에 보인다');
           }
-        } else assert.equal(first.sumSticky, null, '넘치지 않으면 고정 안 함 — 고정선 없음');
+        } else {
+          assert.ok(clear(first.sumEdge), `넘치지 않으면 합계 칸 고정선 없음(투명) ${first.sumEdge}`);
+          if (state !== '로딩') assert.ok(clear(m.bodySumEdge), `넘치지 않으면 본문 고정선 없음(투명) ${m.bodySumEdge}`);
+        }
         await shot(theme, width, state);
         return { width, state, scrollable: m.scrollable, cardColumns: m.cardColumns, sum: [first.sumRight, m.bodySumRight], dl: m.dl };
       });

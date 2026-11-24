@@ -76,6 +76,31 @@
 
 ### 바뀐 동작 (마이그레이션)
 
+- **선택 수는 한 곳 — DataTable 도구 줄이 `N건 선택`을 쓰지 않는다** (목표 57 4단계 · 도그푸딩 6 D1 · 디자인 검수 P1 · DESIGN.md §4.2).
+  AI 가 만든 출고 목록에서 행 두 개를 고르면 일괄 작업 바 `2건 선택` 아래 표 도구 줄에 `2건 선택`이 한 번 더 나왔고, 선택이 없어도
+  `0건 선택 · 전체 432건 중 20건`이 늘 보였다.
+  - 원인: **부품 결함**이 먼저다. `exportFileName` 을 주면 생기는 DataTable 도구 줄이 선택 열이 있으면 늘 `N건 선택`(0 포함)을 그렸다 —
+    일괄 작업 바보다 먼저 만든 줄이라 같은 숫자를 두 부품이 그렸다(디자인 시스템 자체 스토리 `선택자동해제`에서도 `0건 선택`이 보였다).
+    **조합**도 겹쳤다: 목록 툴바(FilterBar·BulkActionBar) 위 표에 `exportFileName` 을 줘 표 위 줄이 둘이 됐다 — 기준 화면
+    `Screens/OrderList` 는 내보내기를 PageHeader 에 둔다. 앞은 부품을, 뒤는 MCP 지침(아래 바뀐 지침)을 고쳤다.
+  - 이제 도구 줄은 선택 수를 쓰지 않는다. 로드된 행을 모두 골랐는데 전체가 더 많을 때만 `로드된 N건이 선택됨 · 전체 M건` 범위 안내를
+    쓰고(그대로), live region 은 늘 두고 글자만 바꾼다. 내보내기 버튼 라벨(`선택한 행 내보내기` 등)과 동작은 그대로다.
+  - 앱이 할 일: 선택 수를 보여야 하면 BulkActionBar 를 쓴다(DataTable 을 제어형으로 두고 `selectedCount={selectedIds.length}`).
+    목록 툴바와 함께 `exportFileName` 을 썼다면 빼고, 전체 내보내기는 PageHeader `actions`, 선택 행 내보내기는 바 `actions` 에서
+    공개 함수 `downloadCsv` 로 옮긴다. 표 도구 줄 글자를 단정하던 시험은 `N건 선택` 대신 빈 글자를 본다.
+- **고정 경계선은 표가 가로로 넘칠 때만 보인다** (목표 57 4단계 · 디자인 검수 P2 · TD-2 A · DESIGN.md §4.4). 넘치지 않는 상세 1440 의
+  품목 표에도 금액 열 앞 세로선이 보였다(AI 앱은 금액 열을 늘 `pinnedEnd` 로 줬다). **부품 결함** — 고정 열 경계선을 넘침과 상관없이
+  그렸다. DataTable 이 스크롤 영역과 표 크기를 관찰해 넘치면(`scrollWidth − clientWidth > 1`) 루트에 `data-overflow-x` 를 붙이고,
+  아니면 경계 칸의 선 색만 투명으로 둔다(굵기 1px 는 남겨 열 폭이 흔들리지 않는다). 선택 열(늘 왼쪽 고정) 뒤 세로선도 같다 —
+  Figma 목록 툴바 추천 조합(189:2)에도 그 선이 없다. 고정(sticky)·오프셋은 그대로다.
+  - 같은 계열의 결함 하나를 함께 고쳤다: 고정 열 **머리 칸**만 바탕이 `bg-surface`(라이트 흰색 · 다크 #1a1817)이고 다른 머리 칸은
+    `bg-canvas`(#f7f6f5 · #0b0a09)라, 선이 없어도 선택 열·금액 열 머리가 흰 칸으로 떠 다른 열처럼 보였다(선을 지우자 드러났다 — 실측).
+    고정 머리 칸도 머리 바탕 canvas 다(불투명이라 스크롤되는 머리 칸을 그대로 가린다). 본문 고정 칸 바탕은 그대로 행 바탕이다.
+  - 화면이 바뀌는 곳: 넓은 화면에서 넘치지 않는 선택 표(Screens/OrderList·QA/ListScreen·DataTable 선택 스토리)는 선택 열 뒤 세로선이,
+    `Screens/OrderDetail` 1440 은 (원래 없던) 금액 열 앞 선이 계속 없다. 넘치는 표(390·`가상화-컬럼고정`)는 그대로 선이 있다.
+  - `Screens/OrderDetail` 은 넘침을 재서 `pinnedEnd` 를 켜고 끄던 스토리 쪽 우회를 지우고 금액 열을 늘 고정한다.
+  - 앱이 할 일: 코드 수정은 없다. 폭에 따라 `pinnedEnd`·`pinnedStart` 를 켜고 끄던 코드는 늘 주는 것으로 줄일 수 있다.
+    선택 표의 시각 기준선을 갱신한다. 서버 렌더 첫 그림은 선이 없고, 넘치는 표는 하이드레이션 뒤 선이 생긴다.
 - **주문 상세 카드 겹침** (목표 57 2c). `Screens/OrderDetail` 카드 세 장이 1024 이하에서 겹쳤다 — Card 최소 폭 240 × 3 + 간격 32 =
   752 > 본문 약 720. `grid-cols-3` 대신 `repeat(auto-fit, minmax(min(100%, var(--card-min-w)), 1fr))` 로 폭이 모자라면 줄을 바꾼다.
   Card 공개 API·최소 폭은 그대로다. 앱이 할 일: 카드를 고정 열 수 격자에 넣었다면 같은 auto-fit 으로 바꾼다.
@@ -147,6 +172,22 @@
 
 ### 바뀐 지침 (MCP)
 
+- **도그푸딩 6 화면 조립 지침**(목표 57 4단계 · 디자인 검수 P1·P3 · DESIGN.md §4.4·§24.5). `dont`·`rules` 만 더하거나 고쳤다 —
+  `purpose`·`useWhen`·검색어는 그대로라 부품 추천 점수는 바뀌지 않는다.
+  - DataTable: 금지 "FilterBar·BulkActionBar와 쓰는 표에 exportFileName을 주지 마라" · "5행 이하 표에 정렬(enableSorting:false로 끈다)·
+    내보내기를 달지 마라". 합계 라벨 규칙 끝의 "가로 스크롤 표는 금액 열을 pinnedEnd로"를 새 규칙(§4.4)으로 옮겼다 — "pinnedEnd로 상태 열(목록)·
+    금액 열(합계 표)을 고정한다. 좁은 폭에서도 보이고 고정선은 표가 넘칠 때만 생긴다." 상태 열 고정은 기본값으로 넣지 않았다 — 어느 열이
+    상태인지 부품이 모르므로 열 id 를 추측하면 공개 동작이 바뀐다.
+  - BulkActionBar: "선택 수는 이 바 한 곳이다. 선택 행 내보내기는 actions에서 downloadCsv로, 전체 내보내기는 PageHeader actions에 둔다."
+  - PageHeader: 상세 화면의 주요 행동(확정·취소·편집)은 `actions` 에. DatePicker: 폼 안 날짜 칸 폭 고정(단일 15rem·기간 20rem).
+    Card(부품 4개가 물려받음): 카드 제목과 같은 말을 안의 Field 라벨로 반복하지 않는다. DescriptionList: 금액 내역 규칙을 "표 바로 아래면"으로
+    좁히고 "표와 떨어진 결제 내역 카드는 상품 금액부터 쓴다"를 더했다(D5). FormActionBar: 금지 "품목 0개 같은 목록 단위 오류를 회색 보조
+    글자로만 보이지 마라" · 규칙 "errorCount에 세고 추가 버튼에 aria-invalid, 제출 때 toast.error로도"(D3, 반복 입력 줄 부품 전까지).
+  - 크기: 색인 25,265 → 25,520바이트(+255 — 금지 3개) · `list_components` 그대로(20,693) · 최대 상세 DataTable 5,642 → 5,940바이트
+    (운영 상한 6,000 — 남은 60바이트, DataTable 에 지침을 더 넣으려면 예산을 다시 정한다). 회귀 상한은 늘어난 만큼만 올렸다.
+  - 대조: `docs/qa/mcp-response-diff.mjs`(HEAD 282bb9e ↔ 작업 트리) 1,427건 중 244건이 다르다 — `get_component` 11건(위 6부품 + Card 부품 4) ·
+    색인 1 · `which_component` 232건(결과에 실린 DataTable·FormActionBar 의 `dont` 글자). `dont` 를 빼고 비교하면 685질의 × limit 5·10 의
+    순위·점수 차이 0. 정답 세트 128문항 top-1 80 · top-3 100 그대로.
 - DatePicker: "onValueChange로 받은 확정 날짜를 쓴다"(이전 onChange). props에 `onValueChange`가 더해지고 `onChange`는 선택이며
   "옛 이름. onValueChange와 같다."는 설명이 붙는다.
 - `get_component`의 상속 표기(`extends`) 37곳: `React.*HTMLAttributes<…>`·`ComponentPropsWithoutRef<…>` → `React.ComponentProps<…>`
@@ -163,6 +204,10 @@
 
 ### 문서
 
+- DESIGN.md §4.4 고정 열(경계선은 넘칠 때만 · 상태 열 고정 · 오른쪽 고정은 한 열), §24.5 화면 조립 지침(도그푸딩 6 P3 여섯 가지와 디자인 검수안과
+  다르게 적은 두 곳 — 날짜 폭 12em→15rem, Alert→errorCount·aria-invalid·toast), §4.2 선택 수는 한 곳, §4.3 금액 내역 예외·OrderDetail 고정.
+  표 만들기(`03-tables.mdx`)에 열 고정 절(상태 열·금액 열 표, `컬럼고정` 미리보기)과 내보내기 줄·선택 수·5행 이하 표 안내.
+
 - 시작하기(`01-getting-started.mdx`)·ui README 의 Next 안내 — 부품 파일마다 `"use client"`, 아이콘은 서버에서 그려짐, webpack 빌드는
   `optimizePackageImports`. `docs/qa/bundle-size.md`(재는 방법·전후 표·Next 표·`"use client"` 판단·상한 올리는 법). DESIGN.md §15.6.1.
 
@@ -174,6 +219,11 @@
   스토리·문서 예제의 DatePicker를 `onValueChange`로, §13.3의 Button `extends` 예시를 지금 표기로 바꿨다.
 
 ### 내부
+
+- 하네스(목표 57 4단계): `render-verify` 에 고정 경계선 검사 — 스토리 셋(`복수선택`·`컬럼고정`·`가상화-컬럼고정`)마다 넘침 ⇔
+  `data-overflow-x` ⇔ 경계선 보임, 굵기 1px 유지, 고정 머리 칸 바탕 = 머리 바탕, 넘치는 표와 넘치지 않는 표가 모두 있는지, 같은 표를 360px 로 좁히면 선이 생기고 되돌리면
+  사라지는지. `form-summary-render-verify` 는 금액 열이 늘 고정이고 넘치지 않으면 경계선 투명·넘치면 보임을 본다(전: 넘치지 않으면 고정 없음).
+  `dogfood3-render-verify` 의 표 도구 줄 글자 단정을 `N건 선택` → 빈 글자로. MCP 기준선 시험(server.test R28)에 DataTable 지침 변경분을 명시해 더했다.
 
 - 크기 회귀 검사 `pnpm size`(목표 57, `scripts/bundle-size-check.mjs`): `npm pack` → 빈 앱에 격리 설치 → 묶음 셋(Button·목록 화면 10개·전체)을
   Vite 로 묶어 min·gzip 을 잰다. Button ≤ 60kB · lucide 아이콘 ≤ 80개(쓰지 않는 아이콘 이름 없음) · tokens.json 원본 없음 · 목록 ≤ 500kB ·

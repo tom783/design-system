@@ -56,11 +56,24 @@ import { Intent } from './_intent';
 | 페이지네이션에서 이 페이지만 더함 | `이 페이지 합계` |
 | 서버가 전체 합계를 줌 | `전체 합계 · 128건` (이 페이지 합계 아래, 최대 2행) |
 
-`values`에 없는 열은 비우고, 값을 구하지 못하면 `null`(—)을 넣습니다. 배송비·할인·결제 금액처럼 표의 열이 아닌 값은 표 아래 DescriptionList로 두고 값 끝을 금액 열 글자 끝에 맞춥니다. 가로로 스크롤되는 표는 금액 열을 `pinnedEnd`로 고정합니다.
+`values`에 없는 열은 비우고, 값을 구하지 못하면 `null`(—)을 넣습니다. 배송비·할인·결제 금액처럼 표의 열이 아닌 값은 표 아래 DescriptionList로 두고 값 끝을 금액 열 글자 끝에 맞춥니다. 금액 열은 `pinnedEnd`로 고정합니다(아래 열 고정). 결제 내역을 표와 떨어진 카드에 두면 상품 금액부터 씁니다.
 
 <Source code={summaryCode.replace("from '../../src'", "from '@s2life/ui'")} language="tsx" />
 
 <Canvas of={TableStories.합계} sourceState="none" />
+
+## 열 고정
+
+`pinnedStart`·`pinnedEnd`에 열 id를 주면 표가 가로로 스크롤될 때 그 열이 제자리에 남습니다. 선택 열은 늘 왼쪽에 고정됩니다. **고정 경계선은 표가 실제로 가로로 넘칠 때만 보이므로** 화면 폭에 따라 고정을 켜고 끄지 않고 늘 줍니다 — 넓은 화면에서는 세로선 없이 보통 열처럼 보입니다.
+
+| 표 | 고정할 열 |
+| --- | --- |
+| 상태가 있는 목록(주문·출고) | 상태 열 `pinnedEnd={['status']}` — 좁은 폭에서도 행의 상태가 화면 안에 남습니다 |
+| 합계 행이 있는 표 | 금액 열 `pinnedEnd={['amount']}` — 합계 칸도 함께 고정됩니다 |
+
+오른쪽 고정은 한 열로 둡니다. 선택 열과 고정 열의 합이 화면보다 넓으면 가운데 열이 보일 자리가 없습니다.
+
+<Canvas of={TableStories.컬럼고정} sourceState="none" />
 
 ## 페이지네이션
 
@@ -72,7 +85,9 @@ import { Intent } from './_intent';
 
 ## CSV 내보내기
 
-`exportFileName`을 주면 내보내기 버튼이 생깁니다. 선택한 행이 있으면 선택 행을, 없으면 현재 정렬된 로드 행을 내보냅니다. 금액 표시에 쉼표를 써도 `exportValue`에는 원본 숫자 문자열을 넘깁니다. 서버 전체 자료가 필요하면 앱에서 별도의 내보내기 API를 연결하세요.
+`exportFileName`을 주면 표 위에 내보내기 줄이 생깁니다. 선택한 행이 있으면 선택 행을, 없으면 현재 정렬된 로드 행을 내보냅니다. 금액 표시에 쉼표를 써도 `exportValue`에는 원본 숫자 문자열을 넘깁니다. 서버 전체 자료가 필요하면 앱에서 별도의 내보내기 API를 연결하세요.
+
+이 줄은 선택 수(`N건 선택`)를 쓰지 않습니다 — 선택 수는 일괄 작업 바(BulkActionBar) 한 곳입니다. 로드된 행을 모두 골랐는데 전체가 더 많을 때만 `로드된 N건이 선택됨 · 전체 M건`을 알립니다. **목록 툴바(FilterBar·BulkActionBar)를 쓰는 표에는 `exportFileName`을 주지 않습니다** — 표 위 줄이 둘이 됩니다. 전체 내보내기는 PageHeader `actions`에, 선택 행 내보내기는 일괄 작업 바 `actions`에서 `downloadCsv`로 둡니다. 5행 이하 표(상세 화면의 품목 등)에는 정렬·내보내기를 달지 않습니다.
 
 <Canvas of={TableStories.내보내기} sourceState="none" />
 

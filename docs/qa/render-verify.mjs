@@ -144,6 +144,47 @@ check('가로 스크롤 끝까지 밀어도 고정 오프셋이 유지된다',
 check('고정 셀 배경이 불투명하다',
   q1.bgs.every((c) => !/rgba\(0, 0, 0, 0\)|transparent/.test(c)), q1.bgs.join(' / '));
 
+console.log('\n── B. 고정 경계선은 표가 가로로 넘칠 때만 ──');
+// 도그푸딩 6: 넘치지 않는 표(상세 1440)에도 금액 열 앞 세로선이 보였다. 선택 열(늘 왼쪽 고정)도 같다.
+// 선 굵기는 남기고 색만 투명이다 — 열 폭이 흔들리지 않게. 넘침 ⇔ 선이 보임을 스토리마다 본다.
+const edgeProbe = `(() => {
+  const root = document.querySelector('[data-slot="data-table"]');
+  const scroll = root.querySelector('[data-slot="data-table-scroll"]');
+  const clear = c => /^rgba\\(\\d+, \\d+, \\d+, 0\\)$|^transparent$/.test(c);
+  const edges = [...root.querySelectorAll('.ds-data-table-pin-edge-start, .ds-data-table-pin-edge-end')].map(cell => {
+    const s = getComputedStyle(cell), start = cell.classList.contains('ds-data-table-pin-edge-start');
+    return { width: start ? s.borderRightWidth : s.borderLeftWidth, clear: clear(start ? s.borderRightColor : s.borderLeftColor) };
+  });
+  // 고정 머리 칸도 다른 머리 칸과 같은 바탕이다(전: surface 라 넘치지 않아도 흰 칸으로 떴다).
+  const headBgs = [...new Set([...root.querySelectorAll('[data-slot="data-table-head"]')].map(th => getComputedStyle(th).backgroundColor))];
+  return { overflow: scroll.scrollWidth - scroll.clientWidth > 1, flag: root.hasAttribute('data-overflow-x'),
+    edges: edges.length, visible: edges.filter(e => !e.clear).length, widths: [...new Set(edges.map(e => e.width))], headBgs };
+})()`;
+const edgeSeen = [];
+for (const id of ['components-datatable--복수선택', 'components-datatable--컬럼고정', 'components-datatable--가상화-컬럼고정']) {
+  await openStory(id);
+  const e = await evalIn(edgeProbe);
+  edgeSeen.push(e.overflow);
+  check(`${id}: 넘침 ${e.overflow} ⇔ data-overflow-x`, e.overflow === e.flag, JSON.stringify(e));
+  check(`${id}: 고정 경계선 ${e.overflow ? '전부 보임' : '전부 투명'} · 굵기 1px 유지`,
+    e.edges > 0 && e.visible === (e.overflow ? e.edges : 0) && JSON.stringify(e.widths) === '["1px"]', JSON.stringify(e));
+  check(`${id}: 고정 머리 칸 바탕 = 다른 머리 칸 바탕(불투명)`,
+    e.headBgs.length === 1 && !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(e.headBgs[0]), JSON.stringify(e.headBgs));
+}
+check('경계선 검사에 넘치는 표와 넘치지 않는 표가 모두 있다', edgeSeen.includes(true) && edgeSeen.includes(false), JSON.stringify(edgeSeen));
+// 같은 표를 좁히면 선이 생기고 넓히면 사라진다(스크롤 영역 폭 관찰).
+await openStory('components-datatable--복수선택');
+const wide = await evalIn(edgeProbe);
+await evalIn(`document.querySelector('[data-slot="data-table"]').style.width = '360px'`);
+await sleep(300);
+const narrow = await evalIn(edgeProbe);
+await evalIn(`document.querySelector('[data-slot="data-table"]').style.width = ''`);
+await sleep(300);
+const back = await evalIn(edgeProbe);
+check('폭을 줄이면 선이 생기고 되돌리면 사라진다',
+  !wide.overflow && wide.visible === 0 && narrow.overflow && narrow.visible === narrow.edges && !back.overflow && back.visible === 0,
+  JSON.stringify({ wide, narrow, back }));
+
 console.log('\n── B. 다크 테마 토큰 적용 ──');
 await openStory('components-datatable--컬럼고정', '&globals=theme:dark');
 const dk = await evalIn(`(() => {

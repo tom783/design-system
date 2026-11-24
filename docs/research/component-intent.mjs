@@ -86,7 +86,8 @@ const intents = [
   entry('PageHeader','layout','페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',['페이지 제목이나 화면 머리를 구성할 때'],['한 페이지에 PageHeader를 여러 개 넣지 마라'],'24',[
     'title은 페이지의 h1이다. 같은 제목을 다시 만들지 않는다. 바깥 여백이 없다. 아래 요소와의 간격은 페이지 배치(gap)로 준다.',
     'breadcrumb에는 Breadcrumb, status에는 StatusChip 등을 넣는다. actions에는 화면의 주요 버튼을 둔다.',
-    '본문 폭이 640px 미만이면 액션이 제목 아래로 내려간다. 주요 버튼은 하나만 둔다.'
+    '본문 폭이 640px 미만이면 액션이 제목 아래로 내려간다. 주요 버튼은 하나만 둔다.',
+    rule('상세 화면은 그 레코드의 주요 행동(확정·취소·편집)을 actions에 둔다. 카드 아래·페이지 끝에 따로 두지 않는다.', '24.5')
   ],['title','description','breadcrumb','status','actions'],['page-header','page-header-title','page-header-description','page-header-breadcrumb','page-header-status','page-header-actions'],['AppShell','Breadcrumb','StatusChip','Button'],['페이지 제목','화면 머리','페이지 머리','제목과 버튼','페이지 헤더']),
   entry('Carousel','media',"배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",['배너 슬라이드','콘텐츠를 한 장씩 가로로 넘길 때'],["Swiper·Embla 같은 캐러셀 라이브러리를 함께 쓰지 마라", "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"],'23',[
     rule("슬라이드는 CarouselSlide로 감싼다.", "23.1"),
@@ -217,7 +218,8 @@ const intents = [
   entry('DatePicker', 'form', '한국어 단일 날짜·일시·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1',[
     "onValueChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
     rule('예약·발송·캠페인은 single 전용 time(기본 10분). 최근접 분 칸·동률 올림, 첫 시각 09:00. 브라우저 지역 시간이며 ISO·UTC 변환은 앱 몫이다.', '11.1.1'),
-    rule('Field 밖에 둘 때 오류가 입력 아래로 20px 걸친다. 필터 툴바 아래에 20px 이상 간격을 둔다.', '11.3')
+    rule('Field 밖에 둘 때 오류가 입력 아래로 20px 걸친다. 필터 툴바 아래에 20px 이상 간격을 둔다.', '11.3'),
+    rule('폼 안 날짜 칸은 폭을 고정한다(단일 15rem·기간 20rem, className). 폼 열 전체로 늘리지 않는다.', '24.5')
   ], ['mode', 'time', 'value', 'onValueChange', 'today', 'defaultMonth'], ['date-picker', 'date-picker-error', 'date-picker-presets', 'date-picker-time', 'date-picker-notice'], ['Field'], ['날짜', '기간 필터', '달력', '날짜 시간', '시각', '예약 발행', '일시']),
 
   entry('Button','action','명시적인 사용자 동작을 실행한다.',['저장·취소·삭제 버튼이 필요할 때'],['primary를 여러 개 쓰지 마라','아이콘 전용 버튼의 aria-label을 빼지 마라'],'6',[
@@ -255,7 +257,8 @@ const intents = [
   ...[
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
     ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
-  ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5',['경계선과 여백으로 구조를 만든다.', rule('헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.', '6')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
+  ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5',['경계선과 여백으로 구조를 만든다.', rule('헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.', '6'),
+    rule('카드 제목과 같은 말을 안의 Field 라벨로 반복하지 않는다. 필드가 하나뿐이면 CardHeader 없이 Field 라벨만 둔다.', '24.5')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
   entry('DescriptionList','layout','상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
     ['주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때','배송비·할인·결제 금액 같은 금액 내역을 표 아래 끝에 맞출 때'],
     ['열 머리글이 있는 행 비교는 DataTable을 쓴다','행을 열지 않고 훑는 요약은 Peek을 쓴다','표 열의 합계는 DataTable summary로 둔다'],'16.7',[
@@ -264,7 +267,8 @@ const intents = [
       '긴 값은 줄바꿈하고 말줄임하지 않는다. 주문번호 같은 식별자는 고정폭 숫자 한 줄과 복사 버튼 하나까지다.',
       '값 자리에 StatusChip·링크·ghost sm 버튼 하나를 그대로 넣는다. 링크는 밑줄을 유지한다.',
       'columns=2는 카드 폭 640px(본문 606px) 이상에서만 두 열이다. 카드 360px(본문 326px) 미만은 라벨 위·값 아래로 접힌다.',
-      '금액 내역은 align=end와 마지막 쌍 emphasis다. 표 아래면 값 끝을 금액 열 글자 끝에 맞추고 상품 합계를 다시 쓰지 않는다.',
+      '금액 내역은 align=end와 마지막 쌍 emphasis다. 표 바로 아래면 값 끝을 금액 열 글자 끝에 맞추고 상품 합계를 다시 쓰지 않는다.',
+      rule('표와 떨어진 결제 내역 카드는 상품 금액부터 쓴다. 상품 합계 생략은 표 바로 아래 내역일 때만이다.', '24.5'),
       '여러 카드의 라벨 열은 labelWidth(rem)로 맞춘다.'
     ],['items','columns','align','labelWidth'],
     ['description-list','description-list-items','description-list-item','description-list-term','description-list-details','description-list-empty'],
@@ -272,7 +276,7 @@ const intents = [
   entry('Checkbox','form',"선택·해제·일부 선택 상태를 표시한다.",['행 선택이나 복수 선택이 필요할 때'],['레이블 없이 쓰지 마라','저장 버튼 없이 즉시 적용하는 설정은 Switch를 써라'],'17',[
     "폼 제출 때 함께 적용하는 동의·목록 선택에 쓴다."
   ],['indeterminate','checked'],['checkbox'],['DataTable'],['체크','선택','혼합']),
-  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때','금액·수량처럼 더할 수 있는 열이 있고 합을 확인해야 하는 표(summary 합계 행)'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라','표 밖 dl·div로 열 합계를 만들지 마라',"페이지 일부 합을 '합계'라고만 쓰지 마라('이 페이지 합계')",'배송비·할인은 합계 행이 아니라 DescriptionList에 둔다'],'4',[
+  entry('DataTable','table','정렬·선택·가상화가 가능한 데이터 표다.',['많은 레코드를 열로 비교할 때','금액·수량처럼 더할 수 있는 열이 있고 합을 확인해야 하는 표(summary 합계 행)'],['금액을 가변폭 숫자로 쓰지 마라','긴 글 열을 ClampText 로 감싸지 마라','표 밖 dl·div로 열 합계를 만들지 마라',"페이지 일부 합을 '합계'라고만 쓰지 마라('이 페이지 합계')",'배송비·할인은 합계 행이 아니라 DescriptionList에 둔다','FilterBar·BulkActionBar와 쓰는 표에 exportFileName을 주지 마라','5행 이하 표에 정렬(enableSorting:false로 끈다)·내보내기를 달지 마라'],'4',[
     "열은 @s2life/ui의 createDataTableColumnHelper<T>()로 h.columns([h.accessor(...)])를 만든다.",
     "열 정의를 위해 TanStack을 직접 설치하지 않는다.",
     "셀은 말줄임·전체 값 title을 제공한다. 별도 말줄임으로 감싸지 않는다.",
@@ -280,7 +284,8 @@ const intents = [
     rule('페이지를 넘기면 선택이 해제된다. 서버 페이징은 표 아래에 Pagination을 조립한다.', '4.1'),
     "화면 라벨이 원본 값과 다른 열(상태 등)은 exportValue로 CSV 값을 지정한다.",
     rule("summary는 숫자 열의 합계를 같은 열 맨 아래 한 줄로 둔다. values에 없는 열은 비우고 null은 —다. 빈 표에서는 숨는다.", '4.3'),
-    rule("라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건. 가로 스크롤 표는 금액 열을 pinnedEnd로.", '4.3')
+    rule("라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건.", '4.3'),
+    rule("pinnedEnd로 상태 열(목록)·금액 열(합계 표)을 고정한다. 좁은 폭에서도 보이고 고정선은 표가 넘칠 때만 생긴다.", '4.4')
   ],['data','columns','getRowId','selectionMode','density','state','virtualize','revisitedRowId','summary'],['data-table','data-table-row','data-table-summary'],['Peek','Checkbox','StatusChip','Pagination','DescriptionList'],['표','테이블','행','정렬','목록','레코드','여러 건 선택','다중 선택','일괄 선택','주문 목록','합계 행','열 합계','표 합계','페이지 합계','전체 합계','totals row','table footer']),
   entry('SELECTION_COLUMN_ID','constant','DataTable 선택 열의 식별자 상수다.',['선택 열 고정을 지정할 때'],['React 컴포넌트로 렌더링하지 마라'],'6',[],[],[],['DataTable'],['선택 열 식별자']),
   entry('FilterBar','table','목록 위에 저장된 보기·검색·필터 트리거와 적용 필터 칩을 한 툴바로 둔다.',
@@ -301,7 +306,8 @@ const intents = [
       '1건 이상이면 children(FilterBar) 자리를 같은 높이로 대체하고 표 위에 sticky로 붙는다. 표와 같은 부모에 둔다.',
       '순서는 N건 선택 → 선택 해제 → actions(secondary sm 2~3개) → 구분선 → dangerAction(danger sm 하나)이다.',
       '선택 중에는 필터를 바꿀 수 없다. N건 선택은 늘 있는 live region이다. 720px 미만은 액션이 둘째 줄이다.',
-      '위험 액션은 AlertDialog로 확정한다. 확정 뒤 선택을 비우면 바가 사라지므로 툴바로 포커스를 돌린다.'
+      '위험 액션은 AlertDialog로 확정한다. 확정 뒤 선택을 비우면 바가 사라지므로 툴바로 포커스를 돌린다.',
+      '선택 수는 이 바 한 곳이다. 선택 행 내보내기는 actions에서 downloadCsv로, 전체 내보내기는 PageHeader actions에 둔다.'
     ],['selectedCount','onClear','actions','dangerAction','children'],
     ['bulk-action-bar','bulk-action-bar-replaced','bulk-action-bar-panel','bulk-action-bar-count','bulk-action-bar-clear','bulk-action-bar-actions','bulk-action-bar-divider'],
     ['DataTable','FilterBar','Button','AlertDialog'],['일괄 작업','일괄 작업 바','선택 해제','건 선택','선택한 행','체크한 행','선택한 주문','선택 건수','벌크 액션','bulk action']),
@@ -373,13 +379,14 @@ const intents = [
   ],['onSubmit','restartOnSubmit','onSubmitError'],['form-flow'],['Field','Input','Steps'],['연속 입력','반복 입력','Enter','폼 이동','다음 입력칸','키보드 이동','다음 칸','이전 칸']),
   entry('FormActionBar','form','등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.',
     ['등록·편집 페이지, AppShell 본문 마지막에 한 번','저장 버튼이 스크롤 위치와 상관없이 같은 자리에 있어야 할 때'],
-    ['sticky div·음수 여백으로 직접 만들지 마라','Sheet·Dialog에는 DialogFooter를 쓴다','주요 버튼을 둘 두거나 삭제를 저장 옆에 두지 마라','목록 선택 작업은 BulkActionBar를 쓴다'],'19.5',[
+    ['sticky div·음수 여백으로 직접 만들지 마라','Sheet·Dialog에는 DialogFooter를 쓴다','주요 버튼을 둘 두거나 삭제를 저장 옆에 두지 마라','목록 선택 작업은 BulkActionBar를 쓴다','품목 0개 같은 목록 단위 오류를 회색 보조 글자로만 보이지 마라'],'19.5',[
       '폼의 마지막 자식으로 둔다. 저장은 type=submit이고 폼 밖에 두면 form에 폼 id를 준다. 마지막 칸 Enter는 저장, Esc는 취소가 아니다.',
       '순서는 삭제(onDelete, 왼쪽 끝) · 상태 · 취소(onCancel) · 저장(submitLabel, 오른쪽 끝)이다. 삭제는 확인창을 거쳐 onDelete를 부른다.',
       'dirty면 저장하지 않은 변경 있음, errorCount면 오류 N개 링크(첫 오류 칸 포커스)다. 폼 위 오류 요약은 앱이 그대로 둔다.',
       'saving이면 저장 버튼이 스피너·저장 중…이고 취소·삭제는 비활성, 다시 제출되지 않는다. 결과는 토스트나 페이지 이동으로 알린다.',
       'contentMaxWidth는 폼 열 최대 폭이다(기본 48rem). 페이지 루트·폼을 세로 flex로 두면 짧은 폼에서도 본문 바닥에 붙는다.',
-      '480px 미만은 상태 문구를 숨기고 삭제를 더 보기 메뉴로 옮기며 취소·저장이 같은 폭이다.'
+      '480px 미만은 상태 문구를 숨기고 삭제를 더 보기 메뉴로 옮기며 취소·저장이 같은 폭이다.',
+      rule('목록 단위 오류(품목 0개)는 errorCount에 세고 추가 버튼에 aria-invalid를 단다. 제출 때 toast.error로도 알린다.', '24.5')
     ],['submitLabel','form','onCancel','cancelLabel','saving','dirty','errorCount','onErrorClick','onDelete','deleteLabel','deleteDescription','contentMaxWidth'],
     ['form-action-bar','form-action-bar-content','form-action-bar-danger','form-action-bar-delete','form-action-bar-more','form-action-bar-actions','form-action-bar-status','form-action-bar-errors','form-action-bar-cancel','form-action-bar-submit'],
     ['AppShell','FormFlow','Field','BulkActionBar','Dialog'],['하단 고정','아래 고정','화면 아래','고정 버튼','버튼 줄','저장 줄','취소 저장','고정 액션','액션 줄','저장하지 않은 변경','sticky footer','form actions','save bar','sticky save']),

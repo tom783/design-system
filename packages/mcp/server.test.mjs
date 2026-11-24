@@ -105,7 +105,7 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
       // R49 색인 실측 23,191바이트 + 여유 309바이트. 운영 상한은 packages/mcp/budget.mjs(40,000B).
       // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
       // 목표 57 FormActionBar 553B · DataTable summary 313B · DescriptionList 금액 내역 69B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935, '색인 전송량을 잰다');
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -151,6 +151,15 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
       keywords: [...adjusted.keywords, '합계 행', '열 합계', '표 합계', '페이지 합계', '전체 합계', 'totals row', 'table footer'],
       props: [...adjusted.props, { name: 'summary', type: 'DataTableSummaryRow[] | undefined', required: false, doc: '열 합계 행(tfoot, 최대 2행). 라벨은 첫 데이터 열에 선다.' }],
       slots: [...adjusted.slots, 'data-table-summary', 'data-table-summary-cell', 'data-table-summary-row'].sort(),
+    };
+    // 목표 57 4단계(DESIGN.md §4.2·§4.4·§24.5 · 도그푸딩 6): 금지 2개를 더하고, 합계 라벨 규칙 끝의 고정 문장을
+    // §4.4 고정 열 규칙(상태 열·금액 열, 고정선은 넘칠 때만)으로 옮긴다. props·slots·나머지 순서는 그대로다.
+    if (name === 'DataTable') adjusted = { ...adjusted,
+      dont: [...adjusted.dont, 'FilterBar·BulkActionBar와 쓰는 표에 exportFileName을 주지 마라',
+        '5행 이하 표에 정렬(enableSorting:false로 끈다)·내보내기를 달지 마라'],
+      rules: [...adjusted.rules.slice(0, -1),
+        { text: '라벨은 범위다: 페이지 하나면 합계, 일부면 이 페이지 합계, 서버 전체는 전체 합계 · N건.', source: 'DESIGN.md 4.3' },
+        { text: 'pinnedEnd로 상태 열(목록)·금액 열(합계 표)을 고정한다. 좁은 폭에서도 보이고 고정선은 표가 넘칠 때만 생긴다.', source: 'DESIGN.md 4.4' }],
     };
     // 목표 49(DESIGN.md §6.3): forwardRef → ref prop 으로 상속 표기만 바뀌었다. 런타임 동일.
     if (name === 'Button') adjusted = { ...adjusted, extends: ["React.ComponentProps<'button'>", ...adjusted.extends.slice(1)] };

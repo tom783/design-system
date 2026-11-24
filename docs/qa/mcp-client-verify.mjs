@@ -364,14 +364,14 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const rules = (await t('get_rules', {})).content[0].text;
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
   // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935],['목록',list,19_950 + 206 + 203 + 199 + 212],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255],['목록',list,19_950 + 206 + 203 + 199 + 212],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }
   const detailBytes = Math.max(...(await Promise.all(stored.components.map(async entry =>
     Buffer.byteLength((await t('get_component', { name: entry.name })).content[0].text)))));
   // 목표 57: DataTable 상세 4,576B → 5,642B(summary 합계 행 지침 +1,066B). 운영 상한 6,000B 는 budget.mjs.
-  check('최대 상세 응답 크기 회귀 상한 5,642B', detailBytes <= 4_800 + 842, `${detailBytes}바이트`);
+  check('최대 상세 응답 크기 회귀 상한 5,940B', detailBytes <= 4_800 + 842 + 298, `${detailBytes}바이트`);
 }
 check('stdout 에 JSON 아닌 줄이 하나도 없다', badLines.length === 0, badLines.join(' | ').slice(0,150));
 console.log(`     stderr ${stderrBuf.length}자${stderrBuf?': "'+stderrBuf.slice(0,80)+'"':''}`);
