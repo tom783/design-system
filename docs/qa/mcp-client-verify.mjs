@@ -370,8 +370,9 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   }
   const detailBytes = Math.max(...(await Promise.all(stored.components.map(async entry =>
     Buffer.byteLength((await t('get_component', { name: entry.name })).content[0].text)))));
-  // 목표 57: DataTable 상세 4,576B → 5,642B(summary 합계 행 지침 +1,066B). 운영 상한 6,000B 는 budget.mjs.
-  check('최대 상세 응답 크기 회귀 상한 5,940B', detailBytes <= 4_800 + 842 + 298, `${detailBytes}바이트`);
+  // 목표 57: DataTable 상세 4,576B → 5,642B(summary 합계 행 지침 +1,066B). 운영 상한은 budget.mjs.
+  // 목표 64(0.6.0): DataTable 5,940B → 6,118B(+178 — 비제어 초기값 defaultSelectedIds). 운영 상한 7,000B(budget.mjs). build.test R23 과 같은 수.
+  check('최대 상세 응답 크기 회귀 상한 6,118B', detailBytes <= 4_800 + 842 + 298 + 178, `${detailBytes}바이트`);
 }
 check('stdout 에 JSON 아닌 줄이 하나도 없다', badLines.length === 0, badLines.join(' | ').slice(0,150));
 console.log(`     stderr ${stderrBuf.length}자${stderrBuf?': "'+stderrBuf.slice(0,80)+'"':''}`);

@@ -1595,7 +1595,7 @@ playwright 대신 CDP 를 직접 쓰고, 차트 라이브러리 대신 visx 프�
 |---|---|---|
 | 요약 — 항목 수에 비례 | `design://components` 선택 색인 | 전체 40,000 · 항목 800 |
 | | `list_components` | 전체 36,000 · 항목 320 |
-| 상세 — 지연 조회 | 부모 의도까지 합친 `get_component` 한 건 | 6,000 |
+| 상세 — 지연 조회 | 부모 의도까지 합친 `get_component` 한 건 | 7,000 (0.6.0 전 6,000 — DataTable 6,118B, budget.mjs 주석) |
 | 고정 | `design://tokens` · `get_rules` 전체 | 80,000 · 8,000 |
 | 저장 — 응답 아님 | `manifest.json`·저장 카탈로그 | 없음 |
 

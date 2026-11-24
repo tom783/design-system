@@ -309,7 +309,7 @@ test('R37 파일 업로드의 여섯 검색 의도·API와 실제 응답 예산'
     assert.equal(result.candidates[0].name, 'FileUpload');
   }
   const list = (await call(c, 'list_components', {})).result;
-  // 운영 상한은 budget.mjs 한 곳에서 읽는다(R49: 목록 24,000 → 36,000, 상세 6,000 유지).
+  // 운영 상한은 budget.mjs 한 곳에서 읽는다(R49: 목록 24,000 → 36,000 · 목표 64: 상세 6,000 → 7,000).
   assert.ok(Buffer.byteLength(list.content[0].text) <= BUDGETS.list.total);
   for (const component of manifest.components) {
     const detail = (await call(c, 'get_component', { name: component.name })).result;

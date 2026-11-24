@@ -90,7 +90,8 @@
   - 회귀 검사: 정답 세트 하한 **top-1 162 · top-3 180 · 후보 0개 0**(`which-component-golden.test.mjs`, pnpm test = verify·pre-commit·CI).
     R38 전체 질의 439건의 1순위 변화는 5건(부품 문장 4건이 가족 루트로, 1건은 전후 모두 가족 밖)이며 모두 대조 표에 적었다.
   - MCP: `which_component` 응답 형태는 그대로다(후보·점수·근거). 점수와 `reasons` 문구가 바뀐다. `get_component` 는 20개 부품의
-    `keywords` 만 늘었다(가장 큰 DataTable 은 그대로 5,940 / 6,000바이트). 색인·목록·규칙·토큰 응답은 바이트가 같다
+    `keywords` 만 늘었다(가장 큰 DataTable 은 2a 로는 그대로 5,940바이트 — 2b 의 `defaultSelectedIds` 뒤 6,118 / 7,000, 아래 바뀐 지침).
+    색인·목록·규칙·토큰 응답은 바이트가 같다
     (`mcp-response-diff` 0.5.0 c1bda98 ↔ 이 변경 1,543건 중 다름은 which_component 584 · get_component 20).
   - 남은 것: 반복 입력 줄(품목 줄 추가)은 맞는 부품이 없어 정답 세트에 공백으로 둔다(DESIGN.md §24 다음 판 후보). 스켈레톤 가족의
     "X 모양 자리 표시"는 일반 Skeleton 이 1위다(2위에 해당 프리셋).
