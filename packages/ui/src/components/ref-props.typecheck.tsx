@@ -18,6 +18,7 @@ import { FilterBar } from './filter-bar';
 import { BulkActionBar } from './bulk-action-bar';
 import { FormActionBar } from './form-action-bar';
 import { FieldList } from './field-list';
+import { SectionHeader } from './section-header';
 
 const button = React.createRef<HTMLButtonElement>();
 const input = React.createRef<HTMLInputElement>();
@@ -55,6 +56,7 @@ void [
   <FormActionBar ref={div} />,
   <FieldList ref={fieldset} label="품목" value={[{ name: '' }]} onValueChange={() => {}} createItem={() => ({ name: '' })}
     columns={[{ key: 'name', label: '품목명', render: item => <Input value={item.name} readOnly /> }]} />,
+  <SectionHeader ref={element} title="최근 출고" />,
   <DropdownMenuShortcut ref={span}>⌘C</DropdownMenuShortcut>,
 ];
 

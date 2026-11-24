@@ -17,10 +17,11 @@ const CASES = 100
   + 10 // 목표 57 FormActionBar 5(한국어 4·영어 1)·DataTable 합계 행 4(한국어 3·영어 1)·DescriptionList 금액 내역 1
   + 32 // 목표 64 도그푸딩 6 사전 점검 표(한국어 16·영어 16, 공백이던 품목 줄 2문항은 0.6.0 3a FieldList) — set logistics06
   + 26 // 목표 64 0.5.0 부품 질의(짧은 말 11 · 부품마다 영어 2개 이상 채운 문장 15) — set r050
-  + 6; // 0.6.0 3a 반복 입력 줄 FieldList(한국어 4·영어 2) — set r060
+  + 6 // 0.6.0 3a 반복 입력 줄 FieldList(한국어 4·영어 2) — set r060
+  + 6; // 0.6.0 3b 섹션 제목 줄 SectionHeader(한국어 4·영어 2) — set r060
 const selectable = new Set(components.filter(c => c.kind !== 'constant' && (!c.partOf || c.keywords?.length)).map(c => c.name));
 
-test('정답 세트는 192문항·한국어 위주이며 정답은 선택 가능한 부품(또는 이유 있는 공백)이다', () => {
+test('정답 세트는 198문항·한국어 위주이며 정답은 선택 가능한 부품(또는 이유 있는 공백)이다', () => {
   assert.equal(golden.cases.length, CASES);
   assert.equal(new Set(golden.cases.map(item => item.query)).size, CASES, '같은 질의가 두 번 들어가면 정확도가 부풀려진다');
   const ko = golden.cases.filter(item => item.lang === 'ko').length, en = golden.cases.filter(item => item.lang === 'en').length;

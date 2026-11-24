@@ -87,8 +87,26 @@ const intents = [
     'title은 페이지의 h1이다. 같은 제목을 다시 만들지 않는다. 바깥 여백이 없다. 아래 요소와의 간격은 페이지 배치(gap)로 준다.',
     'breadcrumb에는 Breadcrumb, status에는 StatusChip 등을 넣는다. actions에는 화면의 주요 버튼을 둔다.',
     '본문 폭이 640px 미만이면 액션이 제목 아래로 내려간다. 주요 버튼은 하나만 둔다.',
-    rule('상세 화면은 그 레코드의 주요 행동(확정·취소·편집)을 actions에 둔다. 카드 아래·페이지 끝에 따로 두지 않는다.', '24.5')
+    rule('상세 화면은 그 레코드의 주요 행동(확정·취소·편집)을 actions에 둔다. 카드 아래·페이지 끝에 따로 두지 않는다.', '24.5'),
+    rule('페이지 안 섹션 제목은 SectionHeader(h2), 카드 안 제목은 CardHeader다. PageHeader는 페이지 맨 위 h1 하나다.', '24.6')
   ],['title','description','breadcrumb','status','actions'],['page-header','page-header-title','page-header-description','page-header-breadcrumb','page-header-status','page-header-actions'],['AppShell','Breadcrumb','StatusChip','Button'],['페이지 제목','화면 머리','페이지 머리','제목과 버튼','페이지 헤더']),
+  entry('SectionHeader','layout','카드 밖 페이지 섹션의 제목·보조 설명·섹션 동작을 한 줄로 두고 섹션을 그 제목 이름으로 묶는다.',
+    ['한 페이지에 섹션이 둘 이상이고, 섹션이 카드 여러 개·표·지표 묶음을 담을 때','섹션 제목 옆에 전체 보기·내보내기·기간 선택을 둘 때'],
+    ['h2와 flex div로 섹션 머리를 직접 만들지 마라','카드 하나뿐인 섹션은 CardHeader를 쓴다','주요(primary) 버튼을 넣지 마라. 주요 행동은 PageHeader actions다',
+      '섹션 동작을 표 위 별도 줄로 빼지 마라','섹션 제목과 같은 말을 바로 아래 레이블·legend로 반복하지 마라'],'24.6',[
+      'children이 섹션 내용이다. section과 제목의 aria-labelledby, 머리에서 내용까지 12px를 부품이 갖는다.',
+      '페이지 배치 gap 24 안에 둔다. 페이지 머리 바로 아래 첫 섹션은 제목까지 24px, 다음 섹션은 앞 섹션 끝에서 32px다.',
+      'title은 h2이고 섹션 안의 섹션이면 as="h3"다. count는 숫자만 준다(괄호·개 없이). description은 한두 줄이다.',
+      'actions는 label·kind(link·button)·href·onSelect·icon 데이터다. control 포함 2개까지 줄에, 나머지는 ⋯ 메뉴다.',
+      'control에는 기간 SegmentedControl size="sm" 하나를 넣고 aria-label에 섹션 이름을 넣는다.',
+      '동작 이름은 제목 + label로 읽힌다(최근 출고 전체 보기). label에 섹션 이름을 다시 쓰지 않는다.',
+      '머리 폭 480px 미만이면 control은 제목 아래 줄 가득 폭이다. 링크·버튼이 넘치면 링크형 하나(control이 있으면 없음) + ⋯ 메뉴다.',
+      '층은 PageHeader(h1) > SectionHeader(카드 밖) > CardHeader(카드 안)다. 구분선을 넣지 않는다.'
+    ],['title','as','count','description','control','actions'],
+    ['section-header','section-header-head','section-header-layout','section-header-title','section-header-count','section-header-description',
+      'section-header-actions','section-header-control','section-header-full','section-header-compact','section-header-link','section-header-button','section-header-more'],
+    ['PageHeader','Card','SegmentedControl','DataTable','StatTile'],
+    ['섹션 제목','섹션 머리','섹션 헤더','섹션 제목 줄','섹션 구분','소제목','섹션 동작','전체 보기','section header','section title','section heading']),
   entry('Carousel','media',"배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",['배너 슬라이드','콘텐츠를 한 장씩 가로로 넘길 때'],["Swiper·Embla 같은 캐러셀 라이브러리를 함께 쓰지 마라", "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"],'23',[
     rule("슬라이드는 CarouselSlide로 감싼다.", "23.1"),
     rule("양 끝에서는 멈춘다. 앱이 순환 이동을 덧붙이지 않는다.", "23.1"),
@@ -258,7 +276,8 @@ const intents = [
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
     ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
   ].map(([name,purpose,slot,partOf]) => partOf ? part(name, partOf, purpose, ['className'], [slot]) : entry(name,'layout',purpose,['관련 정보를 카드로 묶을 때'],['평면 카드에 그림자를 넣지 마라'],'5',['경계선과 여백으로 구조를 만든다.', rule('헤더 없이 CardBody만 써도 된다. 카드 첫 본문의 위 여백은 내장되어 있다.', '6'),
-    rule('카드 제목과 같은 말을 안의 Field 라벨로 반복하지 않는다. 필드가 하나뿐이면 CardHeader 없이 Field 라벨만 둔다.', '24.5')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
+    rule('카드 제목과 같은 말을 안의 Field 라벨로 반복하지 않는다. 필드가 하나뿐이면 CardHeader 없이 Field 라벨만 둔다.', '24.5'),
+    rule('카드 밖 섹션 제목은 SectionHeader다. 카드 하나만 담는 섹션은 SectionHeader 없이 CardHeader만 쓴다.', '24.6')],['className'],[slot],name === 'Card' ? ['CardHeader','CardBody','CardFooter'] : ['Card'],['카드',name])),
   entry('DescriptionList','layout','상세 화면의 라벨-값 쌍을 같은 간격과 빈 값 표기로 보여준다.',
     ['주문·배송지·결제 정보처럼 열 머리글 없는 키-값을 보여줄 때','배송비·할인·결제 금액 같은 금액 내역을 표 아래 끝에 맞출 때'],
     ['열 머리글이 있는 행 비교는 DataTable을 쓴다','행을 열지 않고 훑는 요약은 Peek을 쓴다','표 열의 합계는 DataTable summary로 둔다'],'16.7',[

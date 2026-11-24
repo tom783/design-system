@@ -250,6 +250,24 @@ for (const [query, expected] of [['폼 아래에 취소와 저장 버튼을 항�
     table?.props.some(p => p.name === 'summary') && table.useWhen.some(s => s.includes('합을 확인'))
     && ['dl·div', '이 페이지 합계', 'DescriptionList'].every(w => table.dont.some(s => s.includes(w))));
 }
+// 목표 64(0.6.0 3b): 섹션 제목 줄 — 질의 첫 후보, 디자인 총괄 지침(purpose·useWhen·dont), 층 구분(S-1)이 세 머리에 다 있다.
+for (const query of ['섹션 제목', 'section header', '섹션 머리', '대시보드 최근 출고 섹션 제목 옆에 전체 보기 링크', 'section title with view all link']) {
+  const response = await t('which_component', { description: query });
+  check(`목표 64 검색: ${query} → SectionHeader`, response.structuredContent?.candidates[0]?.name === 'SectionHeader');
+}
+{
+  const section = (await t('get_component', { name: 'SectionHeader' })).structuredContent;
+  check('SectionHeader 상세는 지침(purpose·useWhen·dont)과 제목·개수·설명·control·actions API를 제공한다',
+    section?.purpose.startsWith('카드 밖 페이지 섹션의 제목·보조 설명·섹션 동작을 한 줄로') && section.useWhen.some(s => s.includes('섹션이 둘 이상'))
+    && ['flex div', 'CardHeader', 'primary', '표 위 별도 줄', 'legend'].every(w => section.dont.some(s => s.includes(w)))
+    && ['title', 'as', 'count', 'description', 'control', 'actions'].every(name => section.props.some(p => p.name === name))
+    && section.rules.some(r => r.text.includes('aria-labelledby')) && section.rules.some(r => r.text.includes('480px')));
+  const page = (await t('get_component', { name: 'PageHeader' })).structuredContent;
+  const cardHeader = (await t('get_component', { name: 'CardHeader' })).structuredContent;
+  check('PageHeader·CardHeader 상세가 SectionHeader 와의 층 구분(S-1)을 알려 준다',
+    page?.rules.some(r => r.text.includes('SectionHeader') && r.text.includes('CardHeader'))
+    && cardHeader?.rules.some(r => r.text.includes('SectionHeader') && r.text.includes('카드 하나만')));
+}
 
 // 0.6.0 3a: 반복 입력 줄 — 질의 첫 후보, 디자인 총괄 지침(purpose·useWhen·dont)·API, FormActionBar 묶음 오류 지침이 이 부품으로 바뀜.
 for (const query of ['품목 반복 입력', 'repeat rows', 'line items', '출고 품목을 여러 줄로 입력하고 줄을 추가·삭제', '품목이 하나도 없을 때 목록 전체 오류 표시']) {
@@ -382,8 +400,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   const rules = (await t('get_rules', {})).content[0].text;
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
   // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
-  // 0.6.0 3a FieldList 색인 +669B·목록 +204B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // 0.6.0 3a FieldList 색인 +669B·목록 +204B · 목표 64(0.6.0 3b) SectionHeader 색인 +736B·목록 +244B.
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204 + 244],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }

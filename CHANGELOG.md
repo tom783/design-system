@@ -98,6 +98,28 @@ DatePicker 의 옛 값 알림 `onChange` 별칭을 없앴다.
     (하한 170 · 188 · 0으로 올림). 기존 186문항의 정답 순위·보류 세트 37 · 47·R38 439건 1순위는 그대로다. 검색어에 '입력'을 넣지 않았다 —
     '입력'이 든 키워드 부품이 4개를 넘으면 흔한 낱말로 덜 쳐져 R38 '입력 창을 닫는 버튼을 제공한다.'가 Input → Button 으로 바뀌었다.
   - 앱이 할 일: 없다. 카드 안에 줄마다 상자를 만들어 품목을 입력받던 곳은 이 부품으로 바꿀 수 있다.
+- **섹션 제목 줄** — `SectionHeader` (타입 `SectionHeaderProps`·`SectionHeaderAction`, 목표 64 · 0.6.0 3b · DESIGN.md §24.6 ·
+  디자인 총괄 규칙 표 S-1~S-11 r1.1 · Figma 203:8~11). 페이지 안, 카드 밖 섹션의 제목·개수·설명·섹션 동작을 한 줄로 두고
+  `<section aria-labelledby=제목 id>` 로 내용(`children`)과 묶는다. 층은 PageHeader(h1) > SectionHeader(카드 밖) > CardHeader(카드 안).
+  - 제목 `as` 기본 h2(h3 가능) title-sm 20/28 600, 개수 `count` 는 제목 옆 8·같은 크기 400·보조색·고정폭 숫자, 설명 body-sm 14/20
+    보조색·제목 아래 4. 구분선·새 토큰 없음.
+  - 동작은 머리 오른끝 한 묶음(간격 8, 제목과 ≥ 16), 세로 가운데 = 제목 첫 줄(28) 가운데. `actions` 는 데이터
+    (`label`·`kind: 'link' | 'button'`·`href`·`onSelect`·`icon`·`disabled`) — 넘치면 ⋯ 메뉴 항목으로 옮겨야 해서 노드가 아니다.
+    `control` 에 기간 SegmentedControl 하나. control 포함 2개까지 줄에, 나머지는 ⋯(38×38). primary 종류는 없다.
+  - 여백: 앞 섹션 끝 → 제목 32, 머리 → 내용 12, 페이지 머리 바로 아래 첫 섹션 24 — 페이지 배치 gap 24(§24.3) 위에 앞 형제가 있는
+    섹션만 8 을 더한다(padding 이라 `space-y` 에서도 같다).
+  - 머리 폭 480 미만: control 은 제목(·설명) 아래 줄 — 위 8, 그릇 가득 폭, 세그먼트 균등(r1.1, 제목은 한 줄 유지. SegmentedControl sm
+    기본 폭은 그대로). 제목 줄의 링크·버튼이 다 들어가지 않으면 링크형 1개(control 이 있으면 없음) + ⋯. "들어가는가"는 실제로 잰다
+    (창 폭·웹폰트가 바뀌면 다시). 서버 첫 그림은 컨테이너 쿼리로 접힌 쪽이라 측정 전에도 가로 스크롤이 없다.
+  - 동작 접근성 이름 '{제목} {label}'(최근 출고 전체 보기), ⋯ 은 '{제목} 더 보기'.
+  - Storybook `Components/SectionHeader`: 사용법 · 동작 0·1·2 · 넘침(⋯, h3) · 좁은 폭 294(control 줄 내림·control + 링크 들어감/넘침) · 추천 조합 대시보드·출고 상세(Figma 203:11
+    물류 데이터) · 다크. 하네스 `section-header-render-verify`(21건: 라이트·다크 × 1440·1024·768·390 × 두 화면 + 작은 스토리 5,
+    스크린샷 16장). `02 컴포넌트 고르기` 에 PageHeader·SectionHeader·CardHeader 갈림길.
+  - MCP: SectionHeader 항목(디자인 총괄 purpose·useWhen·dont 초안), PageHeader·Card(→ CardHeader 상속) 규칙에 층 구분(S-1) 한 줄씩.
+    색인 26,189 → 26,926B(+737) · 목록 +244B · 상세 3,969B(상한 7,000 — 최대는 그대로 DataTable 6,118). which_component: 정답 세트 r060 에
+    6문항(한국어 4·영어 2)을 더해 198문항 top-1 180 · top-3 196 · 후보 0개 0(하한 176 · 194 · 0으로 올림). 기존 192문항 정답 순위·보류 세트
+    37 · 47·R38 439건 1순위는 그대로다. '섹션 제목'·'section header'·'섹션 머리' 첫 후보.
+  - 앱이 할 일: 없다. `h2` + flex div 로 만든 섹션 머리와 표 위 별도 동작 줄은 이 부품으로 바꿀 수 있다.
 
 ### 바뀐 동작
 

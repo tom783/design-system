@@ -102,9 +102,10 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
   // 목표 57 색인 +935B(FormActionBar 553 · DataTable summary 313 · DescriptionList 금액 내역 69), 목록 +212B(FormActionBar).
   // 목표 57 4단계(도그푸딩 6 지침) 색인 +255B — DataTable 금지 2개(툴바 위 표의 내보내기·5행 이하 표) · FormActionBar 금지 1개(목록 오류).
   // 0.6.0 3a 색인 +669B — 반복 입력 줄 FieldList 항목(목록 +204B, 상세 5,311B).
-  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669);
+  // 목표 64(0.6.0 3b) SectionHeader 색인 +736B · 목록 +244B(새 항목 하나만).
+  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736);
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
-  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206 + 203 + 199 + 212 + 204);
+  assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206 + 203 + 199 + 212 + 204 + 244);
   // 목표 57: 최대 상세 DataTable 4,576B → 5,642B(summary 합계 행 지침). 운영 상한 6,000B 는 budget.mjs.
   // 목표 57 4단계: DataTable 5,642B → 5,940B(+298 — 금지 2개 · 상태 열·금액 열 고정 규칙, 합계 라벨 규칙에서 고정 문장을 옮김).
   // 목표 64(0.6.0): DataTable 5,940B → 6,118B(+178 — 비제어 초기값 defaultSelectedIds prop 과 JSDoc). 운영 상한은 7,000B 로 올렸다.
