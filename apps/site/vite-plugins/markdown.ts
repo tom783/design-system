@@ -5,7 +5,11 @@ export interface Heading {
   level: number;
   /** 마크다운 꾸밈을 뗀 제목 글 */
   text: string;
-  /** GitHub 이 붙이는 앵커 — github-slugger 와 같은 규칙(소문자, 글자·숫자·_·-·공백만 남기고 공백→-, 겹치면 -1·-2) */
+  /**
+   * GitHub 이 붙이는 앵커 — github-slugger 와 같은 규칙(소문자, 글자·십진 숫자·_·-·공백만 남기고 공백→-, 겹치면 -1·-2).
+   * ①② 같은 원문자··(가운뎃점)·—는 지운다. 2026-11-24 DESIGN.md 147·README 6·packages/mcp/README 5 제목을
+   * GitHub 렌더 HTML 의 id 와 대조해 모두 같았다(gh api …/contents/<파일> -H 'Accept: application/vnd.github.html').
+   */
   slug: string;
 }
 
@@ -33,7 +37,7 @@ function plain(text: string) {
 }
 
 function githubSlug(text: string) {
-  return text.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]/gu, '').replace(/ /g, '-');
+  return text.toLowerCase().replace(/[^\p{L}\p{M}\p{Nd}\p{Pc} -]/gu, '').replace(/ /g, '-');
 }
 
 /** 문서의 제목과 코드 블록을 한 번에 읽는다. */
