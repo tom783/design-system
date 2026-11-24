@@ -94,9 +94,9 @@ Vite 소비 앱(`pnpm qa:pack`)·Next(Turbopack·webpack)·Node ESM 직접 impor
 
 ## CI
 
-`pnpm size` 는 `pnpm verify`(pre-push) 마지막에 돈다. GitHub Actions 에는 아직 없다(DevOps 소유). 걸 때는 `checks` job 의
-`pnpm test` 다음에 `pnpm size` 한 단계 — 로컬 macOS 실측 5~6초(pack 2회·격리 설치·Vite 3회), 빈 러너는 pnpm 저장소 캐시가 있으면
-약 15~30초로 본다. Next 계측(`docs/qa/measure/next-consumer.mjs`)은 next 설치가 필요해 게이트에 넣지 않았다(로컬 1회 17초, pnpm 저장소 캐시 있음).
+`pnpm size` 는 `pnpm verify`(pre-push) 마지막에 돈다. CI 에도 `checks` job 의 `pnpm test` 다음 단계로 걸었다(9e47e10, DevOps) —
+실패하면 실패 줄을 오류 주석(`::error`)으로 남긴다. 로컬 macOS 실측 5~6초(pack 2회·격리 설치·Vite 3회), 빈 러너는 pnpm 저장소
+캐시가 있으면 약 15~30초로 본다. Next 계측(`docs/qa/measure/next-consumer.mjs`)은 next 설치가 필요해 게이트에 넣지 않았다(로컬 1회 17초, pnpm 저장소 캐시 있음).
 
 ## 남은 것 (제안)
 

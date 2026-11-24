@@ -58,10 +58,12 @@ claude mcp add s2life -- npx -y @s2life/mcp
 
 세 패키지는 따로 개발·배포한다. tokens를 고치면 lockstep으로 셋 다 같은 버전으로 배포하고, ui가 그 버전의 tokens를 정확히 고정해 의존하므로 앱은 ui만 업데이트하면 된다.
 
+버전은 병합마다가 아니라 목표가 끝날 때 한 번 올린다. 1.0 전에는 새 부품·공개 API 추가·호환 깨짐이면 `0.x.0`, 고침·내부 개선만이면 `0.x.y`다. 버전 확정은 게시가 아니다 — 변경 기록에 `미게시`로 남고, 태그·npm 게시는 오너 승인을 받아서만 한다([CHANGELOG](CHANGELOG.md)·AGENTS.md "버전·릴리스").
+
 ```sh
 pnpm install
 pnpm build                  # 토큰·매니페스트·ESM·선언·CSS
-pnpm version:set 0.2.0       # 세 버전·상호 의존 범위·lockfile 동시 갱신
+pnpm version:set 0.5.0       # 세 버전·상호 의존 범위·lockfile 동시 갱신
 pnpm verify                 # 기존 토큰·MCP·타입·Storybook 게이트
 pnpm qa:pack                # tarball 설치·타입·Vite·MCP·브라우저 렌더
 pnpm qa                     # 기존 QA + 배포 리허설

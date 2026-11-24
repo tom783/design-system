@@ -124,6 +124,17 @@ gh run list -R tom783/design-system --branch main --json headSha,status,conclusi
 거절되면: `non-fast-forward` 는 main 이 앞서 있다는 뜻이다 — 1번부터 다시(rebase 하면 sha 가 바뀌니 2·3번도).
 `GH006 … "gate" is expected` 는 3번이 끝나지 않은 sha 를 보낸 것이다.
 
+## 버전·릴리스 (2026-11-24 오너 결정)
+
+- **병합마다 올리지 않는다. 오너 목표가 끝날 때 한 번 올린다.** 목표 중간의 병합은 CHANGELOG `## 미출시` 에만 쌓는다.
+- **어느 자리를 올리나(1.0 전):** 새 부품·공개 API 추가·호환 깨짐이 하나라도 있으면 `0.x.0`, 고침·내부 개선만이면 `0.x.y`.
+- **버전 확정 = 번호와 변경 기록 확정이다. 게시가 아니다.**
+  1. `pnpm version:set <x.y.z>` — 세 패키지(tokens·ui·mcp)·상호 의존·lockfile 을 함께(lockstep, DESIGN.md §15.3).
+  2. CHANGELOG `## 미출시` → `## <x.y.z> — 미게시`(지난 판 이후 그 목표들의 변경 전부와 **앱이 할 일**), 위에 빈 `## 미출시`.
+  3. `pnpm publish:check`(세 패키지 `npm publish --dry-run`, 레지스트리에 올라가지 않는다)까지만 돌린다.
+- **태그(`v<버전>`)·npm 게시·release 워크플로 실행은 하지 않는다** — 받아 쓰는 앱이 그 판을 필요로 하거나 오너가 요청할 때,
+  오너 승인을 받아서만 한다. 태그는 게시된 판에만 붙인다(CHANGELOG 머리말). 게시하면 그 판 제목의 `미게시` 를 날짜로 바꾼다.
+
 ## 상시 규칙
 
 문서는 매니페스트에서 렌더한다. 규칙을 MDX에 복사하지 마라.

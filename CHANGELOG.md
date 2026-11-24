@@ -6,9 +6,40 @@
 태그는 **게시된 것에만** 붙인다(`v<버전>`). 배포 워크플로는 `contents: read` 만 갖기
 때문에(의도된 제약) 태그는 게시 후 로컬에서 단다. 배포 절차는 `DESIGN.md §15`.
 
+버전은 병합마다 올리지 않고 **오너 목표가 끝날 때 한 번** 올린다(2026-11-24 오너 결정). 1.0 전에는 새 부품·공개 API 추가·
+호환 깨짐이 있으면 `0.x.0`, 고침·내부 개선만이면 `0.x.y` 다. **버전 확정은 게시가 아니다** — "미게시" 판은 태그·npm 게시 없이
+번호와 변경 기록만 확정한 것이다. 게시는 받아 쓰는 앱이 필요하거나 오너가 요청할 때 승인을 받아서만 한다(AGENTS.md "버전·릴리스").
+
 ---
 
 ## 미출시
+
+(아직 없음)
+
+---
+
+## 0.5.0 — 미게시
+
+목록 화면 툴바(필터 바·일괄 작업 바)·설명 목록·폼 하단 고정 액션 줄·표 합계 행·입력 단위 접미사를 더하고(목표 49·57),
+공개 API 규약을 정리하고, 앱이 받는 번들을 쓴 부품만큼으로 줄였다. 공개 컴포넌트 115개 → **119개**
+(`FilterBar`·`BulkActionBar`·`DescriptionList`·`FormActionBar`). 바이브코딩 도그푸딩 6(AI 가 사람 손 없이 목록·상세·등록·
+대시보드 4화면)에서 찾은 작은 고침과 화면 조립 지침까지 담았다. 새 부품·공개 API 추가가 있어 0.x.0 이다.
+앱 코드나 시각 기준선에 닿는 변경은 **바뀐 동작(마이그레이션)** 에 모았다. 게시하지 않았다(태그·npm 없음).
+
+### 앱이 할 일 (요약 — 자세한 것은 각 항목)
+
+- **코드:** `<DatePicker onChange>` → `onValueChange`(옛 이름은 동작한다). `next build --webpack` 앱은
+  `experimental.optimizePackageImports: ['@s2life/ui']`. MCP `design://components` 를 `derived` 로 복원하던 클라이언트는
+  `get_component`. DataTable 도구 줄의 선택 수(`N건 선택`)를 쓰던 화면은 BulkActionBar 로, 목록 툴바와 `exportFileName` 을
+  함께 썼다면 내보내기를 PageHeader·바 `actions` 로. 카드를 고정 열 수 격자에 넣었다면 auto-fit 으로.
+- **시각 기준선 갱신(코드 수정 없음):** StatusChip 기준선(글자 줄의 칩 1~1.5px) · 선택 탭 포커스 링 · 고정 열(넘치지 않는 표의
+  고정 경계선·선택 열 뒤 선이 없어짐, 고정 머리 칸 바탕) · 표 도구 줄(`0건 선택` 없음).
+- **선택(바꾸면 좋은 것):** 손으로 만든 필터·일괄 작업 툴바·`<dl>`·표 밖 합계·sticky 저장 줄·단위 span 을 새 부품으로.
+  폭에 따라 켜고 끄던 `pinnedEnd` 는 늘 주는 것으로.
+- **deprecated 12개는 0.5.0 에도 남아 있다.** 0.4.0 이 "다음 마이너에서 뺀다"고 예고한 내부 도우미 8개(`placeFallback`·`resolveStep`·
+  `useAnchored`·`supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`)는 0.4.0 이 게시되지 않아 예고가
+  앱에 닿은 판이 없었으므로 이번에 빼지 않았다. 목표 49 의 4개(`initials`·`encodeRecord`·`decodeRecord`·`useElementWidth`)와
+  DatePicker `onChange` 별칭과 함께 다음 마이너(0.6.0)에서 뺀다. 대체 수단은 각 항목에 있다.
 
 ### 추가
 
@@ -223,6 +254,15 @@
 
 ### 내부
 
+- CI(verify.yml): 한 job 이던 검증을 `build`·`checks`·`node harnesses`·`harness shard 1·2` 병렬 job 으로 나누고 `gate` 하나로 모은다 —
+  `gate` 는 main 브랜치 보호의 필수 체크다(cc6d50a). 같은 저장소 PR 의 `pull_request` run 은 이름을 갈라 건너뛰고 push run 이 판정한다(ddef6c1).
+  CI 생성물 대조에 `runtime-tokens.ts` 를 더했다(9e47e10).
+- pre-push: 보내는 sha 전부의 원격 `gate` 가 headSha 일치·녹색이면 브라우저 하네스(약 6분)를 건너뛰고 근거 run URL 을 찍는다.
+  typecheck·verify 는 늘 돈다. gh 없음·조회 실패·진행 중·실패·불일치면 평소대로 전부 돈다(`scripts/gate-reuse.mjs`, 8702551).
+  AGENTS.md 에 main 통합 절차(작업 브랜치 gate 녹색 → 그 sha 로 main 빨리 감기, 병합 버튼·`--no-verify` 금지).
+- 일회성 계측 스크립트(R40~R43)를 `docs/qa/measure/` 로 옮기고(6937848), `r38-match-compare` 를 `compare-match-baseline` 으로
+  이름을 바꿨다(10f701b). 게이트·CI 는 돌리지 않는다.
+
 - 하네스(목표 57 4단계): `render-verify` 에 고정 경계선 검사 — 스토리 셋(`복수선택`·`컬럼고정`·`가상화-컬럼고정`)마다 넘침 ⇔
   `data-overflow-x` ⇔ 경계선 보임, 굵기 1px 유지, 고정 머리 칸 바탕 = 머리 바탕, 넘치는 표와 넘치지 않는 표가 모두 있는지, 같은 표를 360px 로 좁히면 선이 생기고 되돌리면
   사라지는지. `form-summary-render-verify` 는 금액 열이 늘 고정이고 넘치지 않으면 경계선 투명·넘치면 보임을 본다(전: 넘치지 않으면 고정 없음).
@@ -230,7 +270,7 @@
 
 - 크기 회귀 검사 `pnpm size`(목표 57, `scripts/bundle-size-check.mjs`): `npm pack` → 빈 앱에 격리 설치 → 묶음 셋(Button·목록 화면 10개·전체)을
   Vite 로 묶어 min·gzip 을 잰다. Button ≤ 60kB · lucide 아이콘 ≤ 80개(쓰지 않는 아이콘 이름 없음) · tokens.json 원본 없음 · 목록 ≤ 500kB ·
-  전체 ≤ 820kB. `pnpm verify` 마지막 단계(약 5초). GitHub Actions 에는 걸지 않았다(DevOps — 명령·시간은 bundle-size.md).
+  전체 ≤ 820kB. `pnpm verify` 마지막 단계(약 5초). CI(verify.yml `checks`)에도 걸었다 — 실패하면 실패 줄을 오류 주석(`::error`)으로 남긴다(9e47e10).
   0.4.0 코드에서 9건으로 실패한다.
 - 빌드 가드(`scripts/build-ui.mjs`): dist JS 마다 대응하는 src 파일이 있어야 하고(src 밖 모듈 차단 — tokens.json 이 `dist/docs/research/tokens.js` 로
   나왔다), 모듈은 `"use client"` 로 시작하고, 진입점은 배너 없이 재export 만이어야 한다. `pack-verify` 도 설치된 tarball 에서 같은 규칙을 본다.
