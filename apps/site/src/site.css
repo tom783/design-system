@@ -215,7 +215,8 @@ html { scroll-padding-block-start: calc(var(--space-64) + var(--space-16)); }
 .site-pattern-card:hover { background: var(--bg-hover); }
 .site-pattern-thumb { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--bg-canvas);
   border-bottom: var(--border-width) solid var(--border-subtle); }
-.site-pattern-stage { position: absolute; inset-block-start: 0; inset-inline-start: 0; transform-origin: 0 0; pointer-events: none; user-select: none; }
+/* 1440 화면 틀(stories/screen.ts) — 실제 부품으로 그리고 transform 으로 줄인다. 패턴 카드 그림과 부품 페이지 셸 예시가 같이 쓴다. */
+.site-screen-stage { position: absolute; inset-block-start: 0; inset-inline-start: 0; transform-origin: 0 0; pointer-events: none; user-select: none; }
 .site-pattern-body { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; padding: var(--space-12) var(--space-16) var(--space-16); }
 .site-pattern-name { margin: 0; font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); font-weight: 600; }
 .site-pattern-link { color: var(--text-primary); text-decoration: none; }
@@ -249,6 +250,14 @@ html { scroll-padding-block-start: calc(var(--space-64) + var(--space-16)); }
    1440 에서 5열 주문 표(필요 728)가 칸 안쪽(24 여백이면 708)에서 가로로 밀리지 않게(통과 기준 4절 '미리보기 칸 안 가로 밀기 0'). */
 .site-example-canvas:has(> [data-slot="data-table"]:only-child) { padding: var(--space-12); }
 .site-example-canvas[data-frame="screen"] { height: 720px; padding: 0; }
+/* 셸 예시 축소 미리보기(부품 페이지) — 화면 전체를 채우는 셸(AppShell 100dvh)을 1440×900 틀로 그려 칸 폭에 맞춰 줄인다.
+   칸 폭에 맞춘 배율이 0.5 보다 작으면 0.5 로 두고 틀 높이 전체(450)를 보이며 오른쪽을 자른다 — 그림 칸은 넘침을 가리고 가로로 밀리지 않는다. */
+.site-example-canvas[data-frame="scaled"] { padding: 0; overflow: hidden; min-height: 0; }
+.site-example-screen { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--bg-canvas); }
+.site-example-screen[data-clamped="true"] { aspect-ratio: auto; }
+.site-example-scale { margin-inline-start: auto; font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-tertiary); }
+.site-example-foot { padding: var(--space-8) var(--space-16); border-top: var(--border-width) solid var(--border-subtle);
+  font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .site-example-error { color: var(--status-danger-fg); white-space: pre-wrap; }
 .site-example-picker { min-width: 200px; max-width: 100%; }
 

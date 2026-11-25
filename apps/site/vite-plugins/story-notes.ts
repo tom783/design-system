@@ -8,6 +8,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { parseSync, type Plugin } from 'vite';
 import type { StoryNote } from '../src/stories/roles';
+import type { ScreenSignal } from '../src/stories/screen';
 
 export type { StoryNote };
 /** 검사(docs/qa/site.test.mjs)·실측이 런타임 없이 같은 판정을 하도록 소스에서 함께 읽는 값. */
@@ -22,6 +23,8 @@ export interface StorySource extends StoryNote {
   theme: boolean;
   /** tags 에 !autodocs·!dev — 사이트도 뺀다 */
   hidden: boolean;
+  /** 셸 판별 신호(parameters.fullBleed · docs.story.inline) — 스토리 위에 meta 를 얕게 덮는다(런타임 compose 와 같다). 판별은 src/stories/screen.ts */
+  screen: ScreenSignal;
 }
 export interface StoryFileSource {
   title: string | null;
@@ -168,6 +171,11 @@ export function readStoryFile(source: string, file: string, names: ReadonlySet<s
     }
   }
 
+  const metaParameters = prop(metaNode, 'parameters');
+  /** 스토리 parameters 에 그 키가 있으면 그것, 없으면 meta 것(얕은 합치기) */
+  const parameter = (parameters: Node | null, key: string) => prop(parameters, key) ?? prop(metaParameters, key);
+  const flag = (node: Node | null) => node?.type === 'Literal' && typeof node.value === 'boolean' ? node.value : null;
+
   const fileStories: StorySource[] = [];
   for (const story of stories.filter((item) => item.node !== metaNode)) {
     const used = new Set<string>();
@@ -214,6 +222,7 @@ export function readStoryFile(source: string, file: string, names: ReadonlySet<s
     const description = text(prop(prop(prop(prop(object, 'parameters'), 'docs'), 'description'), 'story'));
     const tags = strings(prop(object, 'tags'));
     const globals = prop(object, 'globals');
+    const parameters = prop(object, 'parameters');
     fileStories.push({
       exportName: story.name,
       name,
@@ -221,6 +230,7 @@ export function readStoryFile(source: string, file: string, names: ReadonlySet<s
       tags,
       theme: globals?.type === 'ObjectExpression' && prop(globals, 'theme') !== null,
       hidden: tags.includes('!autodocs') || tags.includes('!dev'),
+      screen: { fullBleed: flag(parameter(parameters, 'fullBleed')) === true, docsInline: flag(prop(prop(parameter(parameters, 'docs'), 'story'), 'inline')) },
       uses: [...used].sort(),
       draws: [...drawn].sort(),
       marks: [...marks],

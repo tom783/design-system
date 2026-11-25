@@ -1,4 +1,6 @@
 import screens from 'virtual:site-screens';
+import { compareCategories } from './categories';
+import { listedComponents, pageFor, type Component } from '../data/manifest';
 
 /**
  * 패턴 — 조립 화면 스토리(packages/ui/src/stories/screens-*.stories.tsx)에 붙이는 한국어 이름과 순서(디자인 총괄 검수 r1 패턴 카드).
@@ -37,3 +39,36 @@ export const patterns: Pattern[] = Object.keys(screens)
     const slug = file.replace(/\.stories\.tsx$/, '');
     return { file, slug, name: NAMES.get(file) ?? slug, imports: screens[file]! };
   });
+
+const listed = new Set(listedComponents.map((component) => component.name));
+const manifestOrder = new Map(listedComponents.map((component, index) => [component.name, index]));
+
+/**
+ * 쓰인 부품 — 스토리와 그 도우미가 가져오는 이름(vite-plugins/screens.ts)을 매니페스트로 정리한다:
+ * 부분은 부모 부품으로(AlertDialogAction → AlertDialog), 부품(kind = component)만, 겹치면 한 번. 순서는 부품 목록과 같다(분류 순서 → 매니페스트 순).
+ */
+export function partsUsed(pattern: Pattern): Component[] {
+  const pages = new Map<string, Component>();
+  for (const name of pattern.imports) {
+    const page = pageFor(name);
+    if (page && listed.has(page.name)) pages.set(page.name, page);
+  }
+  return [...pages.values()].sort((a, b) =>
+    compareCategories(a.category ?? '', b.category ?? '') || manifestOrder.get(a.name)! - manifestOrder.get(b.name)!);
+}
+
+/**
+ * 부품 페이지 셸 예시의 '실제 크기로 보기' 패턴 — 예시가 그리는 부품(스토리 소스 신호 uses, 부분은 부모로)과
+ * 가장 많이 겹치는 패턴. 같으면 패턴 순서(이름표 순 — 주문 목록이 첫째). 겹치는 부품이 없으면 null.
+ * 패턴은 모두 화면 셸(AppShell) 위의 조립 화면이라 셸 부품만 겹쳐도 후보다.
+ */
+export function patternFor(uses: readonly string[]): Pattern | null {
+  const drawn = new Set(uses.map((name) => pageFor(name)?.name).filter((name): name is string => !!name));
+  let best: Pattern | null = null;
+  let bestScore = 0;
+  for (const pattern of patterns) {
+    const score = partsUsed(pattern).filter((part) => drawn.has(part.name)).length;
+    if (score > bestScore) { best = pattern; bestScore = score; }
+  }
+  return best;
+}

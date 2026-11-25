@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { Link } from 'react-router';
 import type { Args, StoryContext, StoryFile, StoryMeta, StoryObject } from './load';
 import type { StoryFacts, StoryNote } from './roles';
+import { MIN_PREVIEW_SCALE, SCREEN_WIDTH, isScreenExample, screenFit, screenSignalOf, type ScreenFit } from './screen';
 
 /**
  * CSF 스토리 하나를 React 부품으로 합친다 — Storybook 런타임 없이 사이트가 쓰는 최소한만.
@@ -123,9 +125,75 @@ export function useNearViewport<T extends Element>(eager: boolean) {
   return [ref, near] as const;
 }
 
-export function StoryExample({ entry, eager = false, frame, role }: { entry: StoryEntry; eager?: boolean; frame?: 'screen'; role?: 'usage' | 'test' }) {
+/**
+ * 화면 틀 배율 — 그림 칸(box) 폭과 그 안 1440 틀(stage)의 실제 높이로 screenFit 을 잰다. 칸·틀 크기가 바뀌면 다시 잰다.
+ * 패턴 카드 그림과 부품 페이지 셸 예시가 같이 쓴다.
+ */
+export function useScreenFit(box: React.RefObject<HTMLElement | null>, stage: React.RefObject<HTMLElement | null>, ready: unknown, minScale = 0) {
+  const [fit, setFit] = React.useState<ScreenFit | null>(null);
+  React.useLayoutEffect(() => {
+    const frame = box.current;
+    const content = stage.current;
+    if (!frame || !content) return;
+    const measure = () => setFit(screenFit(frame.clientWidth, content.offsetHeight, minScale));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [box, stage, ready, minScale]);
+  return fit;
+}
+
+/** 1440 틀 — 실제 부품으로 그리고 transform 으로 줄인다. 포인터·선택 없음(그림 칸이 inert·aria-hidden). */
+export function ScreenStage({ entry, stageRef, scale }: { entry: StoryEntry; stageRef: React.RefObject<HTMLDivElement | null>; scale: number }) {
+  return <div ref={stageRef} className="site-screen-stage" style={{ width: SCREEN_WIDTH, transform: `scale(${scale})` }}>
+    <StoryBoundary name={entry.name}><entry.Component /></StoryBoundary>
+  </div>;
+}
+
+/** 이 스토리가 화면 전체를 채우는 셸 예시인가(screen.ts isScreenExample — 스토리 위에 meta 를 얕게 덮은 parameters). */
+export function isScreenEntry(entry: StoryEntry) {
+  return isScreenExample(screenSignalOf({ ...entry.meta.parameters, ...entry.story.parameters }));
+}
+
+/** 실제 크기로 보는 길 — 이 셸을 쓰는 패턴 상세 */
+export interface RealSizeLink { to: string; label: string }
+
+/**
+ * 셸 예시 축소 미리보기 — 1440×900 틀을 칸 폭에 맞춰 줄인다(배율 ≥ 0.5, 칸이 좁으면 0.5 에서 오른쪽을 자른다 — 가로 밀기 없음).
+ * 머리에 실제 배율, 그림 아래에 실제 크기로 보는 패턴 링크 하나. 그림 칸은 장식(inert·aria-hidden)이다.
+ */
+function ScreenExample({ entry, description, role, realSize }: { entry: StoryEntry; description?: string; role?: 'usage' | 'test'; realSize?: RealSizeLink | null }) {
+  const box = React.useRef<HTMLDivElement>(null);
+  const stage = React.useRef<HTMLDivElement>(null);
+  const fit = useScreenFit(box, stage, entry, MIN_PREVIEW_SCALE);
+  const percent = fit ? Math.round(fit.scale * 100) : null;
+  return <section className="site-example" aria-label={`예시: ${entry.name}`} data-story={entry.id} data-story-role={role} data-screen-scale={fit?.scale}>
+    <div className="site-example-head">
+      <span className="site-example-name">{entry.name}</span>
+      {description && <span className="site-caption">{description}</span>}
+      {percent !== null && <span className="site-example-scale tabular">축소 미리보기 · {percent}%{fit?.clamped ? ' · 칸이 좁아 오른쪽 잘림' : ''}</span>}
+    </div>
+    <div className="site-example-canvas" data-frame="scaled">
+      <div ref={box} className="site-example-screen" aria-hidden="true" inert data-clamped={fit?.clamped}
+        style={fit?.clamped ? { height: fit.height } : undefined}>
+        <ScreenStage entry={entry} stageRef={stage} scale={fit?.scale ?? 0} />
+      </div>
+    </div>
+    {realSize && <div className="site-example-foot"><Link className="site-link" to={realSize.to}>{realSize.label}</Link></div>}
+  </section>;
+}
+
+/**
+ * 예시 하나. frame — 'screen': 패턴 상세의 실제 크기 화면 틀(높이 720) · 'scaled': 셸 예시 축소 미리보기(부품 페이지).
+ */
+export function StoryExample({ entry, eager = false, frame, role, realSize }: {
+  entry: StoryEntry; eager?: boolean; frame?: 'screen' | 'scaled'; role?: 'usage' | 'test'; realSize?: RealSizeLink | null;
+}) {
   const [ref, near] = useNearViewport<HTMLDivElement>(eager);
   const description = (entry.story.parameters?.docs as { description?: { story?: string } } | undefined)?.description?.story;
+  if (frame === 'scaled') return <ScreenExample entry={entry} description={description} role={role} realSize={realSize} />;
   return <section className="site-example" aria-label={`예시: ${entry.name}`} data-story={entry.id} data-story-role={role}>
     <div className="site-example-head">
       <span className="site-example-name">{entry.name}</span>

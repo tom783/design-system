@@ -222,3 +222,60 @@ test('사이트: 부품 페이지 기본 미리보기는 대표 사용 예시다
   }
   assert.deepEqual(problems, []);
 });
+
+test('사이트: 부품 페이지 셸 예시(화면 높이 100dvh)만 축소 렌더한다 — 판별이 CSS 와 맞고 배율은 0.5 이상', async () => {
+  // 디자인 총괄 결정(11/25): 화면 전체를 채우는 셸 예시만 1440×900 틀로 축소(배율 ≥ 0.5 · 16:10 · inert), 다른 예시는 실제 크기.
+  // 판별은 src/stories/screen.ts isScreenExample — 스토리 매개변수(fullBleed + docs.story.inline: false). 부품 이름을 적지 않는다.
+  // 여기서는 그 판별을 CSS 로 맞춰 본다: 부품 페이지 스토리 중 '루트 높이가 뷰포트 단위(100dvh 등)인 부품'을 그리는 것 = 셸 예시.
+  const { readStoryFile, manifestNames } = await import('../../apps/site/vite-plugins/story-notes.ts');
+  const { isScreenExample, screenFit, MIN_PREVIEW_SCALE, SCREEN_WIDTH, SCREEN_HEIGHT } = await import('../../apps/site/src/stories/screen.ts');
+  const kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  // 화면 높이를 채우는 부품: 부품 CSS 에서 루트 클래스(.ds-<이름>) 단독 선택자가 height·min-height·block-size 를 뷰포트 단위로 준다.
+  // 페이지가 있는 부품만 — 부분(SheetContent 등)은 부모 안 조각이고, 겹침 창 패널은 포털로 창 위에 떠 예시 칸 안 화면이 아니다.
+  const byKebab = new Map(manifest.components.filter((c) => !c.partOf).map((c) => [kebab(c.name), c.name]));
+  const fills = new Set();
+  for (const file of walk(join(root, 'packages/ui/src/components')).filter((f) => f.endsWith('.css'))) {
+    const source = read(file).replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const [, selectors, body] of source.matchAll(/([^{};]+)\{([^{}]*)\}/g)) {
+      if (!/(?:^|[;\s])(?:min-)?(?:height|block-size)\s*:\s*100[dsl]?vh\b/.test(body)) continue;
+      for (const selector of selectors.split(',').map((s) => s.trim())) {
+        const name = /^\.ds-([a-z0-9-]+)$/.exec(selector)?.[1];
+        if (name && byKebab.has(name)) fills.add(byKebab.get(name));
+      }
+    }
+  }
+  assert.ok(fills.size > 0, '루트 높이가 100dvh 인 부품을 CSS 에서 찾지 못했다 — 셸 부품 CSS 가 바뀌었으면 이 검사도 고친다');
+
+  const storiesDir = join(root, 'packages/ui/src/stories');
+  const names = manifestNames(join(root, 'packages/mcp/manifest.json'));
+  const kindDefault = manifest.derived.kindDefault;
+  const pageNames = new Set(manifest.components.filter((c) => (c.kind ?? kindDefault) === kindDefault).map((c) => c.name));
+  const mismatches = [];
+  let shells = 0;
+  for (const file of readdirSync(storiesDir).filter((f) => f.endsWith('.stories.tsx')).sort()) {
+    const parsed = readStoryFile(read(join(storiesDir, file)), join(storiesDir, file), names);
+    if (!parsed.manifest.some((name) => pageNames.has(name))) continue; // 부품 페이지에 실리지 않는 파일(Screens/…)
+    for (const story of parsed.stories.filter((s) => !s.theme && !s.hidden)) {
+      const judged = isScreenExample(story.screen);
+      const drawsFill = story.uses.some((name) => fills.has(name));
+      if (judged) shells += 1;
+      if (judged !== drawsFill) {
+        mismatches.push(`${file}#${story.exportName}: 판별 ${judged ? '셸' : '셸 아님'}(fullBleed ${story.screen.fullBleed} · docs.story.inline ${story.screen.docsInline}) ↔ `
+          + `100dvh 부품(${[...fills].join('·')}) ${drawsFill ? '그림' : '안 그림'}`);
+      }
+    }
+  }
+  assert.deepEqual(mismatches, [], '화면 높이를 채우는 스토리는 문서에서 자기 창(docs.story.inline: false)·가장자리까지(fullBleed)로 그린다(AGENTS.md 화면 채우기)');
+  assert.ok(shells > 0, '셸 예시가 하나도 없다 — 판별 신호를 못 읽는다');
+
+  // 틀과 배율: 1440×900(16:10), 최소 배율 0.5. 1440 화면의 미리보기 칸(732)은 칸 폭에 맞춰 0.5 이상, 390 칸(356)은 0.5 로 두고 오른쪽을 자른다.
+  assert.equal(SCREEN_WIDTH / SCREEN_HEIGHT, 16 / 10);
+  assert.ok(MIN_PREVIEW_SCALE >= 0.5);
+  const wide = screenFit(732, SCREEN_HEIGHT, MIN_PREVIEW_SCALE);
+  assert.ok(wide.scale >= 0.5 && !wide.clamped && !wide.clipped && Math.abs(wide.height / 732 - 10 / 16) < 1e-9);
+  const narrow = screenFit(356, 844, MIN_PREVIEW_SCALE);
+  assert.ok(narrow.scale >= 0.5 && narrow.clamped && narrow.clipped && narrow.height === SCREEN_HEIGHT * 0.5);
+  // 패턴 카드(최소 배율 없음)는 9b 와 같다 — 칸에 맞춰 줄이고, 창이 900 보다 낮으면 높이에 맞춘다.
+  assert.equal(screenFit(720, SCREEN_HEIGHT).scale, 0.5);
+  assert.ok(screenFit(720, 800).scale > 0.5);
+});

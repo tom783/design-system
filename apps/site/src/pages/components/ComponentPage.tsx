@@ -12,9 +12,10 @@ import { DesignLink } from '../../blocks/Text';
 import { DocLayout, type TocItem } from '../../blocks/Toc';
 import { SectionNavButton } from '../../layout/SectionNav';
 import { categoryName } from '../../content/categories';
+import { patternFor } from '../../content/patterns';
 import { findComponent, importLine, manifest, pageFor, partsOf, type Component } from '../../data/manifest';
 import { storyFilesFor, type StoryFile } from '../../stories/load';
-import { StoryExample, factsOf, storiesOf, type StoryEntry } from '../../stories/render';
+import { StoryExample, factsOf, isScreenEntry, storiesOf, type RealSizeLink, type StoryEntry } from '../../stories/render';
 import { arrange } from '../../stories/roles';
 
 /**
@@ -158,6 +159,16 @@ function ExamplePicker({ usage, test, value, onChange, multiFile }: {
 }
 
 /**
+ * 화면 전체를 채우는 셸 예시(stories/screen.ts isScreenExample — AppShell 처럼 100dvh)만 1440×900 틀로 축소해 그린다. 다른 예시는 실제 크기.
+ * 축소 그림 아래에 실제 크기로 보는 길 하나 — 예시가 그리는 부품과 가장 많이 겹치는 패턴 상세.
+ */
+function screenFrame(entry: StoryEntry): { frame?: 'scaled'; realSize?: RealSizeLink | null } {
+  if (!isScreenEntry(entry)) return {};
+  const pattern = patternFor(entry.notes?.uses ?? []);
+  return { frame: 'scaled', realSize: pattern ? { to: `/patterns/${pattern.slug}`, label: `${pattern.name} 패턴에서 실제 크기로 보기` } : null };
+}
+
+/**
  * 실제 미리보기 — 이 부품을 `parameters.manifest` 로 선언한 스토리를 하나씩 그대로 렌더한다(처음 상태만, play 는 돌리지 않는다).
  * 기본은 대표 사용 예시다(roles.ts — '사용법' → '기본' → 이 부품을 그리는 첫 스토리). 시험용 스토리(하네스 단추·검수 매트릭스·
  * 재현 화면 등)는 목록 맨 뒤 '개발 확인용' 묶음에 둔다.
@@ -193,7 +204,7 @@ function Preview({ names }: { names: readonly string[] }) {
         스토리 파일을 불러오지 못했다: {state.failed.map((item) => `${item.file} (${item.error})`).join(', ')}
       </p>}
       {current
-        ? <StoryExample key={current.entry.id} entry={current.entry} eager role={currentIsTest ? 'test' : 'usage'} />
+        ? <StoryExample key={current.entry.id} entry={current.entry} eager role={currentIsTest ? 'test' : 'usage'} {...screenFrame(current.entry)} />
         : <p className="site-muted">이 부품을 선언한 스토리가 없다(parameters.manifest).</p>}
     </div>}
   </SectionHeader>;
