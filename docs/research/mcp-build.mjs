@@ -5,7 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { API, SymbolFlags, SignatureKind } from 'typescript/unstable/sync';
 import * as ast from 'typescript/unstable/ast';
 import { checkBoundaries } from '../../scripts/check-boundaries.mjs';
-import intents, { principles } from './component-intent.mjs';
+import intents, { principles, patterns as patternIntents } from './component-intent.mjs';
 import { restoreComponent } from '../../packages/mcp/catalog.mjs';
 import { assertSizeBudget } from '../../packages/mcp/budget.mjs';
 import { checkConsumerGuidance } from './consumer-guidance.mjs';
@@ -169,8 +169,29 @@ export function designSections(markdown) {
   return new Set(seen.keys());
 }
 
-export function validate({ components, intents, sections, tokens, expectedNames, principles, bridgeTargets = [] }) {
-  const errors = checkConsumerGuidance(intents).map(error => `[8 guidance] ${JSON.stringify(error)}`);
+// 조립 항목의 예시는 타입 검사되는 파일(exampleFile)의 표시 구간을 그대로 읽는다. 문자열로 따로 들고 있으면 부품 이름·props 가
+// 실제 API 와 어긋나도 아무도 잡지 못한다(초안의 NotificationBell·UserMenu·Spacer·mode). 구간은 공통 들여쓰기를 걷어 낸다.
+export const EXAMPLE_START = 'mcp-example:start';
+export const EXAMPLE_END = 'mcp-example:end';
+export function exampleBetweenMarkers(text, file = '예시') {
+  const lines = text.split('\n');
+  const start = lines.findIndex(line => line.includes(EXAMPLE_START));
+  const end = lines.findIndex(line => line.includes(EXAMPLE_END));
+  if (start < 0 || end <= start + 1 || lines.filter(line => line.includes(EXAMPLE_START) || line.includes(EXAMPLE_END)).length !== 2)
+    throw new Error(`MCP 조립 예시: ${file} 에 ${EXAMPLE_START} ~ ${EXAMPLE_END} 구간이 한 번 있어야 한다`);
+  const body = lines.slice(start + 1, end).map(line => line.trimEnd());
+  const indent = Math.min(...body.filter(line => line.trim()).map(line => /^ */.exec(line)[0].length));
+  return body.map(line => line.slice(indent)).join('\n').trim();
+}
+export async function loadPatterns(list = patternIntents) {
+  return Promise.all(list.map(async ({ exampleFile, ...pattern }) => ({ ...pattern, example: exampleBetweenMarkers(await read(exampleFile), exampleFile) })));
+}
+
+// 예시 안 JSX 태그 이름(대문자 시작). 조각(<>)·소문자 DOM 태그는 세지 않는다.
+export const exampleTags = example => [...new Set([...example.matchAll(/<([A-Z][A-Za-z0-9]*)[\s/>]/g)].map(match => match[1]))];
+
+export function validate({ components, intents, sections, tokens, expectedNames, principles, bridgeTargets = [], patterns = [] }) {
+  const errors = checkConsumerGuidance([...intents, ...patterns]).map(error => `[8 guidance] ${JSON.stringify(error)}`);
   const names = new Set(intents.map((item) => item.name));
   const sourceNames = new Set(components.map((item) => item.name));
   const tokenNames = new Set(tokens.map((item) => item.name));
@@ -197,7 +218,24 @@ export function validate({ components, intents, sections, tokens, expectedNames,
     }
     if (new Set(item.parts).size !== (item.parts ?? []).length) errors.push(`[7 parts] ${item.name}: 부품 중복`);
   }
-  for (const item of [...intents.flatMap((c) => c.rules ?? []), ...principles]) {
+  // 9 조립 항목: import 할 수 없는 이름이라 부품 이름과 겹치지 않는 소문자 이름이다. 쓰는 이름·관련·예시 태그는 모두 실제 공개 부품이다.
+  for (const pattern of patterns) {
+    const label = `[9 pattern] ${pattern.name}`;
+    if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(pattern.name ?? '')) errors.push(`${label}: 이름은 소문자 하이픈 이름이다(부품 이름과 구분)`);
+    if ([...names, ...sourceNames].some(name => name.toLowerCase() === pattern.name?.toLowerCase())
+      || patterns.filter(item => item.name === pattern.name).length !== 1) errors.push(`${label}: 부품·조립 항목 이름과 겹친다`);
+    for (const field of ['purpose', 'category', 'example']) if (typeof pattern[field] !== 'string' || !pattern[field].trim()) errors.push(`${label}.${field}: 비어 있다`);
+    for (const field of ['useWhen', 'dont', 'rules', 'uses', 'keywords']) if (!pattern[field]?.length) errors.push(`${label}.${field}: 비어 있다`);
+    for (const name of [...(pattern.uses ?? []), ...(pattern.related ?? [])])
+      if (!names.has(name) || !sourceNames.has(name)) errors.push(`${label} → ${name}: 공개 부품 없음`);
+    // 예시 태그는 uses 의 이름이거나 그 가족(partOf)이다 — 지침에 없는 부품 이름을 예시에 쓰지 않는다.
+    const family = new Set((pattern.uses ?? []).flatMap(name => [name, ...(intents.find(item => item.name === name)?.parts ?? [])]));
+    for (const tag of exampleTags(pattern.example ?? '')) {
+      if (!sourceNames.has(tag)) errors.push(`${label}.example: <${tag}> 공개 export 없음`);
+      else if (!family.has(tag)) errors.push(`${label}.example: <${tag}> 는 uses(또는 그 부품)에 없다`);
+    }
+  }
+  for (const item of [...intents.flatMap((c) => c.rules ?? []), ...patterns.flatMap((p) => p.rules ?? []), ...principles]) {
     const section = /^DESIGN\.md (\d+(?:\.\d+)*)$/.exec(item.source)?.[1];
     if (!sections.has(section)) errors.push(`[4 source] ${item.source}: 실제 DESIGN.md 제목 없음 (${item.text})`);
   }
@@ -290,7 +328,8 @@ export async function build() {
     token.tailwindAliases = { color: alias, examples: [`bg-${alias}`, `text-${alias}`, `border-${alias}`, `fill-${alias}`, `stroke-${alias}`] };
   }
   const sections = designSections(design);
-  const errors = validate({ components, intents, sections, tokens, expectedNames: new Set(normalizeTokens(data).map((t) => t.name)), principles, bridgeTargets: mappings.map((m) => m[2]) });
+  const patterns = await loadPatterns();
+  const errors = validate({ components, intents, sections, tokens, expectedNames: new Set(normalizeTokens(data).map((t) => t.name)), principles, bridgeTargets: mappings.map((m) => m[2]), patterns });
   if (errors.length) throw new Error(`MCP 생성 검증 실패:\n${errors.join('\n')}`);
   const catalog = intents.map(({ props: _props, slots: _slots, ...intent }) => {
     const source = components.find((c) => c.name === intent.name);
@@ -300,12 +339,13 @@ export async function build() {
     return { ...intent, ...api, import: `import { ${intent.name} } from '@s2life/ui';` };
   });
   const stored = compactCatalog(catalog);
-  const manifest = { schemaVersion: 1, derived: stored.derived, tokens, components: stored.components, principles };
+  // 조립 항목은 복원 규칙 없이 응답 그대로 보관한다(출처도 'DESIGN.md 24.7' 전체). 부품 배열(import 가능한 이름)과 섞지 않는다.
+  const manifest = { schemaVersion: 1, derived: stored.derived, tokens, components: stored.components, patterns, principles };
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
   // 저장 형태는 응답이 아니다. 서버가 실제로 보내는 색인·목록·상세·토큰·규칙을 같은 복원 경로로 잰다.
   assertSizeBudget(manifest);
   await writeFile(resolve(root, 'packages/mcp/manifest.json'), serialized);
-  console.error(`MCP 검증 8종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
+  console.error(`MCP 검증 9종 통과: export ${catalog.length}개 · 부품 ${catalog.filter((c) => c.partOf).length}개 · 조립 항목 ${patterns.length}개 · 토큰 ${tokens.length}개 · 규칙 ${principles.length}개`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   build().catch((error) => { console.error(error.message); process.exitCode = 1; });

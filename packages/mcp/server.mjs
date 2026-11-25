@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { matchComponents } from './match.mjs';
-import { listComponents, getComponent, componentIndex } from './catalog.mjs';
+import { listComponents, getComponent, componentIndex, getPattern, selectionEntries } from './catalog.mjs';
 
 const { version } = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
 
@@ -13,8 +13,8 @@ const definitions = [
   ['get_token','토큰 조회','토큰 이름으로 값·참조·용도·Tailwind 클래스와 라이트/다크 값을 조회한다.',objectSchema({ name: string }, ['name'])],
   ['search_tokens','토큰 검색','category 또는 부분 문자열 query로 토큰을 찾는다. 분류: primitive, semantic, typography, spacing, shape, sizing, motion, loading.',objectSchema({ category: string, query: string })],
   ['list_components','컴포넌트 목록','공개 컴포넌트와 상수의 이름·용도·import 구문·부품의 partOf를 조회한다.',objectSchema({})],
-  ['get_component','컴포넌트 조회','props·slots·규칙·금지사항·부품 목록을 조회한다. 부품의 공통 의도는 부모에서 합치고 inheritedFrom으로 표시한다. extends는 상속 속성이다.',objectSchema({ name: string }, ['name'])],
-  ['which_component','컴포넌트 선택','작업 설명을 단순 점수로 매칭해 후보·판단 근거·useWhen·dont를 함께 준다. 최종 선택은 호출자가 판단한다.',objectSchema({ description: string, limit: { type: 'integer', minimum: 1, maximum: 10 } }, ['description'])],
+  ['get_component','컴포넌트 조회','props·slots·규칙·금지사항·부품 목록을 조회한다. 부품의 공통 의도는 부모에서 합치고 inheritedFrom으로 표시한다. extends는 상속 속성이다. 조립 항목(kind: pattern, 예: app-header)은 쓰는 이름(uses)과 조합 예시(example)를 준다.',objectSchema({ name: string }, ['name'])],
+  ['which_component','컴포넌트 선택','작업 설명을 단순 점수로 매칭해 후보·판단 근거·useWhen·dont를 함께 준다. 여러 부품을 엮는 조립 항목은 kind: pattern으로 표시한다. 최종 선택은 호출자가 판단한다.',objectSchema({ description: string, limit: { type: 'integer', minimum: 1, maximum: 10 } }, ['description'])],
   ['get_rules','규칙 조회','주제별 하드 규칙과 DESIGN.md 출처를 조회한다. topic 생략 시 전체 규칙.',objectSchema({ topic: { type: 'string', enum: ['색','타이포','간격','로딩','폼','안내','차트','표'] } })],
 ].map(([name,title,description,inputSchema]) => ({ name,title,description,inputSchema }));
 const resources = [
@@ -58,12 +58,16 @@ function callTool(manifest, params) {
     }
     case 'list_components': return structured(listComponents(manifest));
     case 'get_component': {
-      const entry = manifest.components.find(c => c.name.toLowerCase() === args.name.trim().toLowerCase());
-      if (!entry) return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
-      return structured(getComponent(manifest, entry));
+      const name = args.name.trim().toLowerCase();
+      const entry = manifest.components.find(c => c.name.toLowerCase() === name);
+      if (entry) return structured(getComponent(manifest, entry));
+      // 조립 항목(app-header 등)은 부품이 아니지만 which_component 후보로 나오므로 같은 도구로 상세를 준다.
+      const pattern = manifest.patterns?.find(p => p.name === name);
+      if (pattern) return structured(getPattern(manifest, pattern));
+      return missing('그런 컴포넌트가 없습니다. list_components로 이름을 확인하세요.');
     }
     case 'which_component': {
-      const candidates = matchComponents(args.description, manifest.components, args.limit);
+      const candidates = matchComponents(args.description, selectionEntries(manifest), args.limit);
       return candidates.length ? structured({ candidates }) : missing('일치하는 후보가 없습니다. list_components를 보세요.');
     }
     case 'get_rules': return structured({ rules: manifest.principles.filter((p) => !args.topic || p.topic === args.topic) });

@@ -45,7 +45,7 @@ claude mcp add s2life -- npx -y @s2life/mcp
 
 ## `design://components` — 선택 색인 (R49)
 
-리소스는 `{ description, components }`다. 항목마다 `name`·`partOf`·`category`·`purpose`·`useWhen`·`dont`·`parts`를
+리소스는 `{ description, components, patterns }`다(`patterns`는 아래 조립 항목, 목표 75 3단계). `components` 항목마다 `name`·`partOf`·`category`·`purpose`·`useWhen`·`dont`·`parts`를
 **값 그대로** 적고(없는 필드·빈 배열은 생략), 순서는 `list_components`와 같다. 복원 규칙이 필요 없다.
 props·slots·규칙과 부모에서 합친 의도는 `get_component`로 이름마다 조회한다(지연 조회).
 
@@ -53,6 +53,23 @@ props·slots·규칙과 부모에서 합친 의도는 `get_component`로 이름�
 복원해야 했다. 복원형 전체는 **109,990B**로 상한을 이미 넘고, 항목마다 props·규칙이 붙어 부품이 늘 때마다 함께 커진다.
 그 상세는 `get_component`가 이미 이름별로 준다. 색인은 고르는 데 필요한 필드만 두어 **23,191B**(항목 평균 202B)다.
 도구 응답(`list_components`·`get_component` 등)은 바뀌지 않았다.
+
+## 조립 항목 — `patterns` (목표 75 3단계)
+
+여러 부품을 한 자리에 엮는 지침이다. 첫 항목은 상단 바 `app-header`(AppShell `header`·`headerEnd` + ContextSwitcherGroup·ContextSwitcher +
+NotificationCenter + 사용자 메뉴 DropdownMenu·Avatar·Button)다. 부품마다 항목을 두면 "상단 바"를 찾는 AI가 전환기·벨·사용자 메뉴를 따로
+맞춰 봐야 하므로, 조립 항목 하나가 `purpose`·`useWhen`·`dont`·`rules`와 쓰는 이름(`uses`)·조합 예시(`example`)를 묶는다.
+
+- **import할 수 없는 이름**이라 `list_components`에는 없다. 이름은 부품과 겹치지 않는 소문자 하이픈 꼴이다.
+- `which_component` 후보에 `kind: "pattern"`으로 섞여 나온다(부품 후보의 응답 모양은 그대로 — `kind` 없음).
+  `get_component("app-header")`가 상세(`kind: "pattern"` · `uses` · `rules` · `example`)를 준다. 색인 `patterns`에는 고르는 필드
+  (`name`·`category`·`purpose`·`useWhen`·`dont`·`uses`)만 싣는다.
+- **예시는 문자열로 손에 들고 있지 않다.** `packages/ui/docs/examples/app-header-mcp.tsx`의 `mcp-example` 시작·끝 주석 사이를
+  생성기가 들여쓰기만 걷어 그대로 싣는다. 그 파일은 `pnpm typecheck`가 검사하므로 예시의 부품 이름·props가 실제 API와 어긋나면
+  (지침 초안의 `NotificationBell`·`UserMenu`·`Spacer`·`mode`) 타입 오류로 막힌다. 생성기는 예시의 JSX 태그가 모두 공개 부품이고
+  `uses`(또는 그 부품)에 있는지, `uses`·`related`가 실제 공개 부품인지 더 본다(검증 9 — `build.test.mjs`).
+- 예산은 부품 항목과 같다: 색인 항목 하나 800B(app-header 781B) · 상세 7,000B. 색인 전체에는 그대로 더해진다(+978B).
+  추천 정답 세트·R38 1순위 대조·응답 대조 도구는 서버와 같은 후보(`selectionEntries` = 부품 + 조립 항목)로 잰다.
 
 ## 응답 크기 예산 (R49)
 
@@ -103,9 +120,10 @@ node docs/qa/mcp-response-diff.mjs --base main \
 
 ## `which_component` 정답 세트 (R49 · 0.6.0 목표 64)
 
-`docs/qa/fixtures/which-component-golden.json`은 실제 요청 문장 198문항(한국어 144 · 영어 54)과 정답 부품이다 —
+`docs/qa/fixtures/which-component-golden.json`은 실제 요청 문장 214문항(한국어 155 · 영어 59)과 정답 부품이다 —
 R49 기준 128문항, 도그푸딩 6 사전 점검 표 32문항(`set: logistics06`), 0.5.0 부품 질의 26문항(`set: r050`),
-0.6.0 반복 입력 줄·섹션 제목 줄 12문항(`set: r060`).
+0.6.0 반복 입력 줄·섹션 제목 줄 12문항(`set: r060`), 목표 75 상단 바 16문항(`set: r075` — 전환기·알림 센터·개수 표식·알림 토스트·
+권한 없음/찾을 수 없음·조립 항목 `app-header`).
 정답은 하나, 애매하면 허용 정답 여러 개(배열), 맞는 부품이 아직 없으면 `null`+`gap`(정확도 분모에서 빼고 후보 0개만 센다)이다.
 질의가 이름 일치 점수를 받으면 안 된다(이름 일치 +1000점은 정확도가 아니라 이름 검색을 잰다).
 `which-component-holdout.json` 48문항은 튜닝을 마친 뒤 따로 쓴 확인용이다 — 그 세트를 보고 고치지 않고 게이트도 걸지 않는다.
@@ -118,7 +136,9 @@ node docs/qa/compare-match-baseline.mjs           # R38 1순위 대조 + docs/qa
 
 0.6.0 실측(2026-11-24, 목표 64 끝): **top-1 180/198 · top-3 196/198 · 후보 0개 0/198**(한국어 129/144 · 142/144, 영어 51/54 · 54/54).
 2a 때 186문항은 top-1 166/184 · top-3 182/184 · 후보 0개 0/186 이었고, 같은 세트의 0.5.0 수치는 top-1 96 · top-3 129 · 후보 0개 28(영어 27/50)이었다.
-하한은 **top-1 176 · top-3 194 · 후보 0개 0**이다. 0.5.0 대비 1위·3위 안에서 밀려난 문항은 0개다.
+목표 75 3단계(2026-11-25): **top-1 195/214 · top-3 212/214 · 후보 0개 0/214** — 기존 198문항은 정답 순위가 바뀐 문항 0개(180 · 196 그대로),
+새 r075 16문항 top-1 15 · top-3 16("unread number pill next to a tab label" 은 3위 — Tabs 허용 정답).
+하한은 **top-1 191 · top-3 210 · 후보 0개 0**이다. 0.5.0 대비 1위·3위 안에서 밀려난 문항은 0개다.
 `which-component-golden.test.mjs`가 `pnpm test`(= `pnpm verify`·pre-commit·CI)에서 같은 판정을 한다.
 키워드·매칭을 고쳐 수치가 바뀌면 `measured`를 고치고, 오른 만큼 `floor`도 올린다.
 

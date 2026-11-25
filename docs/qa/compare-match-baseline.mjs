@@ -11,6 +11,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { matchComponents } from '../../packages/mcp/match.mjs';
+import { selectionEntries } from '../../packages/mcp/catalog.mjs';
 
 // [질의, 지금 1순위, 바꾼 라운드, 이유]. 이유는 문서 표에 그대로 나간다.
 const CHANGES = [
@@ -36,7 +37,8 @@ export const intendedChanges = new Map(CHANGES.map(([query, after]) => [query, a
 
 export async function compareRankings() {
   const baseline = JSON.parse(await readFile(new URL('./fixtures/r38-match-baseline.json', import.meta.url), 'utf8'));
-  const { components } = JSON.parse(await readFile(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8'));
+  // 서버와 같은 후보(부품 + 조립 항목, 목표 75 3단계)로 1순위를 본다.
+  const components = selectionEntries(JSON.parse(await readFile(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8')));
   return baseline.map(({ query, before }) => {
     const after = matchComponents(query, components)[0]?.name ?? null;
     return { query, before, after, expected: intendedChanges.get(query) ?? before };

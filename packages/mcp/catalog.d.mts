@@ -33,3 +33,17 @@ export function restoreComponent<C extends StoredComponent>(component: C, derive
     slots: string[];
     import: string;
   };
+/** 조립 항목(kind: pattern) — import 하지 않는 여러 부품의 조합 지침. manifest.patterns 에 응답 그대로 보관한다. */
+export interface StoredPattern {
+  name: string;
+  category: string;
+  purpose: string;
+  useWhen: string[];
+  dont: string[];
+  rules: { text: string; source: string }[];
+  uses: string[];
+  related?: string[];
+  keywords: string[];
+  example: string;
+}
+export function getPattern<P extends StoredPattern>(manifest: unknown, pattern: P): P & { kind: 'pattern' };

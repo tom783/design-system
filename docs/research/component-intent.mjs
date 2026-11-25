@@ -67,22 +67,24 @@ const intents = [
     'URL 동기화와 서버 조회는 앱이 맡는다. 여러 페이지 일괄 처리는 서버의 조건 전체 선택으로 설계한다.'
   ],['page','pageSize','totalCount','onPageChange','pageSizeOptions','onPageSizeChange','disabled'],['pagination','pagination-range','pagination-controls','pagination-page','pagination-position','pagination-previous','pagination-next','pagination-size','pagination-pages','pagination-ellipsis'],['DataTable','Select','Button','EmptyState'],['페이지','페이징','페이지 이동','페이지 크기','몇 개씩','건씩','페이지 단위']),
   entry('AppShell','layout','사이드 메뉴와 본문을 같은 업무 화면 틀로 배치한다.',['제품의 공통 화면 틀을 구성할 때'],['본문 안에 main을 다시 넣지 마라'],'24',[
-    'sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.',
+    'sidebar에는 SideNav를 넣는다.',
+    rule('header(왼쪽 — 맥락 전환기·전역 검색)·headerEnd(오른쪽 — 사용자 메뉴가 맨 오른쪽)는 64px 고정 한 줄이다. 넘는 내용은 본문에 둔다.', '24.7'),
     '본문·건너뛰기 링크와 여백(24px, 좁으면 16px)은 내장이다. 페이지 루트에 padding을 다시 주지 않는다. 화면 요소 사이는 gap 24px.',
     '본문은 기본 최대 폭 제한이 없다. 필요한 화면만 contentMaxWidth를 지정한다.',
     'narrowNavigation=drawer는 1024px 미만에서 메뉴 버튼·왼쪽 Sheet를 쓴다. 항목 선택 시 닫히며 기본은 rail이다.',
     '높이 기본값은 화면 전체다. 다른 영역에 넣을 때는 style로 높이를 지정한다.'
-  ],['sidebar','header','children','contentMaxWidth','narrowNavigation'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀','전체 틀','메뉴와 본문']),
+  ],['sidebar','header','headerEnd','children','contentMaxWidth','narrowNavigation'],['app-shell','app-shell-main','app-shell-skip','app-shell-header','app-shell-content'],['SideNav','PageHeader'],['앱 셸','공통 화면','레이아웃','사이드바와 본문','화면 틀','전체 틀','메뉴와 본문']),
   entry('SideNav','navigation','브랜드와 그룹별 메뉴로 현재 위치와 이동 경로를 보여준다.',['사이드바에 제품 메뉴를 배치할 때'],['출시 예정 항목에 이동 동작을 넣지 마라'],'24',[
     'SideNavGroup으로 묶고 SideNavItem에 icon·label을 준다. 현재 위치는 current로 표시한다.',
     '다른 링크 컴포넌트를 쓰면 SideNavItem의 asChild 안에 단일 링크를 넣는다.',
     'collapsed·onCollapsedChange는 제어형, defaultCollapsed는 비제어형이다. 접힘 상태 저장은 앱이 맡는다.',
     '펼침은 240px, 접힘은 64px다. 1024px 미만에서는 자동으로 접히고 넓어지면 사용자의 선택으로 돌아온다.',
     '접힌 항목은 호버·포커스에서 라벨을 보여준다. disabled는 출시 예정 표시와 함께 이동·Tab 탐색을 막는다.',
-    'brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.'
+    'brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.',
+    rule('brand는 지금 서비스 이름+아이콘 표시 전용이다(전환 메뉴를 넣지 않는다). 숫자 개수는 badge 대신 SideNavItem count·countUrgent다.', '24.9')
   ],['brand','brandIcon','collapsed','onCollapsedChange','defaultCollapsed'],['side-nav','side-nav-menu','side-nav-toggle'],['AppShell','PageHeader'],['사이드바','메뉴','내비게이션','사이드 메뉴','브랜드','왼쪽 메뉴']),
   part('SideNavGroup','SideNav','사이드 메뉴 항목을 제목으로 묶는다.',['label','children'],['side-nav-group','side-nav-group-label']),
-  part('SideNavItem','SideNav','아이콘·라벨·개수와 현재 위치 또는 출시 예정 상태를 표시한다.',['icon','label','badge','current','disabled','asChild','href'],['side-nav-item','side-nav-item-label','side-nav-badge']),
+  part('SideNavItem','SideNav','아이콘·라벨·개수와 현재 위치 또는 출시 예정 상태를 표시한다.',['icon','label','badge','count','countUrgent','current','disabled','asChild','href'],['side-nav-item','side-nav-item-label','side-nav-badge']),
   entry('PageHeader','layout','페이지 제목과 설명·상태·주요 액션을 같은 위치에 배치한다.',['페이지 제목이나 화면 머리를 구성할 때'],['한 페이지에 PageHeader를 여러 개 넣지 마라'],'24',[
     'title은 페이지의 h1이다. 같은 제목을 다시 만들지 않는다. 바깥 여백이 없다. 아래 요소와의 간격은 페이지 배치(gap)로 준다.',
     'breadcrumb에는 Breadcrumb, status에는 StatusChip 등을 넣는다. actions에는 화면의 주요 버튼을 둔다.',
@@ -169,10 +171,11 @@ const intents = [
   ],['options','value','onValueChange','placeholder','summary','clearLabel','disabled','invalid','required','maxHeight'],['multi-select-trigger','multi-select-list','multi-select-option','multi-select-footer'],['Select','Combobox','Field'],['다중 선택','여러 개 선택','복수 선택','태그 선택','체크 목록','여러 사업장 고르기']),
   entry("Tabs","navigation","상세 정보를 탭별 패널로 나눠 보여준다.",["상세 화면을 분류별 패널로 나눌 때"],["서버 조회 패널을 automatic으로 두지 마라","화면 보기·기간 단위의 즉시 전환은 SegmentedControl을 쓴다"],"16",[
     rule("서버 데이터를 조회하는 패널에는 activationMode=manual을 준다.", "16.1"),
-    rule("넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.", "16.1")
+    rule("넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.", "16.1"),
+    rule('탭별 개수는 TabsTrigger count·countUrgent다. 라벨 뒤 CountBadge 알약이고 탭 이름에 "처리 필요 3개"로 실린다.', '24.9')
   ],["value", "defaultValue", "onValueChange", "activationMode"],["tabs"],["TabsList", "TabsTrigger", "TabsContent", "SegmentedControl", "RadioGroup"],["탭", "탭으로 나누기", "분류별 패널"]),
   part("TabsList", "Tabs", "탭 헤더를 한 줄로 배치하고 넘치면 스크롤한다.", ["aria-label"], ["tabs-list"]),
-  part("TabsTrigger", "Tabs", "패널을 선택하는 탭 버튼이다.", ["value", "disabled"], ["tabs-trigger"]),
+  part("TabsTrigger", "Tabs", "패널을 선택하는 탭 버튼이다.", ["value", "disabled", "count", "countUrgent"], ["tabs-trigger"]),
   part("TabsContent", "Tabs", "선택한 상세 패널을 표시한다.", ["value"], ["tabs-content"]),
   entry("Breadcrumb","navigation","목록으로 돌아가는 경로를 빵부스러기로 표현한다.",["상세에서 상위 목록과 뒤로 가는 경로가 필요할 때"],["필터·스크롤 복원이 자동으로 된다고 가정하지 마라"],"16",[
     rule("마지막 항목에는 링크 대신 BreadcrumbPage를 쓴다.", "16.2"),
@@ -247,7 +250,9 @@ const intents = [
     ['DropdownMenuSubTrigger', "하위 메뉴를 연다.", ['dropdown-menu-sub-trigger'], 'DropdownMenu'],
     ['DropdownMenuRadioGroup', "메뉴에서 하나만 고를 항목을 묶는다.", [], 'DropdownMenu'],
   ].map(([name, purpose, slots, partOf]) => partOf ? part(name, partOf, purpose, [], slots) : entry(name, 'action', purpose, ['표의 행에서 액션을 실행할 때'], ['파괴적 항목을 색만으로 구분하지 마라'], '2.3', ['destructive 항목에는 삭제 아이콘을 함께 표시한다.', '행 작업: Button(ghost·sm·iconOnly)+Ellipsis(@s2life/ui/icons), aria-label=행 식별+작업. 열 제목은 sr-only 작업.'], [], slots, ['DataTable'], ['행 메뉴', '드롭다운 액션', '행 액션', '액션 목록', '점 세 개', '더보기 메뉴'])),
-  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.'], [], ['toaster'], ['Button'], ['토스트', '저장 알림', '완료 알림', '성공 알림', '알림 메시지']),
+  entry('Toaster', 'status', '저장·오류 알림을 표시한다.', ['사용자 작업 결과를 알릴 때'], ['오류를 자동으로 지우지 마라'], '2.5',['toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.',
+    rule('다른 곳에서 생긴 업무 알림은 toast.notify다. level normal 8초·pinned 닫을 때까지, 같은 groupKey는 건수만 갱신한다.', '16.5.1'),
+    rule('알림 토스트는 한 번에 하나다. pinned가 떠 있으면 normal은 띄우지 않는다. 폼 하단 고정 줄이 있으면 그 위 16px다.', '16.5.1')], [], ['toaster'], ['Button'], ['토스트', '저장 알림', '완료 알림', '성공 알림', '알림 메시지', '알림 토스트', '업무 알림', '화면 구석']),
   entry('DatePicker', 'form', '한국어 단일 날짜·일시·기간 입력과 빠른 선택을 제공한다.', ['주문·물류 목록의 기간 필터가 필요할 때'], ['IME 조합 중 날짜를 파싱하지 마라'], '11.1',[
     "onValueChange로 받은 확정 날짜를 쓴다. 입력 중 초안을 매 키마다 날짜로 바꾸지 않는다.",
     rule('예약·발송·캠페인은 single 전용 time(기본 10분). 최근접 분 칸·동률 올림, 첫 시각 09:00. 브라우저 지역 시간이며 ISO·UTC 변환은 앱 몫이다.', '11.1.1'),
@@ -290,7 +295,8 @@ const intents = [
   entry('CountBadge','status','벨·메뉴·탭 옆에 개수를 작은 알약으로 표시한다.',['안 읽음·처리할 일의 개수를 아이콘·메뉴·탭 옆에 붙일 때'],
     ['0이나 불러오기 실패를 0으로 보이지 마라','급함을 색만으로 구분하지 마라'],'24.9',[
       '0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 채움 알약과 왼쪽 점, dot은 접힌 레일의 점 8px다.',
-      'SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.'
+      'SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.',
+      '99+는 "99개 이상"으로 읽는다. 접힌 레일의 급함 점은 바탕색 링 2px로 일반 점과 모양도 다르다.'
     ],['count','urgent','dot','unit'],['count-badge'],['NotificationCenter','SideNav','Tabs'],['개수','배지','안 읽음 수','뱃지','숫자 표시','badge']),
   ...[
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
@@ -374,11 +380,13 @@ const intents = [
     "계열 색은 --status-{neutral,info,warning,success,danger}-fg를 쓴다. 목록 밖 이름은 그려지지 않고 검게 보인다."
   ],['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','구성 비율','비중','누적','면적','점유율','비율 변화','시간별 구성']),
   entry('EmptyState','state','표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.',['필터 결과가 비었을 때'],['실패를 빈 상태로 표시하지 마라'],'7.5.6',[
-    "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다."
-  ],['title','description','graphic','action'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화','결과 없음','비었을 때']),
+    "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다.",
+    rule('권한 없음(자물쇠)·찾을 수 없음(검색-없음) 화면은 size="page"다. 셸 본문 자리, 제목 h1, action + secondaryAction 두 행동.', '14.6')
+  ],['title','description','graphic','action','secondaryAction','size'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화','결과 없음','비었을 때','권한 없음','권한 없는','접근 권한','찾을 수 없음','찾을 수 없는','404','access denied','not found']),
   entry('ErrorState','state','불러오기 실패와 재시도 경로를 제공한다.',['데이터 요청이 실패했을 때'],['빈 상태와 합치지 마라'],'7.5.6',[
-    "다시 요청할 수 있는 오류에는 onRetry를 연결한다."
-  ],['title','description','graphic','onRetry'],['error-state'],['EmptyState'],['불러오기 실패','재시도','데이터 오류','다시 시도','불러오지 못']),
+    "다시 요청할 수 있는 오류에는 onRetry를 연결한다.",
+    rule('본문 전체를 대신하는 실패는 size="page"다. 제목 h1, onRetry + secondaryAction 두 행동, role=alert 그대로다.', '14.6')
+  ],['title','description','graphic','onRetry','secondaryAction','size'],['error-state'],['EmptyState'],['불러오기 실패','재시도','데이터 오류','다시 시도','불러오지 못']),
   entry('Avatar','media','사진이나 이니셜로 사람을 식별한다.',['사용자 이름과 사진을 표시할 때'],['상태색 팔레트로 사람을 구분하지 마라'],'2.4',[
     rule("name에는 이니셜 대신 보조기기가 읽을 전체 이름을 준다.", "14.4")
   ],['name','src','size','decorative'],['avatar'],['Thumbnail'],['아바타','이니셜','사용자 사진']),
@@ -451,3 +459,28 @@ for (const parent of intents) {
   if (parts.length) parent.parts = parts;
 }
 export default intents;
+
+// 조립 항목(kind=pattern) — 공개 export 가 아니라 여러 부품을 한 자리에 엮는 지침이다(목표 75 3단계 · 디자인 총괄 MCP 지침 초안 r1).
+// 부품마다 항목을 두면 "상단 바" 를 찾는 AI 가 전환기·벨·사용자 메뉴를 따로 맞춰 봐야 한다. 조립 항목 하나가 purpose·useWhen·dont 와
+// 쓰는 이름(uses)·조합 예시(example)를 묶는다. 예시는 문자열로 들고 있지 않고 타입 검사되는 파일의 표시 구간을 생성기가 읽는다
+// (exampleFile) — 예시의 부품 이름·props 가 실제 API 와 어긋나면 pnpm typecheck 가 막는다. import 할 수 없으므로 list_components 에는 없고
+// which_component 후보·design://components 의 patterns·get_component(이름) 로만 나간다.
+const pattern = (name, category, purpose, useWhen, dont, section, text, uses, related, keywords, exampleFile) => ({
+  name, category, purpose, useWhen, dont, rules: text.map(item => typeof item === 'string' ? rule(item, section) : item), uses, related, keywords, exampleFile,
+});
+export const patterns = [
+  pattern('app-header', 'layout', '여러 앱이 같은 모양으로 쓰는 상단 바 조립 — 지금 맥락(제품·스토어) 표시와 전환, 알림 진입·알림 센터, 사용자 메뉴.',
+    // 색인 항목 상한 800B(budget.mjs) 안에 들도록 초안 문구를 줄였다 — 부품 이름은 uses, 알림 목록 형태는 rules 로 옮겼다(3단계 보고 '줄인 문구').
+    ['AppShell header에 맥락 전환기 0~2개, headerEnd에 알림 벨 → 사용자 메뉴를 둘 때'],
+    ['같은 전환기를 header와 SideNav에 함께 두거나 3개 이상 두지 마라', '조직 전환을 header에 두지 마라(사용자 메뉴의 하위 메뉴)',
+      '로그아웃에 destructive를 쓰지 마라', '권한 판단·알림 등급·폴링을 부품에 넣지 마라', '새 토큰·색을 만들지 마라'], '24.7', [
+      '상단 바는 64px 한 줄이다. 64를 넘는 내용(두 줄 검색·안내 문구)은 상단 바가 아니라 본문 머리(PageHeader)에 둔다.',
+      'headerEnd 순서는 앱 항목 → NotificationCenter → 사용자 메뉴다. 알림 목록은 NotificationCenter(1024px 이상 팝오버, 미만 Sheet)다.',
+      '사용자 메뉴 트리거는 Avatar sm + 이름(1024px 미만 Avatar만 44px)이다. 조직 전환은 DropdownMenuSub, 640px 미만은 메뉴 안에 펼친다.',
+      rule('1024px 미만은 둘째 전환기부터 아이콘만 보이고, 그래도 넘치면 ContextSwitcherGroup이 "맥락" 한 트리거로 접는다.', '24.8')
+    ], ['AppShell', 'ContextSwitcherGroup', 'ContextSwitcher', 'NotificationCenter', 'CountBadge', 'DropdownMenu', 'Avatar', 'Button'],
+    ['SideNav', 'Toaster', 'EmptyState'],
+    ['상단 바', '상단바', '앱 헤더', '헤더 바', '글로벌 헤더', '상단 메뉴', '사용자 메뉴', '계정 메뉴', '프로필 메뉴', '로그아웃 메뉴', '조직 전환',
+      'top bar', 'topbar', 'header bar', 'navbar', 'user menu', 'account menu'],
+    'packages/ui/docs/examples/app-header-mcp.tsx'),
+];

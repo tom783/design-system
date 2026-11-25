@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog, designSections } from '../../docs/research/mcp-build.mjs';
-import { restoreComponent, listComponents, getComponent, componentIndex } from './catalog.mjs';
+import { extractComponents, normalizeTokens, validate, assertSizeBudget, compactCatalog, designSections, loadPatterns, exampleBetweenMarkers, exampleTags } from '../../docs/research/mcp-build.mjs';
+import { restoreComponent, listComponents, getComponent, componentIndex, getPattern, selectionEntries } from './catalog.mjs';
 import { BUDGETS, RESERVE_FAMILIES, measureResponses } from './budget.mjs';
 import intents, { principles } from '../../docs/research/component-intent.mjs';
 const data = JSON.parse(await readFile(new URL('../../docs/research/tokens.json', import.meta.url), 'utf8'));
@@ -10,7 +10,8 @@ const design = await readFile(new URL('../../DESIGN.md', import.meta.url), 'utf8
 const components = extractComponents();
 const tokens = normalizeTokens(data);
 const sections = designSections(design);
-const fixture = () => ({ components: structuredClone(components), intents: structuredClone(intents), sections: new Set(sections), tokens: structuredClone(tokens), expectedNames: new Set(tokens.map((t) => t.name)), principles: structuredClone(principles) });
+const patterns = await loadPatterns();
+const fixture = () => ({ components: structuredClone(components), intents: structuredClone(intents), sections: new Set(sections), tokens: structuredClone(tokens), expectedNames: new Set(tokens.map((t) => t.name)), principles: structuredClone(principles), patterns: structuredClone(patterns) });
 const expectGate = (number, change) => { const input = fixture(); change(input); assert.ok(validate(input).some((message) => message.startsWith(`[${number} `))); };
 test('실제 공개 export·상속 props·export *·슬롯을 추출하고 메타데이터와 일치', () => {
   assert.deepEqual(validate(fixture()), []);
@@ -56,6 +57,41 @@ test('8: 소비자 지침의 구현 메모·장문·복제를 생성 단계에�
   expectGate(8, f => { f.intents[0].rules[0].text = '가'.repeat(121); });
   expectGate(8, f => { f.intents[1].purpose = 'Radix 부품'; });
   expectGate(8, f => { f.intents.find(c => c.name === 'Hint').rules[0].text = f.intents[0].rules[0].text; });
+});
+test('9: 조립 항목은 부품과 겹치지 않는 소문자 이름이고 쓰는 이름·예시 태그가 실제 공개 부품이다', () => {
+  assert.deepEqual(patterns.map(p => p.name), ['app-header']);
+  expectGate(9, f => { f.patterns[0].name = 'AppHeader'; });
+  expectGate(9, f => { f.patterns[0].name = 'app-shell'; f.patterns.push({ ...f.patterns[0] }); });
+  expectGate(9, f => { f.patterns[0].uses.push('UserMenu'); });
+  expectGate(9, f => { f.patterns[0].related.push('Spacer'); });
+  expectGate(9, f => { f.patterns[0].example += '\n<NotificationBell count={3} />'; });
+  // 공개 부품이어도 uses(또는 그 부품)에 없는 태그는 막는다 — 지침에 없는 부품 이름을 예시에 쓰지 않는다.
+  expectGate(9, f => { f.patterns[0].example += '\n<SegmentedControl options={[]} />'; });
+  expectGate(9, f => { f.patterns[0].example = ' '; });
+  expectGate(9, f => { f.patterns[0].keywords = []; });
+  expectGate(4, f => { f.patterns[0].rules[0].source = 'DESIGN.md 999.1'; });
+  expectGate(8, f => { f.patterns[0].purpose = 'Radix 메뉴 조립'; });
+  expectGate(8, f => { f.patterns[0].rules[0].text = f.intents[0].rules[0].text; });
+});
+test('9: 조립 예시는 타입 검사되는 파일의 표시 구간을 들여쓰기만 걷어 그대로 싣는다', async () => {
+  const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
+  assert.deepEqual(manifest.patterns, patterns, '저장한 조립 항목이 예시 파일과 같다(예시를 고치면 mcp:build 로 다시 만든다)');
+  const [header] = manifest.patterns;
+  assert.ok(header.example.startsWith('<AppShell sidebar={nav}') && header.example.endsWith('</AppShell>'));
+  assert.ok(!/mcp-example|^\s/.test(header.example), '표시 줄·공통 들여쓰기는 싣지 않는다');
+  for (const name of ['AppShell', 'ContextSwitcherGroup', 'ContextSwitcher', 'NotificationCenter', 'DropdownMenu', 'Avatar', 'Button'])
+    assert.ok(exampleTags(header.example).includes(name), name);
+  for (const draft of ['NotificationBell', 'UserMenu', 'Spacer', 'mode=']) assert.ok(!header.example.includes(draft), `초안 이름 ${draft} 를 쓰지 않는다`);
+  assert.ok(/headerEnd=\{/.test(header.example) && /header=\{/.test(header.example), 'header·headerEnd 두 묶음');
+  assert.equal(exampleBetweenMarkers('a\n  // mcp-example:start\n    <A>\n      <B />\n    </A>\n  // mcp-example:end\n'), '<A>\n  <B />\n</A>');
+  assert.throws(() => exampleBetweenMarkers('// mcp-example:start\n<A />'), /구간이 한 번/);
+  assert.throws(() => exampleBetweenMarkers('// mcp-example:start\n<A />\n// mcp-example:end\n// mcp-example:start\n// mcp-example:end'), /구간이 한 번/);
+  // 서버 후보 = 부품 + 조립 항목(kind=pattern). 같은 매니페스트에는 같은 배열(키워드 흔함 캐시).
+  const entries = selectionEntries(manifest);
+  assert.equal(entries, selectionEntries(manifest));
+  assert.deepEqual(entries.slice(-1).map(e => [e.name, e.kind]), [['app-header', 'pattern']]);
+  assert.equal(entries.length, manifest.components.length + 1);
+  assert.deepEqual(Object.keys(getPattern(manifest, header)), ['name', 'kind', 'category', 'purpose', 'useWhen', 'dont', 'rules', 'uses', 'related', 'keywords', 'example']);
 });
 test('부품은 고유 API만 보관하고 목적·부모 목록을 보존', async () => {
   const { components: catalog, derived } = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
@@ -104,7 +140,8 @@ test('R23: 모든 항목의 API·의도는 저장을 줄였다가 복원해도 �
   // 0.6.0 3a 색인 +669B — 반복 입력 줄 FieldList 항목(목록 +204B, 상세 5,311B).
   // 목표 64(0.6.0 3b) SectionHeader 색인 +736B · 목록 +244B(새 항목 하나만).
   // 목표 75 2단계 ContextSwitcher 409 · ContextSwitcherGroup 175 · NotificationCenter 455 · CountBadge 327 — 색인 +1,370B · 목록 +851B(최소 항목, 지침 본작업은 3단계).
-  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370);
+  // 목표 75 3단계 조립 항목 app-header(patterns) — 색인 +978B. 목록은 그대로다(import 할 수 없는 이름이라 list_components 에 없다).
+  assert.ok(Buffer.byteLength(JSON.stringify(componentIndex(manifest))) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370 + 978);
   // 최대 상세 4,576B + 224B, 토큰 67,002B + 298B, 규칙 4,151B + 249B.
   assert.ok(Buffer.byteLength(JSON.stringify(listComponents(manifest))) <= 19_950 + 206 + 203 + 199 + 212 + 204 + 244 + 851);
   // 목표 57: 최대 상세 DataTable 4,576B → 5,642B(summary 합계 행 지침). 운영 상한 6,000B 는 budget.mjs.
@@ -242,6 +279,20 @@ test('R49 예약 계산은 실제로 가장 큰 가족 4개를 복제해 넣은 
   assert.doesNotThrow(() => assertSizeBudget(manifest, quiet), '현재 매니페스트는 예약까지 포함해 모든 예산 안이다');
 });
 
+test('조립 항목도 색인 항목당 상한과 상세 상한을 받는다(목표 75 3단계)', () => {
+  const m = { ...manifestOf([entry('테스트')]), patterns: [{ name: 'test-pattern', category: 'layout', purpose: '', useWhen: ['쓸 때'], dont: ['금지'],
+    rules: [{ text: '규칙', source: 'DESIGN.md 24.7' }], uses: ['테스트'], related: [], keywords: ['시험'], example: '<테스트 />' }] };
+  const purpose = (mm, value) => { mm.patterns[0].purpose = value; };
+  fill(m, mm => componentIndex(mm).patterns[0], purpose, 500);
+  const budgets = { ...loose, index: { total: 1e9, entry: 500 } };
+  assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets, reserve: 0 }));
+  m.patterns[0].purpose += 'x';
+  assert.throws(() => assertSizeBudget(m, { ...quiet, budgets, reserve: 0 }), /항목 test-pattern 501바이트 > 500바이트/);
+  fill(m, mm => getPattern(mm, mm.patterns[0]), purpose, 900);
+  assert.doesNotThrow(() => assertSizeBudget(m, { ...quiet, budgets: { ...loose, detail: 900 }, reserve: 0 }));
+  m.patterns[0].purpose += 'x';
+  assert.throws(() => assertSizeBudget(m, { ...quiet, budgets: { ...loose, detail: 900 }, reserve: 0 }), /get_component 최대 test-pattern 901바이트 > 900바이트/);
+});
 test('R49 상세·토큰·규칙 상한과 저장 총량 무관', () => {
   const m = manifestOf([entry('테스트')]);
   fill(m, mm => getComponent(mm, mm.components[0]), (mm, v) => { mm.components[0].purpose = v; }, 700);

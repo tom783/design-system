@@ -322,6 +322,32 @@ for (const description of ['페이지', '페이징', '페이지 이동', '페이
   const table = (await t('get_component', { name: 'DataTable' })).structuredContent;
   check('DataTable 페이지 전환 선택 해제 규칙', table.rules.some(rule => rule.text.includes('페이지를 넘기면 선택이 해제된다')));
 }
+// 목표 75 3단계: 상단 바 — 조립 항목 app-header(kind: pattern)·새 부품 첫 후보, 기존 항목 한 줄씩(AppShell·Toaster·State·SideNav·Tabs·CountBadge).
+for (const [query, expected] of [['상단 바에 알림 벨과 사용자 메뉴 배치', 'app-header'], ['top bar with a store switcher and a notification bell', 'app-header'],
+  ['지금 보고 있는 제품을 다른 제품으로 전환', 'ContextSwitcher'], ['알림 목록 패널', 'NotificationCenter'], ['안 읽은 개수 표시', 'CountBadge'],
+  ['권한 없는 화면', 'EmptyState'], ['새 취소 요청이 오면 화면 구석에 알림을 띄우고 이동 버튼', 'Toaster']]) {
+  const response = await t('which_component', { description: query });
+  check(`목표 75 검색: ${query} → ${expected}`, response.structuredContent?.candidates[0]?.name === expected);
+}
+{
+  const top = (await t('which_component', { description: '상단 바에 알림 벨과 사용자 메뉴 배치' })).structuredContent.candidates[0];
+  const header = (await t('get_component', { name: 'app-header' })).structuredContent;
+  const listed = new Set((await t('list_components', {})).structuredContent.components.map(item => item.name));
+  const tags = [...new Set([...(header?.example ?? '').matchAll(/<([A-Z][A-Za-z0-9]*)/g)].map(match => match[1]))];
+  check('app-header 는 kind: pattern 후보·상세이고 uses·예시 태그가 모두 공개 부품이다(초안 이름 NotificationBell·UserMenu·Spacer 없음)',
+    top?.kind === 'pattern' && header?.kind === 'pattern' && !listed.has('app-header') && header.uses.every(name => listed.has(name))
+    && tags.length >= 7 && tags.every(name => listed.has(name)) && !/NotificationBell|UserMenu|Spacer|mode=/.test(header.example)
+    && ['header=', 'headerEnd=', 'DropdownMenuSub'].every(text => header.example.includes(text)),
+    tags.join(' · '));
+  const index = JSON.parse((await call('resources/read', { uri: 'design://components' })).result.contents[0].text);
+  check('색인 patterns 에 app-header 가 고르는 필드만으로 실린다', index.patterns?.length === 1 && index.patterns[0].name === 'app-header'
+    && Object.keys(index.patterns[0]).join() === 'name,category,purpose,useWhen,dont,uses');
+  const rules = async name => (await t('get_component', { name })).structuredContent.rules.map(rule => rule.text).join(' ');
+  check('기존 항목 한 줄씩 — AppShell headerEnd 64 · toast.notify 등급·묶음 키·한 번에 하나 · State size=page · SideNav brand · Tabs·CountBadge',
+    /headerEnd.*64px/.test(await rules('AppShell')) && /toast\.notify.*groupKey/.test(await rules('Toaster')) && /한 번에 하나/.test(await rules('Toaster'))
+    && /size="page"/.test(await rules('EmptyState')) && /size="page"/.test(await rules('ErrorState')) && /표시 전용/.test(await rules('SideNav'))
+    && /TabsTrigger count/.test(await rules('Tabs')) && /링 2px/.test(await rules('CountBadge')));
+}
 const rl = await call('resources/list', {});
 const res = rl.result?.resources ?? [];
 check('리소스 3개', res.length === 3, res.map(r=>r.uri).join(' · '));
@@ -402,7 +428,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
   // 0.6.0 3a FieldList 색인 +669B·목록 +204B · 목표 64(0.6.0 3b) SectionHeader 색인 +736B·목록 +244B.
   // 목표 75 2단계: ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge 최소 항목 — 색인 +1,370B · 목록 +851B(build.test 와 같은 수치).
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204 + 244 + 851],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // 목표 75 3단계: 조립 항목 app-header — 색인 +978B · 목록 그대로(build.test·server.test 와 같은 수치).
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370 + 978],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204 + 244 + 851],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }
