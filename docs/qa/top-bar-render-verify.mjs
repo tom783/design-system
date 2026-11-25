@@ -4,6 +4,8 @@
 // 라이트·다크 × 1440·1024·768·390 마다 Screens/AppHeader 스토리를 열고 잰다. 캡처는 OUT 에 실제 크기로 남는다.
 //   - 헤더: 높이 64 · SideNav brand 행 아래끝과 차이 0 · 좌우 패딩 24/16 · 벨·사용자 메뉴 38(1024 미만 44) · 가로 넘침 0
 //   - 사용자 메뉴: 진짜 Tab 으로 트리거 → Enter 열림(aria-expanded) → 화살표 이동 → Esc 닫힘·트리거로 초점 복귀 · 폭 240~320 · 항목 38
+//     조직 전환 640 미만 메뉴 안 펼침(1c · Figma 231:1553): 폭 278 · 상점 아이콘 20 · 현재 조직 오른쪽 체크 16 + 굵게 + 선택 바탕 ·
+//     menuitemradio·aria-checked · 묶음 이름 '조직 전환' · 묶음 위·아래 구분선 없음(머리 아래·로그아웃 위만)
 //   - 알림 토스트: status 낭독·aria-live polite · 폼 하단 고정 줄 위 16 · 같은 묶음 건수 갱신·하나 · 저장 결과와 겹치면 알림이 위
 //   - 누름 면적(1b · 11-25 디자인 총괄 답 ①②): 닫기 버튼 모든 토스트(알림·행동 결과) 1024 이상 38 · 미만 44, 중심 = 첫 줄 글자 중심,
 //     본문 오른쪽 비움 8 + 버튼 + 8 · 알림 [이동] 1024 미만 44
@@ -164,6 +166,7 @@ try {
             contrast: __contrast(logout), caption: __contrast(menu.querySelector('[data-slot="dropdown-menu-label"] .text-fg-muted')) }; })()`);
         assert.equal(m.expanded, 'true');
         assert.ok(m.width >= 240 && m.width <= 320, `메뉴 폭 ${m.width}`);
+        if (width < 640) assert.equal(m.width, 278, '640 미만 메뉴 폭 278(Figma 231:1553)');
         assert.ok(m.items.every(h => h === tap), `항목 높이 ${m.items} — 38, 1024 미만 44(Figma 223:433)`);
         // 640 미만은 조직 전환을 하위 메뉴 대신 메뉴 안에 펼친다(하위 목록이 화면에 들어가지 않는다).
         assert.deepEqual(m.labels, width < 640 ? ['내 계정', '조직 설정', '알림 설정', '도움말', '로그아웃']
@@ -201,22 +204,50 @@ try {
         await wait(`[...document.querySelectorAll('[role="menu"]')].every(m => m.getAnimations().every(a => a.playState === 'finished'))`, '목록 정착');
         const m = await ev(`(() => { const menus = document.querySelectorAll('[role="menu"]'), sub = menus[menus.length - 1], items = [...sub.querySelectorAll('[role="menuitemradio"]')];
           const checked = items.find(i => i.getAttribute('aria-checked') === 'true'), other = items.find(i => i !== checked);
+          const box = el => el.getBoundingClientRect(), group = checked.closest('[role="group"]'), label = document.getElementById(group.getAttribute('aria-labelledby'));
+          // 640 미만 펼침(Figma 231:1553): 아이콘·체크·이름 위치는 항목 경계에서 잰다.
+          const row = i => { const r = box(i), store = i.querySelector(':scope > svg.lucide-store'), check = i.querySelector(':scope > svg.lucide-check'), name = i.querySelector(':scope > span');
+            return { store: store && [box(store).width, box(store).height, box(store).left - r.left], name: name && box(name).left - r.left,
+              check: check && [box(check).width, box(check).height, r.right - box(check).right, box(check).left >= box(name).right] }; };
+          const sibling = el => el?.getAttribute('role') ?? el?.dataset.slot ?? null;
           return { items: items.map(i => [i.textContent.trim(), i.getAttribute('aria-checked'), Math.round(i.getBoundingClientRect().height)]),
             weight: [getComputedStyle(checked).fontWeight, getComputedStyle(other).fontWeight], bg: getComputedStyle(checked).backgroundColor !== getComputedStyle(other).backgroundColor,
             indicator: !!checked.querySelector('svg') && !other.querySelector('svg'), inside: sub.getBoundingClientRect().left >= 0 && sub.getBoundingClientRect().right <= innerWidth,
-            contrast: __contrast(checked) }; })()`);
+            contrast: __contrast(checked), group: (label ?? document.getElementById(sub.getAttribute('aria-labelledby')))?.textContent.trim(), rows: [row(checked), row(other)],
+            labelLeft: label && box(label).left + parseFloat(getComputedStyle(label).paddingLeft) - box(checked).left,
+            labelBox: label && [getComputedStyle(label).paddingTop, getComputedStyle(label).paddingBottom, box(label).height],
+            labelContrast: label && __contrast(label),
+            around: [sibling(group.previousElementSibling), sibling(group.nextElementSibling)], separators: sub.querySelectorAll('[role="separator"]').length,
+            width: Math.round(box(sub).width) }; })()`);
         assert.deepEqual(m.items.map(i => i.slice(0, 2)), [['운영 조직', 'true'], ['물류 조직', 'false']]);
         assert.ok(m.items.every(i => i[2] === tap), `항목 높이 ${JSON.stringify(m.items)}`);
         assert.deepEqual(m.weight, ['600', '400'], '현재 조직은 굵게');
         assert.equal(m.bg, true, '현재 조직은 선택 바탕');
-        assert.equal(m.indicator, true, '현재 조직은 표시(모양) — 색만으로 알리지 않는다');
+        assert.equal(m.group, '조직 전환', '조직 목록의 이름(640 미만 묶음 · 이상 하위 메뉴 aria-labelledby)');
         assert.ok(m.inside, '하위 목록이 화면 안');
         assert.ok(m.contrast >= 4.5, `대비 ${m.contrast}`);
+        if (width < 640) {
+          // Figma 231:1553 — 상점 아이콘 20(왼쪽 12) · 이름 40 · 현재 조직만 오른쪽 체크 16(오른쪽 12, 이름 뒤) · 제목은 아이콘과 같은 왼쪽.
+          // 라디오 부품을 쓰지 않지만 menuitemradio · aria-checked 로 선택이 그대로 읽힌다(위 items).
+          const [on, off] = m.rows;
+          assert.deepEqual(on.store, [20, 20, 12], `상점 아이콘 ${on.store}`); assert.deepEqual(off.store, [20, 20, 12], `상점 아이콘 ${off.store}`);
+          assert.equal(on.name, 40); assert.equal(off.name, 40);
+          assert.deepEqual(on.check, [16, 16, 12, true], `현재 조직 체크(모양 — 색만으로 알리지 않는다) ${on.check}`);
+          assert.equal(off.check, null, '다른 조직은 체크 없음');
+          assert.equal(m.labelLeft, 12, '제목 조직 전환 = 아이콘 왼쪽');
+          assert.deepEqual(m.labelBox, ['8px', '4px', 32], `제목 칸 위 8 · 아래 4 · 높이 32 ${m.labelBox}`);
+          assert.ok(m.labelContrast >= 4.5, `제목 대비 ${m.labelContrast}`);
+          assert.deepEqual(m.around, ['menuitem', 'menuitem'], `조직 전환 묶음 위·아래 구분선 없음 ${m.around}`);
+          assert.equal(m.separators, 2, '구분선은 머리 아래 · 로그아웃 위 둘');
+          assert.equal(m.width, 278, '메뉴 폭 278');
+        } else {
+          assert.equal(m.indicator, true, '현재 조직은 표시(모양) — 색만으로 알리지 않는다');
+        }
         await capture(`usermenu-org-${theme}-${width}`);
         await act.key('Escape', { raw: true });
         await wait(`!document.querySelector('[role="menu"]')`, 'Esc 로 모두 닫힘');
         await wait(`document.activeElement === ${trigger}`, '트리거로 초점 복귀');
-        return { items: m.items, weight: m.weight };
+        return { items: m.items, weight: m.weight, ...(width < 640 && { rows: m.rows, width: m.width, separators: m.separators, labelBox: m.labelBox, labelContrast: m.labelContrast }) };
       });
       await check(`[${theme} ${width}] 사용자 메뉴 긴 이름: 160 말줄임 · 초점에 전체 이름 툴팁`, async () => {
         await story('사용자메뉴 긴이름', theme); await ev(helpers);

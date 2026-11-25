@@ -3293,6 +3293,11 @@ header 를 쓰지 않는 셸은 그대로다(header 요소를 그리지 않는�
 사용자 메뉴는 새 부품을 두지 않고 `docs/examples/user-menu.tsx` 조합이다 — 트리거(1024 이상 Avatar sm + 이름 최대 160 말줄임 + 화살표,
 높이 38 · 1024 미만 Avatar 만 44×44, 이름이 다 안 보일 때만 툴팁), 머리(Avatar md + 이름 600 + 조직 caption), 항목 38, 로그아웃은 맨 아래
 구분선 뒤 중립 글자(`destructive` 는 삭제용), 폭 240~320, Esc 로 닫으면 트리거로 초점 복귀.
+조직 전환은 640 이상 하위 메뉴(현재 조직 = 왼쪽 점 + 굵게 + 선택 바탕), 640 미만 메뉴 안 펼침이다(Figma 231:1553 — 390 에서 하위 목록이
+화면에 들어가지 않는다): 메뉴 폭 278 · 제목 '조직 전환'(caption, 위 8 · 아래 4, 왼쪽 12) · 조직 항목 44 = 왼쪽 12 + 상점 아이콘 20 + 8 + 이름,
+현재 조직만 오른쪽 체크 16(오른쪽 12) + 굵게 + 선택 바탕(색만으로 알리지 않는다) · 묶음 위·아래 구분선 없음(머리 아래·로그아웃 위만).
+체크를 오른쪽에 두려고 `DropdownMenuRadioItem`(왼쪽 점) 대신 일반 항목에 `role="menuitemradio"`·`aria-checked`·`data-state` 를 직접 주고,
+묶음은 `DropdownMenuGroup aria-labelledby` 로 제목에 잇는다 — 낭독은 라디오와 같다.
 
 검증: `top-bar-render-verify`(라이트·다크 × 1440·1024·768·390 — header 64 · brand 아래선 차이 0 · 누름 면적 · 진짜 Tab/Esc · 가로 넘침 0) ·
 `app-shell/header.test.mjs`(같은 토큰 · 슬롯). 기준 화면 `Screens/AppHeader`, 문서 Components/AppShell `상단바`.
