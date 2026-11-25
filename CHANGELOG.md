@@ -14,28 +14,87 @@
 
 ## 미출시
 
+(아직 없음)
+
+---
+
+## 0.7.0 — 미게시
+
+상단 바 묶음이다(목표 75). 상단 바 부품 넷 — 맥락 전환기 `ContextSwitcher`·묶음 `ContextSwitcherGroup`·알림 센터 `NotificationCenter`·
+개수 표식 `CountBadge` — 을 더하고, 기존 부품을 상단 바에 맞게 넓혔다(AppShell `headerEnd` · 알림 토스트 `toast.notify` ·
+EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공개 컴포넌트 121개 → **125개**, 새 공개 타입 9개. 사용자 메뉴는
+새 부품이 아니라 조합 예시다. MCP 에는 여러 부품을 엮는 **조립 항목**(`kind: pattern`)을 처음 두었다(`app-header`).
+새 부품·공개 API 추가·바뀐 동작이 있어 0.x.0 이다. 공개 이름을 빼거나 타입을 좁힌 것은 없다. 게시하지 않았다(태그·npm 없음).
+
+- **바뀐 동작 2가지(아래 "바뀐 동작 (마이그레이션)"):**
+  - ① **AppShell header 64px 고정 · 가로 한 줄** — 내용에 따라 달랐던 높이(버튼 38 이면 71, 글자 한 줄이면 57)가 64 로 같아졌다. 64 를
+    넘는 내용과 header 안 한 덩어리 div 는 앱이 옮기거나 늘린다(아래 "앱이 할 일").
+  - ② **토스트 닫기 버튼 32 → 38(1024 이상)·44(미만)** — 모든 토스트. 폼 하단 고정 줄이 있는 화면의 토스트 자리(줄 위 16)도 함께
+    바뀌었다. 둘 다 앱 코드는 그대로이고, 크기·위치를 단정한 시험과 시각 기준선만 고친다.
+- **MCP 조립 항목 `app-header`:** `which_component` 후보(`kind: "pattern"`) · `get_component("app-header")` · `design://components` 새 키
+  `patterns`. import 할 수 없어 `list_components` 에는 없다. 응답 크기는 색인 26,926 → 29,274B / 40KB · 목록 21,142 → 21,993B / 36KB ·
+  상세 최대 DataTable 6,118B / 7KB 그대로다(아래 "바뀐 지침 (MCP)").
+- **추천 정확도:** `which_component` 정답 세트 214문항(상단 바 16문항을 더함) top-1 195 · top-3 212 · 후보 0개 0. 기존 198문항은 정답 순위가
+  바뀐 문항 0개다. 하한 191 · 210 · 0 이 `pnpm test` 에 걸려 있다. 튜닝에 쓰지 않는 보류 세트 48문항은 top-1 37 → 36 · top-3 47 그대로다
+  ("알림 받기 켜고 끄기" 의 1위가 Switch → NotificationCenter, Switch 는 3위).
+
 ### 앱이 할 일 (요약 — 자세한 것은 각 항목)
 
-- **상단 바(AppShell `header`)가 64px 한 줄로 고정됐다.** 64 를 넘는 내용(두 줄로 접히는 검색·안내 문구·필터 줄)을 header 에 넣었다면
-  본문(PageHeader·FilterBar)으로 옮기거나 한 줄에 들어가게 줄인다. 한 덩어리 div 로 header 를 채웠다면 그 div 는 이제 내용 폭이다 —
-  가득 채우려면 `flex: 1` 을 주거나, 오른쪽에 둘 것은 새 `headerEnd` 로 옮긴다(아래 바뀐 동작). header 를 쓰지 않는 앱은 할 일이 없다.
-- **폼 하단 고정 액션 줄(FormActionBar)이 있는 화면의 토스트는 줄 위 16 에 선다.** 토스트 위치(바닥에서 24)를 단정하던 시험은
-  줄 높이 63 + 16 = 79 로 바꾼다. 줄이 없는 화면은 그대로다.
-- **모든 토스트의 닫기 버튼이 커졌다(32 → 1024 이상 38 · 미만 44).** 닫기 버튼 크기·위치나 본문 줄바꿈 위치를 단정하던 시험·스냅샷만 고친다(아래 바뀐 동작).
-- 선택: 업무 알림은 `toast.notify`, 권한 없음·찾을 수 없음 화면은 `EmptyState size="page"`, 사용자 메뉴는 DropdownMenu + Avatar 조합
-  예시(`docs/examples/user-menu.tsx`)를 쓴다. 지금 직접 만든 것이 있으면 옮길 수 있다.
-- 선택: 상단 바 왼쪽의 제품·스토어 표시는 `ContextSwitcher`(두 개면 `ContextSwitcherGroup`), 알림 벨과 목록은 `NotificationCenter`,
-  메뉴·탭 옆 개수는 `CountBadge`(SideNavItem·TabsTrigger 는 `count`)로 옮길 수 있다. 직접 만든 것이 없으면 할 일이 없다.
+- **코드(header 를 쓰는 앱만):** 64 를 넘는 내용(두 줄로 접히는 검색·안내 문구·필터 줄)을 header 에 넣었다면 본문(PageHeader·FilterBar)으로
+  옮기거나 한 줄에 들어가게 줄인다. 한 덩어리 div 로 header 를 채웠다면 그 div 는 이제 내용 폭이다 — 가득 채우려면 `flex: 1` 을 주거나,
+  오른쪽에 둘 것은 새 `headerEnd` 로 옮긴다. header 를 쓰지 않는 앱은 할 일이 없다.
+- **테스트 갱신(코드 수정 없음):** 토스트 닫기 버튼의 크기·위치(32 → 38/44, 위 10 → 7.75/4.75)나 긴 토스트 문구의 줄바꿈 위치를 단정하던
+  시험·스냅샷. 폼 하단 고정 액션 줄(FormActionBar)이 있는 화면에서 토스트 위치(바닥 24)를 단정하던 시험은 줄 높이 63 + 16 = 79 로 바꾼다.
+  줄이 없는 화면은 그대로다.
+- **시각 기준선:** header 를 쓰는 화면은 본문 시작점이 64 로 같아진다(버튼 38 header 는 7px 위로, 글자 한 줄 header 는 7px 아래로) ·
+  모든 토스트의 닫기 버튼과 본문 오른쪽 비움(48 → 54, 1024 미만 60) · 폼 하단 줄 화면의 토스트 자리.
+- **선택:** 업무 알림은 `toast.notify`, 권한 없음·찾을 수 없음 화면은 `EmptyState size="page"`, 사용자 메뉴는 DropdownMenu + Avatar 조합
+  예시(`docs/examples/user-menu.tsx`)를 쓴다. 상단 바 왼쪽의 제품·스토어 표시는 `ContextSwitcher`(두 개면 `ContextSwitcherGroup`), 알림 벨과
+  목록은 `NotificationCenter`, 메뉴·탭 옆 개수는 `CountBadge`(SideNavItem·TabsTrigger 는 `count`)로 옮길 수 있다. 직접 만든 것이 없으면
+  할 일이 없다.
 
 ### 추가
 
+- **맥락 전환기 `ContextSwitcher` · 묶음 `ContextSwitcherGroup`** (목표 75 2단계·2b · 상단 바 규격 2절 · Figma 223:483 · 223:737 · 223:1766 ·
+  223:1923 · DESIGN.md §24.8). 지금 제품·스토어 같은 맥락을 header 왼쪽에 보이고 바꾼다. 타입 `ContextSwitcherProps` ·
+  `ContextSwitcherGroupProps` · `ContextSwitcherItem` · `ContextSwitchEvent`.
+  - 트리거 38(1024 미만 44) · [아이콘 20] + 현재 값 600 + 화살표 · 최대 240 말줄임 + 툴팁 · 낭독 "<종류>: <현재 값>"(`kind`).
+    고를 것이 하나면 정적 글자("현재 <종류>: <값>"). `showKind` 로 앞말을 작게 보인다.
+  - 항목 `href` 가 있으면 링크(⌘/Ctrl·가운데 클릭 새 탭), 없으면 선택 — `onValueChange` 가 Promise 면 스피너 16 + 새 값, 실패하면 원래 값 +
+    오류 토스트(제목 "<종류>를 바꾸지 못했습니다" + 설명 "이전 <종류>를 유지합니다", 모든 폭, 닫을 때까지). 둘 다 `onBeforeSwitch(event)` 에서
+    `event.preventDefault()` 로 막는다. 진행 알림용 `role=status`(평소 빈 sr-only)를 늘 둔다 — `getByRole('status')` 를 하나로 가정한 앱
+    시험은 이것도 만난다.
+  - 패널 240~360 · 최대 높이 400(목록만 스크롤) · `allItem`("전체" 맨 위 + 구분선) · `guide`(안내 줄, 링크 하나) · 항목 8개 이상 검색
+    (`searchThreshold`, 초성) · `state` loading(스켈레톤 3줄)·error(다시 시도 `onRetry`) · 비활성 항목 + 사유 툴팁(`disabledReason`).
+  - 키보드: 화살표 · Enter · Esc 닫고 트리거로 · 첫 글자 이동(한글 초성 "ㅅ" → "스토어" — 메뉴 기본 첫 글자 검색은 초성을 몰랐다).
+  - 묶음: 사이 구분선 1×20 · 좌우 8 · 1024 미만은 둘째부터 아이콘 + 툴팁 · 그래도 넘치면 "맥락" 한 트리거로 접는다. 접힌 목록은 2단계 —
+    종류(제품·스토어)를 고르면 그 전환기 패널(검색 포함)로 들어가고, 맨 위 "‹ 종류"·← 로 돌아오며(온 줄에 초점) Esc 는 닫고 "맥락"으로.
+    전환기가 묶음에 스스로 등록하므로 앱 컴포넌트로 감싸도 된다.
+- **알림 센터 `NotificationCenter`** (목표 75 2단계·2b · 상단 바 규격 4·5절 · Figma 223:977 · 223:1139 · 223:1579 · 223:2044 · DESIGN.md §24.10).
+  벨(알림 진입)과 패널을 한 부품으로 둔다 — 벨은 따로 공개하지 않는다(벨만 쓰는 앱은 Button + CountBadge 조합). 타입
+  `NotificationCenterProps` · `NotificationItem`.
+  - 벨: Button ghost iconOnly 38(1024 미만 44) + CountBadge(오른쪽 끝을 벨 +6 · 위 −6 에 고정, 넓어지면 왼쪽으로) · 이름 "알림, 안 읽음 n개"
+    (+ ", 급한 알림 있음", 0·실패 "알림") · 열림 = 선택 바탕.
+  - 패널: 1024 이상 팝오버 400 · 최대 높이 min(640, 화면 − 96), 미만 오른쪽 Sheet(390 은 전체 폭) · 대화상자 "알림" · 열면 패널 자체에 초점(링 없음,
+    첫 Tab "모두 읽음") · Esc 로 벨에 복귀 · 머리 "모두 읽음"(`onMarkAllRead`)·설정(`settingsHref`)·탭 자리(`tabs`)·도구 줄(`toolbar`).
+  - 알림 한 줄(`items`): 출처(20자)·시각(방금·n분 전·어제 HH:MM·MM.DD HH:MM·YYYY.MM.DD, 툴팁 전체 일시)·제목(2줄)·건수 · 기한(등급
+    normal·soon·overdue) · 안 읽음 = 중립 점 8 + 600 · 급함 = 경고 아이콘 16 + 위험 색 기한 · 낭독 "<출처>, 급함(급할 때만), <제목>, <건수>, <기한>, <시각>, 안 읽음".
+  - 상태: `state` loading·error(`onRetry`) · 비어 있음(`emptyTitle`·`emptyDescription`) · `hasMore`·`loadingMore`·`onLoadMore` · 목록 끝 ·
+    열린 채 새 알림 `pendingCount`·`onShowPending`("새 알림 n개 · 보기", 목록이 저절로 밀리지 않는다) · `onNavigate`.
+  - 권한·폴링·등급 규칙은 넣지 않는다 — 앱이 데이터로 넘긴다. 상대 시각은 그린 시각 기준이다(열어 둔 채 갱신은 앱의 폴링 몫).
+- **개수 표식 `CountBadge`** (목표 75 2단계·2b · 상단 바 규격 3절 · Figma 223:912 · 223:955 · DESIGN.md §24.9). 높이 18 · 최소 폭 18 · 숫자 13 600
+  고정폭. 0·음수·null(불러오기 실패) 숨김 · 100 이상 "99+"(낭독 "99개 이상") · `urgent` 위험 채움 알약(Button danger 와 같은 채움 · 흰 숫자,
+  대비 6.47:1) + 알약 왼쪽 위험색 점 6 · `dot` 점 8(급함이면 바탕색 링 2px) · `unit` 낭독 단위(기본 "개"). 타입 `CountBadgeProps`.
+- **SideNavItem `count`·`countUrgent` · TabsTrigger `count`·`countUrgent`** (목표 75 2단계) — 같은 CountBadge 를 쓴다. SideNav 는 `badge` 자리에
+  알약, 접힌 레일에서는 아이콘 오른쪽 위 점 8 이고 이름이 "라벨, 12개"로 개수를 읽는다. 주지 않으면 지금 모양 그대로다(`badge` 는 글자
+  표시로 그대로).
 - **AppShell `headerEnd` — 상단 바 오른쪽 묶음** (목표 75 1단계 · 상단 바 규격 1절 · DESIGN.md §24.7). 상단 바를 왼쪽 묶음(`header` —
   맥락 전환기·검색) · 가운데 빈 공간 · 오른쪽 묶음(`headerEnd` — 앱 항목 → 알림 → 사용자 메뉴, 사용자 메뉴가 맨 오른쪽)으로 둔다.
   묶음 안 간격 8, 묶음 사이 최소 16. 둘 다 없으면 header 를 그리지 않는다(지금처럼). 새 슬롯 `app-shell-header-start`·`app-shell-header-end`.
   - 왜 prop 인가: "사용자 메뉴는 늘 맨 오른쪽"을 앱마다 `margin-inline-start: auto` 로 맞추게 두면 AI 가 만든 화면에서 어긋난다
     (도그푸딩 6 의 셸 재작성과 같은 문제). 오른쪽 자리를 부품이 갖는다.
-- **알림 토스트 `toast.notify(options)` · 타입 `NotificationToastOptions`** (상단 바 규격 6절 · Figma 211:10253 · DESIGN.md §16.5.1).
-  다른 곳에서 생긴 업무 알림(취소 요청·환불 실패 등)을 알린다. 저장 결과 같은 행동 결과 토스트는 기존 메서드 그대로다.
+- **알림 토스트 `toast.notify(options)` · 타입 `NotificationToastOptions`** (목표 75 1단계·1b · 상단 바 규격 6절 · Figma 211:10253 ·
+  DESIGN.md §16.5.1). 다른 곳에서 생긴 업무 알림(취소 요청·환불 실패 등)을 알린다. 저장 결과 같은 행동 결과 토스트는 기존 메서드 그대로다.
   - 모양: 기존 토스트(폭 356 그대로) + 출처 줄(caption) + 제목(body-sm 600) + [이동] 링크(ghost md 38, 1024 미만 높이 44). 누르면 닫힌다.
   - 등급 `level`: `'normal'`(기본 8초, `duration` 으로 앱이 정함) · `'pinned'`(닫을 때까지 — 오류 토스트와 같은 방식, 위험 톤).
   - 묶음 `groupKey`: 같은 키의 알림이 떠 있으면 새 토스트 대신 건수만 더한다(`count`, 기본 1). `title` 을 함수로 주면 건수로 다시 그린다.
@@ -44,65 +103,25 @@
     그 알림의 기록(알림 센터)·벨 건수는 앱이 갖는다. 이때 돌려주는 id 는 화면에 없는 새 id 라 `toast.dismiss(id)` 해도 고정이 닫히지 않는다.
   - 낭독: 출처·제목이 `role=status`(polite) 영역, 알림 묶음은 `aria-label="업무 알림"` 의 sonner 영역. Esc·닫기·포커스 복귀는 기존 토스트와 같다.
   - 앱 라우터: `href` 를 주고 `onNavigate(event)` 에서 `event.preventDefault()` 뒤 라우터로 옮긴다. 저장하지 않은 입력 확인도 여기서 한다.
-- **EmptyState·ErrorState `size="page"` · `secondaryAction` · 타입 `StateAction`** (상단 바 규격 8절 · Figma 211:10255 · DESIGN.md §14.6).
-  권한 없음(자물쇠 `LockKeyhole`)·찾을 수 없음(검색-없음 `SearchX`)처럼 본문 전체를 대신하는 화면이다. 상단 바 아래선에서 아이콘까지
-  96 · 최대 폭 480 · 아이콘 40 · 제목 h1(body-lg 17/24 600) · 설명 body-sm · 주 행동 primary md + 보조 행동 ghost md(`href` 면 링크).
+- **EmptyState·ErrorState `size="page"` · `secondaryAction` · 타입 `StateAction`** (목표 75 1단계·1b · 상단 바 규격 8절 · Figma 211:10255 ·
+  DESIGN.md §14.6). 권한 없음(자물쇠 `LockKeyhole`)·찾을 수 없음(검색-없음 `SearchX`)처럼 본문 전체를 대신하는 화면이다. 상단 바 아래선에서
+  아이콘까지 96 · 최대 폭 480 · 아이콘 40 · 제목 h1(body-lg 17/24 600) · 설명 body-sm · 주 행동 primary md + 보조 행동 ghost md(`href` 면 링크).
   역할은 EmptyState `status`(alert 아님) · ErrorState `alert` 그대로다. 1024 미만 행동은 Button lg 수치(높이 44 · 글자 15 · 좌우 여백 20 ·
   최소 폭 80)다 — Figma 390 과 같다.
   `description` 은 이제 `ReactNode` 다(대상 이름을 `<strong>` 으로). 기본 크기의 모양·`action` 타입은 그대로다(DataTable `emptyAction` 이 쓴다).
-- **사용자 메뉴 조합 예시** `docs/examples/user-menu.tsx` (상단 바 규격 7절 · Figma 211:10254). 새 부품이 아니다 — DropdownMenu + Avatar +
-  Tooltip. 트리거 1024 이상 Avatar sm + 이름(최대 160 말줄임) + 화살표 · 높이 38, 1024 미만 Avatar 만 44×44. 머리(Avatar md + 이름 + 조직),
-  항목 38, 조직 전환 하위 메뉴(현재 조직 = 표시 + 굵게 + 선택 바탕), 로그아웃은 맨 아래 위 구분선 · 중립 글자(`destructive` 쓰지 않음).
-  기준 화면 `Screens/AppHeader`, 문서 Components/AppShell `상단바` · Components/DropdownMenu `메뉴-사용자메뉴`.
-  - 640 미만 조직 전환(목표 75 1c · Figma 231:1553 · DESIGN.md §24.7): 하위 메뉴 대신 메뉴 안에 펼친다. 메뉴 폭 278 · 조직 항목 앞 상점
-    아이콘 20 · 현재 조직은 오른쪽 체크 16 + 굵게 + 선택 바탕 · 묶음 위·아래 구분선 없음(로그아웃 위만). 낭독은 `menuitemradio`·`aria-checked`·
-    묶음 이름 '조직 전환' 그대로다. 640 이상 하위 메뉴 모양은 그대로다. 부품 변화 없음(예시 조합만).
-
-- **MCP 조립 항목 `app-header` — 상단 바 조립 지침** (목표 75 3단계 · 디자인 총괄 MCP 지침 초안 r1 · 규격 r1.2 10절 · DESIGN.md §24.7).
-  부품 export 가 아닌 "여러 부품을 엮는 항목"(`kind: pattern`)을 MCP 에 처음 둔다 — purpose·useWhen·dont·규칙(§24.7·§24.8) · 쓰는 이름
-  `uses`(AppShell·ContextSwitcherGroup·ContextSwitcher·NotificationCenter·CountBadge·DropdownMenu·Avatar·Button) · 조합 예시 `example`.
-  - 나가는 곳: `which_component` 후보(`kind: "pattern"` — 부품 후보 모양은 그대로) · `get_component("app-header")` 상세 ·
-    `design://components` 새 키 `patterns`(고르는 필드만). import 할 수 없어 `list_components` 에는 없다. 도구 설명 두 줄에 조립 항목을 적었다.
-  - 예시는 실제 공개 API 로만 쓴다: 초안의 `NotificationBell`·`UserMenu`·`Spacer`·`mode="link|select"`·`allItem`(불리언)은 공개 API 에 없어
-    `header`(ContextSwitcherGroup) · `headerEnd`(NotificationCenter → DropdownMenu + Avatar + Button 사용자 메뉴, 조직 전환은 DropdownMenuSub) ·
-    항목 `href` 유무(링크/선택) · `allItem={항목}` 으로 고쳤다. 원문은 타입 검사되는 `packages/ui/docs/examples/app-header-mcp.tsx` 표시 구간이다.
-  - MCP 를 읽는 도구가 `design://components` 의 키를 `description`·`components` 둘로 고정해 두었다면 `patterns` 가 늘었다.
-- **맥락 전환기 `ContextSwitcher` · 묶음 `ContextSwitcherGroup`** (목표 75 2단계 · 상단 바 규격 2절 · Figma 223:483 · 223:737 · 223:1766 ·
-  223:1923 · DESIGN.md §24.8). 지금 제품·스토어 같은 맥락을 header 왼쪽에 보이고 바꾼다. 타입 `ContextSwitcherProps` ·
-  `ContextSwitcherGroupProps` · `ContextSwitcherItem` · `ContextSwitchEvent`.
-  - 트리거 38(1024 미만 44) · [아이콘 20] + 현재 값 600 + 화살표 · 최대 240 말줄임 + 툴팁 · 낭독 "<종류>: <현재 값>"(`kind`).
-    고를 것이 하나면 정적 글자("현재 <종류>: <값>"). `showKind` 로 앞말을 작게 보인다.
-  - 항목 `href` 가 있으면 링크(⌘/Ctrl·가운데 클릭 새 탭), 없으면 선택 — `onValueChange` 가 Promise 면 스피너 16 + 새 값, 실패하면 원래 값 +
-    오류 토스트(제목 "<종류>를 바꾸지 못했습니다" + 설명 "이전 <종류>를 유지합니다", 모든 폭, 닫을 때까지). 둘 다 `onBeforeSwitch(event)` 에서
-    `event.preventDefault()` 로 막는다.
-  - 패널 240~360 · 최대 높이 400(목록만 스크롤) · `allItem`("전체" 맨 위 + 구분선) · `guide`(안내 줄, 링크 하나) · 항목 8개 이상 검색
-    (`searchThreshold`, 초성) · `state` loading(스켈레톤 3줄)·error(다시 시도 `onRetry`) · 비활성 항목 + 사유 툴팁(`disabledReason`).
-  - 키보드: 화살표 · Enter · Esc 닫고 트리거로 · 첫 글자 이동(한글 초성 "ㅅ" → "스토어" — 메뉴 기본 첫 글자 검색은 초성을 몰랐다).
-  - 묶음: 사이 구분선 1×20 · 좌우 8 · 1024 미만은 둘째부터 아이콘 + 툴팁 · 그래도 넘치면 "맥락" 한 트리거로 접는다. 접힌 목록은 2단계 —
-    종류(제품·스토어)를 고르면 그 전환기 패널(검색 포함)로 들어가고, 맨 위 "‹ 종류"·← 로 돌아오며(온 줄에 초점) Esc 는 닫고 "맥락"으로.
-    전환기가 묶음에 스스로 등록하므로 앱 컴포넌트로 감싸도 된다.
-- **알림 센터 `NotificationCenter`** (상단 바 규격 4·5절 · Figma 223:977 · 223:1139 · 223:1579 · 223:2044 · DESIGN.md §24.10). 벨(알림 진입)과
-  패널을 한 부품으로 둔다. 타입 `NotificationCenterProps` · `NotificationItem`.
-  - 벨: Button ghost iconOnly 38(1024 미만 44) + CountBadge(오른쪽 끝을 벨 +6 · 위 −6 에 고정, 넓어지면 왼쪽으로) · 이름 "알림, 안 읽음 n개"
-    (+ ", 급한 알림 있음", 0·실패 "알림") · 열림 = 선택 바탕.
-  - 패널: 1024 이상 팝오버 400 · 최대 높이 min(640, 화면 − 96), 미만 오른쪽 Sheet(390 은 전체 폭) · 대화상자 "알림" · 열면 패널 자체에 초점(링 없음,
-    첫 Tab "모두 읽음") ·
-    Esc 로 벨에 복귀 · 머리 "모두 읽음"(`onMarkAllRead`)·설정(`settingsHref`)·탭 자리(`tabs`)·도구 줄(`toolbar`).
-  - 알림 한 줄(`items`): 출처(20자)·시각(방금·n분 전·어제 HH:MM·MM.DD HH:MM·YYYY.MM.DD, 툴팁 전체 일시)·제목(2줄)·건수 · 기한(등급
-    normal·soon·overdue) · 안 읽음 = 중립 점 8 + 600 · 급함 = 경고 아이콘 16 + 위험 색 기한 · 낭독 "<출처>, 급함(급할 때만), <제목>, <건수>, <기한>, <시각>, 안 읽음".
-  - 상태: `state` loading·error(`onRetry`) · 비어 있음(`emptyTitle`·`emptyDescription`) · `hasMore`·`loadingMore`·`onLoadMore` · 목록 끝 ·
-    열린 채 새 알림 `pendingCount`·`onShowPending`("새 알림 n개 · 보기", 목록이 저절로 밀리지 않는다) · `onNavigate`.
-  - 권한·폴링·등급 규칙은 넣지 않는다 — 앱이 데이터로 넘긴다.
-- **개수 표식 `CountBadge`** (상단 바 규격 3절 · Figma 223:912 · 223:955 · DESIGN.md §24.9). 높이 18 · 최소 폭 18 · 숫자 13 600 고정폭.
-  0·음수·null(불러오기 실패) 숨김 · 100 이상 "99+"(낭독 "99개 이상") · `urgent` 위험 채움 알약(Button danger 와 같은 채움 · 흰 숫자, 대비 6.47:1) +
-  알약 왼쪽 위험색 점 6 · `dot` 점 8(급함이면 바탕색 링 2px) · `unit` 낭독 단위(기본 "개").
-  타입 `CountBadgeProps`.
-- **SideNavItem `count`·`countUrgent` · TabsTrigger `count`·`countUrgent`** — 같은 CountBadge 를 쓴다. SideNav 는 `badge` 자리에 알약,
-  접힌 레일에서는 아이콘 오른쪽 위 점 8 이고 이름이 "라벨, 12개"로 개수를 읽는다. 주지 않으면 지금 모양 그대로다(`badge` 도 그대로).
+- **사용자 메뉴 조합 예시** `docs/examples/user-menu.tsx` (목표 75 1단계·1c · 상단 바 규격 7절 · Figma 211:10254 · DESIGN.md §24.7). 새 부품이
+  아니다 — DropdownMenu + Avatar + Tooltip. 트리거 1024 이상 Avatar sm + 이름(최대 160 말줄임) + 화살표 · 높이 38, 1024 미만 Avatar 만 44×44.
+  머리(Avatar md + 이름 + 조직), 항목 38(1024 미만 44), 조직 전환 하위 메뉴(현재 조직 = 표시 + 굵게 + 선택 바탕), 로그아웃은 맨 아래 위
+  구분선 · 중립 글자(`destructive` 쓰지 않음). 기준 화면 `Screens/AppHeader`, 문서 Components/AppShell `상단바` · Components/DropdownMenu
+  `메뉴-사용자메뉴`.
+  - 640 미만 조직 전환(Figma 231:1553): 하위 메뉴 대신 메뉴 안에 펼친다. 메뉴 폭 278 · 조직 항목 앞 건물 아이콘 20(Figma 의 상점 그림을
+    0.7.0 확정 때 디자인 총괄 묶음 검수로 바꿈 — 예시 데이터만) · 현재 조직은 오른쪽 체크 16 + 굵게 + 선택 바탕 · 묶음 위·아래 구분선 없음
+    (로그아웃 위만). 낭독은 `menuitemradio`·`aria-checked`·묶음 이름 '조직 전환' 그대로다. 640 이상 하위 메뉴 모양은 그대로다. 부품 변화 없음.
+  - 상단 바 전체 예시 `docs/examples/app-header.tsx` 는 전환기 2개 + 알림 센터 + 사용자 메뉴 조합이다(`Screens/AppHeader` 헤더 · 헤더 선택실패).
 
 ### 바뀐 동작 (마이그레이션)
 
-- **AppShell header 높이 64px 고정** (2026-11-25 오너 결정 · 상단 바 규격 1절 · DESIGN.md §24.7). 지금까지 header 는 세로 패딩 16 +
+- **AppShell header 높이 64px 고정** (목표 75 1단계 · 2026-11-25 오너 결정 · 상단 바 규격 1절 · DESIGN.md §24.7). 지금까지 header 는 세로 패딩 16 +
   내용 높이 + 경계 1 이었다(버튼 38 이면 71, 글자 한 줄 24 면 57). SideNav brand 행은 최소 64 라 두 아래선이 7px 어긋났고, 내용에 따라
   높이가 바뀌어 본문 시작점이 화면마다 달랐다. 이제 `block-size: var(--space-64)`(경계 1px 포함) · 세로 가운데 · 좌우 24(1024 미만 16) · 세로 패딩 0 이다.
   네 폭(1440·1024·768·390)에서 header 64 · brand 행 아래끝 − header 아래끝 = 0(하네스 `top-bar-render-verify`). 바탕·경계는 그대로다.
@@ -114,13 +133,42 @@
     `headerEnd` 로 나누고 버전 줄은 768 미만에서 숨겼다(네 폭 64 · 넘침 0 실측).
   - 화면이 바뀌는 곳: header 를 쓰는 화면은 본문 시작점이 64 로 같아진다 — 버튼 38 을 넣은 header 는 7px 위로(71 → 64), 글자 한 줄
     header 는 7px 아래로(57 → 64, QA/AppShell `긴메뉴와본문` 실측). header 없는 셸(Screens/* · `AppShellExample`)은 변화 없다.
-- **폼 하단 고정 줄이 있으면 토스트가 그 위 16 에 선다** (상단 바 규격 6절 · Figma 217:1774 · DESIGN.md §16.5.1). sonner 기본 자리는
-  바닥에서 24(600 이하 16)라 높이 63 인 FormActionBar 의 저장 버튼을 덮었다. 이제 화면에 `.ds-form-action-bar` 가 있으면 두 토스트 묶음
-  모두 바닥에서 63 + 16 = 79 다(CSS `:has`, 줄 높이 식은 FormActionBar 의 scroll-padding 과 같다). 줄이 없으면 그대로다.
-  - 앱이 할 일: 없다. 토스트 위치를 단정하던 시험만 79 로 바꾼다.
 - **토스트 닫기 버튼 32 → 1024 이상 38 · 미만 44 — 모든 토스트(행동 결과 포함)** (목표 75 1b · 상단 바 규격 P4·6절 · 2026-11-25 디자인 총괄 답 ① ·
   DESIGN.md §16.5). 누름 면적 기준(1024 이상 38 · 미만 44)에 32 가 모자랐다. 버튼 중심은 그대로 첫 줄 글자 중심이라 위가 10 → 7.75(44 면 4.75),
   오른쪽 8 · 아이콘 16 · 한 줄 토스트 높이 53.5 는 그대로다. 본문 오른쪽 비움이 48 → 54(1024 미만 60)라 긴 문구가 6~12px 먼저 줄바꿈된다.
+  - 앱이 할 일: 코드 수정은 없다. 닫기 버튼 크기·위치나 본문 줄바꿈 위치를 단정하던 시험·스냅샷만 고친다.
+- **폼 하단 고정 줄이 있으면 토스트가 그 위 16 에 선다** (목표 75 1단계 · 상단 바 규격 6절 · Figma 217:1774 · DESIGN.md §16.5.1). sonner 기본
+  자리는 바닥에서 24(600 이하 16)라 높이 63 인 FormActionBar 의 저장 버튼을 덮었다. 이제 화면에 `.ds-form-action-bar` 가 있으면 두 토스트
+  묶음(행동 결과·업무 알림) 모두 바닥에서 63 + 16 = 79 다(CSS `:has`, 줄 높이 식은 FormActionBar 의 scroll-padding 과 같다). 줄이 없으면 그대로다.
+  - 앱이 할 일: 코드 수정은 없다. 토스트 위치를 단정하던 시험만 79 로 바꾼다.
+
+### 바뀐 지침 (MCP)
+
+- **조립 항목 `app-header` — 상단 바 조립 지침** (목표 75 3단계 · 디자인 총괄 MCP 지침 초안 r1 · 규격 r1.2 10절 · DESIGN.md §24.7).
+  부품 export 가 아닌 "여러 부품을 엮는 항목"(`kind: pattern`)을 MCP 에 처음 둔다 — purpose·useWhen·dont·규칙(§24.7·§24.8) · 쓰는 이름
+  `uses`(AppShell·ContextSwitcherGroup·ContextSwitcher·NotificationCenter·CountBadge·DropdownMenu·Avatar·Button) · 조합 예시 `example`.
+  - 나가는 곳: `which_component` 후보(`kind: "pattern"` — 부품 후보 모양은 그대로) · `get_component("app-header")` 상세(3,120B) ·
+    `design://components` 새 키 `patterns`(고르는 필드만, 항목 781B / 800B). import 할 수 없어 `list_components` 에는 없다. 도구 설명 두 줄에
+    조립 항목을 적었다.
+  - 예시는 실제 공개 API 로만 쓴다: 초안의 `NotificationBell`·`UserMenu`·`Spacer`·`mode="link|select"`·`allItem`(불리언)은 공개 API 에 없어
+    `header`(ContextSwitcherGroup) · `headerEnd`(NotificationCenter → DropdownMenu + Avatar + Button 사용자 메뉴, 조직 전환은 DropdownMenuSub) ·
+    항목 `href` 유무(링크/선택) · `allItem={항목}` 으로 고쳤다. 원문은 타입 검사되는 `packages/ui/docs/examples/app-header-mcp.tsx` 표시 구간이다.
+  - MCP 를 읽는 도구가 `design://components` 의 키를 `description`·`components` 둘로 고정해 두었다면 `patterns` 가 늘었다.
+- **새 부품 네 항목과 기존 항목 한 줄씩** (목표 75 2단계·3단계 · 상단 바 규격 r1.2). ContextSwitcher·ContextSwitcherGroup·NotificationCenter·
+  CountBadge 의도 항목(purpose·useWhen·dont·규칙). 기존 항목: AppShell(header·headerEnd 64px 한 줄 — 옛 문장 "header에 사용자
+  메뉴"를 바꿈) · Toaster 2줄(`toast.notify` 등급·묶음 키 / 한 번에 하나·고정 우선·폼 하단 줄 위 16) · EmptyState·ErrorState(`size="page"`
+  두 행동) · SideNav(brand 표시 전용·숫자 개수는 SideNavItem `count` — 옛 줄 "badge로 개수 등을 표시한다"는 "badge는 글자 표시다"로) ·
+  Tabs(TabsTrigger `count`) · CountBadge(99개 이상 낭독·레일 급함 점 링). 추천 키워드: EmptyState 권한 없음·찾을 수 없음·404·access denied·
+  not found, Toaster 알림 토스트·업무 알림·화면 구석.
+  - 생성으로 들어간 API: AppShell `header` 설명과 `headerEnd` prop·슬롯 2개, EmptyState·ErrorState `size`·`secondaryAction`·`description`
+    타입, SideNavItem·TabsTrigger `count`·`countUrgent`.
+- **응답 크기(0.6.0 → 0.7.0, compact UTF-8 실측):** `design://components` 색인 26,926 → 29,274B(상한 40,000 — 새 부품 네 항목 28,296, 지침·조립 항목
+  29,274) · `list_components` 21,142 → 21,993B(상한 36,000 — 새 부품 넷뿐) · `get_component` 상세 상위 DataTable 6,118 · FormActionBar 5,490 ·
+  FieldList 5,311 · NotificationCenter 4,937B(상한 7,000). 색인은 가장 큰 가족 4개분을 예약하고 남은 자유가 2,538B(평균 가족 약 5개)다 —
+  다음 새 부품 묶음 전에 예산을 다시 볼 수 있다.
+- **`which_component` 정답 세트 198 → 214문항** (`set: r075` 상단 바 16 — 한국어 11·영어 5): top-1 180 → 195 · top-3 196 → 212 · 후보 0개 0
+  (한국어 140/155 · 153/155, 영어 55/59 · 59/59). 기존 198문항은 정답 순위가 바뀐 문항 0개, R38 1순위 기준선 439건 변화 0. 하한 176·194 → 191·210.
+  새 r075 는 top-1 15 · top-3 16("unread number pill next to a tab label" 은 3위 — Tabs 허용 정답). 보류 세트는 위 머리말.
 
 ### 내부
 
@@ -128,39 +176,35 @@
   고쳤다(목표 75 0단계). 작업 폴더 경로에 한글·공백이 있으면 `server.test` 가 멈춰 pre-commit·verify·push 가 막혔고, `run-all` 은 `spawn ENOENT`,
   `tokens-build` 는 생성 파일을 퍼센트 인코딩된 다른 폴더에 썼다. `server.test` 는 서버가 시작하다 죽어도 멈추지 않고 그 stderr 로 실패한다.
   재발은 `docs/qa/traps.test.mjs` 함정 린트가 막는다. 패키지·화면 변화 없음.
-- 하네스 `top-bar-render-verify`(85건: 라이트·다크 × 1440·1024·768·390 × 헤더 64·아래선 0·누름 38/44 · 사용자 메뉴 진짜 Tab→Enter→
-  화살표→Esc 초점 복귀·항목 38/44·조직 전환·긴 이름 툴팁 · 알림 토스트 줄 위 16·status·polite·묶음·겹침 순서 · 닫기 38/44(알림·행동 결과)·
-  이동 38/44 · State page 96·480·40·h1·행동 md/lg 수치 · 글자 대비 4.5 · 가로 넘침 0). 1b 에서 행동 결과 토스트 8건과 ①②⑦ 단정을 더했다.
-  1c 에서 640 미만 조직 전환 단정을 Figma 231:1553 으로 바꿨다(건수 그대로 85) — 메뉴 폭 278 · 상점 아이콘 20(왼쪽 12) · 이름 40 ·
-  체크 16(오른쪽 12, 현재 조직만) · 제목 칸 8/4/32·대비 · 묶음 이름 · 묶음 위·아래 구분선 없음(전체 2개). 640 이상은 예전 단정 그대로.
+- 하네스 `top-bar-render-verify` — 171건(라이트·다크 × 1440·1024·768·390, `run-plan.mjs` 에 더함).
+  - 1단계 77건: 헤더 64·아래선 0·누름 38/44 · 사용자 메뉴 진짜 Tab→Enter→화살표→Esc 초점 복귀·항목 38/44·조직 전환·긴 이름 툴팁 ·
+    알림 토스트 줄 위 16·status·polite·묶음·겹침 순서 · 이동 38/44 · State page 96·480·40·h1·행동 md/lg 수치 · 글자 대비 4.5 · 가로 넘침 0.
+  - 1b +8 = 85: 행동 결과 토스트 8건을 더하고 닫기 38/44·이동 44·State 행동 lg 단정을 새 수치로 바꿨다. 1c 는 건수 그대로 640 미만
+    조직 전환 단정을 Figma 231:1553 으로 바꿨다 — 메뉴 폭 278 · 조직 아이콘 20(왼쪽 12, 0.7.0 확정 때 상점 → 건물 `svg.lucide-building`) · 이름 40 · 체크 16(오른쪽 12, 현재 조직만) ·
+    제목 칸 8/4/32·대비 · 묶음 이름 · 묶음 위·아래 구분선 없음(전체 2개). 640 이상은 예전 단정 그대로.
+  - 2단계 +62 = 147: 전환기·벨·알림 센터·개수 표식(진짜 Tab/Esc 초점 복귀 · CDP 접근성 트리로 role·이름·aria-live · 네 폭 넘침 0).
+  - 2b +24 = 171(디자인 총괄 조건부 통과 7건 · 규격 r1.2): 벨 표식 오른쪽 끝 +6/−6 · 99+ 급함도 사용자 메뉴와 겹침 0(간격 2) · 급함 채움 + 점 6 ·
+    숫자 대비 6.47(벨·Tabs·SideNav) · 레일 급함 점 링 2px · 접힌 "맥락" 2단계(Tab→Enter→ㅅ→Enter→↑ 뒤로→온 줄 초점→→/←→ㅍ→Esc 복귀 · 둘째 단계
+    검색 ↑↓) · 실패 토스트 설명(모든 폭) · 알림 패널 초기 초점 = 패널(링 없음) → 첫 Tab 모두 읽음.
 - 기준선 갱신(1b): `list-screen-render-verify` 의 토스트 닫기 32×32 · 위 10 · 본문 비움 48 → 38×38 · 위 7.75 · 54(1440 창). 닫기 중심 허용 차이 1 → 0.5.
-- 단위 시험: `toast/notification.test.mjs`(등급·묶음 키·한 번에 하나·고정 우선·`toast.notify` 배선·기존 API 유지) ·
-  `toast/toast-size.test.mjs`(닫기 38/44 · 이동 44 토큰·경계) · `state/state-page.test.mjs`(status·h1·행동·낭독 문구 · 1024 미만 행동 = Button lg 대조) ·
-  `app-shell/header.test.mjs`(64 토큰·슬롯·header 없음).
-- 상단 바 2단계 시험: 단위 `count-badge/count.test.mjs`(0/99/100/실패 경계 · SideNav·Tabs 배선) · `context-switcher/context-switcher.test.mjs`
-  (상태 전이 · 취소 이벤트 · 첫 글자 이동 · 낭독 문구 · 정적 항목) · `notification-center/notification-center.test.mjs`(벨 이름 · 시간 표기 ·
-  한 줄 낭독 · 상태 8개). 하네스 `top-bar-render-verify` 에 전환기·벨·알림 센터·개수 표식 62건을 더했다(진짜 Tab/Esc 초점 복귀 ·
-  CDP 접근성 트리로 role·이름·aria-live · 네 폭 넘침 0) — 147건. 예시 `docs/examples/app-header.tsx` 는 이제 전환기 2개 + 알림 센터 +
-  사용자 메뉴 조합이다(`Screens/AppHeader` 헤더 · 헤더 선택실패).
-- 상단 바 2b 손질(11-25 디자인 총괄 조건부 통과 7건 · 규격 r1.2) 시험: 단위 — 급함 채움 알약·점·레일 링 CSS 토큰(`count.test`) ·
-  접힌 목록 2단계 전이(`drillReducer`)·실패 토스트 설명 문구(`context-switcher.test`) · 한 줄 낭독 "급함"·제목 초점 없음(`notification-center.test`).
-  하네스 `top-bar-render-verify` 147 → 171건: 벨 표식 오른쪽 끝 +6/−6 · 99+ 급함도 사용자 메뉴와 겹침 0(간격 2) · 급함 채움 + 점 6 · 숫자 대비 6.47
-  (벨·Tabs·SideNav) · 레일 급함 점 링 2px · 접힌 "맥락" 2단계(Tab→Enter→ㅅ→Enter→↑ 뒤로→온 줄 초점→→/←→ㅍ→Esc 복귀 · 둘째 단계 검색 ↑↓) ·
-  실패 토스트 설명(모든 폭) · 알림 패널 초기 초점 = 패널(링 없음) → 첫 Tab 모두 읽음. 스토리 `Screens/AppHeader` 헤더 벨상한급함 ·
-  `Components/ContextSwitcher` 좁은폭 검색 · `Components/CountBadge` 급함(Tabs·SideNav 포함).
-- MCP(최소 항목, 지침 본작업은 3단계): ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge 의도 항목 · 색인 26,926B → 28,296B /
-  40KB · 목록 21,142B → 21,993B / 36KB. `server.test` 목록 기준선에 네 항목을 명시적으로 더했다.
-- MCP 지침 한 줄씩(목표 75 3단계 · 상단 바 규격 r1.2): AppShell(header·headerEnd 64px 한 줄 — 옛 문장 "header에 사용자 메뉴"를 바꿈) ·
-  Toaster 2줄(`toast.notify` 등급·묶음 키 / 한 번에 하나·고정 우선·폼 하단 줄 위 16) · EmptyState·ErrorState(`size="page"` 두 행동) ·
-  SideNav(brand 표시 전용·개수는 `count`) · Tabs(TabsTrigger `count`) · CountBadge(99개 이상 낭독·레일 급함 점 링). 추천 키워드: EmptyState
-  권한 없음·찾을 수 없음·404·access denied·not found, Toaster 알림 토스트·업무 알림·화면 구석. 색인 28,296B → 29,274B / 40KB(app-header 781B / 항목 800B) ·
-  목록 21,993B 그대로 · 상세 최대 DataTable 6,118B / 7KB 그대로(app-header 상세 3,120B).
-- `which_component` 정답 세트 198 → 214문항(`set: r075` 상단 바 16 — 한국어 11·영어 5): top-1 180 → 195 · top-3 196 → 212 · 후보 0개 0.
-  기존 198문항은 정답 순위가 바뀐 문항 0개, R38 1순위 기준선 439건 변화 0. 하한 176·194 → 191·210. 생성기 검증 9(조립 항목) ·
-  `server.test`·`build.test`·`mcp-client-verify` 상단 바 검사 · 응답 대조 도구가 조립 항목 이름도 보낸다.
-- MCP: AppShell `header` 설명과 `headerEnd` prop·슬롯 2개, EmptyState·ErrorState `size`·`secondaryAction`·`description` 타입이 매니페스트에
-  생성으로 들어갔다. 지침 문장(purpose·useWhen·dont·rules)은 이번에 바꾸지 않았다(상단 바 3단계). State 행동 묶음은 `data-slot` 없이
-  클래스(`ds-state-actions`)만 둔다 — 상태 화면을 품은 DataTable 의 슬롯 목록이 MCP 기준선(R28)으로 고정돼 있어서다.
+- 단위 시험: `toast/notification.test.mjs`(등급·묶음 키·한 번에 하나·고정 우선·`toast.notify` 배선·기존 API 유지) · `toast/toast-size.test.mjs`
+  (닫기 38/44 · 이동 44 토큰·경계) · `state/state-page.test.mjs`(status·h1·행동·낭독 문구 · 1024 미만 행동 = Button lg 대조) ·
+  `app-shell/header.test.mjs`(64 토큰·슬롯·header 없음) · `count-badge/count.test.mjs`(0/99/100/실패 경계 · SideNav·Tabs 배선 · 급함 채움 알약·점·
+  레일 링 CSS 토큰) · `context-switcher/context-switcher.test.mjs`(상태 전이 · 취소 이벤트 · 첫 글자 이동 · 낭독 문구 · 정적 항목 · 접힌 목록
+  2단계 전이 `drillReducer` · 실패 토스트 설명 문구) · `notification-center/notification-center.test.mjs`(벨 이름 · 시간 표기 · 한 줄 낭독 "급함" ·
+  제목 초점 없음 · 상태 8개).
+- 스토리: `Screens/AppHeader`(헤더 · 헤더 선택실패 · 헤더 벨상한급함 · 사용자메뉴(긴 이름) · 알림토스트 일반·고정·묶음·겹침 · 행동결과토스트 ·
+  권한없음 · 찾을수없음) · Components/AppShell `상단바` · Components/State `페이지 권한없음`·`페이지 찾을수없음` · Components/Toast `토스트-알림` ·
+  Components/DropdownMenu `메뉴-사용자메뉴` · 새 `Components/ContextSwitcher`(좁은폭 검색 포함) · `Components/NotificationCenter` ·
+  `Components/CountBadge`(급함 — Tabs·SideNav 포함).
+- MCP 시험: 생성기 검증 9(조립 항목 — 예시 태그가 공개 부품이고 `uses` 에 있는지) · `server.test` 목록 기준선에 새 부품 네 항목을 명시적으로
+  더함 · `server.test`·`build.test`·`mcp-client-verify` 상단 바 검사 · 응답 대조 도구(`mcp-response-diff`)가 조립 항목 이름도 보낸다.
+  State 행동 묶음은 `data-slot` 없이 클래스(`ds-state-actions`)만 둔다 — 상태 화면을 품은 DataTable 의 슬롯 목록이 MCP 기준선(R28)으로
+  고정돼 있어서다.
+- 소개 사이트 `apps/site`(목표 69 · 로컬 전용, 배포하지 않음 — AGENTS.md "소개 사이트"). 세 패키지 밖이고 게시물에 들어가지 않는다.
+  패키지 쪽 변화는 배포 CSS 입력 변환을 `scripts/ui-styles-source.mjs` 로 뺀 것뿐이다(`build-ui.mjs` 와 사이트가 같은 변환을 쓴다 — 변환 내용은
+  그대로). `pnpm typecheck` 가 `apps/site/tsconfig.json` 도 보고, `docs/qa/site.test.mjs` 가 사이트 경계를 막으며, CI `build` job 이 `pnpm site:build`
+  를 돈다.
 
 ---
 

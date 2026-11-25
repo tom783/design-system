@@ -334,11 +334,11 @@ iframe 격리를 쓰는 스토리는 부모가 `viewMode=docs` 일 때 play 를 
 
 ## 아직 없는 것
 
-리치 텍스트 편집기 · 계층 카테고리 트리 · 칸반 보드 · 알림 센터 — P3(필요할 때).
+리치 텍스트 편집기 · 계층 카테고리 트리 · 칸반 보드 — P3(필요할 때). P3 의 알림 센터는 0.7.0 `NotificationCenter`(목표 75 상단 바)로 들어갔다.
 P1(검색 입력 R33 · 앱 셸 R34 · 페이지네이션 R35 · 옆 패널 R36 · 파일 업로드 R37)과
 P2(날짜+시간 R40 · KPI 타일 StatTile R41 · 세그먼트 R42 · 단계 표시 Steps R43)는 2026-11-22 완료.
-MCP 응답 예산은 `packages/mcp/budget.mjs` 한 곳(R49) — 0.6.0 실측 / 상한: `design://components` 선택 색인 27KB / 40KB ·
-`list_components` 21KB / 36KB · 상세 한 건 최대 6.1KB(DataTable) / 7KB(0.6.0 전 상한 6KB). 요약 응답은 가장 큰 가족 4개분 여유를 늘 남기고, 모자라면 `mcp:build` 가 실패한다(P3 4가족은 이 여유 안이다).
+MCP 응답 예산은 `packages/mcp/budget.mjs` 한 곳(R49) — 0.7.0 실측 / 상한: `design://components` 선택 색인 29KB / 40KB ·
+`list_components` 22KB / 36KB · 상세 한 건 최대 6.1KB(DataTable) / 7KB(0.6.0 전 상한 6KB). 요약 응답은 가장 큰 가족 4개분 여유를 늘 남기고, 모자라면 `mcp:build` 가 실패한다(남은 P3 3가족은 이 여유 안이다 — 0.7.0 에서 색인의 예약 뒤 자유는 평균 가족 약 5개분).
 MCP 조립 항목(`kind: pattern`, 목표 75 3단계 — 첫 항목 상단 바 `app-header`)은 `component-intent.mjs` 의 `patterns` 에 있고, 조합 예시는
 `packages/ui/docs/examples/app-header-mcp.tsx` 의 `mcp-example` 시작·끝 주석 사이를 생성기가 그대로 읽는다 — 예시를 고치면 `pnpm typecheck` 와
 `pnpm mcp:build` 를 같이 돌린다(pre-commit 이 매니페스트 동기를 막는다). 예시에 쓰는 태그는 공개 부품이고 `uses`(또는 그 부품)에 있어야 한다.

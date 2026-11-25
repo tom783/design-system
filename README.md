@@ -63,7 +63,7 @@ claude mcp add s2life -- npx -y @s2life/mcp
 ```sh
 pnpm install
 pnpm build                  # 토큰·매니페스트·ESM·선언·CSS
-pnpm version:set 0.6.0       # 세 버전·상호 의존 범위·lockfile 동시 갱신
+pnpm version:set 0.7.0       # 세 버전·상호 의존 범위·lockfile 동시 갱신
 pnpm verify                 # 기존 토큰·MCP·타입·Storybook 게이트
 pnpm qa:pack                # tarball 설치·타입·Vite·MCP·브라우저 렌더
 pnpm qa                     # 기존 QA + 배포 리허설

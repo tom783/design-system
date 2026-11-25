@@ -80,7 +80,7 @@ const intents = [
     'collapsed·onCollapsedChange는 제어형, defaultCollapsed는 비제어형이다. 접힘 상태 저장은 앱이 맡는다.',
     '펼침은 240px, 접힘은 64px다. 1024px 미만에서는 자동으로 접히고 넓어지면 사용자의 선택으로 돌아온다.',
     '접힌 항목은 호버·포커스에서 라벨을 보여준다. disabled는 출시 예정 표시와 함께 이동·Tab 탐색을 막는다.',
-    'brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.',
+    'brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge는 글자 표시다.',
     rule('brand는 지금 서비스 이름+아이콘 표시 전용이다(전환 메뉴를 넣지 않는다). 숫자 개수는 badge 대신 SideNavItem count, 접힌 레일은 점 8px다.', '24.9')
   ],['brand','brandIcon','collapsed','onCollapsedChange','defaultCollapsed'],['side-nav','side-nav-menu','side-nav-toggle'],['AppShell','PageHeader'],['사이드바','메뉴','내비게이션','사이드 메뉴','브랜드','왼쪽 메뉴']),
   part('SideNavGroup','SideNav','사이드 메뉴 항목을 제목으로 묶는다.',['label','children'],['side-nav-group','side-nav-group-label']),

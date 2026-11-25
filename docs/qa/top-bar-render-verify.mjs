@@ -5,7 +5,7 @@
 // 라이트·다크 × 1440·1024·768·390 마다 Screens/AppHeader 스토리를 열고 잰다. 캡처는 OUT 에 실제 크기로 남는다.
 //   - 헤더: 높이 64 · SideNav brand 행 아래끝과 차이 0 · 좌우 패딩 24/16 · 벨·사용자 메뉴 38(1024 미만 44) · 가로 넘침 0
 //   - 사용자 메뉴: 진짜 Tab 으로 트리거 → Enter 열림(aria-expanded) → 화살표 이동 → Esc 닫힘·트리거로 초점 복귀 · 폭 240~320 · 항목 38
-//     조직 전환 640 미만 메뉴 안 펼침(1c · Figma 231:1553): 폭 278 · 상점 아이콘 20 · 현재 조직 오른쪽 체크 16 + 굵게 + 선택 바탕 ·
+//     조직 전환 640 미만 메뉴 안 펼침(1c · Figma 231:1553): 폭 278 · 건물 아이콘 20 · 현재 조직 오른쪽 체크 16 + 굵게 + 선택 바탕 ·
 //     menuitemradio·aria-checked · 묶음 이름 '조직 전환' · 묶음 위·아래 구분선 없음(머리 아래·로그아웃 위만)
 //   - 알림 토스트: status 낭독·aria-live polite · 폼 하단 고정 줄 위 16 · 같은 묶음 건수 갱신·하나 · 저장 결과와 겹치면 알림이 위
 //   - 누름 면적(1b · 11-25 디자인 총괄 답 ①②): 닫기 버튼 모든 토스트(알림·행동 결과) 1024 이상 38 · 미만 44, 중심 = 첫 줄 글자 중심,
@@ -263,8 +263,8 @@ try {
           const checked = items.find(i => i.getAttribute('aria-checked') === 'true'), other = items.find(i => i !== checked);
           const box = el => el.getBoundingClientRect(), group = checked.closest('[role="group"]'), label = document.getElementById(group.getAttribute('aria-labelledby'));
           // 640 미만 펼침(Figma 231:1553): 아이콘·체크·이름 위치는 항목 경계에서 잰다.
-          const row = i => { const r = box(i), store = i.querySelector(':scope > svg.lucide-store'), check = i.querySelector(':scope > svg.lucide-check'), name = i.querySelector(':scope > span');
-            return { store: store && [box(store).width, box(store).height, box(store).left - r.left], name: name && box(name).left - r.left,
+          const row = i => { const r = box(i), org = i.querySelector(':scope > svg.lucide-building'), check = i.querySelector(':scope > svg.lucide-check'), name = i.querySelector(':scope > span');
+            return { org: org && [box(org).width, box(org).height, box(org).left - r.left], name: name && box(name).left - r.left,
               check: check && [box(check).width, box(check).height, r.right - box(check).right, box(check).left >= box(name).right] }; };
           const sibling = el => el?.getAttribute('role') ?? el?.dataset.slot ?? null;
           return { items: items.map(i => [i.textContent.trim(), i.getAttribute('aria-checked'), Math.round(i.getBoundingClientRect().height)]),
@@ -284,10 +284,10 @@ try {
         assert.ok(m.inside, '하위 목록이 화면 안');
         assert.ok(m.contrast >= 4.5, `대비 ${m.contrast}`);
         if (width < 640) {
-          // Figma 231:1553 — 상점 아이콘 20(왼쪽 12) · 이름 40 · 현재 조직만 오른쪽 체크 16(오른쪽 12, 이름 뒤) · 제목은 아이콘과 같은 왼쪽.
+          // Figma 231:1553 — 건물 아이콘 20(왼쪽 12, 11-25 검수로 상점에서 바꿈) · 이름 40 · 현재 조직만 오른쪽 체크 16(오른쪽 12, 이름 뒤) · 제목은 아이콘과 같은 왼쪽.
           // 라디오 부품을 쓰지 않지만 menuitemradio · aria-checked 로 선택이 그대로 읽힌다(위 items).
           const [on, off] = m.rows;
-          assert.deepEqual(on.store, [20, 20, 12], `상점 아이콘 ${on.store}`); assert.deepEqual(off.store, [20, 20, 12], `상점 아이콘 ${off.store}`);
+          assert.deepEqual(on.org, [20, 20, 12], `건물 아이콘 ${on.org}`); assert.deepEqual(off.org, [20, 20, 12], `건물 아이콘 ${off.org}`);
           assert.equal(on.name, 40); assert.equal(off.name, 40);
           assert.deepEqual(on.check, [16, 16, 12, true], `현재 조직 체크(모양 — 색만으로 알리지 않는다) ${on.check}`);
           assert.equal(off.check, null, '다른 조직은 체크 없음');

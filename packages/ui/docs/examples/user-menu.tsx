@@ -4,7 +4,7 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent,
   DropdownMenuSubTrigger, DropdownMenuTrigger, Tooltip,
 } from '../../src';
-import { Check, ChevronDown, Store } from '../../src/icons';
+import { Building, Check, ChevronDown } from '../../src/icons';
 
 /**
  * 사용자 메뉴 — 새 부품이 아니라 DropdownMenu + Avatar 조합이다(상단 바 규격 7절 · Figma 211:10254 · 390 은 231:1553).
@@ -14,7 +14,7 @@ import { Check, ChevronDown, Store } from '../../src/icons';
  *   전체 이름은 툴팁으로 본다(말줄임·아바타만일 때).
  * - 머리: Avatar md 38 + 이름 600 + 조직 이름 caption, 패딩 12, 아래 구분선.
  * - 항목 높이 38. 조직 전환은 640 이상 하위 메뉴(현재 조직 = 왼쪽 점 + 굵게 + 선택 바탕),
- *   640 미만 메뉴 안 펼침(상점 아이콘 + 이름, 현재 조직 = 오른쪽 체크 + 굵게 + 선택 바탕). 어느 쪽도 색만으로 알리지 않는다.
+ *   640 미만 메뉴 안 펼침(건물 아이콘 + 이름, 현재 조직 = 오른쪽 체크 + 굵게 + 선택 바탕). 어느 쪽도 색만으로 알리지 않는다.
  * - 로그아웃은 맨 아래, 위 구분선만 — 위험 표시(빨간 글자·휴지통)는 쓰지 않는다. `destructive` 는 삭제용이다.
  * - 폭 240~320(640 미만 278). 키보드: 화살표 이동 · Enter 선택 · Esc 로 닫으면 트리거로 초점이 돌아온다(DropdownMenu 기본).
  */
@@ -47,8 +47,9 @@ const ITEM = 'min-h-[var(--control-h-md)] max-lg:min-h-[var(--tap-min)]';
 const SELECTED = 'data-[state=checked]:bg-[var(--bg-selected)] data-[state=checked]:font-semibold';
 const ORG = `${ITEM} ${SELECTED}`;
 /**
- * 640 미만 펼친 조직 항목(Figma 231:1553): 왼쪽 여백 12 · 상점 아이콘 20(SideNav 아이콘과 같은 크기) · 간격 8 · 이름 ·
- * 현재 조직만 오른쪽 체크 16 · 오른쪽 여백 12. 아이콘이 첫 자식이라 `:first-child` 로 20 을 주고(부품 기본 16 을 이긴다) 체크는 16 그대로다.
+ * 640 미만 펼친 조직 항목(Figma 231:1553): 왼쪽 여백 12 · 건물 아이콘 20(SideNav 아이콘과 같은 크기) · 간격 8 · 이름 ·
+ * 현재 조직만 오른쪽 체크 16 · 오른쪽 여백 12. 조직 그림은 건물(`Building`)이다 — Figma 231:1553 의 상점 그림을 2026-11-25 디자인 총괄
+ * 묶음 검수에서 바꿨다. `Building2`(lucide building-complex)는 상단 바 예시의 SideNav '보고서' 가 이미 써서 피했다. 아이콘이 첫 자식이라 `:first-child` 로 20 을 주고(부품 기본 16 을 이긴다) 체크는 16 그대로다.
  */
 const ORG_ROW = `${ORG} px-3 [&>svg:first-child]:size-5`;
 /** 640 미만 메뉴 폭 — Figma 231:1553 의 278(390 화면에서 트리거 오른끝에 맞춘다). 이름이 길면 320 까지 늘어난다. */
@@ -83,14 +84,14 @@ export function UserMenuExample({ name, organization, organizations = [organizat
    * 낭독은 "조직 전환 그룹 · 운영 조직 · 선택됨" 그대로다. 묶음 위·아래 구분선은 두지 않는다 — 제목 '조직 전환' 이 가른다.
    */
   const orgRows = <DropdownMenuGroup aria-labelledby={orgLabel}>
-    {/* 제목 칸 32 = 위 8 + 행간 20 + 아래 4 — 아래를 좁혀 제목이 자기 목록에 붙는다(Figma 231:1553). 왼쪽 12 = 상점 아이콘과 같은 선. */}
+    {/* 제목 칸 32 = 위 8 + 행간 20 + 아래 4 — 아래를 좁혀 제목이 자기 목록에 붙는다(Figma 231:1553). 왼쪽 12 = 건물 아이콘과 같은 선. */}
     <DropdownMenuLabel id={orgLabel}
       className="px-3 pt-2 pb-1 text-[length:var(--text-caption)] leading-[var(--text-caption-lh)] font-medium text-fg-muted">조직 전환</DropdownMenuLabel>
     {organizations.map(item => {
       const checked = item === current;
       return <DropdownMenuItem key={item} role="menuitemradio" aria-checked={checked} data-state={checked ? 'checked' : 'unchecked'}
         className={ORG_ROW} onSelect={() => setCurrent(item)}>
-        <Store aria-hidden="true" />
+        <Building aria-hidden="true" />
         <span className="min-w-0 flex-1">{item}</span>
         {checked && <Check aria-hidden="true" />}
       </DropdownMenuItem>;
