@@ -5,7 +5,7 @@ import {
   AppShell, Card, CardBody, CardHeader, CardTitle, FieldList, FormActionBar, PageHeader, SideNav, SideNavGroup, SideNavItem,
   Toaster, toast,
 } from '../index';
-import { ChartColumn, Truck } from '../icons';
+import { ChartColumn, PackageCheck, Truck } from '../icons';
 import { appHeader } from '../../docs/examples/app-header';
 import { useShipmentItems, type ItemsState } from './field-list-fixtures';
 
@@ -18,6 +18,7 @@ import { useShipmentItems, type ItemsState } from './field-list-fixtures';
  * (카드 358 · 숫자 칸 약 150 — 레일이 있으면 약 124 라 '1개 이상 입력하세요.'가 두 줄이 된다, §11.3).
  * 상단 바 64 는 Screens/AppHeader 와 같은 묶음(docs/examples/app-header.tsx)이고 물류 화면이라 지금 제품은 물류관리다 — 사이드 brand 도
  * 지금 제품 이름 + 그 아이콘(물류관리 · Truck)으로 전환기 첫째와 같은 값이다(SideNav brand 는 지금 서비스 이름 표시 전용, 0.7.1 C2).
+ * 메뉴 항목 '출고 관리'는 brand 와 같은 Truck 을 쓰지 않고 PackageCheck 다 — 한 사이드 메뉴에 같은 아이콘이 두 번 보이지 않게(0.7.1 묶음 검수).
  * 390 서랍 셸은 '메뉴 열기' 줄 아래에 상단 바가 선다(AppShell 순서 그대로).
  */
 const meta = { title: 'Screens/ShipmentCreate', parameters: { fullBleed: true } } satisfies Meta;
@@ -34,7 +35,7 @@ function ShipmentCreateScreen({ state }: { state: ItemsState }) {
   return <AppShell {...appHeader({ product: 'logistics' })} narrowNavigation={narrow ? 'drawer' : 'rail'} sidebar={
     <SideNav brand="물류관리" brandIcon={<Truck />}>
       <SideNavGroup label="출고">
-        <SideNavItem icon={<Truck />} label="출고 관리" href="#shipments" current />
+        <SideNavItem icon={<PackageCheck />} label="출고 관리" href="#shipments" current />
         <SideNavItem icon={<ChartColumn />} label="대시보드" href="#dashboard" />
       </SideNavGroup>
     </SideNav>
