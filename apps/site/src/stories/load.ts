@@ -2,6 +2,7 @@
 // 예시를 사이트용으로 다시 쓰지 않는다 — 스토리가 바뀌면 사이트 예시도 같이 바뀐다.
 // 어느 스토리 파일이 어느 부품을 다루는지는 각 meta 의 `parameters.manifest`(Storybook 문서 페이지가 쓰는 같은 선언)로 찾는다.
 import type * as React from 'react';
+import type { StoryNote } from './roles';
 
 export type Args = Record<string, unknown>;
 export interface StoryContext {
@@ -37,6 +38,8 @@ export interface StoryModule {
   default: StoryMeta;
   /** vite.config.ts 의 storyExportOrder() 가 붙인다 — 원본 순서. */
   __namedExportsOrder?: string[];
+  /** vite-plugins/story-notes.ts 가 붙인다 — 내보내기마다 소스 신호(그리는 부품·시험용 표식). */
+  __siteStoryNotes?: Record<string, StoryNote>;
   [exportName: string]: unknown;
 }
 export interface StoryFile {

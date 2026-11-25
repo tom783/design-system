@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { Args, StoryContext, StoryFile, StoryMeta, StoryObject } from './load';
+import type { StoryFacts, StoryNote } from './roles';
 
 /**
  * CSF 스토리 하나를 React 부품으로 합친다 — Storybook 런타임 없이 사이트가 쓰는 최소한만.
@@ -19,6 +20,10 @@ export interface StoryEntry {
   story: StoryObject;
   Component: React.ComponentType;
   fullBleed: boolean;
+  /** meta.tags + story.tags */
+  tags: string[];
+  /** 소스 신호(vite-plugins/story-notes.ts) — 못 읽었으면 null */
+  notes: StoryNote | null;
 }
 
 function compose(file: StoryFile, exportName: string, story: StoryObject): StoryEntry {
@@ -41,7 +46,24 @@ function compose(file: StoryFile, exportName: string, story: StoryObject): Story
     const Inner: React.ComponentType = Current;
     Current = function StoryDecorated(): React.ReactNode { return <>{decorator(Inner, context)}</>; };
   }
-  return { id, exportName, name, meta, story, Component: Current, fullBleed: parameters.fullBleed === true };
+  const notes = file.module.__siteStoryNotes?.[exportName] ?? null;
+  return { id, exportName, name, meta, story, Component: Current, fullBleed: parameters.fullBleed === true, tags: context.tags, notes };
+}
+
+/** 예시 고르기(roles.ts)에 넘기는 신호 — 스토리 객체의 이름·설명·태그 + 소스 신호 + 파일이 선언한 manifest. */
+export function factsOf(entry: StoryEntry): StoryFacts {
+  const description = (entry.story.parameters?.docs as { description?: { story?: string } } | undefined)?.description?.story ?? null;
+  const declared = entry.meta.parameters?.manifest;
+  return {
+    exportName: entry.exportName,
+    name: entry.name,
+    description,
+    tags: entry.tags,
+    uses: entry.notes?.uses ?? null,
+    draws: entry.notes?.draws ?? null,
+    declared: Array.isArray(declared) ? declared as string[] : null,
+    marks: entry.notes?.marks ?? [],
+  };
 }
 
 const cache = new WeakMap<StoryFile, StoryEntry[]>();
@@ -54,8 +76,8 @@ const cache = new WeakMap<StoryFile, StoryEntry[]>();
 export function storiesOf(file: StoryFile): StoryEntry[] {
   const cached = cache.get(file);
   if (cached) return cached;
-  const order = file.module.__namedExportsOrder
-    ?? Object.keys(file.module).filter((key) => key !== 'default' && !key.startsWith('__'));
+  const order = (file.module.__namedExportsOrder
+    ?? Object.keys(file.module)).filter((key) => key !== 'default' && !key.startsWith('__'));
   const entries: StoryEntry[] = [];
   for (const exportName of order) {
     const value = file.module[exportName];
@@ -101,10 +123,10 @@ export function useNearViewport<T extends Element>(eager: boolean) {
   return [ref, near] as const;
 }
 
-export function StoryExample({ entry, eager = false, frame }: { entry: StoryEntry; eager?: boolean; frame?: 'screen' }) {
+export function StoryExample({ entry, eager = false, frame, role }: { entry: StoryEntry; eager?: boolean; frame?: 'screen'; role?: 'usage' | 'test' }) {
   const [ref, near] = useNearViewport<HTMLDivElement>(eager);
   const description = (entry.story.parameters?.docs as { description?: { story?: string } } | undefined)?.description?.story;
-  return <section className="site-example" aria-label={`예시: ${entry.name}`} data-story={entry.id}>
+  return <section className="site-example" aria-label={`예시: ${entry.name}`} data-story={entry.id} data-story-role={role}>
     <div className="site-example-head">
       <span className="site-example-name">{entry.name}</span>
       {description && <span className="site-caption">{description}</span>}
