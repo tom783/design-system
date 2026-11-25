@@ -1,0 +1,167 @@
+@layer components {
+  /* 알림 진입(벨) 위 개수 표식 — 아이콘 오른쪽 위 모서리에서 표식 중심이 (+6, −6)(규격 3절 · Figma 223:751 · 223:1780).
+     아이콘 20 이 버튼 가운데에 있으니 모서리는 가운데에서 (+10, −10), 표식 중심은 (+16, −16) 이다 — 38·44 둘 다 같은 식. */
+  .ds-notification-bell-count {
+    position: absolute;
+    inset-inline-start: calc(50% + var(--space-16));
+    inset-block-start: calc(50% - var(--space-16));
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* 패널 표면 — 팝오버(1024 이상)와 Sheet(미만) 공통. 머리는 제자리, 본문만 스크롤한다.
+     치수 상수(토큰 없음): 팝오버 폭 25rem(400) · 최대 높이 40rem(640). */
+  .ds-notification-center { display: flex; flex-direction: column; min-block-size: 0; color: var(--text-primary); }
+  .ds-notification-popover {
+    z-index: 50;
+    box-sizing: border-box;
+    inline-size: min(25rem, var(--radix-popover-content-available-width));
+    max-block-size: min(40rem, calc(100dvh - var(--space-96)), var(--radix-popover-content-available-height));
+    overflow: hidden;
+    border: var(--border-width) solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-overlay);
+    outline: none;
+  }
+  /* 1024 미만 오른쪽 Sheet 400, 390 처럼 400 보다 좁으면 전체 폭(규격 5절 · Figma 223:2070 · 223:2090). */
+  .ds-sheet-content.ds-notification-sheet { inline-size: 100%; max-inline-size: 25rem; }
+
+  .ds-notification-center-header { flex: none; border-block-end: var(--border-width) solid var(--border-subtle); }
+  .ds-notification-center-head { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-12) var(--space-4) var(--space-16); }
+  /* 제목 "알림" body 600 — 열면 초점이 여기로 온다(Figma 223:194 설명). */
+  /* 폭은 글자만큼 — 초점 링이 줄 전체로 늘지 않게 하고, 남는 폭은 오른쪽 여백(margin auto)이 갖는다. */
+  .ds-notification-center-title { flex: 0 1 auto; min-inline-size: 0; margin: 0 auto 0 0; font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 600; border-radius: var(--radius-sm); }
+  .ds-notification-center-actions { display: flex; flex: none; align-items: center; gap: var(--space-4); }
+  /* "모두 읽음"은 ghost sm(32)이 보이는 크기, 누름 면적은 위아래로 넓혀 38(1024 미만 44)이다(Figma '모두 읽음 · 누름 영역'). */
+  .ds-notification-center-hit { position: relative; }
+  .ds-notification-center-hit::before { content: ""; position: absolute; inset-inline: 0; inset-block: calc((var(--control-h-sm) - var(--control-h-md)) / 2); }
+  .ds-notification-center-tabs .ds-tabs-list { padding-inline: var(--space-8); }
+  .ds-notification-center-toolbar { display: flex; align-items: center; gap: var(--space-8); padding: var(--space-8) var(--space-16); }
+  .ds-notification-center-tabs + .ds-notification-center-toolbar { padding-block-start: var(--space-8); }
+
+  .ds-notification-center-body { position: relative; flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .ds-notification-center-list { margin: 0; padding: 0; list-style: none; }
+  .ds-notification-center-list-item { border-block-end: var(--border-width) solid var(--border-subtle); }
+
+  /* 알림 한 줄 — 패딩 12/16 · 최소 높이 72 · 내용 열은 점 8 + 12 뒤 36 에서 시작한다(규격 5절 · Figma 223:311).
+     아래 패딩은 8: Figma 확정 줄 높이 84 에 맞춘다(12 + 20 + 2 + 20 + 2 + 20 + 8). */
+  .ds-notification-row {
+    display: grid;
+    grid-template-columns: var(--space-8) minmax(0, 1fr);
+    column-gap: var(--space-12);
+    row-gap: var(--space-2);
+    box-sizing: border-box;
+    min-block-size: calc(var(--space-64) + var(--space-8));
+    padding: var(--space-12) var(--space-16) var(--space-8);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .ds-notification-row:hover { background: var(--bg-hover); }
+  .ds-notification-row:focus-visible { outline: var(--focus-width) solid var(--border-focus); outline-offset: calc(-1 * var(--focus-width)); }
+  .ds-notification-row-meta, .ds-notification-row-title, .ds-notification-row-detail { grid-column: 2; min-inline-size: 0; }
+  .ds-notification-row-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-8);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--text-caption-weight);
+    letter-spacing: var(--text-caption-ls);
+  }
+  .ds-notification-row-source { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); }
+  .ds-notification-row-time { flex: none; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+  /* 안 읽음 점 8 — 중립(글자색). 위험 색은 급함만 쓴다(Figma 223:979 "중립 점은 안 읽음, 경고 아이콘과 위험색은 급함"). */
+  .ds-notification-row-dot {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    inline-size: var(--space-8);
+    block-size: var(--space-8);
+    margin-block-start: calc((var(--text-body-sm-lh) - var(--space-8)) / 2);
+    border-radius: var(--radius-full);
+    background: var(--text-primary);
+  }
+  .ds-notification-row-title { grid-row: 2; display: flex; align-items: flex-start; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); font-weight: 600; }
+  .ds-notification-row[data-read] .ds-notification-row-title { font-weight: 400; }
+  .ds-notification-row-urgent { flex: none; inline-size: var(--space-16); block-size: var(--space-16); margin-block-start: var(--space-2); color: var(--status-danger-fg); }
+  .ds-notification-row-title-text { min-inline-size: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+  .ds-notification-row-detail {
+    grid-row: 3;
+    color: var(--text-secondary);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--text-caption-weight);
+    letter-spacing: var(--text-caption-ls);
+  }
+  .ds-notification-row-detail[data-level="soon"] { color: var(--status-warning-fg); }
+  .ds-notification-row-detail[data-level="overdue"] { color: var(--status-danger-fg); }
+
+  /* 열린 채 새 알림 — 목록 맨 위 고정 줄 32(규격 5절 · Figma 223:1586). 누름 면적은 아래로 넓혀 38(1024 미만 44). */
+  .ds-notification-center-pending {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    display: block;
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: var(--control-h-sm);
+    padding: 0 var(--space-16);
+    border: 0;
+    border-block-end: var(--border-width) solid var(--border-subtle);
+    background: var(--bg-sunken);
+    color: var(--text-link);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ds-notification-center-pending::after { content: ""; position: absolute; inset: 0 0 calc(var(--control-h-sm) - var(--control-h-md)); }
+  .ds-notification-center-pending:focus-visible { outline: var(--focus-width) solid var(--border-focus); outline-offset: calc(-1 * var(--focus-width)); }
+
+  .ds-notification-center-more { display: flex; justify-content: center; padding: var(--space-16); }
+  .ds-notification-center-loading-more {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-16);
+    color: var(--text-secondary);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--text-caption-weight);
+  }
+  .ds-notification-center-spinner { inline-size: var(--space-16); block-size: var(--space-16); animation: ds-notification-center-spin 1s linear infinite; }
+  /* 목록 끝 — 마지막 알림 바로 아래(Figma 223:1592). */
+  .ds-notification-center-end {
+    margin: 0;
+    padding: var(--space-12) var(--space-16);
+    color: var(--text-secondary);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--text-caption-weight);
+    letter-spacing: var(--text-caption-ls);
+  }
+  /* 로딩: 스켈레톤 4줄 — 줄 48, 표식 12 + 문구 10(Figma 223:1142). */
+  .ds-notification-center-skeleton { display: flex; align-items: center; gap: var(--space-12); block-size: calc(var(--space-48)); padding-inline: var(--space-12); }
+
+  @media (width < 1024px) {
+    /* Sheet 머리: 누름 면적 44(P4 · Figma 223:2072~2076), 탭 44. */
+    .ds-notification-center-hit::before { inset-block: calc((var(--control-h-sm) - var(--tap-min)) / 2); }
+    .ds-notification-center-tabs .ds-tabs-trigger { min-block-size: var(--tap-min); }
+    .ds-notification-center-pending::after { inset-block-end: calc(var(--control-h-sm) - var(--tap-min)); }
+  }
+  @media (prefers-reduced-motion: reduce) { .ds-notification-center-spinner { animation: none; } }
+  @keyframes ds-notification-center-spin { to { transform: rotate(360deg); } }
+}
+
+/* 비어 있음·실패 — EmptyState·ErrorState 를 패널 안 크기로(Figma 223:1159 · 223:1167): 위험 바탕 없음 · 최소 높이 없음 ·
+   제목 body 600 · 설명 caption · 다시 시도 secondary md 38(1024 미만 44). 버튼 높이는 Tailwind 유틸리티라 층 밖 규칙으로 덮는다. */
+.ds-notification-center-state.ds-state { min-block-size: 0; block-size: auto; padding: var(--space-24) var(--space-16) var(--space-32); background: none; }
+.ds-notification-center-state [data-slot="state-title"] { color: var(--text-primary); font-weight: 600; }
+.ds-notification-center-state [data-slot="state-description"] { font-size: var(--text-caption); line-height: var(--text-caption-lh); }
+.ds-notification-center-state.ds-state-error [data-slot="state-graphic"] { color: var(--status-danger-fg); }
+.ds-notification-center-state.ds-state-error [data-slot="state-graphic"] > svg { inline-size: var(--space-16); block-size: var(--space-16); }
+.ds-notification-center-state [data-slot="button"] { height: var(--control-h-md); padding-inline: calc(var(--space-12) + var(--space-2)); font-size: var(--text-body-sm); }
+@media (width < 1024px) { .ds-notification-center-state [data-slot="button"] { height: var(--tap-min); } }

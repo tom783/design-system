@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as Primitive from '../../internal/tabs';
 import { cn } from '../../lib/cn';
+import { CountBadge } from '../count-badge/count-badge';
 
 /** automatic 기본값을 유지한다. 서버 요청이 있는 패널은 앱에서 manual을 명시한다. */
 export function Tabs(props: React.ComponentProps<typeof Primitive.Root>) {
@@ -48,8 +49,18 @@ export function TabsList({ className, ref, onFocusCapture, ...props }: React.Com
     }} />;
 }
 
-export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof Primitive.Trigger>) {
-  return <Primitive.Trigger data-slot="tabs-trigger" className={cn('ds-tabs-trigger', className)} {...props} />;
+export interface TabsTriggerProps extends React.ComponentProps<typeof Primitive.Trigger> {
+  /** 개수 표식(CountBadge) — 라벨 뒤 알약. 0·음수·null(실패)은 숨김, 100 이상은 "99+". 탭 이름에 "처리 필요 3개"로 실린다. */
+  count?: number | null;
+  /** 개수 표식을 급함(위험 색 + 점)으로 그린다. */
+  countUrgent?: boolean;
+}
+
+export function TabsTrigger({ className, count, countUrgent = false, children, ...props }: TabsTriggerProps) {
+  return <Primitive.Trigger data-slot="tabs-trigger" className={cn('ds-tabs-trigger', className)} {...props}>
+    {children}
+    <CountBadge count={count} urgent={countUrgent} className="ds-tabs-count" />
+  </Primitive.Trigger>;
 }
 
 export function TabsContent({ className, ...props }: React.ComponentProps<typeof Primitive.Content>) {

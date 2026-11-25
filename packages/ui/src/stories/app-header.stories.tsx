@@ -1,15 +1,16 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { Card, CardBody, EmptyState, Field, FormActionBar, Input, PageHeader, Toaster, toast } from '../index';
+import { Card, CardBody, ContextSwitcherGroup, EmptyState, Field, FormActionBar, Input, PageHeader, Toaster, toast } from '../index';
 import { LockKeyhole, SearchX } from '../icons';
 import { AppHeaderExample } from '../../docs/examples/app-header';
+import { ProductSwitcher, StoreSwitcher } from '../../docs/examples/context-switcher';
 
 /**
- * 상단 바 1단계(목표 75) — AppShell header 64px 고정 + 사용자 메뉴 조합 + 알림 토스트 + 권한 없음·찾을 수 없음.
- * 규격: 상단 바 규칙 표 r1 1·6·7·8절 · Figma 216:1216(헤더) · 211:10253(토스트) · 211:10254(사용자 메뉴) · 211:10255(State page).
- * 왼쪽 묶음의 맥락 전환기는 2단계 새 부품이라 여기서는 정적 글자로 자리만 잡는다. 알림 벨은 기존 Button ghost iconOnly 다
- * (개수 표식 CountBadge 는 2단계). 검수 매트릭스: 라이트·다크 × 1440·1024·768·390.
+ * 상단 바(목표 75) — AppShell header 64px 고정 + 맥락 전환기 2개(ContextSwitcherGroup) + 알림 센터(벨 · CountBadge) + 사용자 메뉴 조합 +
+ * 알림 토스트 + 권한 없음·찾을 수 없음.
+ * 규격: 상단 바 규칙 표 r1 1~8절 · Figma 03 확정 223:740(1024 헤더 · 선택 실패) · 223:1766(768·390) · 223:1923(390 맥락 목록) ·
+ * 211:10253(토스트) · 211:10254(사용자 메뉴) · 211:10255(State page). 검수 매트릭스: 라이트·다크 × 1440·1024·768·390.
  */
 const meta = { title: 'Screens/AppHeader', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
@@ -46,6 +47,23 @@ export const 헤더: Story = {
     const buttons = [...root.querySelectorAll<HTMLElement>('[data-slot="app-shell-header-end"] button')];
     const rightmost = buttons.reduce((a, b) => b.getBoundingClientRect().right > a.getBoundingClientRect().right ? b : a);
     await expect(rightmost).toHaveAttribute('aria-label', '김철수, 사용자 메뉴');
+    root.dataset.playComplete = 'true';
+  },
+};
+
+/** 스토어 전환 실패(Figma 223:740) — 스토어 B 로 바꾸지 못해 이전 값인 스토어 A 로 돌아오고, 오류 토스트는 닫을 때까지 남는다. */
+export const 헤더_선택실패: Story = {
+  render: () => <><TopBarShell header={<ContextSwitcherGroup>
+    <ProductSwitcher />
+    <StoreSwitcher onValueChange={() => new Promise((_, reject) => setTimeout(() => reject(new Error('실패')), 300))} />
+  </ContextSwitcherGroup>}><CampaignEdit bar /></TopBarShell><Toaster /></>,
+  play: async ({ canvasElement: root }) => {
+    toast.dismiss();
+    const trigger = () => root.querySelector<HTMLElement>('[data-slot="context-switcher"][aria-label^="스토어"], [data-slot="context-switcher-group"][data-collapsed] [data-slot="context-switcher"]')!;
+    await userEvent.click(trigger());
+    await userEvent.click(await within(document.body).findByRole('menuitemradio', { name: '스토어 B' }));
+    await shown('스토어를 바꾸지 못했습니다');
+    await waitFor(() => expect(trigger()).not.toHaveAttribute('aria-busy'));
     root.dataset.playComplete = 'true';
   },
 };
@@ -138,7 +156,8 @@ export const 권한없음: Story = {
   </TopBarShell>,
   play: async ({ canvasElement: root }) => {
     await expectAlignedHeader(root);
-    const status = within(root).getByRole('status');
+    const status = root.querySelector<HTMLElement>('[data-slot="empty-state"]')!;
+    await expect(status).toHaveAttribute('role', 'status');
     await expect(within(status).getByRole('heading', { level: 1 })).toHaveTextContent('이 화면을 볼 권한이 없습니다');
     root.dataset.playComplete = 'true';
   },
@@ -149,7 +168,8 @@ export const 찾을수없음: Story = {
       action={{ label: '이전 화면으로', onClick: () => {} }} secondaryAction={{ label: '목록으로', href: '#campaigns' }} />
   </TopBarShell>,
   play: async ({ canvasElement: root }) => {
-    const status = within(root).getByRole('status');
+    const status = root.querySelector<HTMLElement>('[data-slot="empty-state"]')!;
+    await expect(status).toHaveAttribute('role', 'status');
     await expect(within(status).getByRole('heading', { level: 1 })).toHaveTextContent('찾을 수 없습니다');
     root.dataset.playComplete = 'true';
   },

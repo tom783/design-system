@@ -3,6 +3,8 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Slot, Slottable } from '../../internal/slot';
 import { cn } from '../../lib/cn';
 import { Tooltip } from '../guide';
+import { CountBadge } from '../count-badge/count-badge';
+import { countSpoken } from '../count-badge/count';
 import { ShellRailContext, ShellDrawerContext, useAutomaticRail } from './app-shell';
 
 const NavContext = React.createContext(false);
@@ -66,23 +68,34 @@ export interface SideNavItemProps extends React.ComponentProps<'a'> {
   icon: React.ReactNode;
   label: string;
   badge?: React.ReactNode;
+  /**
+   * 개수 표식(CountBadge). `badge`(글자)와 같은 자리에 알약으로 서고, 접힌 레일에서는 아이콘 오른쪽 위 점 8px 로 줄며
+   * 접근 이름에 "라벨, 12개"로 실린다. 0·음수는 숨김, null 은 불러오기 실패로 숨김, 100 이상은 "99+".
+   */
+  count?: number | null;
+  /** 개수 표식을 급함(위험 색 + 점)으로 그린다. */
+  countUrgent?: boolean;
   current?: boolean;
   disabled?: boolean;
   /** Next Link 등 단일 자식 링크에 스타일·이벤트·ref를 합친다. */
   asChild?: boolean;
 }
 export function SideNavItem(
-  { icon, label, badge, current = false, disabled = false, asChild = false, children, className, ref, ...props }: SideNavItemProps,
+  { icon, label, badge, count, countUrgent = false, current = false, disabled = false, asChild = false, children, className, ref, ...props }: SideNavItemProps,
 ) {
   const rail = React.useContext(NavContext);
   const closeDrawer = React.useContext(ShellDrawerContext);
   const classes = cn('ds-side-nav-item', className);
+  // 레일은 aria-label 이 내용을 대신하므로 개수를 이름에 직접 싣는다(펼친 메뉴는 알약의 낭독 글자가 이름에 붙는다).
+  const spoken = disabled ? null : countSpoken(count, countUrgent);
   const content = <>
-    <span className="ds-side-nav-icon" aria-hidden="true">{icon}</span>
+    <span className="ds-side-nav-icon" aria-hidden="true">{icon}
+      {!disabled && <CountBadge dot count={count} urgent={countUrgent} className="ds-side-nav-count-dot" />}</span>
     <span data-slot="side-nav-item-label" className="ds-side-nav-label">{label}</span>
     {/* "준비 중"은 주문 상태 칩(상품 준비 중)과 같은 말이라 한 화면에서 두 뜻이 된다. 메뉴는 "출시 예정"으로 쓴다. */}
     {disabled ? <span className="ds-side-nav-meta">{UNRELEASED}</span>
       : badge != null && <span data-slot="side-nav-badge" className="ds-side-nav-meta ds-side-nav-badge tabular">{badge}</span>}
+    {!disabled && <CountBadge count={count} urgent={countUrgent} className="ds-side-nav-count" />}
   </>;
   // 자식 라우터 링크도 렌더하지 않는다. href·핸들러·탭 순서를 남기면 비활성을 우회할 수 있다.
   if (disabled) return <Tooltip content={`${label} (${UNRELEASED})`} disabled={!rail}>
@@ -96,7 +109,7 @@ export function SideNavItem(
         props.onClick?.(event);
         if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) closeDrawer?.();
       }}
-      aria-current={current ? 'page' : undefined} aria-label={rail ? label : props['aria-label']}>
+      aria-current={current ? 'page' : undefined} aria-label={rail ? (spoken ? `${label}, ${spoken}` : label) : props['aria-label']}>
       {asChild ? <Slottable child={children}>{() => content}</Slottable> : content}
     </Component>
   </Tooltip>;

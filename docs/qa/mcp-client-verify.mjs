@@ -401,7 +401,8 @@ check('깨진 입력에 프로세스가 죽지 않는다', proc.exitCode === nul
   // R49 색인 실측 23,191B + 309B. 목록 19,873B·토큰 67,555B·규칙 4,327B 는 그대로다. 운영 상한은 budget.mjs.
   // 목표 49 FilterBar 색인 +362B·목록 +206B · BulkActionBar 색인 +341B·목록 +203B · DescriptionList 색인 +436B·목록 +199B.
   // 0.6.0 3a FieldList 색인 +669B·목록 +204B · 목표 64(0.6.0 3b) SectionHeader 색인 +736B·목록 +244B.
-  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204 + 244],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
+  // 목표 75 2단계: ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge 최소 항목 — 색인 +1,370B · 목록 +851B(build.test 와 같은 수치).
+  for (const [name, text, limit] of [['색인',catalog,23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370],['목록',list,19_950 + 206 + 203 + 199 + 212 + 204 + 244 + 851],['토큰',tokens,67_800],['규칙',rules,4_400]]) {
     const bytes = Buffer.byteLength(text);
     check(`${name} 응답 크기 회귀 상한 ${limit}B`, bytes <= limit, `${bytes}바이트`);
   }
