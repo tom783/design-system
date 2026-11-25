@@ -158,6 +158,14 @@ gh run list -R tom783/design-system --branch main --json headSha,status,conclusi
   3. `pnpm publish:check`(세 패키지 `npm publish --dry-run`, 레지스트리에 올라가지 않는다)까지만 돌린다.
 - **태그(`v<버전>`)·npm 게시·release 워크플로 실행은 하지 않는다** — 받아 쓰는 앱이 그 판을 필요로 하거나 오너가 요청할 때,
   오너 승인을 받아서만 한다. 태그는 게시된 판에만 붙인다(CHANGELOG 머리말). 게시하면 그 판 제목의 `미게시` 를 날짜로 바꾼다.
+- **게시 기록 — 0.7.0(2026-11-25 23:41 KST · 14:41Z).** main `e345d51` 을 release 워크플로(`workflow_dispatch`)로 두 번 돌렸다:
+  ① 리허설(dry-run 켬) [45614183372](https://github.com/tom783/design-system/actions/runs/45614183372) — `pnpm gate`·`npm publish --dry-run` 까지,
+  ② 실제 게시(dry-run 끔) [45624697665](https://github.com/tom783/design-system/actions/runs/45624697665) — tokens → ui → mcp.
+  둘 다 `npm-publish` 환경 필수 검토자(오너) 승인을 받고 진행했다. 인증은 신뢰 게시자(OIDC — `NODE_AUTH_TOKEN` 비어 있음, npm 게시자
+  "GitHub Actions")이고 세 패키지 모두 sigstore provenance 가 붙었다. 세 패키지의 npm `gitHead` 는 `e345d51` 이다. 그 전 게시는 0.3.0
+  (2026-11-21, run 44850936920)이고 0.4.0~0.6.0 은 따로 게시하지 않아 0.7.0 에 함께 실렸다.
+- **CHANGELOG 는 패키지 tarball 에 들어가지 않는다** — 앱 쪽 안내(올릴 때 할 일)는 저장소 CHANGELOG·루트 README 에 둔다.
+  게시 뒤 `packages/*` 의 README·package.json·소스를 고치면 게시본과 어긋나므로 다음 판 일이다.
 
 ## 상시 규칙
 

@@ -9,24 +9,115 @@
 버전은 병합마다 올리지 않고 **오너 목표가 끝날 때 한 번** 올린다(2026-11-24 오너 결정). 1.0 전에는 새 부품·공개 API 추가·
 호환 깨짐이 있으면 `0.x.0`, 고침·내부 개선만이면 `0.x.y` 다. **버전 확정은 게시가 아니다** — "미게시" 판은 태그·npm 게시 없이
 번호와 변경 기록만 확정한 것이다. 게시는 받아 쓰는 앱이 필요하거나 오너가 요청할 때 승인을 받아서만 한다(AGENTS.md "버전·릴리스").
+게시하지 않은 판의 변경은 다음 게시판에 함께 실린다 — 0.4.0·0.5.0·0.6.0 은 npm 0.7.0 에 함께 실렸다.
 
 ---
 
 ## 미출시
 
-### 고침
-
-- **Hint·Tour·Peek 를 닫자마자(~140ms) 다시 열면 포커스가 트리거에 남던 것**(`guide.css` — 열 때는 `display`·`overlay` 를 전환하지 않는다, 닫힘 모션 그대로) — CI 하네스 '포커스가 말풍선으로 이동한다' 간헐 실패(약 2%)의 원인이었다. 하네스에 전환 목록 계약 2건과 실패 근거 출력.
+(아직 없음)
 
 ---
 
-## 0.7.0 — 미게시
+## 0.7.0 — 2026-11-25
+
+run `45624697665`(리허설 `45614183372` 뒤, 같은 sha) · OIDC 신뢰 게시, sigstore provenance 포함
+(tokens `4104568972` · ui `4104572666` · mcp `4104573636`) · gitHead `e345d51`.
+
+### 0.3.0에서 0.7.0으로 올릴 때
+
+npm 에는 0.3.0 다음 판이 0.7.0 이다. 0.4.0·0.5.0·0.6.0 은 번호와 변경 기록만 확정하고 따로 게시하지 않아 그 변경이 모두 이 판에
+함께 실렸다. 0.3.0 앱이 한 번에 받는 변경 중 앱 코드·화면·시험에 닿는 것을 여기 모았다 — 문장과 수치는 각 판의 항목 그대로이고,
+괄호 안 판(0.4~0.7)의 절에 자세한 것이 있다.
+
+1. **기본 글꼴 Pretendard — 앱이 CSS 를 먼저 불러야 한다** (0.4). `--font-sans` 첫 글꼴이 IBM Plex Sans KR → Pretendard Variable 이다.
+   `npm install pretendard` 후 앱 진입점에서 `import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'` 를
+   `@s2life/ui/styles.css` **앞**에 한 번 불러온다. 불러오지 않으면 시스템 글꼴로 그려져 숫자 폭·줄바꿈이 디자인과 달라진다.
+   숫자 정렬은 본문 글꼴의 `tabular-nums`(`.tabular`), `--font-mono` 는 코드용 시스템 고정폭이다.
+2. **포커스 링: 크림슨 → 중립 고대비** (0.4). `--border-focus` 가 라이트 neutral-950 `#262222` · 다크 neutral-50 `#F7F6F5` 다. 두께 2px·
+   offset 2px 는 그대로이고, Tour·Hint 대상 링과 FileUpload 드래그 중 드롭존 테두리는 크림슨 그대로다. `--border-focus` 를 덮어쓰지
+   않았다면 코드 수정은 없다 — 포커스 상태를 담은 시각 기준선을 갱신하고, 앱이 직접 그린 포커스 표시가 브랜드 색이면 `--border-focus` 로 바꾼다.
+
+#### 코드를 바꿔야 하는 것
+
+- **DatePicker 값 알림 `onChange` → `onValueChange`** (0.5 이름 바꿈 · 0.6 옛 이름 제거). 0.3.0 에서는 `onChange` 가 유일한 이름이었다.
+  받는 값(`Date`·`DateRange`·`undefined`)과 부르는 때(확정할 때만)는 같다. TypeScript 앱은 `onChange` 를 넘기면 컴파일이 멈추고,
+  **타입 없이(JS) 넘긴 `onChange` 는 오류 없이 불리지 않는다** — JS 앱은 이름을 꼭 바꾼다.
+- **내부 도우미 12개와 딸린 타입 6개가 공개 진입점에서 빠졌다** (0.6). 0.3.0 에서 `@s2life/ui` 로 import 되던 `placeFallback`·`resolveStep`·
+  `useAnchored`·`supportsAnchor`·`nextFocusable`·`focusNextFormStop`·`shouldValidate`·`nextPhase`·`initials`·`encodeRecord`·`decodeRecord`·
+  `useElementWidth`(타입 `Rect`·`Placement`·`FocusCandidate`·`ValidationTiming`·`LoadingPhase`·`LoadingInput`)다. import 하면 TypeScript 는
+  TS2305, 번들러는 "is not exported" 로 멈춘다. 대체 방법은 0.6.0 "앱이 할 일 — 마이그레이션 표".
+- **CSS 클래스 `ds-` 접두어** (0.4). 고유 클래스 37개(`.loading-*`·`.data-table-*`·`.state`·`.state-error`·`.thumbnail`·`.avatar`)가
+  `.ds-<기존 이름>` 이다. 앱 CSS·시험이 옛 이름을 선택자로 썼다면 `ds-` 이름으로 바꾼다(가능하면 `data-slot` 으로 건다).
+- **DataTable 선택 수는 BulkActionBar 한 곳** (0.5). 도구 줄이 선택 수를 쓰지 않는다(0.3.0 의 `N개 선택`). 선택 수를 보여야 하면
+  BulkActionBar(`selectedCount={selectedIds.length}`)를 쓴다. 목록 툴바와 함께 `exportFileName` 을 썼다면 빼고, 전체 내보내기는 PageHeader
+  `actions`, 선택 행 내보내기는 바 `actions` 에서 공개 함수 `downloadCsv` 로 옮긴다.
+- **DataTable: `data` 에서 빠진 행은 선택에서 자동 해제된다** (0.4). 서버 페이징에서 페이지를 넘겨도 선택을 남기려면 선택을 앱 상태에
+  따로 보관한다. 제어형은 `onSelectedIdsChange` 가 데이터 변경만으로도 불린다는 것을 전제로 둔다.
+- **우회 코드 정리** (0.4): 표 선택 행·범위를 `--bg-selected`(`bg-selected`)로 칠했다면 `--bg-selected-row` 로 · Button 앞·뒤 아이콘
+  쌓임을 막으려 넣은 우회 CSS(svg inline·flex 등)를 지운다 · 검색 입력 앞에 직접 붙인 돋보기를 지운다(두 개가 된다) · 래퍼 폭을 앱
+  CSS 로 덮던 우회는 `className` 폭 클래스로 · 헤더 없는 카드에 직접 준 위 여백을 지운다 · Field 밖 DatePicker 아래(필터 툴바 아래)는
+  20px 이상 띄운다.
+- **번들러·MCP** (0.5): `next build --webpack` 앱은 `experimental.optimizePackageImports: ['@s2life/ui']`(Turbopack·Vite 는 없음).
+  MCP `design://components` 를 `derived` 로 복원하던 클라이언트는 `get_component` 로 상세를 받는다.
+
+#### 모든 화면에 걸리는 것 (토큰·기본 규칙)
+
+| 무엇 | 0.3.0 → 0.7.0 | 판 | 앱이 할 일 |
+|---|---|---|---|
+| 선택 배경 `--bg-selected` | 라이트 brand-50 → brand-100 · 다크 brand-975 → brand-900 | 0.4 | 없음 |
+| 표 선택 행 `--bg-selected-row`(새) | 라이트 brand-100 · 다크 `#552D32` · 달력 범위 중간도 이 값 | 0.4 | 선택 행을 `bg-selected` 로 칠했다면 `bg-selected-row` 로 |
+| 중립 칩 바탕 `--status-neutral-bg` | 라이트 `#EFECEB` → `#E1DCDB` · 다크 `#060505` → `#312D2C`(StatusChip `neutral`) | 0.4 | 덮어쓰지 않았다면 없음. neutral 칩 화면(양 테마) 기준선 갱신 |
+| 대화상자 막 | 본문 글자색 섞던 막 → `--overlay-scrim`(라이트 35% · 다크 65%) | 0.4 | 없음 |
+| 금액 칸 최소 폭 `--cell-min-w-money` | 128px → 140px | 0.4 | 이 값에 맞춘 고정 폭 레이아웃 확인 |
+
+#### 0.3.0 에 있던 부품의 모양 변화
+
+| 부품 | 무엇이 달라 보이나 | 판 |
+|---|---|---|
+| Tabs | 선택 밑줄이 기준선 위에 앉아 **탭 목록 높이가 5px 줄었다**(아래 내용이 5px 올라온다). 클래식 스크롤바가 기준선을 가리지 않는다 | 0.4 |
+| Tabs | 키보드 포커스가 선택된 탭에 오면 링의 아래 변만 밑줄과 간격 2px 위에서 끝나 밑줄이 링 아래로 보인다(`::after` 링) | 0.5 |
+| Toast | 닫기 버튼이 왼쪽 위 밖 20px 원 → 오른쪽 위 안쪽(0.4) · 1024 이상 38 · 미만 44(0.7). 본문 오른쪽 비움 54(1024 미만 60). 상태 아이콘은 첫 줄 가운데 | 0.4·0.7 |
+| Button | 앞·뒤 아이콘이 라벨 위로 쌓이던 0.3.0 게시본 결함 → 라벨과 한 줄(간격 8px · 세로 가운데) | 0.4 |
+| Input | `type="search"` 앞에 기본 돋보기(`leadingIcon={null}` 로 끈다). 폭 클래스(`w-80` 등)가 바깥 래퍼에 붙는다 | 0.4 |
+| Select·Combobox·MultiSelect | 트리거 바탕(`bg-surface`)·경계·38px 높이·꺾쇠 통일 · 활성 후보 배경 통일 · 아이콘이 섞인 메뉴의 글자 시작 정렬 · 화면 가장자리 충돌 여백 8px | 0.4 |
+| DatePicker | Field 로 감싸면 **20px 낮아진다**(오류 자리 이중 예약 해소) · 필터 툴바에서 다른 컨트롤과 높이가 맞는다 · 빠른 선택이 모드를 따른다 · 오류 문구가 고치는 법을 말한다 | 0.4 |
+| 달력 | 이번 달 날짜 `--text-primary` · 이웃 달 `--text-tertiary` | 0.4 |
+| CardBody | 헤더 없는 카드의 첫 CardBody 위 여백 16px | 0.4 |
+| StatusChip | 기준선이 라벨 글자 — 글자 줄에 놓인 칩이 1~1.5px 움직인다 | 0.5 |
+| DataTable | 도구 줄 선택 수 없음(위 "코드") · 고정 경계선은 표가 가로로 넘칠 때만 · 고정 머리 칸 바탕 = 다른 머리 칸 | 0.4·0.5 |
+| DataTable | 넘치는 표의 스크롤 영역이 Tab 으로 닿는다 — 화면 변화는 그 포커스 링뿐 | 0.6 |
+| DropdownMenu | `destructive` 글자·아이콘 색 `text-danger-ink` — 다크 팝오버 2.73:1 → 7.63:1(라이트 글자색은 같은 값) | 0.4 |
+
+#### 화면은 같고 시험만 바뀌는 것
+
+- Toast: Escape 로 닫고, 닫은 뒤 포커스는 들어오기 직전 요소(없으면 `main`)다 (0.4). 닫기 버튼 크기·위치(32 → 38/44, 위 10 → 7.75/4.75)·
+  긴 문구 줄바꿈 위치를 단정하던 시험 (0.7).
+- DataTable: 문구 `N개 선택` → 도구 줄 빈 글자(0.4·0.5) · 부분 로드 내보내기 버튼 `{N}건 내보내기`(0.4) · 넘치는 표는 Tab 정지점이
+  하나 는다(`role=region`, 이름 = caption) (0.6).
+- 필수 표시: Combobox(단일)·MultiSelect 트리거에 `button[aria-required]` 가 없다 — 라벨의 "필수 입력"이나 열린 검색 입력·목록을 본다 (0.6).
+- DatePicker 오류 문구·빠른 선택 단추 이름 (0.4).
+- Hint·Tour·Peek 를 닫자마자 다시 열어도 포커스가 말풍선으로 간다 (0.7 아래 "고침" — 화면 변화 없음).
+
+#### 새 부품 (공개 컴포넌트 102 → 125)
+
+| 판 | 부품 | 그 밖의 새 API |
+|---|---|---|
+| 0.4 (102 → 115) | `AppShell` · `SideNav`(`SideNavGroup`·`SideNavItem`) · `PageHeader` · `SheetContent`·`SheetBody` · `Pagination` · `FileUpload` · `StatTile` · `SegmentedControl` · `Steps` · `FormRow` | DatePicker `time` · Input `leadingIcon` · 토큰 `--status-neutral-*`·`--bg-selected-row`·`--overlay-scrim`·`--side-nav-*` |
+| 0.5 (115 → 119) | `FilterBar` · `BulkActionBar` · `DescriptionList` · `FormActionBar` | DataTable `summary`(합계 행) · Input `unit`(단위 접미사) |
+| 0.6 (119 → 121) | `FieldList` · `SectionHeader` | 비제어 초기값 `defaultExpanded`·`defaultValue`·`defaultSelectedIds` |
+| 0.7 (121 → 125) | `ContextSwitcher` · `ContextSwitcherGroup` · `NotificationCenter` · `CountBadge` | AppShell `headerEnd` · `toast.notify` · EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count` · 사용자 메뉴 조합 예시 `docs/examples/user-menu.tsx` |
+
+0.3.0 에 없던 부품(AppShell·SideNav·PageHeader·FormActionBar 등)을 미게시 빌드로 먼저 쓴 앱은 판 사이의 변경도 받는다 — AppShell
+header 64px 고정·가로 한 줄과 폼 하단 고정 줄 위 토스트(0.7, 아래 "앱이 할 일"), PageHeader 바깥 여백 없음·SideNav 미오픈 "출시 예정"(0.4).
+
+### 이 판에서 바뀐 것 (0.6.0 → 0.7.0)
 
 상단 바 묶음이다(목표 75). 상단 바 부품 넷 — 맥락 전환기 `ContextSwitcher`·묶음 `ContextSwitcherGroup`·알림 센터 `NotificationCenter`·
 개수 표식 `CountBadge` — 을 더하고, 기존 부품을 상단 바에 맞게 넓혔다(AppShell `headerEnd` · 알림 토스트 `toast.notify` ·
 EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공개 컴포넌트 121개 → **125개**, 새 공개 타입 9개. 사용자 메뉴는
 새 부품이 아니라 조합 예시다. MCP 에는 여러 부품을 엮는 **조립 항목**(`kind: pattern`)을 처음 두었다(`app-header`).
-새 부품·공개 API 추가·바뀐 동작이 있어 0.x.0 이다. 공개 이름을 빼거나 타입을 좁힌 것은 없다. 게시하지 않았다(태그·npm 없음).
+새 부품·공개 API 추가·바뀐 동작이 있어 0.x.0 이다. 0.6.0 에 견주어 공개 이름을 빼거나 타입을 좁힌 것은 없다(0.3.0 에서 올리는 앱은 위 절).
 
 - **바뀐 동작 2가지(아래 "바뀐 동작 (마이그레이션)"):**
   - ① **AppShell header 64px 고정 · 가로 한 줄** — 내용에 따라 달랐던 높이(버튼 38 이면 71, 글자 한 줄이면 57)가 64 로 같아졌다. 64 를
@@ -40,7 +131,7 @@ EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공�
   바뀐 문항 0개다. 하한 191 · 210 · 0 이 `pnpm test` 에 걸려 있다. 튜닝에 쓰지 않는 보류 세트 48문항은 top-1 37 → 36 · top-3 47 그대로다
   ("알림 받기 켜고 끄기" 의 1위가 Switch → NotificationCenter, Switch 는 3위).
 
-### 앱이 할 일 (요약 — 자세한 것은 각 항목)
+### 앱이 할 일 (0.6.0 → 0.7.0 요약 — 자세한 것은 각 항목)
 
 - **코드(header 를 쓰는 앱만):** 64 를 넘는 내용(두 줄로 접히는 검색·안내 문구·필터 줄)을 header 에 넣었다면 본문(PageHeader·FilterBar)으로
   옮기거나 한 줄에 들어가게 줄인다. 한 덩어리 div 로 header 를 채웠다면 그 div 는 이제 내용 폭이다 — 가득 채우려면 `flex: 1` 을 주거나,
@@ -144,6 +235,12 @@ EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공�
   묶음(행동 결과·업무 알림) 모두 바닥에서 63 + 16 = 79 다(CSS `:has`, 줄 높이 식은 FormActionBar 의 scroll-padding 과 같다). 줄이 없으면 그대로다.
   - 앱이 할 일: 코드 수정은 없다. 토스트 위치를 단정하던 시험만 79 로 바꾼다.
 
+### 고침
+
+- **Hint·Tour·Peek(안내 말풍선)를 닫자마자(~140ms) 다시 열면 포커스가 트리거에 남던 것** (`guide.css` 전환 속성 — 열 때는 `display`·`overlay` 를
+  전환하지 않는다, 닫힘 모션 그대로 · 화면 변화 없음 · main `e345d51`). CI 하네스 '포커스가 말풍선으로 이동한다' 간헐 실패(약 2%)의 원인이었다.
+  하네스에 전환 목록 계약 2건과 실패 근거 출력.
+
 ### 바뀐 지침 (MCP)
 
 - **조립 항목 `app-header` — 상단 바 조립 지침** (목표 75 3단계 · 디자인 총괄 MCP 지침 초안 r1 · 규격 r1.2 10절 · DESIGN.md §24.7).
@@ -210,15 +307,16 @@ EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공�
 
 ---
 
-## 0.6.0 — 미게시
+## 0.6.0 — npm에는 0.7.0에 함께 게시
 
 반복 입력 줄·섹션 제목 줄 두 부품을 더하고(목표 64 3a·3b), `which_component` 추천 정확도를 올리고(2a), 0.4.0·0.5.0 이
 예고한 옛 이름을 공개 API 에서 뺐다(2b). 공개 컴포넌트 119개 → **121개**(`FieldList`·`SectionHeader`). 비제어 초기값 3개를 더하고,
 필수 표시 `aria-required` 의 자리(Combobox·MultiSelect·FileUpload)와 넘치는 DataTable 스크롤 영역의 키보드 접근(3c)을 고쳤다.
-새 부품·공개 API 추가·**호환 깨짐**이 있어 0.x.0 이다. 게시하지 않았다(태그·npm 없음).
+새 부품·공개 API 추가·**호환 깨짐**이 있어 0.x.0 이다. 이 번호로는 게시하지 않았다(태그·npm 없음) — 변경은 npm 0.7.0(2026-11-25)에 함께 실렸다.
 
 - **깨지는 변경 2가지(아래 제거):** 내부 도우미 12개와 딸린 타입 6개를 공개 진입점에서 뺐고, DatePicker 의 옛 값 알림
-  `onChange` 별칭을 없앴다. 0.4.0·0.5.0 은 게시하지 않아 이 이름을 쓰는 게시본 앱은 없다 — 미게시 빌드를 먼저 받아 쓴 앱만 바꾼다.
+  `onChange` 별칭을 없앴다. 두 묶음 모두 npm 0.3.0 에 공개돼 있었다(0.3.0 은 `onChange` 가 DatePicker 값 알림의 유일한 이름) —
+  0.3.0 에서 올리는 앱도 바꾼다. *처음엔 "게시본 앱은 없다"로 적었다. 0.7.0 게시 뒤 `v0.3.0` 태그의 진입점으로 바로잡았다.*
 - **마이그레이션 표:** 아래 "앱이 할 일 — 마이그레이션 표"(옛 이름 → 새 이름·대체 방법).
 - **추천 정확도:** `which_component` 정답 세트 198문항 top-1 180 · top-3 196 · 후보 0개 0(0.5.0 은 그중 186문항에서 top-1 96/184 ·
   top-3 129/184 · 후보 0개 28/186). 하한 176 · 194 · 0 이 `pnpm test` 에 걸려 있다.
@@ -424,13 +522,13 @@ EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공�
 
 ---
 
-## 0.5.0 — 미게시
+## 0.5.0 — npm에는 0.7.0에 함께 게시
 
 목록 화면 툴바(필터 바·일괄 작업 바)·설명 목록·폼 하단 고정 액션 줄·표 합계 행·입력 단위 접미사를 더하고(목표 49·57),
 공개 API 규약을 정리하고, 앱이 받는 번들을 쓴 부품만큼으로 줄였다. 공개 컴포넌트 115개 → **119개**
 (`FilterBar`·`BulkActionBar`·`DescriptionList`·`FormActionBar`). 바이브코딩 도그푸딩 6(AI 가 사람 손 없이 목록·상세·등록·
 대시보드 4화면)에서 찾은 작은 고침과 화면 조립 지침까지 담았다. 새 부품·공개 API 추가가 있어 0.x.0 이다.
-앱 코드나 시각 기준선에 닿는 변경은 **바뀐 동작(마이그레이션)** 에 모았다. 게시하지 않았다(태그·npm 없음).
+앱 코드나 시각 기준선에 닿는 변경은 **바뀐 동작(마이그레이션)** 에 모았다. 이 번호로는 게시하지 않았다(태그·npm 없음) — 변경은 npm 0.7.0(2026-11-25)에 함께 실렸다.
 
 ### 앱이 할 일 (요약 — 자세한 것은 각 항목)
 
@@ -696,7 +794,7 @@ EmptyState·ErrorState `size="page"` · SideNavItem·TabsTrigger `count`). 공�
 
 ---
 
-## 0.4.0 — 미게시
+## 0.4.0 — npm에는 0.7.0에 함께 게시
 
 앱 화면의 뼈대(앱 셸·페이지네이션·옆 패널)와 입력·표시 부품 여섯 가지를 더하고, 도그푸딩 2~5와
 2026-11-22 디자인 검토에서 찾은 시각·동작을 고쳤다. 공개 컴포넌트 102개 → **115개**.

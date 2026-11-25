@@ -2,6 +2,8 @@
 
 B2B 커머스 SaaS용 토큰·React 컴포넌트·읽기 전용 MCP 서버를 세 패키지로 배포한다. 세 패키지는 항상 같은 버전으로 배포한다. React와 React DOM은 소비 앱이 제공한다(Node.js 22 이상).
 
+**0.3.0에서 올리는 앱:** npm에는 0.3.0 다음 판이 0.7.0이라 0.4.0~0.6.0의 변경이 한 번에 온다. 기본 글꼴 Pretendard CSS를 앱이 먼저 불러야 하고 DatePicker `onChange`가 `onValueChange`로 바뀌었다 — [변경 기록 0.7.0 「0.3.0에서 0.7.0으로 올릴 때」](CHANGELOG.md#030에서-070으로-올릴-때)를 먼저 본다.
+
 ## 기본 설치: Tailwind 없이 사용
 
 ```sh
