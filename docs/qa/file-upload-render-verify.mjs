@@ -172,6 +172,30 @@ try {
     await story('사용법'); await count(0);
     assert.equal(await ev(`${all('[data-slot="thumbnail-image"]')}.length`), 0);
   });
+  // 0.7.1 디자인 총괄 규칙: 줄 좌우 안쪽 12(삭제는 버튼 상자 기준, 아이콘 끝은 20), 구분선은 줄 전체 폭. 네 상태 모두.
+  await check('파일 목록 줄 좌우 12 안에 썸네일·삭제 상자·진행·오류, 구분선 전체 폭(네 상태 × 두 테마 × 1440·390)', async () => {
+    try {
+      for (const theme of ['light', 'dark']) for (const width of [1440, 390]) {
+        await cdp('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width < 1024 });
+        const rows = [];
+        for (const name of ['여러파일', '거절']) {
+          await story(name, theme);
+          if (name === '거절') await inject([imagePath]);
+          await count(name === '거절' ? 1 : 3);
+          rows.push(...await ev(`[...${all(slot('item'))}].map(li => {
+            const row = li.getBoundingClientRect(), del = [...li.querySelectorAll(':scope > button')].at(-1).getBoundingClientRect();
+            const inside = n => { if (!n) return true; const b = n.getBoundingClientRect(); return b.left - row.left >= 12 - 0.5 && row.right - b.right >= 12 - 0.5; };
+            return { state: li.querySelector('[data-slot="status-chip"]').textContent.trim(), left: li.firstElementChild.getBoundingClientRect().left - row.left,
+              right: row.right - del.right, deleteBox: del.width, divider: li.offsetWidth === li.parentElement.offsetWidth && getComputedStyle(li).borderBottomWidth === '1px',
+              inner: [li.querySelector('[role="progressbar"]'), li.querySelector('[data-slot="progress-percent"]'), li.querySelector('[data-slot="file-upload-item-error"]')].every(inside) };
+          })`));
+        }
+        assert.deepEqual(rows.map(r => r.state).sort(), ['업로드 실패', '업로드 완료', '업로드 중', '전송 대기'].sort(), `${theme} ${width} 네 상태`);
+        for (const r of rows) assert.deepEqual({ left: r.left, right: r.right, deleteBox: r.deleteBox, divider: r.divider, inner: r.inner },
+          { left: 12, right: 12, deleteBox: 32, divider: true, inner: true }, `${theme} ${width} ${r.state}`);
+      }
+    } finally { await cdp('Emulation.clearDeviceMetricsOverride'); }
+  });
   await check('업로드 진행률은 파일명을 한 번만 보여주고 접근성 이름과 퍼센트를 보존한다', async () => {
     await story('여러파일'); await count(3);
     const item = `${q('[role="progressbar"]')}.closest('[data-slot="file-upload-item"]')`;
