@@ -20,18 +20,18 @@ test('등급: 일반은 기본 8초·앱이 준 시간, 고정은 닫을 때까�
 test('묶음 키: 같은 키가 떠 있으면 새 토스트 대신 건수만 더한다(같은 id)', () => {
   const next = ids();
   const first = nextNotification(null, false, { groupKey: 'cancel:A' }, next);
-  assert.deepEqual(first, { id: 'n1', groupKey: 'cancel:A', count: 1 });
+  assert.deepEqual(first, { id: 'n1', groupKey: 'cancel:A', count: 1, level: 'normal' });
   const second = nextNotification(first, true, { groupKey: 'cancel:A', count: 2 }, next);
-  assert.deepEqual(second, { id: 'n1', groupKey: 'cancel:A', count: 3 }, '1건 → 3건(Figma 216:1628)');
+  assert.deepEqual(second, { id: 'n1', groupKey: 'cancel:A', count: 3, level: 'normal' }, '1건 → 3건(Figma 216:1628)');
 });
 
 test('한 번에 하나: 다른 키·키 없음은 같은 자리를 바꾸고 건수를 새로 센다', () => {
   const next = ids();
   const a = nextNotification(null, false, { groupKey: 'cancel:A', count: 4 }, next);
   const b = nextNotification(a, true, { groupKey: 'refund:A' }, next);
-  assert.deepEqual(b, { id: 'n1', groupKey: 'refund:A', count: 1 }, '두 번째 토스트를 쌓지 않는다');
+  assert.deepEqual(b, { id: 'n1', groupKey: 'refund:A', count: 1, level: 'normal' }, '두 번째 토스트를 쌓지 않는다');
   const c = nextNotification(b, true, {}, next);
-  assert.deepEqual(c, { id: 'n1', groupKey: undefined, count: 1 });
+  assert.deepEqual(c, { id: 'n1', groupKey: undefined, count: 1, level: 'normal' });
   const d = nextNotification(c, true, {}, next);
   assert.equal(d.count, 1, '키가 없으면 합치지 않는다');
 });
@@ -40,19 +40,48 @@ test('사라진 뒤 오는 알림은 새 id — 닫히는 중인 토스트를 �
   const next = ids();
   const a = nextNotification(null, false, { groupKey: 'k' }, next);
   const b = nextNotification(a, false, { groupKey: 'k' }, next);
-  assert.deepEqual(b, { id: 'n2', groupKey: 'k', count: 1 });
+  assert.deepEqual(b, { id: 'n2', groupKey: 'k', count: 1, level: 'normal' });
+});
+
+test('고정이 떠 있으면 일반은 띄우지 않는다(null) — 고정은 그대로, 묶음 키가 같아도 건수를 더하지 않는다(규격 6절 · 답 ⑩)', () => {
+  const next = ids();
+  const pinned = nextNotification(null, false, { groupKey: 'refund:A', level: 'pinned' }, next);
+  assert.deepEqual(pinned, { id: 'n1', groupKey: 'refund:A', count: 1, level: 'pinned' });
+  assert.equal(nextNotification(pinned, true, { groupKey: 'cancel:A' }, next), null, '다른 키의 일반');
+  assert.equal(nextNotification(pinned, true, { groupKey: 'refund:A', count: 2 }, next), null, '같은 키의 일반도 고정에 합치지 않는다');
+  assert.equal(nextNotification(pinned, true, {}, next), null, '등급을 주지 않으면 일반');
+  assert.equal(nextNotification(pinned, true, { level: 'normal' }, next), null);
+  // 띄우지 않은 일반은 id 를 쓰지 않는다 — 다음 고정도 같은 자리를 이어 쓴다.
+  const again = nextNotification(pinned, true, { groupKey: 'refund:A', level: 'pinned' }, next);
+  assert.deepEqual(again, { id: 'n1', groupKey: 'refund:A', count: 2, level: 'pinned' }, '고정 → 고정은 같은 키면 건수를 더한다');
+  const other = nextNotification(again, true, { groupKey: 'stock:A', level: 'pinned' }, next);
+  assert.deepEqual(other, { id: 'n1', groupKey: 'stock:A', count: 1, level: 'pinned' }, '고정 → 다른 고정은 자리를 바꾼다(한 번에 하나)');
+});
+
+test('일반 → 고정은 자리를 바꾸고, 고정이 사라진 뒤 오는 일반은 새 id 로 뜬다', () => {
+  const next = ids();
+  const normal = nextNotification(null, false, { groupKey: 'cancel:A' }, next);
+  const pinned = nextNotification(normal, true, { groupKey: 'refund:A', level: 'pinned' }, next);
+  assert.deepEqual(pinned, { id: 'n1', groupKey: 'refund:A', count: 1, level: 'pinned' }, '고정이 일반 자리를 차지한다');
+  const merged = nextNotification(normal, true, { groupKey: 'cancel:A', level: 'pinned' }, next);
+  assert.deepEqual(merged, { id: 'n1', groupKey: 'cancel:A', count: 2, level: 'pinned' }, '같은 키면 건수를 더하고 고정이 된다');
+  const after = nextNotification(pinned, false, { groupKey: 'cancel:A' }, next);
+  assert.deepEqual(after, { id: 'n2', groupKey: 'cancel:A', count: 1, level: 'normal' }, '닫힌 고정 뒤에는 일반이 뜬다');
 });
 
 test('건수는 1 이상 정수로 센다', () => {
   const next = ids();
   for (const [count, expected] of [[undefined, 1], [0, 1], [-3, 1], [2.7, 2], [Number.NaN, 1]]) {
-    assert.equal(nextNotification(null, false, { count }, next).count, expected, String(count));
+    assert.equal(nextNotification(null, false, { count }, next)?.count, expected, String(count));
   }
 });
 
 test('toast.notify 배선: 알림 Toaster·등급·제목 함수·status 낭독·기존 API 유지', async () => {
   const root = fileURLToPath(new URL('../../../../../', import.meta.url));
   const server = await createServer({ root, configFile: false, logLevel: 'silent', server: { middlewareMode: true }, appType: 'custom' });
+  // sonner 의 dismiss(id) 는 rAF 로 알린다 — Node 에는 없어 타이머로 대신한다(닫힌 표시는 그 전에 동기로 붙는다).
+  globalThis.requestAnimationFrame ??= callback => setTimeout(callback, 0);
+  globalThis.cancelAnimationFrame ??= clearTimeout;
   try {
     const { toast } = await server.ssrLoadModule('/packages/ui/src/components/toast/toast.tsx');
     const history = () => toast.getHistory();
@@ -82,9 +111,21 @@ test('toast.notify 배선: 알림 Toaster·등급·제목 함수·status 낭독�
     item = find(id);
     assert.equal(item.duration, Infinity);
     assert.equal(item.className, 'ds-toast-notice ds-toast-pinned');
-    // 고정 → 일반으로 바뀌면 앞 값이 남지 않는다.
-    toast.notify({ title: '새 문의 1건' });
-    item = find(id);
+    // 고정이 떠 있으면 일반은 띄우지 않는다(답 ⑩): 고정은 그대로 남고, 돌려준 id 는 화면에 없어 dismiss 해도 고정이 닫히지 않는다.
+    const historyBefore = history().length;
+    const skipped = toast.notify({ source: '판매관리 · 스토어 A', title, groupKey: 'cancel:A' });
+    assert.notEqual(skipped, id);
+    assert.equal(history().length, historyBefore, 'sonner 에 아무것도 보내지 않는다');
+    const notices = () => toast.getToasts().filter(t => t.toasterId === 'ds-notification');
+    assert.deepEqual(notices().map(t => [t.id, t.className]), [[id, 'ds-toast-notice ds-toast-pinned']]);
+    assert.equal(find(id).title.props.title, '환불 실패 1건', '고정 토스트 글자 그대로');
+    toast.dismiss(skipped);
+    assert.deepEqual(notices().map(t => t.id), [id], '띄우지 않은 id 를 닫아도 고정은 남는다');
+    // 고정을 닫으면 다음 일반은 새 id 로 뜨고 앞 값(시간·톤)이 남지 않는다.
+    toast.dismiss(id);
+    const fresh = toast.notify({ title: '새 문의 1건' });
+    assert.notEqual(fresh, id);
+    item = find(fresh);
     assert.equal(item.duration, 8000);
     assert.equal(item.className, 'ds-toast-notice');
     // 기존 API 는 그대로(추가만): 오류 무한·alert, 성공 status.

@@ -36,7 +36,10 @@ export interface NotificationToastOptions {
   linkLabel?: string;
   /** 이동 직전에 불린다. 앱 라우터로 옮기거나 저장하지 않은 입력을 확인할 때 `event.preventDefault()` 한다. */
   onNavigate?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
-  /** `normal`: duration 뒤 사라짐(기본 8초) · `pinned`: 닫을 때까지 남는다(오류 토스트와 같은 방식 · 위험 톤). */
+  /**
+   * `normal`: duration 뒤 사라짐(기본 8초) · `pinned`: 닫을 때까지 남는다(오류 토스트와 같은 방식 · 위험 톤).
+   * 고정 알림이 떠 있는 동안 온 `normal` 은 토스트로 띄우지 않는다 — 고정은 그대로 남는다. 그 알림의 기록(알림 센터)·벨 건수는 앱이 갖는다.
+   */
   level?: 'normal' | 'pinned';
   /** 묶음 키. 같은 키의 알림 토스트가 떠 있으면 새 토스트 대신 건수만 더한다. */
   groupKey?: string;
@@ -69,22 +72,25 @@ function NotificationBody({ source, title, href, linkLabel, onNavigate, id }:
 
 /**
  * 알림 토스트를 띄운다. 한 번에 하나다 — 떠 있는 알림이 있으면 새로 쌓지 않고 그 자리를 바꾼다(같은 묶음 키면 건수만 더한다).
- * 돌려주는 id 로 `toast.dismiss(id)` 할 수 있다.
+ * 단, 고정(pinned) 알림이 떠 있으면 일반 알림은 띄우지 않는다(규격 6절) — 이때 돌려주는 id 는 화면에 없는 새 id 라
+ * `toast.dismiss(id)` 해도 고정 알림이 닫히지 않는다. 돌려주는 id 로 `toast.dismiss(id)` 할 수 있다.
  */
 function notify(options: NotificationToastOptions) {
   const previous = currentNotification;
   const active = previous !== null && sonnerToast.getToasts().some(item => item.id === previous.id);
-  const slot = nextNotification(previous, active, options, () => `ds-notification-${++notificationSequence}`);
+  const createId = () => `ds-notification-${++notificationSequence}`;
+  const slot = nextNotification(previous, active, options, createId);
+  if (slot === null) return createId();
   currentNotification = slot;
   const { id, count } = slot;
-  const pinned = options.level === 'pinned';
+  const pinned = slot.level === 'pinned';
   const title = typeof options.title === 'function' ? options.title(count) : options.title;
   // 같은 id 로 다시 부르면 sonner 가 그 토스트를 제자리에서 바꾸고 타이머를 처음부터 다시 잰다.
-  // 모양(className·아이콘·시간)은 매번 모두 넘긴다 — 고정 → 일반으로 바뀌어도 앞 값이 남지 않게.
+  // 모양(className·아이콘·시간)은 매번 모두 넘긴다 — 일반 → 고정으로 바뀌어도 앞 값이 남지 않게.
   sonnerToast(<NotificationBody id={id} source={options.source} title={title} href={options.href}
     linkLabel={options.linkLabel ?? '이동'} onNavigate={options.onNavigate} />, {
     id, toasterId: NOTIFICATION_TOASTER, closeButton: true,
-    duration: notificationDuration(options.level, options.duration),
+    duration: notificationDuration(slot.level, options.duration),
     icon: pinned ? <CircleAlert aria-hidden="true" /> : <Bell aria-hidden="true" />,
     className: pinned ? 'ds-toast-notice ds-toast-pinned' : 'ds-toast-notice',
   });
