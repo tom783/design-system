@@ -183,6 +183,70 @@ try {
     });
     await check(`레이어 실행 중 콘솔 오류 없음 ${theme}`, () => { assert.deepEqual(browser.errors().filter(m=>!/Warning:|DevTools|favicon|preload/i.test(m)),[]); });
   }
+  // 0.7.1 A-3: Dialog·Sheet(같은 ModalContent, 막·내용 z-index 50) 안에서 연 떠 있는 층이 창 위에 그려지는지.
+  // Radix popper 감싸개는 내용의 z-index 를 물려받으므로 내용에 z-index 가 없으면 auto 라 창 아래로 깔렸다(Combobox·MultiSelect).
+  // 판정은 hit-test(elementFromPoint = 그려진 맨 위 요소)로 층의 다섯 점 + 실제 포인터로 고르기 + 휠 스크롤.
+  for (const container of ['dialog', 'sheet']) {
+    await check(`모달(${container}) 안 떠 있는 층 6종이 창 위·실제 포인터로 고름·목록 휠 스크롤`, async () => {
+      const r = await open('qa-layerdetails--모달안떠있는층', { extra: '&globals=theme:light' });
+      assert.equal(r.sbError, null); assert.deepEqual(r.errors, []);
+      await click(`[data-probe="open-${container}"]`);
+      await wait(`${q('[role="dialog"] [data-probe="floaters"]')} !== null`); await sleep(300);
+      const inModal = selector => `[role="dialog"] ${selector}`;
+      const m = {};
+      // 층을 연 즉시 판정한다 — 가려진 채 다음 클릭으로 가면 막을 눌러 창이 닫히고 엉뚱한 오류가 난다.
+      const top = async (name, content) => {
+        await wait(`${q(content)}?.getBoundingClientRect().width > 0`); await sleep(250);
+        const v = await ev(`(() => { const c=${q(content)}, b=c.getBoundingClientRect(), wrap=c.closest('[data-radix-popper-content-wrapper]') ?? c;
+          const pts=[[b.left+b.width/2,b.top+b.height/2],[b.left+4,b.top+4],[b.right-4,b.top+4],[b.left+4,b.bottom-4],[b.right-4,b.bottom-4]];
+          const hits=pts.map(([x,y]) => { const h=document.elementFromPoint(x,y); return c.contains(h) ? 'layer' : (h?.closest('[role="dialog"]') ? 'modal' : h?.closest('[data-slot="dialog-overlay"]') ? 'overlay' : (h?.dataset.slot ?? h?.tagName)); });
+          const modal=document.querySelector('[role="dialog"]').getBoundingClientRect();
+          return { hits, wrapperZ:getComputedStyle(wrap).zIndex, modalZ:getComputedStyle(document.querySelector('[role="dialog"]')).zIndex,
+            overlapsModal: b.left < modal.right && b.right > modal.left && b.top < modal.bottom && b.bottom > modal.top }; })()`);
+        m[name] = v;
+        if (v.hits.some(hit => hit !== 'layer')) await browser.shot(`in-${container}-${name}-covered`);
+        assert.deepEqual(v.hits, ['layer', 'layer', 'layer', 'layer', 'layer'], `${name} 층이 창에 가려짐 ${JSON.stringify(v)}`);
+        assert.equal(v.wrapperZ, v.modalZ, `${name} 층 z-index 는 모달과 같은 50(새 값 없음) ${JSON.stringify(v)}`);
+      };
+      const wheel = async (list) => {
+        const p = await ev(`(() => { const b=${q(list)}.getBoundingClientRect(); return {x:b.left+b.width/2,y:b.top+b.height/2}; })()`);
+        await cdp('Input.dispatchMouseEvent', { type: 'mouseWheel', x: p.x, y: p.y, deltaX: 0, deltaY: 160 }); await sleep(250);
+        return ev(`${q(list)}.scrollTop`);
+      };
+      // Select
+      await click(inModal('[data-probe="m-select"]')); await top('select', '[data-slot="select-content"]');
+      await act.pointerClick('[data-slot="select-item"]:nth-child(2)');
+      await wait(`${q(inModal('[data-probe="m-select"]'))}.textContent.includes('부산지점')`);
+      // Combobox 단일 — 실제 포인터로 셋째 항목
+      await click(inModal('[data-slot="combobox-trigger"]')); await top('combo', '[data-slot="combobox-content"]');
+      m.comboWheel = await wheel('[data-slot="combobox-list"]');
+      await act.pointerClick('[data-slot="combobox-option"][title="창고 12"]');
+      await wait(`${q(inModal('[data-probe="m-values"]'))}.textContent.startsWith('w11 |')`);
+      // Combobox 다중 — 입력이 곧 트리거
+      await click(inModal('[data-slot="combobox-multiple-control"] input')); await top('tags', '.ds-combobox-multiple-content');
+      await act.pointerClick('.ds-combobox-multiple-content [data-slot="combobox-option"][title="창고 02"]');
+      await wait(`${q(inModal('[data-probe="m-values"]'))}.textContent.includes('| w1 |')`);
+      await key('Escape', 27); await wait(`!${q('.ds-combobox-multiple-content')}`);
+      // MultiSelect
+      await click(inModal('[data-slot="multi-select-trigger"]')); await top('multi', '[data-slot="multi-select-content"]');
+      m.multiWheel = await wheel('[data-slot="multi-select-list"]');
+      await act.pointerClick('[data-slot="multi-select-option"][title="창고 15"]');
+      await wait(`${q(inModal('[data-probe="m-values"]'))}.textContent.includes('w14')`);
+      await key('Escape', 27); await wait(`!${q('[data-slot="multi-select-content"]')}`);
+      // DropdownMenu
+      await click(inModal('[data-probe="m-menu"]')); await top('menu', '[data-slot="dropdown-menu-content"]');
+      await key('Escape', 27); await wait(`!${q('[data-slot="dropdown-menu-content"]')}`);
+      // DatePicker 달력
+      await click(inModal('button[aria-label="달력 열기"]')); await top('calendar', '[data-slot="popover-content"]');
+      await act.pointerClick('button[data-slot="calendar-day"][data-day="2026-11-12"]');
+      await wait(`${q(inModal('[data-probe="m-values"]'))}.textContent.trim().endsWith('| 12')`);
+      await browser.shot(`in-${container}-after-pick`);
+      assert.ok(m.comboWheel > 0 && m.multiWheel > 0, `창 안 목록 휠 스크롤 ${m.comboWheel}/${m.multiWheel}`);
+      // 층을 닫아도 창은 열려 있다(Escape 는 맨 위 층만 닫는다).
+      assert.equal(await ev(`!!${q('[role="dialog"] [data-probe="floaters"]')}`), true);
+      return m;
+    });
+  }
 } finally {
   writeFileSync(`${OUT}/results.json`,JSON.stringify(results,null,2)); browser.close();
 }
