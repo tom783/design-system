@@ -6,7 +6,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
   Button, Card, CardBody, CardHeader, CardTitle, DataTable, DescriptionList, DropdownMenu, DropdownMenuContent,
-  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, PageHeader, Pagination, StatusChip, Toaster,
+  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, PageHeader, Pagination, SectionHeader, StatusChip, Toaster,
   createDataTableColumnHelper, toast, type DataTableSummaryRow,
 } from '../index';
 import { Copy, Ellipsis, Printer } from '../icons';
@@ -21,6 +21,7 @@ import { StoreShell, won } from './screens-shell';
  * 주문 상품 표 — 열 합계(수량·금액)는 DataTable summary(tfoot, §4.3 · 규칙 표 T-1~T-12)이고, 표 열이 아닌 금액 내역
  * (배송비 → 결제 금액)은 표 아래 DescriptionList align=end 다(TD-1 A). 내역 값 끝 = 금액 열 글자 끝(표 오른끝 안쪽 15),
  * 합계 행이 있으므로 내역에 '상품 합계'를 다시 쓰지 않는다. 표가 가로로 스크롤되면 금액 열을 오른쪽에 고정한다(TD-2 A).
+ * 주문 상품 섹션 머리는 SectionHeader(DESIGN §24.6) — 동작 없는 제목 + 개수('주문 상품 3', 숫자만 S-4). 셸은 상단 바 64.
  */
 const meta = { title: 'Screens/OrderDetail', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
@@ -68,8 +69,7 @@ function OrderItems({ variant = 'default' }: { variant?: Variant }) {
     { label: `전체 합계 · ${manyItems.length.toLocaleString('ko-KR')}건`, values: { qty: manyTotal.qty.toLocaleString('ko-KR'), sum: won(manyTotal.amount) } },
   ] : [{ label: '합계', values: { qty: String(qtyTotal), sum: won(subtotal) } }];
   const count = variant === 'paged' ? manyItems.length : data.length;
-  return <section aria-labelledby="order-items" className="flex min-w-0 flex-col gap-3">
-    <h2 id="order-items" className="text-[length:var(--text-title-sm)] leading-[var(--text-title-sm-lh)] font-semibold">주문 상품 <span className="tabular">{count.toLocaleString('ko-KR')}</span>건</h2>
+  return <SectionHeader title="주문 상품" count={count} data-screen="order-items">
     {/* 금액 열은 늘 고정한다(TD-2 A). 고정선은 표가 가로로 넘칠 때만 보인다 — 넘치지 않는 1440 에는 세로선이 없다. */}
     <div className="min-w-0">
       <DataTable data={data} columns={columns} getRowId={item => item.id} align={{ qty: 'end', price: 'end', sum: 'end' }}
@@ -83,7 +83,7 @@ function OrderItems({ variant = 'default' }: { variant?: Variant }) {
     {(variant === 'default' || variant === 'selection') && <DescriptionList align="end" data-screen="totals"
       className="ml-auto mr-[calc(var(--cell-px)+var(--border-width))]" items={[
         { label: '배송비', value: won(0) }, { label: '결제 금액', value: won(subtotal), emphasis: true }]} />}
-  </section>;
+  </SectionHeader>;
 }
 
 function OrderDetailScreen({ menuOpen = false, confirmOpen = false, variant = 'default' }: Props) {

@@ -1,9 +1,9 @@
 /**
  * Screens 스토리 공통 — 셸과 가상 주문 데이터.
  *
- * 정식 부품(AppShell·SideNav)만 조립한다. 스토리 전용 CSS·덮어쓰기는 두지 않는다 —
+ * 정식 부품(AppShell·SideNav)과 상단 바 예시(docs/examples/app-header.tsx)만 조립한다. 스토리 전용 CSS·덮어쓰기는 두지 않는다 —
  * 화면이 부품 기본값 그대로 어떻게 보이는지가 이 스토리의 목적이다.
- * 기준: 2026-11-22 화면 시안(목록 T34·상세 D2·대시보드) 디자인 검토 확정안.
+ * 기준: 2026-11-22 화면 시안(목록 T34·상세 D2·대시보드) 디자인 검토 확정안 · 상단 바 64(0.7.0, DESIGN.md §24.7).
  * 데이터는 한국어 쇼핑몰 관리자 가상 데이터다(실제 회사·인물 아님).
  */
 import * as React from 'react';
@@ -11,12 +11,16 @@ import { AppShell, SideNav, SideNavGroup, SideNavItem } from '../index';
 import {
   ChartColumn, ClipboardList, MessageSquare, Package, RotateCcw, Settings, Store, Users,
 } from '../icons';
+import { appHeader } from '../../docs/examples/app-header';
 
 export type NavKey = 'dashboard' | 'orders' | 'products';
 
-/** 상단 헤더 없이 SideNav 240px + 본문(AppShell 기본 여백 24px). 1440×900 기준으로 검토했다. */
+/**
+ * 상단 바 64(Screens/AppHeader 와 같은 묶음 — 제품·스토어 전환기 · 알림 벨 · 사용자 메뉴) + SideNav 240px + 본문(AppShell 기본 여백 24px).
+ * 스토어 관리 화면이라 지금 제품은 판매관리다. 1440×900 기준으로 검토했다.
+ */
 export function StoreShell({ current, children }: { current: NavKey; children: React.ReactNode }) {
-  return <AppShell sidebar={
+  return <AppShell {...appHeader({ product: 'sales' })} sidebar={
     <SideNav brand="스토어 관리" brandIcon={<Store />}>
       <SideNavGroup label="판매">
         <SideNavItem icon={<ChartColumn />} label="대시보드" href="#dashboard" current={current === 'dashboard'} />

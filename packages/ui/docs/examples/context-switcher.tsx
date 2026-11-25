@@ -26,10 +26,11 @@ export function StoreSwitcher(props: Partial<ContextSwitcherProps>) {
 /**
  * header 왼쪽 — 전환기 두 개를 묶는다(사이 구분선). 1024 미만은 둘째가 아이콘 + 툴팁, 그래도 넘치면 "맥락" 한 트리거로 접힌다.
  * 저장하지 않은 입력이 있으면 onBeforeSwitch 에서 event.preventDefault() 로 막고 확인을 받는다.
+ * product 는 지금 제품(productItems 의 value) — 앱은 주소에서 정한다.
  */
-export function ContextSwitcherExample() {
+export function ContextSwitcherExample({ product = 'marketing' }: { product?: string }) {
   return <ContextSwitcherGroup>
-    <ProductSwitcher />
+    <ProductSwitcher defaultValue={product} />
     <StoreSwitcher />
   </ContextSwitcherGroup>;
 }
