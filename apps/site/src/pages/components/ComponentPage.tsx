@@ -9,6 +9,7 @@ import meta from 'virtual:site-meta';
 import { CodeBlock } from '../../blocks/CodeBlock';
 import { DesignLink } from '../../blocks/Text';
 import { DocLayout, type TocItem } from '../../blocks/Toc';
+import { categoryName } from '../../content/categories';
 import { findComponent, importLine, manifest, pageFor, partsOf, type Component } from '../../data/manifest';
 import { storyFilesFor, type StoryFile } from '../../stories/load';
 import { StoryExample, storiesOf, type StoryEntry } from '../../stories/render';
@@ -204,7 +205,7 @@ export function ComponentPage() {
       <Breadcrumb><BreadcrumbList>
         <BreadcrumbItem><BreadcrumbLink asChild><Link to="/components">부품</Link></BreadcrumbLink></BreadcrumbItem>
         <BreadcrumbSeparator />
-        <BreadcrumbItem><BreadcrumbPage>{component.category}</BreadcrumbPage></BreadcrumbItem>
+        <BreadcrumbItem><BreadcrumbPage>{component.category && categoryName(component.category)}</BreadcrumbPage></BreadcrumbItem>
       </BreadcrumbList></Breadcrumb>
     } />
     <Preview key={component.name} names={[component.name, ...parts.map((part) => part.name)]} />

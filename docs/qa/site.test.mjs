@@ -150,3 +150,19 @@ test('사이트: 문안 출처의 DESIGN.md 절이 DESIGN.md 에 있다', () => 
   assert.ok(cited.length > 0);
   assert.deepEqual(cited.filter((n) => !numbers.has(n)), [], 'DESIGN.md 에 없는 절');
 });
+
+test('사이트: 부품 분류 이름표는 매니페스트 category 를 가리키고, 브랜드 이름은 한 곳에서 온다', () => {
+  // 분류 이름표(content/categories.ts)는 매니페스트 category 값(영어)을 그대로 두고 사이트에서만 한국어 이름·순서를 붙인다.
+  // 이름표에 없는 새 분류는 영어 그대로 보이므로 여기서 막지 않는다. 막는 것은 이름표가 없는 분류를 가리키는 것 —
+  // 매니페스트에서 분류 이름이 바뀌면 이름표가 조용히 빠진다.
+  const src = read(join(site, 'src/content/categories.ts'));
+  const keys = [...src.matchAll(/\{ key: '([^']+)', name: '([^']+)' \}/g)].map((m) => m[1]);
+  assert.ok(keys.length > 0, 'categories.ts 에서 { key, name } 을 읽지 못했다');
+  assert.equal(new Set(keys).size, keys.length, '같은 category 가 두 번 있다');
+  const used = new Set(manifest.components.map((c) => c.category).filter(Boolean));
+  assert.deepEqual(keys.filter((key) => !used.has(key)), [], '매니페스트 부품에 없는 category — 이름이 바뀌었으면 categories.ts 도 고친다');
+  // 브랜드 이름: 문서 title(index.html)과 셸·첫 화면이 쓰는 BRAND 상수가 같은 글자(디자인 총괄 검수 r1 — 이름 하나로).
+  const brand = /export const BRAND = '([^']+)'/.exec(read(join(site, 'src/layout/SiteShell.tsx')))?.[1];
+  assert.ok(brand, 'SiteShell.tsx 의 BRAND 상수');
+  assert.equal(/<title>([^<]+)<\/title>/.exec(read(join(site, 'index.html')))?.[1], brand, 'index.html <title> 과 BRAND 가 다르다');
+});

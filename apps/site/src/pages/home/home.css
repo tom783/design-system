@@ -17,10 +17,8 @@
 /* 상단 바 — 브랜드 · 메뉴(사이드 메뉴와 같은 항목·경로) · 테마. 표면·블러는 effects.css */
 .site-home-bar { position: sticky; top: 0; z-index: 20; isolation: isolate; border-bottom: var(--border-width) solid var(--border-default); }
 .site-home-bar-inner { display: flex; align-items: center; gap: var(--space-48); width: min(1280px, calc(100% - 96px)); height: 68px; margin-inline: auto; }
-.site-home-brand { display: inline-flex; flex: none; align-items: center; gap: var(--space-12); color: inherit; text-decoration: none; white-space: nowrap;
+.site-home-brand { display: inline-flex; flex: none; align-items: center; color: inherit; text-decoration: none; white-space: nowrap;
   font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: 700; letter-spacing: var(--text-title-sm-ls); }
-.site-home-brand-sub { padding-inline-start: var(--space-12); border-inline-start: var(--border-width) solid var(--border-default);
-  font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 600; }
 /* 1024px 이상에서 메뉴 7개가 한 줄에 다 들어간다(실측). 그래도 바 폭보다 길어지면(글자 확대 등) 메뉴 칸만 가로로 민다
    (키보드 포커스가 가면 브라우저가 보이게 옮긴다). 1023px 이하는 '메뉴' Sheet. */
 .site-home-nav { display: flex; flex: 1 1 auto; align-self: stretch; gap: var(--space-24); min-width: 0; overflow-x: auto; scrollbar-width: none; }
@@ -116,7 +114,6 @@
 @media (max-width: 600px) {
   .site-home-bar-inner { width: calc(100% - 32px); height: 56px; gap: var(--space-12); }
   .site-home-brand { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); }
-  .site-home-brand-sub { display: none; }
   .site-home, .site-home-footer { width: calc(100% - 32px); }
   .site-home-opening { padding-block: var(--space-32); }
   .site-home-version { margin-block-end: var(--space-16); }

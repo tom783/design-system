@@ -124,10 +124,15 @@ export function siteDocs(repo: string): Plugin {
 
       const texts = <K extends string>(file: string, parsed: typeof readme, wanted: Record<K, readonly [string, string]>) =>
         Object.fromEntries(Object.entries<readonly [string, string]>(wanted).map(([key, [section, start]]) => [key, textIn(file, parsed, section, start).items])) as Record<K, string[]>;
+      const readmeText = texts('README.md', readme, README_TEXT);
+      // 설치 조건 단락(React·React DOM peer)의 설치 명령 — 시작하기가 인라인 코드 대신 복사 버튼 코드 블록으로 보인다(검수 r1).
+      const peerInstall = /`((?:npm|pnpm|yarn) (?:install|add) [^`]+)`/.exec(readmeText.peer.join(' '))?.[1];
+      if (!peerInstall) throw new Error("소개 사이트: README.md 의 '기본 설치: Tailwind 없이 사용' peer 단락에 설치 명령(`npm install …`)이 없다 — 문서가 바뀌었으면 apps/site/vite-plugins/site-docs.ts 를 함께 고친다.");
       const data = {
         readme: {
           headings: readme.headings.map(({ text, slug }) => ({ text, slug })),
-          text: texts('README.md', readme, README_TEXT),
+          text: readmeText,
+          peerInstall,
           install: codeIn('README.md', readme, '기본 설치: Tailwind 없이 사용', 'sh'),
           entry: codeIn('README.md', readme, '기본 설치: Tailwind 없이 사용', 'tsx'),
           tailwind: codeIn('README.md', readme, '이미 Tailwind v4를 쓰는 앱', 'css'),

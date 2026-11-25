@@ -7,10 +7,10 @@ import { ArrowRight, Menu, Terminal } from '@s2life/ui/icons';
 import meta from 'virtual:site-meta';
 import { componentCount } from '../../data/manifest';
 import { homeAiSteps, homeHero, homePrinciples } from '../../content/home';
-import { MENU, THEME_OPTIONS } from '../../layout/SiteShell';
+import { BRAND, MENU, THEME_OPTIONS } from '../../layout/SiteShell';
 import { useTheme, type ThemeChoice } from '../../layout/theme';
 import { OrderSample, componentName } from './OrderSample';
-import { useMediaQuery } from './useMediaQuery';
+import { useMediaQuery } from '../../blocks/useMediaQuery';
 import './home.css';
 import './effects.css';
 
@@ -65,8 +65,7 @@ function HomeBar({ main }: { main: React.RefObject<HTMLElement | null> }) {
     <div ref={top} className="site-home-top" aria-hidden="true" />
     <header className="site-home-bar" data-stuck={!atTop}>
       <div className="site-home-bar-inner">
-        {/* 띄어쓰기를 DOM 에 둔다 — 인라인 span 은 접근 이름에서 앞 글자와 붙어 읽힌다('S2Life디자인 시스템') */}
-        <Link className="site-home-brand" to="/">S2Life{' '}<span className="site-home-brand-sub">디자인 시스템</span></Link>
+        <Link className="site-home-brand" to="/">{BRAND}</Link>
         <nav className="site-home-nav" aria-label="사이트 메뉴">
           {MENU.map((item) => <Link key={item.to} className="site-home-nav-link" to={item.to}
             aria-current={item.to === '/' ? 'page' : undefined}>{item.label}</Link>)}
@@ -192,7 +191,7 @@ export function HomePage() {
       </SectionHeader>
     </main>
     <footer className="site-home-footer">
-      <strong>S2Life 디자인 시스템</strong>
+      <strong>{BRAND}</strong>
       <span className="tabular">v{meta.version}{meta.sha ? ` · ${meta.sha}${meta.dirty ? ' (수정됨)' : ''}` : ''}</span>
       {meta.repository && <a className="site-link" href={`${meta.repository}/blob/main/CHANGELOG.md`} target="_blank" rel="noreferrer">변경 이력</a>}
     </footer>

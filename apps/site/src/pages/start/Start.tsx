@@ -1,10 +1,10 @@
-import type * as React from 'react';
+import * as React from 'react';
 import { Link } from 'react-router';
 import { Card, CardBody, CardHeader, CardTitle, DescriptionList, PageHeader, SectionHeader } from '@s2life/ui';
 import { Bot, Code, Palette } from '@s2life/ui/icons';
 import docs from 'virtual:site-docs';
 import { CodeBlock } from '../../blocks/CodeBlock';
-import { Rich, ReadmeLink } from '../../blocks/Text';
+import { Rich, Sources } from '../../blocks/Text';
 import { DocLayout, type TocItem } from '../../blocks/Toc';
 import { boundary } from '../../content/concept';
 import { BoundaryTable } from '../concept/Concept';
@@ -19,6 +19,26 @@ const SECTION = { install: '기본 설치: Tailwind 없이 사용', tailwind: '�
 
 function Paragraphs({ items }: { items: readonly string[] }) {
   return <>{items.map((item, i) => <p key={i}><Rich text={item} /></p>)}</>;
+}
+
+/**
+ * 설치 조건 단락 — 그 안의 설치 명령(인라인 코드)을 복사 버튼 코드 블록으로 뺀다(검수 r1: 인라인 코드가 한 줄에 몰려 있었다).
+ * 문장은 README 그대로 두고 명령 자리만 '아래 명령'으로 바꾸며, 명령이 든 문장 뒤에서 단락을 나눠 그 사이에 코드 블록을 둔다.
+ */
+function PeerParagraphs({ items, command }: { items: readonly string[]; command: string }) {
+  const code = `\`${command}\``;
+  return <>{items.map((item, i) => {
+    const at = item.indexOf(code);
+    if (at < 0) return <p key={i}><Rich text={item} /></p>;
+    const stop = item.indexOf('. ', at + code.length);
+    const cut = stop < 0 ? item.length : stop + 1;
+    const after = item.slice(cut).trim();
+    return <React.Fragment key={i}>
+      <p><Rich text={item.slice(0, cut).replace(code, '아래 명령')} /></p>
+      <CodeBlock label="sh · React·React DOM 함께 설치" code={command} />
+      {after && <p><Rich text={after} /></p>}
+    </React.Fragment>;
+  })}</>;
 }
 
 interface Track {
@@ -88,7 +108,7 @@ export function StartPage() {
         {TRACKS.map((track) => <TrackCard key={track.id} track={track} />)}
       </div>
     </SectionHeader>
-    <SectionHeader id="requirements" title="설치 조건" description={<span>README.md · packages/ui·packages/mcp package.json 에서 읽는다</span>}>
+    <SectionHeader id="requirements" title="설치 조건">
       <div className="site-stack">
         <DescriptionList labelWidth={10} items={[
           { label: 'React · React DOM', value: req.react && <span>
@@ -97,11 +117,12 @@ export function StartPage() {
           { label: 'Node.js', value: req.node && <code className="site-code">{req.node}</code> },
           { label: '적용 범위', value: <strong>앱 전체</strong> },
         ]} />
-        <Paragraphs items={text.peer} />
+        <PeerParagraphs items={text.peer} command={docs.readme.peerInstall} />
         <Paragraphs items={text.appWide} />
+        <Sources items={[{ readme: SECTION.install }, { text: 'packages/ui·packages/mcp package.json' }]} />
       </div>
     </SectionHeader>
-    <SectionHeader id="install" title={SECTION.install} description={<ReadmeLink heading={SECTION.install}>README.md 원문</ReadmeLink>}>
+    <SectionHeader id="install" title={SECTION.install}>
       <div className="site-stack">
         <CodeBlock label="sh" code={docs.readme.install} />
         <Paragraphs items={text.entryCss} />
@@ -109,20 +130,23 @@ export function StartPage() {
         <Paragraphs items={text.font} />
         <Paragraphs items={text.standalone} />
         <Paragraphs items={text.utilities} />
+        <Sources items={[{ readme: SECTION.install }]} />
       </div>
     </SectionHeader>
-    <SectionHeader id="tailwind" title={SECTION.tailwind} description={<ReadmeLink heading={SECTION.tailwind}>README.md 원문</ReadmeLink>}>
+    <SectionHeader id="tailwind" title={SECTION.tailwind}>
       <div className="site-stack">
         <Paragraphs items={text.tailwindIntro} />
         <CodeBlock label="css · src/app.css" code={docs.readme.tailwind} />
         <Paragraphs items={text.tailwindEntry} />
+        <Sources items={[{ readme: SECTION.tailwind }]} />
       </div>
     </SectionHeader>
-    <SectionHeader id="mcp" title={SECTION.mcp} description={<ReadmeLink heading={SECTION.mcp}>README.md 원문</ReadmeLink>}>
+    <SectionHeader id="mcp" title={SECTION.mcp}>
       <div className="site-stack">
         <CodeBlock label="sh" code={docs.readme.mcp} />
         <Paragraphs items={text.mcpCli} />
         <p><Link className="site-link" to="/ai">AI로 쓰기</Link> — 서버가 AI에게 주는 안내·도구·리소스와 질문→추천 예시</p>
+        <Sources items={[{ readme: SECTION.mcp }]} />
       </div>
     </SectionHeader>
     <SectionHeader id="boundary" title="디자인 시스템이 정하지 않는 것" description={<span><Link className="site-link" to="/concept#boundary">디자인 컨셉</Link>의 같은 표 — {boundary.title}</span>}>
