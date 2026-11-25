@@ -28,6 +28,13 @@
   모두 Input·Select·Combobox·MultiSelect 트리거가 outline solid 2px · offset 2px · `--border-focus` · box-shadow 없음. Combobox·MultiSelect 는
   이미 같았다(바뀌지 않음). 마우스로 눌러 연 Select 는 링이 없다(버튼은 마우스 포커스에 `:focus-visible` 이 아님 — 다른 트리거와 같다).
   하네스 `input-consistency`(트리거 4종 × 두 테마 = Input 과 같은 링) · `list-toolbar`(보기 Select ↔ 검색 입력) 검사 추가 — 고치기 전 판에서 4건 실패 확인.
+- **Combobox(단일·다중)·MultiSelect 를 Dialog·Sheet 안에 두면 목록이 창 아래로 깔리던 것** (`combobox.css`·`multi-select.css` 내용 상자에
+  `z-index: 50` · 새 값·토큰 0). Radix popper 감싸개는 내용의 z-index 를 물려받는데 두 부품만 없어서 감싸개가 `auto` 였고, 모달 막·내용(50)
+  아래에 그려져 목록을 보지도 누르지도 못했다(소개 사이트 9b 실측). 다른 떠 있는 층(Select·DropdownMenu·DatePicker 달력·FilterBar·알림 센터·
+  맥락 전환기)은 이미 50 이라 같은 값을 따랐다 — 같은 50 이면 나중에 열린 목록이 DOM 뒤라 위다. 확인: 창·패널 × 층 6종 × 두 테마에서
+  고치기 전 Combobox 단일·다중·MultiSelect 12/24 가 가려짐(hit-test 다섯 점이 창·막) → 고친 뒤 24/24 위. 창 안에서 실제 포인터로 고르기·
+  목록 휠 스크롤·Escape 가 층만 닫음도 확인. Tooltip·Hint·Tour 는 top layer 라 해당 없음.
+  재현 스토리 `QA/LayerDetails 모달안떠있는층` + `layer-detail-render-verify` 검사 2건(창·패널, 고치기 전 판에서 실패 확인).
 
 ### 문서
 

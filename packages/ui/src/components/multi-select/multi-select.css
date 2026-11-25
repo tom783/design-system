@@ -11,7 +11,11 @@
   .ds-multi-select-trigger[data-placeholder] { color: var(--text-tertiary); }
   .ds-multi-select-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
   .ds-multi-select-trigger[aria-invalid="true"] { border-color: var(--status-danger-fg); }
+  /* 떠 있는 층은 모두 포털 z-index 50 이다(Select·DropdownMenu·DatePicker 의 z-50, FilterBar·알림 센터 50 — §16.5·§24.7, 새 값 없음).
+     Radix popper 감싸개가 내용의 z-index 를 물려받으므로 여기 없으면 auto 가 되어 Dialog·Sheet(막·내용 50) 안에서 목록이
+     창 아래로 깔렸다(0.7.1 · ds-site 9b 실측). 같은 50 이면 나중에 열린 포털(목록)이 DOM 뒤라 위에 그려진다. */
   .ds-multi-select-content {
+    z-index: 50;
     min-width: var(--radix-popover-trigger-width); max-width: calc(100vw - var(--space-16));
     border: 1px solid var(--border-default); border-radius: var(--radius-md);
     background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-overlay);
