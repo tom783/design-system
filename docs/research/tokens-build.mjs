@@ -15,6 +15,7 @@
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { renderUiRuntimeTokens, UI_RUNTIME_TOKENS_PATH } from './ui-runtime-tokens.mjs';
 
 // ─────────────────────────────── 색공간 ───────────────────────────────
@@ -843,7 +844,7 @@ tw += `  ${pad('--font-sans', 34)}: var(--font-sans);\n  ${pad('--font-mono', 34
 tw += `}\n`;
 
 // ═══════════════════════════ 8. 기록 ═══════════════════════════
-const here = dirname(new URL(import.meta.url).pathname);
+const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
 const write = (rel, body) => {
   const p = resolve(root, rel);

@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { componentIndex } from './catalog.mjs';
 import { BUDGETS } from './budget.mjs';
 
@@ -12,7 +13,10 @@ const baseline = JSON.parse(await readFile(new URL('../../docs/qa/fixtures/get-c
 
 // 실제 파이프의 모든 줄을 기록한다. 응답만 선별하면 console.log 오염을 놓치므로 파싱 실패도 보관한다.
 async function client(t) {
-  const child = spawn(process.execPath, [new URL('./server.mjs', import.meta.url).pathname], { stdio: ['pipe','pipe','pipe'] });
+  const child = spawn(process.execPath, [fileURLToPath(new URL('./server.mjs', import.meta.url))], { stdio: ['pipe','pipe','pipe'] });
+  // 종료는 띄우자마자 기다리기 시작한다. 서버가 시작하다 죽으면(경로 오류 등) close 가 정리 단계 전에 지나가서,
+  // 정리 단계에서 once 를 걸면 영원히 멈춘다(2026-11-24 한글 경로 워크트리에서 verify 14분 정지). 지금은 그 stderr 로 실패한다.
+  const closed = once(child, 'close');
   let sequence = 0;
   const lines = [], pending = new Map(), pollution = [], unsolicited = [];
   let stderr = '';
@@ -38,7 +42,7 @@ async function client(t) {
     pending.set(null, (data) => { clearTimeout(timeout); resolve(data); }); write(line);
   });
   t.after(async () => {
-    const closed = once(child, 'close'); child.stdin.end();
+    child.stdin.end();
     const timer = setTimeout(() => child.kill(), 5000);
     const [code, signal] = await closed; clearTimeout(timer);
     assert.equal(signal, null); assert.equal(code, 0, stderr);

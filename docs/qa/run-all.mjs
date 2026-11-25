@@ -16,14 +16,15 @@
 // 하네스에는 DS_SB_URL·DS_SB_NONCE 로 넘기고, 하네스도 같은 확인을 한 번 더 한다(storybook-target.mjs).
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 import { resolveHeadlessShell } from './browser.mjs';
 import { BASELINE_FILE, EXCLUSIVE, NO_STORYBOOK, USAGE, UsageError, harnessName, parseArgs, selectHarnesses } from './run-plan.mjs';
 import { startStaticServer } from './static-server.mjs';
 import { STATIC_DIR, checkStorybook, writeNonce } from './storybook-target.mjs';
 
-const root = new URL('../..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('../..', import.meta.url));
 const t0 = performance.now(), startedAt = new Date();
 const secs = (ms) => Math.round(ms / 100) / 10;
 
@@ -42,7 +43,7 @@ if (opts.only) console.log(`--only: ${HARNESSES.length}개 하네스`);
 if (opts.group && !plan.shard) console.log(`--group ${opts.group}: ${HARNESSES.length}개 하네스`);
 if (plan.shard) {
   const { index, total, seconds, unknown, fallback } = plan.shard;
-  console.log(`${opts.group ? `--group ${opts.group} ` : ''}--shard ${index}/${total}: ${HARNESSES.length}개 하네스 · 예상 ${seconds}초 (기준선 ${BASELINE_FILE.pathname.split('/').pop()})`);
+  console.log(`${opts.group ? `--group ${opts.group} ` : ''}--shard ${index}/${total}: ${HARNESSES.length}개 하네스 · 예상 ${seconds}초 (기준선 ${basename(fileURLToPath(BASELINE_FILE))})`);
   if (unknown.length) console.log(`  기준선에 없어 중간값 ${fallback}초로 계산: ${unknown.join(', ')}`);
 }
 

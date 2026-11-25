@@ -14,7 +14,12 @@
 
 ## 미출시
 
-(아직 없음)
+### 내부
+
+- 검사 스크립트가 파일 URL 을 `.pathname` 으로 경로로 바꾸던 5곳(`server.test`·`run-all` 2·`run-plan.test`·`tokens-build`)을 `fileURLToPath` 로
+  고쳤다(목표 75 0단계). 작업 폴더 경로에 한글·공백이 있으면 `server.test` 가 멈춰 pre-commit·verify·push 가 막혔고, `run-all` 은 `spawn ENOENT`,
+  `tokens-build` 는 생성 파일을 퍼센트 인코딩된 다른 폴더에 썼다. `server.test` 는 서버가 시작하다 죽어도 멈추지 않고 그 stderr 로 실패한다.
+  재발은 `docs/qa/traps.test.mjs` 함정 린트가 막는다. 패키지·화면 변화 없음.
 
 ---
 

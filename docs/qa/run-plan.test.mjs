@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   BASELINE_FILE, EXCLUSIVE, GROUPS, HARNESSES, NO_STORYBOOK, githubOnly, UsageError, assignShards, harnessName, loadBaseline, median,
   parseArgs, readBaseline, selectHarnesses,
@@ -20,7 +21,7 @@ test('하네스 목록: 이름이 겹치지 않고 파일이 있다', () => {
 });
 
 test('기준선: 45초 수정 뒤 리눅스 CI 실측(ci-734862c, 합계 384.7초)을 숫자 맵으로 읽는다', () => {
-  assert.match(BASELINE_FILE.pathname, /ci-734862c\.json$/);
+  assert.match(fileURLToPath(BASELINE_FILE), /ci-734862c\.json$/);
   assert.ok(BASE.size >= 31);
   assert.equal(Math.round([...BASE.values()].reduce((a, b) => a + b, 0) * 10) / 10, 384.7);
   assert.equal(BASE.get('mcp-client-verify'), 0.8);

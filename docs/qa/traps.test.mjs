@@ -1,8 +1,9 @@
 // 함정 린트 — AGENTS.md "이미 밟은 함정" 중 기계로 잡을 수 있는 것.
 // 한 번 밟은 것을 사람 기억에 맡기지 않는다. 걸리면 그 절을 읽고 고친다.
-// 일부러 그렇게 쓰는 곳은 같은 줄이나 바로 위 두 줄에 `함정 예외: <이유>` 를 적는다(Enter 규칙만).
+// 일부러 그렇게 쓰는 곳은 같은 줄이나 바로 위 두 줄에 `함정 예외: <이유>` 를 적는다(Enter 규칙·파일 URL 경로 규칙만).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -90,4 +91,31 @@ test('함정: 글자 크기를 text-[var(--…)] 로 쓰지 않는다 — text-[
   // Tailwind 가 color 로 컴파일하고 tailwind-merge 가 함께 쓴 글자색을 지운다.
   const src = walk(join(root, 'packages/ui/src')).filter((f) => /\.(tsx?|mdx)$/.test(f));
   none(scan(src, /text-\[var\(--/), 'text-[var(--x)] — text-[length:var(--x)] 로 명시하라');
+});
+
+test('함정: 파일 URL 의 .pathname 을 파일 경로로 쓰지 않는다 — fileURLToPath', () => {
+  // new URL('./x.mjs', import.meta.url).pathname 은 퍼센트 인코딩된 문자열이다(한글 '한' → %ED%95%9C, 공백 → %20).
+  // 작업 폴더 경로에 한글·공백이 있으면 없는 곳을 가리킨다. 2026-11-24 한글 이름 워크트리에서 server.test 가 서버를
+  // 못 띄우고 멈춰(verify 14분 정지) 커밋·push 가 막혔고, run-all 은 spawn ENOENT, tokens-build 는 생성 파일을
+  // %ED%95%9C… 라는 다른 폴더에 써서 pre-commit 의 "생성 파일이 소스와 맞는가" 검사가 아무것도 보지 못했다.
+  // fileURLToPath(new URL(…, import.meta.url)) 를 쓴다. URL 객체를 fs·spawn cwd 에 그대로 넘기는 것은 괜찮다.
+  // 웹 주소의 pathname(브라우저 location, http 기준으로 푼 요청 경로)은 파일 경로가 아니라 넘긴다.
+  const listed = spawnSync('git', ['ls-files', '-z', '--', '*.mjs', '*.js', '*.cjs', '*.ts', '*.mts', '*.cts', '*.tsx', '.githooks/*', '.github/*.yml'],
+    { cwd: root, encoding: 'utf8' });
+  assert.equal(listed.status, 0, `git ls-files 실패: ${listed.stderr}`);
+  const self = fileURLToPath(import.meta.url);
+  const files = listed.stdout.split('\0').filter(Boolean).map((f) => join(root, f)).filter((f) => f !== self);
+  const bad = /\.pathname\b|\.replace\(\s*(?:['"`]file:\/\/|\/\^?file:)|\.href\.(?:slice|substring|substr)\(\s*7\b/;
+  const web = /\blocation\.pathname\b|new URL\([^)]*,\s*['"`]https?:\/\//;
+  const hits = [];
+  for (const f of files) {
+    const lines = read(f).split('\n');
+    lines.forEach((line, i) => {
+      if (isComment(line) || !bad.test(line) || web.test(line)) return;
+      if (lines.slice(Math.max(0, i - 2), i + 1).some((l) => l.includes('함정 예외:'))) return;
+      hits.push(`${rel(f)}:${i + 1}  ${line.trim().slice(0, 120)}`);
+    });
+  }
+  assert.ok(files.length > 100, `검사 대상이 너무 적다(${files.length}) — git ls-files 경로 지정을 확인하라`);
+  none(hits, '파일 URL 을 .pathname·문자열 자르기로 경로로 바꿨다 — fileURLToPath(url) 를 써라 (AGENTS.md 함정 "파일 URL 을 .pathname 으로 경로로 바꾸지 마라")');
 });

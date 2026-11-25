@@ -237,6 +237,12 @@ exports 를 거쳐 `packages/ui/dist/` 로 해석된다. dist 는 빌드 뒤에�
 `scripts/check-boundaries.mjs` 가 pre-commit 에서 막고, pre-push 는 임시 git worktree 에서
 dist 없이 typecheck 한다(`pnpm typecheck:clean [커밋]`).
 
+**파일 URL 을 `.pathname` 으로 경로로 바꾸지 마라 — `fileURLToPath(url)`.** `new URL('./x.mjs', import.meta.url).pathname` 은
+퍼센트 인코딩된 문자열이라 작업 폴더 경로에 한글·공백이 있으면 없는 곳을 가리킨다(Orca 는 작업 제목으로 한글 폴더를 만든다).
+2026-11-24 한글 워크트리에서 `server.test` 가 서버를 못 띄우고 멈춰 pre-commit·verify·push 가 막혔고, `run-all` 은 `spawn ENOENT`,
+`tokens-build` 는 생성 파일을 `%ED%95%9C…` 폴더에 써서 "생성 파일이 소스와 맞는가" 검사가 아무것도 보지 못했다.
+URL 객체를 fs·spawn `cwd` 에 그대로 넘기는 것은 괜찮다. `docs/qa/traps.test.mjs` 가 막는다.
+
 **macOS 에서 `/Applications/*.app/Contents/MacOS/*` 를 직접 실행하지 마라.**
 에이전트 샌드박스(Orca/Codex 의 Seatbelt) 안에서 **크래시한다.** 실제 리포트:
 
