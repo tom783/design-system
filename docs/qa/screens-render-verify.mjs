@@ -1,6 +1,7 @@
 // 정식 Screens 스토리(주문 목록·주문 상세 D2·대시보드 · 출고 등록 셸) 검증. 1440×900(셸은 768·390 도), 라이트·다크.
 // 2026-11-22 디자인 검토 확정안: 제목 display 34/40·700(T34), 상세 파괴적 액션 D2, 대시보드 타일 줄.
 // 0.7.1: 대표 화면 넷의 상단 바 64(Screens/AppHeader 와 같은 묶음)·섹션 제목 줄(SectionHeader).
+// 0.7.1 C2(디자인 총괄 손질): 사이드 brand = 지금 제품 이름 · 5행 이하 표 정렬 없음 · 대시보드 추이 차트 좁은 폭 1열.
 // 실행: pnpm qa --only screens-render-verify (서버·출처 확인은 run-all 이 한다).
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -218,15 +219,18 @@ try {
     await check(`대표 화면 넷: 상단 바 64·brand 아래선·사용자 메뉴 맨 오른쪽·가로 넘침 0·섹션 제목 줄 (1440·768·390) ${theme}`, async () => {
       // 0.7.1(목표 0.7.1 C): 대표 화면도 Screens/AppHeader 와 같은 상단 바(docs/examples/app-header.tsx appHeader)를 쓰고, 카드 밖 섹션
       // 머리는 손 조립 h2 가 아니라 SectionHeader 다. AI 는 기준 화면을 따라 하므로 빠지면 여기서 막는다.
+      // [스토리, 섹션 제목 줄, 사이드 brand(= 전환기 지금 제품), 정렬 버튼 수(null = 보지 않음)]. brand 는 따로 지은 이름이 아니라 지금 제품
+      // 이름이다(SideNav brand 는 지금 서비스 이름 표시 전용 — Screens/AppHeader 의 마케팅관리와 같은 규칙, 0.7.1 C2). 품목 3개·최근 5건
+      // 표에는 정렬을 달지 않는다(§24.5).
       const SCREENS = [
-        ['screens-orderlist--기본', []], ['screens-orderdetail--기본', ['주문 상품']],
-        ['screens-shipmentcreate--기본', []], ['screens-dashboard--기본', ['최근 주문']],
+        ['screens-orderlist--기본', [], '판매관리', null], ['screens-orderdetail--기본', ['주문 상품'], '판매관리', 0],
+        ['screens-shipmentcreate--기본', [], '물류관리', null], ['screens-dashboard--기본', ['최근 주문'], '판매관리', 0],
       ];
       const rows = [];
       try {
         for (const [width, height] of [[1440, 900], [768, 1024], [390, 844]]) {
           await cdp('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
-          for (const [id, sections] of SCREENS) {
+          for (const [id, sections, product, sorts] of SCREENS) {
             await load(id, theme);
             await frames2();
             const m = await ev(`(() => { const header=${q('[data-slot="app-shell-header"]')}, main=${q('[data-slot="app-shell-main"]')};
@@ -237,13 +241,33 @@ try {
                 rightmost:right.getAttribute('aria-label'), switchers:header.querySelectorAll('[data-slot="context-switcher-group"]').length,
                 pageOverflow:document.documentElement.scrollWidth - innerWidth, mainOverflow:main.scrollWidth - main.clientWidth,
                 sections:[...main.querySelectorAll('[data-slot="section-header-title"]')].map(el => el.firstChild.textContent),
-                looseH2:[...main.querySelectorAll('h2')].filter(el => !el.closest('[data-slot="section-header"]')).length }; })()`);
+                looseH2:[...main.querySelectorAll('h2')].filter(el => !el.closest('[data-slot="section-header"]')).length,
+                brand:brand?.textContent ?? null, product:header.querySelector('[data-slot="context-switcher"][aria-label^="제품: "]')?.getAttribute('aria-label') ?? null,
+                sorts:main.querySelectorAll('[data-slot="data-table-sort"]').length }; })()`);
             rows.push({ id, width, ...m });
+            // 390 서랍 셸(출고 등록)은 메뉴가 닫혀 brand 가 DOM 에 없다 · 접힌 '맥락' 트리거에는 제품 전환기가 따로 없다.
+            if (m.brand !== null) assert.equal(m.brand, product, `${id} ${width} 사이드 brand = 지금 제품`);
+            if (m.product !== null) assert.equal(m.product, `제품: ${product}`, `${id} ${width} 전환기 지금 제품`);
+            if (sorts !== null) assert.equal(m.sorts, sorts, `${id} ${width} 5행 이하 표 정렬 버튼`);
             assert.equal(m.header, 64, `${id} ${width} header 64`);
             if (m.brandGap !== null) assert.equal(m.brandGap, 0, `${id} ${width} brand 아래선`);
             assert.equal(m.rightmost, '김철수, 사용자 메뉴'); assert.equal(m.switchers, 1);
             assert.ok(m.pageOverflow <= 0 && m.mainOverflow <= 0, `${id} ${width} 가로 넘침 ${JSON.stringify(m)}`);
             assert.deepEqual(m.sections, sections, `${id} 섹션 제목 줄`); assert.equal(m.looseH2, 0, `${id} 손 조립 h2`);
+            if (id === 'screens-dashboard--기본') {
+              // 추이 차트 두 장 — 768 부터 2열, 390 은 1열. 390 에서 2열이면 칸이 139 이하라 축 숫자가 svg 왼쪽 밖으로 나가고
+              // 불릿 이름·값이 말줄임됐다(C2 실측). 축·값 글자가 svg 안에 다 들어가고 말줄임이 없는지 본다.
+              const t = await ev(`(() => { const sec=${q('[data-screen="trends"]')};
+                const charts=[...sec.children].map(el => { const svg=el.querySelector('svg[data-slot="trend-band"], svg[data-slot="bullet-row"]'), b=svg.getBoundingClientRect();
+                  const texts=[...svg.querySelectorAll('text')];
+                  return { x:Math.round(el.getBoundingClientRect().left), width:el.getBoundingClientRect().width,
+                    outside:texts.filter(t => { const r=t.getBoundingClientRect(); return r.left < b.left - 0.5 || r.right > b.right + 0.5; }).map(t => t.textContent),
+                    ellipsis:texts.filter(t => [...t.childNodes].some(n => n.nodeType === 3 && n.textContent.includes('…'))).length }; });
+                return { columns:new Set(charts.map(c => c.x)).size, charts }; })()`);
+              rows.at(-1).trends = t;
+              assert.equal(t.columns, width < 768 ? 1 : 2, `대시보드 ${width} 추이 칸 수`);
+              for (const c of t.charts) { assert.deepEqual(c.outside, [], `대시보드 ${width} 축·값 글자가 svg 밖`); assert.equal(c.ellipsis, 0, `대시보드 ${width} 말줄임`); }
+            }
           }
         }
       } finally {

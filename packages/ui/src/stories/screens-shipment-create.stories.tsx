@@ -5,7 +5,7 @@ import {
   AppShell, Card, CardBody, CardHeader, CardTitle, FieldList, FormActionBar, PageHeader, SideNav, SideNavGroup, SideNavItem,
   Toaster, toast,
 } from '../index';
-import { ChartColumn, Truck, Warehouse } from '../icons';
+import { ChartColumn, Truck } from '../icons';
 import { appHeader } from '../../docs/examples/app-header';
 import { useShipmentItems, type ItemsState } from './field-list-fixtures';
 
@@ -16,7 +16,8 @@ import { useShipmentItems, type ItemsState } from './field-list-fixtures';
  * 카드 제목 '품목'이 목록 이름이라 legend 는 숨긴다(L-1). FormActionBar '오류 N개'는 칸·줄 오류 + 묶음 오류 1개를 센다(L-15).
  * 메뉴는 Figma 프레임과 같은 틀이다: 768 은 레일 64(카드 안쪽 638 < 640 → 좁은 폭으로 쌓인다), 390 은 레일 없이 메뉴 서랍
  * (카드 358 · 숫자 칸 약 150 — 레일이 있으면 약 124 라 '1개 이상 입력하세요.'가 두 줄이 된다, §11.3).
- * 상단 바 64 는 Screens/AppHeader 와 같은 묶음(docs/examples/app-header.tsx)이고 물류 화면이라 지금 제품은 물류관리다.
+ * 상단 바 64 는 Screens/AppHeader 와 같은 묶음(docs/examples/app-header.tsx)이고 물류 화면이라 지금 제품은 물류관리다 — 사이드 brand 도
+ * 지금 제품 이름 + 그 아이콘(물류관리 · Truck)으로 전환기 첫째와 같은 값이다(SideNav brand 는 지금 서비스 이름 표시 전용, 0.7.1 C2).
  * 390 서랍 셸은 '메뉴 열기' 줄 아래에 상단 바가 선다(AppShell 순서 그대로).
  */
 const meta = { title: 'Screens/ShipmentCreate', parameters: { fullBleed: true } } satisfies Meta;
@@ -31,7 +32,7 @@ function ShipmentCreateScreen({ state }: { state: ItemsState }) {
   const { props, errorCount } = useShipmentItems(state);
   const narrow = React.useSyncExternalStore(subscribe, () => window.matchMedia(phone).matches, () => false);
   return <AppShell {...appHeader({ product: 'logistics' })} narrowNavigation={narrow ? 'drawer' : 'rail'} sidebar={
-    <SideNav brand="바이브 물류" brandIcon={<Warehouse />}>
+    <SideNav brand="물류관리" brandIcon={<Truck />}>
       <SideNavGroup label="출고">
         <SideNavItem icon={<Truck />} label="출고 관리" href="#shipments" current />
         <SideNavItem icon={<ChartColumn />} label="대시보드" href="#dashboard" />

@@ -11,6 +11,9 @@ import { STATUS, StoreShell, dateTime, orders, won, type Order } from './screens
  * 대시보드 — StatTile 4개 → 차트 카드 2개(TrendBand·BulletRow) → 최근 주문 5행.
  * 타일 줄은 DESIGN §7.5.7 그리드(auto-fit minmax(min(100%, 200px), 1fr) · gap 16)를 그대로 쓴다.
  * 반품률·출고 대기는 goodDirection="down" 이다. 증감 화살표는 실제 방향을 따른다.
+ * 차트 두 장은 768 부터 2열, 그보다 좁으면 1열이다 — 390 에서 2열이면 칸이 139(스크롤바가 자리를 차지하면 131.5)라 세로축 숫자가
+ * 차트 왼쪽 밖으로 나가고 불릿 이름·값이 말줄임됐다(0.7.1 C2 디자인 총괄 · 실측).
+ * 최근 주문은 5행 표라 정렬을 달지 않는다(§24.5 '5행 이하 표에는 정렬·내보내기를 달지 않는다' — 열마다 enableSorting: false).
  * "최근 주문" 섹션 머리는 SectionHeader(DESIGN §24.6)다 — 제목 h2 + 머리 오른끝 링크형 '전체 보기 ›'(접근성 이름 '최근 주문 전체 보기'),
  * 앞 섹션 끝 → 제목 32 · 머리 → 표 12 는 부품이 갖는다. 셸은 상단 바 64(Screens/AppHeader 와 같은 묶음)다.
  */
@@ -29,12 +32,12 @@ const metrics: BulletMetric[] = [
 ];
 const helper = createDataTableColumnHelper<Order>();
 const columns = helper.columns([
-  helper.accessor('id', { header: '주문번호', cell: cell => <a className="tabular text-fg-link underline" href={`#${cell.getValue()}`}>{cell.getValue()}</a> }),
-  helper.accessor('orderedAt', { header: '주문 일시', cell: cell => <span className="tabular">{dateTime(cell.getValue())}</span> }),
-  helper.accessor('recipient', { header: '수취인' }),
-  helper.accessor('product', { header: '상품' }),
-  helper.accessor('amount', { header: '결제 금액', cell: cell => <span className="tabular">{won(cell.getValue())}</span> }),
-  helper.accessor('status', { header: '상태', cell: cell => {
+  helper.accessor('id', { header: '주문번호', enableSorting: false, cell: cell => <a className="tabular text-fg-link underline" href={`#${cell.getValue()}`}>{cell.getValue()}</a> }),
+  helper.accessor('orderedAt', { header: '주문 일시', enableSorting: false, cell: cell => <span className="tabular">{dateTime(cell.getValue())}</span> }),
+  helper.accessor('recipient', { header: '수취인', enableSorting: false }),
+  helper.accessor('product', { header: '상품', enableSorting: false }),
+  helper.accessor('amount', { header: '결제 금액', enableSorting: false, cell: cell => <span className="tabular">{won(cell.getValue())}</span> }),
+  helper.accessor('status', { header: '상태', enableSorting: false, cell: cell => {
     const status = STATUS[cell.getValue()];
     return <StatusChip tone={status.tone}>{status.label}</StatusChip>;
   } }),
@@ -51,7 +54,7 @@ function DashboardScreen() {
         <StatTile label="출고 대기" value={86} unit="건" delta={-14} deltaFormat="absolute" deltaUnit="건" deltaLabel="전일 대비" goodDirection="down" href="#orders" />
         <StatTile label="반품률" value={1.8} unit="%" delta={0.3} deltaFormat="absolute" deltaUnit="%p" deltaLabel="전주 대비" goodDirection="down" />
       </section>
-      <section aria-label="추이" className="grid min-w-0 grid-cols-2 gap-4">
+      <section aria-label="추이" data-screen="trends" className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
         <TrendBand data={daily} x={d => d.date} y={d => d.value} yLow={d => d.low} yHigh={d => d.high}
           title="최근 7일 주문" summary="11월 9일 980건에서 11월 15일 1,284건으로 주문이 31% 늘었습니다." />
         <BulletRow metrics={metrics} title="11월 목표 대비"

@@ -9,7 +9,7 @@
 import * as React from 'react';
 import { AppShell, SideNav, SideNavGroup, SideNavItem } from '../index';
 import {
-  ChartColumn, ClipboardList, MessageSquare, Package, RotateCcw, Settings, Store, Users,
+  ChartColumn, ClipboardList, MessageSquare, Package, RotateCcw, Settings, ShoppingCart, Users,
 } from '../icons';
 import { appHeader } from '../../docs/examples/app-header';
 
@@ -17,11 +17,13 @@ export type NavKey = 'dashboard' | 'orders' | 'products';
 
 /**
  * 상단 바 64(Screens/AppHeader 와 같은 묶음 — 제품·스토어 전환기 · 알림 벨 · 사용자 메뉴) + SideNav 240px + 본문(AppShell 기본 여백 24px).
- * 스토어 관리 화면이라 지금 제품은 판매관리다. 1440×900 기준으로 검토했다.
+ * 주문·상품 화면이라 지금 제품은 판매관리다. 사이드 brand 는 지금 제품 이름 + 그 아이콘으로 전환기 첫째와 같은 값이다(Screens/AppHeader 의
+ * brand 마케팅관리와 같은 규칙 — SideNav brand 는 지금 서비스 이름 표시 전용, 0.7.1 C2 디자인 총괄). 따로 지은 이름('스토어 관리')을 두면
+ * 한 화면에 같은 제품이 두 이름으로 읽힌다. 1440×900 기준으로 검토했다.
  */
 export function StoreShell({ current, children }: { current: NavKey; children: React.ReactNode }) {
   return <AppShell {...appHeader({ product: 'sales' })} sidebar={
-    <SideNav brand="스토어 관리" brandIcon={<Store />}>
+    <SideNav brand="판매관리" brandIcon={<ShoppingCart />}>
       <SideNavGroup label="판매">
         <SideNavItem icon={<ChartColumn />} label="대시보드" href="#dashboard" current={current === 'dashboard'} />
         <SideNavItem icon={<ClipboardList />} label="주문 관리" href="#orders" current={current === 'orders'} badge={86} />

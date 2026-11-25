@@ -235,7 +235,7 @@ try {
   });
 
   for (const theme of THEMES) {
-    await check(`주문 상세 교체 ${theme}: 카드 세 장 가로형·라벨 88·값 112·행 간격 32 유지, 금액 내역은 끝 정렬·강조`, async () => {
+    await check(`주문 상세 교체 ${theme}: 카드 세 장 가로형·라벨 88·값 112·행 간격 32 유지, 결제 카드는 결제 수단만, 금액 내역은 끝 정렬·강조`, async () => {
       await story('기본', theme, { prefix: 'screens-orderdetail', waitPlay: true });
       const m = await inPage(`const lists = [...document.querySelectorAll(${JSON.stringify(LIST)})];
         return { cards: lists.slice(0, 3).map(list => { const card = rect(list.closest('[data-slot="card"]')); return { card, rows: geometry(list) }; }),
@@ -250,8 +250,8 @@ try {
           else near(p.pair.y - rows[i - 1].pair.b, 8, `${p.label} 쌍 사이 8`);
         }
       }
-      // 결제 카드의 결제 금액은 합계 강조다(구분선 + 위 여백 8).
-      const pay = m.cards[2].rows; assert.ok(pay[3].borderTop.startsWith('1px solid')); near(pay[3].dt.y - pay[3].pair.y, 9, '결제 금액 강조');
+      // 0.7.1 C2: 결제 카드는 결제 수단만 — 금액은 표 아래 내역 한 곳에만 있다(카드와 내역에 같은 금액이 두 번 나오지 않는다).
+      assert.deepEqual(m.cards[2].rows.map(p => p.label), ['결제 수단'], '결제 카드에 금액 없음');
       // 목표 57 TD-1 A: 열 합계는 표 안 합계 행(tfoot)이 맡고, 표 아래는 금액 내역(배송비 → 결제 금액)만 남는다.
       // 값 끝 = 금액 열 글자 끝 = 표 오른끝 안쪽 15(셀 여백 14 + 테두리 1).
       const totals = m.totals;

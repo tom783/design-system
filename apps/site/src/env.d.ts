@@ -78,7 +78,8 @@ declare module 'virtual:site-docs' {
 }
 
 /**
- * vite-plugins/screens.ts 가 조립 화면 스토리(screens-*.stories.tsx)와 그 도우미 파일의 `from '../index'` 에서 만든다.
+ * vite-plugins/screens.ts 가 조립 화면 스토리(screens-*.stories.tsx)와 그 도우미 파일(같은 폴더 · docs/examples)이 패키지 진입점
+ * (`'../index'` · `'../../src'`)에서 가져오는 이름으로 만든다.
  * 파일 이름 → 가져다 쓰는 디자인 시스템 이름(부품·부분·함수 섞임 — 부품만 고르는 것은 사이트가 매니페스트로 한다).
  */
 declare module 'virtual:site-screens' {

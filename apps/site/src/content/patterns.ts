@@ -25,7 +25,7 @@ export interface Pattern {
   /** 주소 — 'screens-order-list' */
   slug: string;
   name: string;
-  /** 스토리와 그 도우미가 `../index` 에서 가져오는 이름(부품·부분·함수 섞임) */
+  /** 스토리와 그 도우미(같은 폴더 · docs/examples)가 패키지 진입점에서 가져오는 이름(부품·부분·함수 섞임) */
   imports: string[];
 }
 

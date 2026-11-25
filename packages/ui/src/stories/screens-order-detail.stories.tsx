@@ -18,9 +18,12 @@ import { StoreShell, won } from './screens-shell';
  * 삭제는 더보기 메뉴 안의 destructive 항목 → AlertDialog(기본 포커스 = 취소, 확정 = 채운 danger).
  * 채운 danger 버튼은 확정 단계에서만 나온다. 화면 머리에 브랜드 채움과 에러 채움이 나란히 서지 않는다.
  * 키-값 묶음은 DescriptionList(DESIGN.md §16.7)다. 카드 세 장은 가로형이고 폭이 모자라면 줄을 바꾼다(auto-fit, Card 최소 240).
+ * '결제' 카드는 결제 수단만 쓴다 — 금액(상품 금액·배송비·결제 금액)은 표 아래 내역 한 곳에만 둔다(0.7.1 C2 디자인 총괄). 같은 금액이
+ * 카드와 표 아래 두 곳에 있으면 어느 쪽이 기준인지 다시 맞춰 보게 된다.
  * 주문 상품 표 — 열 합계(수량·금액)는 DataTable summary(tfoot, §4.3 · 규칙 표 T-1~T-12)이고, 표 열이 아닌 금액 내역
  * (배송비 → 결제 금액)은 표 아래 DescriptionList align=end 다(TD-1 A). 내역 값 끝 = 금액 열 글자 끝(표 오른끝 안쪽 15),
  * 합계 행이 있으므로 내역에 '상품 합계'를 다시 쓰지 않는다. 표가 가로로 스크롤되면 금액 열을 오른쪽에 고정한다(TD-2 A).
+ * 품목 몇 개짜리 표라 정렬을 달지 않는다(§24.5 '5행 이하 표에는 정렬·내보내기를 달지 않는다' — 열마다 enableSorting: false).
  * 주문 상품 섹션 머리는 SectionHeader(DESIGN §24.6) — 동작 없는 제목 + 개수('주문 상품 3', 숫자만 S-4). 셸은 상단 바 64.
  */
 const meta = { title: 'Screens/OrderDetail', parameters: { fullBleed: true } } satisfies Meta;
@@ -35,12 +38,13 @@ const items = [
 ];
 type Item = typeof items[number];
 const helper = createDataTableColumnHelper<Item>();
+// 정렬 없음(§24.5) — 표시 열(금액)은 값 함수가 없어 원래 정렬되지 않는다.
 const columns = helper.columns([
-  helper.accessor('id', { header: '상품 코드', cell: cell => <span className="tabular">{cell.getValue()}</span> }),
-  helper.accessor('name', { header: '상품명' }),
-  helper.accessor('option', { header: '옵션' }),
-  helper.accessor('qty', { header: '수량', cell: cell => <span className="tabular">{cell.getValue()}</span> }),
-  helper.accessor('price', { header: '단가', cell: cell => <span className="tabular">{won(cell.getValue())}</span> }),
+  helper.accessor('id', { header: '상품 코드', enableSorting: false, cell: cell => <span className="tabular">{cell.getValue()}</span> }),
+  helper.accessor('name', { header: '상품명', enableSorting: false }),
+  helper.accessor('option', { header: '옵션', enableSorting: false }),
+  helper.accessor('qty', { header: '수량', enableSorting: false, cell: cell => <span className="tabular">{cell.getValue()}</span> }),
+  helper.accessor('price', { header: '단가', enableSorting: false, cell: cell => <span className="tabular">{won(cell.getValue())}</span> }),
   helper.display({ id: 'sum', header: '금액', cell: cell => <span className="tabular">{won(cell.row.original.price * cell.row.original.qty)}</span> }),
 ]);
 const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -143,9 +147,7 @@ function OrderDetailScreen({ menuOpen = false, confirmOpen = false, variant = 'd
             { label: '주소', value: '경기도 ○○시 ○○구 가상로 128, 302동 1104호' }, { label: '요청 사항', value: '부재 시 문 앞에 놓아 주세요' }]} />
         </CardBody></Card>
         <Card><CardHeader><CardTitle>결제</CardTitle></CardHeader><CardBody>
-          <DescriptionList items={[{ label: '결제 수단', value: '간편결제' }, { label: '상품 금액', value: <span className="tabular">{won(subtotal)}</span> },
-            { label: '배송비', value: <span className="tabular">{won(0)}</span> },
-            { label: '결제 금액', value: <span className="tabular">{won(subtotal)}</span>, emphasis: true }]} />
+          <DescriptionList items={[{ label: '결제 수단', value: '간편결제' }]} />
         </CardBody></Card>
       </div>
       <OrderItems variant={variant} />
