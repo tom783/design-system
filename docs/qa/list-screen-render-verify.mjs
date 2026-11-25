@@ -34,6 +34,8 @@ try {
   }
   // 목표 41 단계 2e: 닫기 버튼은 상자 안쪽 오른쪽 위다(DESIGN.md §16.5).
   // 모든 거리는 상자 바깥 경계(getBoundingClientRect)에서 잰다. 한 줄·여러 줄 × 라이트·다크.
+  // 목표 75 1b(11-25 디자인 총괄 답 ①): 누름 면적 32 → 1024 이상 38 · 미만 44(모든 토스트). 이 하네스는 1440 창이라 38 —
+  // 위 10 → 7.75(중심 = 첫 줄 중심 26.75 − 19) · 본문 오른쪽 비움 48 → 54. 44(1024 미만)는 top-bar-render-verify 가 잰다.
   let extra = 0;
   async function check(label, run) {
     extra++;
@@ -94,22 +96,22 @@ try {
     await browser.ev('document.fonts.ready');
     await browser.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 2, y: 2 });
     for (const [button, kind] of [['한 줄 오류', '한 줄'], ['여러 줄 오류', '여러 줄']]) {
-      await check(`Toast 닫기 ${kind}·${theme}: 오른쪽 8·위 10·32×32·본문과 겹치지 않음`, async () => {
+      await check(`Toast 닫기 ${kind}·${theme}: 오른쪽 8·위 7.75·38×38·본문과 겹치지 않음`, async () => {
         await show(button);
         const g = await browser.ev(geometry);
         assert.equal(g.hasClose, true); assert.equal(g.label, '알림 닫기');
-        near(g.right, 8, '오른쪽'); near(g.top, 10, '위');
-        near(g.width, 32, '너비', 0.5); near(g.height, 32, '높이', 0.5);
+        near(g.right, 8, '오른쪽'); near(g.top, 7.75, '위', 0.5);
+        near(g.width, 38, '너비', 0.5); near(g.height, 38, '높이', 0.5);
         assert.deepEqual(g.icon, [16, 16], '아이콘 16px');
         assert.equal(g.transform, 'none', '바깥으로 미는 transform 없음');
         assert.equal(g.overlap, false, '본문 글·내용 상자가 버튼과 겹친다');
         assert.ok(g.contentGap >= 7.5, `내용 상자와 버튼 간격 8px 이상: ${g.contentGap}`);
-        near(g.inset, 48, '본문 오른쪽 여백');
+        near(g.inset, 54, '본문 오른쪽 여백(8 + 38 + 8)');
         if (kind === '여러 줄') assert.ok(g.lines >= 2, `여러 줄이어야 한다: ${g.lines}줄`);
         else assert.equal(g.lines, 1);
-        // 상태 아이콘과 닫기 버튼은 같은 기준(첫 줄 글자 중심)이다. 닫기는 위 10 고정이라 0.75px 차이를 허용한다.
+        // 상태 아이콘과 닫기 버튼은 같은 기준(첫 줄 글자 중심)이다. 닫기 위치도 이제 첫 줄 중심에서 계산한다(예전 위 10 고정은 0.75 차이).
         near(g.iconCenter, g.firstLine, '상태 아이콘 중심 = 첫 줄 중심', 0.5);
-        near(g.closeCenter, g.firstLine, '닫기 중심 = 첫 줄 중심', 1);
+        near(g.closeCenter, g.firstLine, '닫기 중심 = 첫 줄 중심', 0.5);
         // 한 줄은 바뀌기 전(52f233a 실측: 높이 53.5 · 아이콘 왼쪽 13 · 위 16.75 = 상자 세로 가운데)과 같아야 한다.
         if (kind === '한 줄') {
           near(g.toastHeight, 53.5, '한 줄 높이', 0.5); near(g.iconLeft, 13, '아이콘 왼쪽', 0.25);
