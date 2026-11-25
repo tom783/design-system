@@ -1,0 +1,44 @@
+@layer components {
+  /* 개수 표식(상단 바 규격 3절 · Figma 223:912 · 223:955). 높이·최소 폭 18 은 토큰이 없어 16 + 2 로 쓴다.
+     글자 13/20 이 상자 18 보다 2 높다 — 세로 가운데에서 위아래 1px 씩 넘치지만 상자가 잘라 보이지 않는다(Figma 도 leading 20 · 높이 18).
+     숫자는 고정폭이라 같은 자릿수는 같은 폭이다("11" 과 "88" 이 같은 폭 — Figma 223:956). */
+  .ds-count-badge {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    box-sizing: border-box;
+    block-size: calc(var(--space-16) + var(--space-2));
+    min-inline-size: calc(var(--space-16) + var(--space-2));
+    padding-inline: var(--space-4);
+    border-radius: var(--radius-full);
+    /* 일반 = 중립 반전. 브랜드·위험 색을 쓰지 않는다 — 급함만 위험 색이다(색 하나에 뜻 하나). */
+    background: var(--text-primary);
+    color: var(--bg-surface);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .ds-count-badge[data-urgent] { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+  /* 급함 점 6 — 색만으로 급함을 알리지 않게 모양을 더한다(P5). 점과 숫자 사이 2(Figma '급함 점과 간격' 8 = 6 + 2). */
+  .ds-count-badge-dot {
+    flex: none;
+    inline-size: calc(var(--space-4) + var(--space-2));
+    block-size: calc(var(--space-4) + var(--space-2));
+    border-radius: var(--radius-full);
+    background: currentColor;
+  }
+  /* 점 표식 — 접힌 레일의 8px(규격 3절). 급함 점은 위험 글자색이다. */
+  .ds-count-badge[data-variant="dot"] {
+    inline-size: var(--space-8);
+    block-size: var(--space-8);
+    min-inline-size: 0;
+    padding: 0;
+  }
+  .ds-count-badge[data-variant="dot"][data-urgent] { background: var(--status-danger-fg); }
+}

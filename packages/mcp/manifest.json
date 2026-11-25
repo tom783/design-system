@@ -4888,6 +4888,16 @@
           "type": "ReactNode"
         },
         {
+          "name": "count",
+          "type": "number | null",
+          "doc": "개수 표식(CountBadge). `badge`(글자)와 같은 자리에 알약으로 서고, 접힌 레일에서는 아이콘 오른쪽 위 점 8px 로 줄며\n접근 이름에 \"라벨, 12개\"로 실린다. 0·음수는 숨김, null 은 불러오기 실패로 숨김, 100 이상은 \"99+\"."
+        },
+        {
+          "name": "countUrgent",
+          "type": "boolean",
+          "doc": "개수 표식을 급함(위험 색 + 점)으로 그린다."
+        },
+        {
           "name": "current",
           "type": "boolean"
         },
@@ -4905,6 +4915,7 @@
         "React.ComponentProps<'a'>"
       ],
       "slots": [
+        "count-badge",
         "guide-bubble",
         "guide-tooltip",
         "side-nav-badge",
@@ -5118,6 +5129,353 @@
         "section-header-link",
         "section-header-more",
         "section-header-title"
+      ]
+    },
+    {
+      "name": "ContextSwitcher",
+      "category": "navigation",
+      "purpose": "상단 바에서 지금 제품·스토어 같은 맥락을 보이고 바꾼다.",
+      "useWhen": [
+        "AppShell header 왼쪽에 지금 맥락과 전환 목록을 둘 때"
+      ],
+      "dont": [
+        "같은 전환기를 header와 SideNav에 동시에 두지 마라",
+        "조직 전환은 header가 아니라 사용자 메뉴의 하위 메뉴다"
+      ],
+      "rules": [
+        {
+          "text": "items에 href가 있으면 링크 이동, 없으면 선택이다. onValueChange가 Promise면 진행 표시 뒤 실패 시 원래 값과 오류 토스트다.",
+          "source": "24.8"
+        },
+        {
+          "text": "고를 것이 하나면 정적 글자다. 항목 8개 이상이면 검색을 둔다. 이동 전 확인은 onBeforeSwitch 이벤트를 취소해 막는다.",
+          "source": "24.8"
+        }
+      ],
+      "related": [
+        "AppShell",
+        "NotificationCenter",
+        "DropdownMenu"
+      ],
+      "keywords": [
+        "맥락 전환",
+        "스토어 전환",
+        "제품 전환",
+        "상단 바",
+        "현재 스토어",
+        "context switcher"
+      ],
+      "parts": [
+        "ContextSwitcherGroup"
+      ],
+      "source": "components/context-switcher/context-switcher.tsx",
+      "props": [
+        {
+          "name": "kind",
+          "type": "string",
+          "required": true,
+          "doc": "맥락의 종류(예: \"스토어\", \"제품\"). 낭독 이름 \"<종류>: <현재 값>\", 검색 \"<종류> 검색\", 결과 없음 \"일치하는 <종류>가 없습니다\"."
+        },
+        {
+          "name": "items",
+          "type": "ContextSwitcherItem[]",
+          "required": true,
+          "doc": "고를 항목. `href` 가 있으면 링크 항목(이동), 없으면 선택 항목(`onValueChange`)이다."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "doc": "지금 맥락 값(제어)."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "doc": "비제어 초기값. value를 주지 않을 때 첫 렌더에만 읽는다."
+        },
+        {
+          "name": "onValueChange",
+          "type": "((value: string) => void | Promise<unknown>)",
+          "doc": "선택 항목을 골랐을 때. Promise 를 돌려주면 끝날 때까지 트리거에 스피너 + 새 값을 보이고, 실패(reject)하면 원래 값으로 돌아가며\n오류 토스트(\"<종류>를 바꾸지 못했습니다\")를 띄운다. 링크 항목에는 불리지 않는다(주소가 바뀌면 앱이 value 를 바꾼다)."
+        },
+        {
+          "name": "onBeforeSwitch",
+          "type": "((event: ContextSwitchEvent) => void)",
+          "doc": "이동·선택 직전 취소 가능 이벤트. `event.preventDefault()` 로 막는다(저장하지 않은 입력 확인, 앱 라우터 이동)."
+        },
+        {
+          "name": "allItem",
+          "type": "ContextSwitcherItem",
+          "doc": "\"전체\" 항목 — 목록 맨 위, 아래 구분선."
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "doc": "트리거의 선택 아이콘 20px. 생략하면 지금 항목의 아이콘."
+        },
+        {
+          "name": "showKind",
+          "type": "boolean",
+          "doc": "트리거 앞에 종류 이름을 작은 글자로 보인다(선택). 낭독 이름은 보이든 말든 \"<종류>: <값>\"이다."
+        },
+        {
+          "name": "searchThreshold",
+          "type": "number",
+          "doc": "항목이 이 수 이상이면 패널 맨 위에 검색 입력을 둔다(\"전체\" 제외). 기본 8."
+        },
+        {
+          "name": "guide",
+          "type": "{ text: string; link?: { label: string; href: string; } | undefined; }",
+          "doc": "패널 맨 아래 안내 줄(위 구분선). 링크는 하나까지."
+        },
+        {
+          "name": "state",
+          "type": "\"error\" | \"idle\" | \"loading\"",
+          "doc": "목록 상태. loading = 스켈레톤 3줄, error = 오류 + 다시 시도(`onRetry`)."
+        },
+        {
+          "name": "onRetry",
+          "type": "(() => void)",
+          "doc": "목록 실패의 다시 시도."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "doc": "열림(제어)."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "doc": "비제어 초기 열림."
+        },
+        {
+          "name": "onOpenChange",
+          "type": "((open: boolean) => void)"
+        },
+        {
+          "name": "className",
+          "type": "string"
+        }
+      ],
+      "slots": [
+        "button",
+        "context-switcher",
+        "context-switcher-content",
+        "context-switcher-empty",
+        "context-switcher-guide",
+        "context-switcher-item",
+        "context-switcher-list",
+        "context-switcher-loading",
+        "context-switcher-search",
+        "error-state",
+        "guide-bubble",
+        "guide-tooltip",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
+      ]
+    },
+    {
+      "name": "ContextSwitcherGroup",
+      "partOf": "ContextSwitcher",
+      "purpose": "header 왼쪽에 전환기 0~2개를 구분선으로 묶고 좁은 폭에서 한 트리거로 접는다.",
+      "props": [
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "required": true,
+          "doc": "ContextSwitcher 0~2개(권장 최대 2). 사이에 세로 구분선을 둔다."
+        }
+      ],
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "slots": [
+        "button",
+        "context-switcher",
+        "context-switcher-content",
+        "context-switcher-empty",
+        "context-switcher-group",
+        "context-switcher-item",
+        "context-switcher-list",
+        "context-switcher-loading",
+        "error-state",
+        "guide-bubble",
+        "guide-tooltip",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
+      ]
+    },
+    {
+      "name": "NotificationCenter",
+      "category": "overlay",
+      "purpose": "상단 바의 알림 벨과 알림 목록 패널(1024px 이상 팝오버, 미만 Sheet)을 제공한다.",
+      "useWhen": [
+        "AppShell headerEnd에서 사용자 메뉴 바로 앞에 알림 진입을 둘 때"
+      ],
+      "dont": [
+        "권한 판단·폴링·알림 등급 규칙을 부품에 넣지 마라(앱이 데이터로 넘긴다)",
+        "다른 곳에서 생긴 알림을 바로 알릴 때는 toast.notify를 쓴다"
+      ],
+      "rules": [
+        {
+          "text": "count는 안 읽음 수, items는 앱이 탭·필터를 적용한 목록이다. 탭은 tabs에 Tabs, 필터는 toolbar에 Select를 넣는다.",
+          "source": "24.10"
+        },
+        {
+          "text": "state는 loading·error, 끝 표시는 hasMore·loadingMore, 열린 채 새 알림은 pendingCount·onShowPending이다.",
+          "source": "24.10"
+        }
+      ],
+      "related": [
+        "AppShell",
+        "ContextSwitcher",
+        "CountBadge",
+        "Tabs"
+      ],
+      "keywords": [
+        "알림",
+        "알림 센터",
+        "벨",
+        "알림 목록",
+        "안 읽음",
+        "notification"
+      ],
+      "source": "components/notification-center/notification-center.tsx",
+      "props": [
+        {
+          "name": "count",
+          "type": "number | null",
+          "doc": "안 읽음 개수 — 벨의 개수 표식. 0 은 숨김, null 은 개수를 불러오지 못한 것(숫자 숨김), 100 이상은 \"99+\"."
+        },
+        {
+          "name": "urgent",
+          "type": "boolean",
+          "doc": "급한 알림이 있다 — 벨 표식이 위험 색 + 점, 이름에 \", 급한 알림 있음\"."
+        },
+        {
+          "name": "items",
+          "type": "NotificationItem[]",
+          "doc": "알림 목록(앱이 탭·필터를 적용한 결과)."
+        },
+        {
+          "name": "state",
+          "type": "\"error\" | \"idle\" | \"loading\"",
+          "doc": "목록 상태. loading = 스켈레톤 4줄, error = 오류 + 다시 시도(`onRetry`)."
+        },
+        {
+          "name": "onRetry",
+          "type": "(() => void)"
+        },
+        {
+          "name": "emptyTitle",
+          "type": "string",
+          "doc": "비어 있을 때 제목·설명(탭별 문구는 앱이 준다). 기본 \"알림이 없습니다\"."
+        },
+        {
+          "name": "emptyDescription",
+          "type": "string"
+        },
+        {
+          "name": "tabs",
+          "type": "ReactNode",
+          "doc": "머리 아래 탭 자리 — 기존 Tabs(TabsList)를 넣는다."
+        },
+        {
+          "name": "toolbar",
+          "type": "ReactNode",
+          "doc": "도구 줄 슬롯 하나 — 출처 필터 등 기존 Select."
+        },
+        {
+          "name": "onMarkAllRead",
+          "type": "(() => void)",
+          "doc": "\"모두 읽음\". 주지 않으면 버튼을 그리지 않는다. 급한(미처리) 알림의 기한 표시는 읽어도 남는다."
+        },
+        {
+          "name": "settingsHref",
+          "type": "string",
+          "doc": "알림 설정 화면 주소(설정 아이콘 링크)."
+        },
+        {
+          "name": "hasMore",
+          "type": "boolean",
+          "doc": "더 불러올 알림이 있다 — 맨 아래 \"더 불러오기\". 없으면 \"더 이상 알림이 없습니다\"."
+        },
+        {
+          "name": "loadingMore",
+          "type": "boolean",
+          "doc": "다음 목록을 불러오는 중 — \"더 불러오기\" 자리에 스피너 + \"불러오는 중\"."
+        },
+        {
+          "name": "onLoadMore",
+          "type": "(() => void)"
+        },
+        {
+          "name": "pendingCount",
+          "type": "number",
+          "doc": "열린 채 새로 도착해 아직 반영하지 않은 알림 수 — 목록 맨 위 고정 줄 \"새 알림 n개 · 보기\". 목록은 저절로 밀리지 않는다."
+        },
+        {
+          "name": "onShowPending",
+          "type": "(() => void)",
+          "doc": "\"보기\"를 눌렀다 — 앱이 새 알림을 목록에 반영한다. 목록은 맨 위로 간다."
+        },
+        {
+          "name": "onNavigate",
+          "type": "((item: NotificationItem, event: MouseEvent<HTMLAnchorElement, MouseEvent>) => void)",
+          "doc": "알림 링크를 눌렀다. 앱 라우터로 옮길 때 `event.preventDefault()` 뒤 직접 이동한다. 패널은 닫힌다."
+        },
+        {
+          "name": "now",
+          "type": "number | Date",
+          "doc": "상대 시각의 기준(기본: 그린 시각). 화면 시험·스토리에서 고정할 때 쓴다."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "doc": "열림(제어)."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "doc": "비제어 초기 열림."
+        },
+        {
+          "name": "onOpenChange",
+          "type": "((open: boolean) => void)"
+        },
+        {
+          "name": "className",
+          "type": "string"
+        }
+      ],
+      "slots": [
+        "button",
+        "count-badge",
+        "dialog-close",
+        "dialog-close-icon",
+        "dialog-overlay",
+        "dialog-trigger",
+        "empty-state",
+        "error-state",
+        "notification-bell",
+        "notification-center",
+        "notification-center-body",
+        "notification-center-end",
+        "notification-center-loading",
+        "notification-center-loading-more",
+        "notification-center-pending",
+        "notification-center-tabs",
+        "notification-center-title",
+        "notification-center-toolbar",
+        "notification-row",
+        "sheet-content",
+        "skeleton",
+        "state-description",
+        "state-graphic",
+        "state-title"
       ]
     },
     {
@@ -5792,10 +6150,23 @@
       "name": "TabsTrigger",
       "partOf": "Tabs",
       "purpose": "패널을 선택하는 탭 버튼이다.",
+      "props": [
+        {
+          "name": "count",
+          "type": "number | null",
+          "doc": "개수 표식(CountBadge) — 라벨 뒤 알약. 0·음수·null(실패)은 숨김, 100 이상은 \"99+\". 탭 이름에 \"처리 필요 3개\"로 실린다."
+        },
+        {
+          "name": "countUrgent",
+          "type": "boolean",
+          "doc": "개수 표식을 급함(위험 색 + 점)으로 그린다."
+        }
+      ],
       "extends": [
         "React.ComponentProps<typeof Primitive.Trigger>"
       ],
       "slots": [
+        "count-badge",
         "tabs-trigger"
       ]
     },
@@ -7244,6 +7615,71 @@
       ],
       "slots": [
         "status-chip"
+      ]
+    },
+    {
+      "name": "CountBadge",
+      "category": "status",
+      "purpose": "벨·메뉴·탭 옆에 개수를 작은 알약으로 표시한다.",
+      "useWhen": [
+        "안 읽음·처리할 일의 개수를 아이콘·메뉴·탭 옆에 붙일 때"
+      ],
+      "dont": [
+        "0이나 불러오기 실패를 0으로 보이지 마라",
+        "급함을 색만으로 구분하지 마라"
+      ],
+      "rules": [
+        {
+          "text": "0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 색과 점, dot은 접힌 레일의 점 8px다.",
+          "source": "24.9"
+        },
+        {
+          "text": "SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.",
+          "source": "24.9"
+        }
+      ],
+      "related": [
+        "NotificationCenter",
+        "SideNav",
+        "Tabs"
+      ],
+      "keywords": [
+        "개수",
+        "배지",
+        "안 읽음 수",
+        "뱃지",
+        "숫자 표시",
+        "badge"
+      ],
+      "source": "components/count-badge/count-badge.tsx",
+      "props": [
+        {
+          "name": "count",
+          "type": "number | null | undefined",
+          "required": true,
+          "doc": "개수. 0·음수면 그리지 않는다. null·undefined 는 불러오기 실패로 보고 숨긴다(0 으로 보이지 않는다). 100 이상은 \"99+\"."
+        },
+        {
+          "name": "urgent",
+          "type": "boolean",
+          "doc": "급함 — 위험 색 + 왼쪽 점 6px. 색만으로 구분하지 않고 낭독에도 \"급함\"을 더한다."
+        },
+        {
+          "name": "dot",
+          "type": "boolean",
+          "doc": "숫자 없이 점 8px 만 — 접힌 레일처럼 숫자 자리가 없을 때. 낭독 글자는 그대로 남는다."
+        },
+        {
+          "name": "unit",
+          "type": "string",
+          "doc": "낭독 단위. 기본 \"개\"(\"12개\", \"99개 이상\"). 주문 같은 레코드는 \"건\"(DESIGN.md §25)."
+        }
+      ],
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "slots": [
+        "count-badge"
       ]
     },
     {

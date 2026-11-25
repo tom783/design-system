@@ -77,6 +77,12 @@ export {
   type AppShellProps, type SideNavProps, type SideNavGroupProps, type SideNavItemProps, type PageHeaderProps,
 } from './components/app-shell';
 export { SectionHeader, type SectionHeaderProps, type SectionHeaderAction } from './components/section-header';
+export {
+  ContextSwitcher, ContextSwitcherGroup,
+  type ContextSwitcherProps, type ContextSwitcherGroupProps, type ContextSwitcherItem, type ContextSwitchEvent,
+} from './components/context-switcher';
+export { NotificationCenter, type NotificationCenterProps, type NotificationItem } from './components/notification-center';
+export { CountBadge, type CountBadgeProps } from './components/count-badge';
 export { Pagination, type PaginationProps } from './components/pagination';
 export { SheetContent, SheetBody, type SheetContentProps } from './components/sheet';
 export { FileUpload, type FileUploadProps, type FileUploadItem } from './components/file-upload';

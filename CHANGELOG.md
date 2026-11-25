@@ -24,6 +24,8 @@
 - **모든 토스트의 닫기 버튼이 커졌다(32 → 1024 이상 38 · 미만 44).** 닫기 버튼 크기·위치나 본문 줄바꿈 위치를 단정하던 시험·스냅샷만 고친다(아래 바뀐 동작).
 - 선택: 업무 알림은 `toast.notify`, 권한 없음·찾을 수 없음 화면은 `EmptyState size="page"`, 사용자 메뉴는 DropdownMenu + Avatar 조합
   예시(`docs/examples/user-menu.tsx`)를 쓴다. 지금 직접 만든 것이 있으면 옮길 수 있다.
+- 선택: 상단 바 왼쪽의 제품·스토어 표시는 `ContextSwitcher`(두 개면 `ContextSwitcherGroup`), 알림 벨과 목록은 `NotificationCenter`,
+  메뉴·탭 옆 개수는 `CountBadge`(SideNavItem·TabsTrigger 는 `count`)로 옮길 수 있다. 직접 만든 것이 없으면 할 일이 없다.
 
 ### 추가
 
@@ -55,6 +57,34 @@
   - 640 미만 조직 전환(목표 75 1c · Figma 231:1553 · DESIGN.md §24.7): 하위 메뉴 대신 메뉴 안에 펼친다. 메뉴 폭 278 · 조직 항목 앞 상점
     아이콘 20 · 현재 조직은 오른쪽 체크 16 + 굵게 + 선택 바탕 · 묶음 위·아래 구분선 없음(로그아웃 위만). 낭독은 `menuitemradio`·`aria-checked`·
     묶음 이름 '조직 전환' 그대로다. 640 이상 하위 메뉴 모양은 그대로다. 부품 변화 없음(예시 조합만).
+
+- **맥락 전환기 `ContextSwitcher` · 묶음 `ContextSwitcherGroup`** (목표 75 2단계 · 상단 바 규격 2절 · Figma 223:483 · 223:737 · 223:1766 ·
+  223:1923 · DESIGN.md §24.8). 지금 제품·스토어 같은 맥락을 header 왼쪽에 보이고 바꾼다. 타입 `ContextSwitcherProps` ·
+  `ContextSwitcherGroupProps` · `ContextSwitcherItem` · `ContextSwitchEvent`.
+  - 트리거 38(1024 미만 44) · [아이콘 20] + 현재 값 600 + 화살표 · 최대 240 말줄임 + 툴팁 · 낭독 "<종류>: <현재 값>"(`kind`).
+    고를 것이 하나면 정적 글자("현재 <종류>: <값>"). `showKind` 로 앞말을 작게 보인다.
+  - 항목 `href` 가 있으면 링크(⌘/Ctrl·가운데 클릭 새 탭), 없으면 선택 — `onValueChange` 가 Promise 면 스피너 16 + 새 값, 실패하면 원래 값 +
+    오류 토스트("<종류>를 바꾸지 못했습니다", 닫을 때까지). 둘 다 `onBeforeSwitch(event)` 에서 `event.preventDefault()` 로 막는다.
+  - 패널 240~360 · 최대 높이 400(목록만 스크롤) · `allItem`("전체" 맨 위 + 구분선) · `guide`(안내 줄, 링크 하나) · 항목 8개 이상 검색
+    (`searchThreshold`, 초성) · `state` loading(스켈레톤 3줄)·error(다시 시도 `onRetry`) · 비활성 항목 + 사유 툴팁(`disabledReason`).
+  - 키보드: 화살표 · Enter · Esc 닫고 트리거로 · 첫 글자 이동(한글 초성 "ㅅ" → "스토어" — 메뉴 기본 첫 글자 검색은 초성을 몰랐다).
+  - 묶음: 사이 구분선 1×20 · 좌우 8 · 1024 미만은 둘째부터 아이콘 + 툴팁 · 그래도 넘치면 "맥락" 한 트리거로 접어 종류별 목록.
+    전환기가 묶음에 스스로 등록하므로 앱 컴포넌트로 감싸도 된다.
+- **알림 센터 `NotificationCenter`** (상단 바 규격 4·5절 · Figma 223:977 · 223:1139 · 223:1579 · 223:2044 · DESIGN.md §24.10). 벨(알림 진입)과
+  패널을 한 부품으로 둔다. 타입 `NotificationCenterProps` · `NotificationItem`.
+  - 벨: Button ghost iconOnly 38(1024 미만 44) + CountBadge · 이름 "알림, 안 읽음 n개"(+ ", 급한 알림 있음", 0·실패 "알림") · 열림 = 선택 바탕.
+  - 패널: 1024 이상 팝오버 400 · 최대 높이 min(640, 화면 − 96), 미만 오른쪽 Sheet(390 은 전체 폭) · 대화상자 "알림" · 열면 제목에 초점 ·
+    Esc 로 벨에 복귀 · 머리 "모두 읽음"(`onMarkAllRead`)·설정(`settingsHref`)·탭 자리(`tabs`)·도구 줄(`toolbar`).
+  - 알림 한 줄(`items`): 출처(20자)·시각(방금·n분 전·어제 HH:MM·MM.DD HH:MM·YYYY.MM.DD, 툴팁 전체 일시)·제목(2줄)·건수 · 기한(등급
+    normal·soon·overdue) · 안 읽음 = 중립 점 8 + 600 · 급함 = 경고 아이콘 16 + 위험 색 기한 · 낭독 "<출처>, <제목>, <건수>, <기한>, <시각>, 안 읽음".
+  - 상태: `state` loading·error(`onRetry`) · 비어 있음(`emptyTitle`·`emptyDescription`) · `hasMore`·`loadingMore`·`onLoadMore` · 목록 끝 ·
+    열린 채 새 알림 `pendingCount`·`onShowPending`("새 알림 n개 · 보기", 목록이 저절로 밀리지 않는다) · `onNavigate`.
+  - 권한·폴링·등급 규칙은 넣지 않는다 — 앱이 데이터로 넘긴다.
+- **개수 표식 `CountBadge`** (상단 바 규격 3절 · Figma 223:912 · 223:955 · DESIGN.md §24.9). 높이 18 · 최소 폭 18 · 숫자 13 600 고정폭.
+  0·음수·null(불러오기 실패) 숨김 · 100 이상 "99+"(낭독 "99개 이상") · `urgent` 위험 색 + 점 6 · `dot` 점 8 · `unit` 낭독 단위(기본 "개").
+  타입 `CountBadgeProps`.
+- **SideNavItem `count`·`countUrgent` · TabsTrigger `count`·`countUrgent`** — 같은 CountBadge 를 쓴다. SideNav 는 `badge` 자리에 알약,
+  접힌 레일에서는 아이콘 오른쪽 위 점 8 이고 이름이 "라벨, 12개"로 개수를 읽는다. 주지 않으면 지금 모양 그대로다(`badge` 도 그대로).
 
 ### 바뀐 동작 (마이그레이션)
 
@@ -93,6 +123,13 @@
 - 단위 시험: `toast/notification.test.mjs`(등급·묶음 키·한 번에 하나·고정 우선·`toast.notify` 배선·기존 API 유지) ·
   `toast/toast-size.test.mjs`(닫기 38/44 · 이동 44 토큰·경계) · `state/state-page.test.mjs`(status·h1·행동·낭독 문구 · 1024 미만 행동 = Button lg 대조) ·
   `app-shell/header.test.mjs`(64 토큰·슬롯·header 없음).
+- 상단 바 2단계 시험: 단위 `count-badge/count.test.mjs`(0/99/100/실패 경계 · SideNav·Tabs 배선) · `context-switcher/context-switcher.test.mjs`
+  (상태 전이 · 취소 이벤트 · 첫 글자 이동 · 낭독 문구 · 정적 항목) · `notification-center/notification-center.test.mjs`(벨 이름 · 시간 표기 ·
+  한 줄 낭독 · 상태 8개). 하네스 `top-bar-render-verify` 에 전환기·벨·알림 센터·개수 표식 62건을 더했다(진짜 Tab/Esc 초점 복귀 ·
+  CDP 접근성 트리로 role·이름·aria-live · 네 폭 넘침 0) — 147건. 예시 `docs/examples/app-header.tsx` 는 이제 전환기 2개 + 알림 센터 +
+  사용자 메뉴 조합이다(`Screens/AppHeader` 헤더 · 헤더 선택실패).
+- MCP(최소 항목, 지침 본작업은 3단계): ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge 의도 항목 · 색인 26,926B → 28,296B /
+  40KB · 목록 21,142B → 21,993B / 36KB. `server.test` 목록 기준선에 네 항목을 명시적으로 더했다.
 - MCP: AppShell `header` 설명과 `headerEnd` prop·슬롯 2개, EmptyState·ErrorState `size`·`secondaryAction`·`description` 타입이 매니페스트에
   생성으로 들어갔다. 지침 문장(purpose·useWhen·dont·rules)은 이번에 바꾸지 않았다(상단 바 3단계). State 행동 묶음은 `data-slot` 없이
   클래스(`ds-state-actions`)만 둔다 — 상태 화면을 품은 DataTable 의 슬롯 목록이 MCP 기준선(R28)으로 고정돼 있어서다.

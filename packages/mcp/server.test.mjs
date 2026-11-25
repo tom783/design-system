@@ -110,7 +110,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
       // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
       // 목표 57 FormActionBar 553B · DataTable summary 313B · DescriptionList 금액 내역 69B.
       // 0.6.0 3a FieldList +669B · 목표 64(0.6.0 3b) SectionHeader +736B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736, '색인 전송량을 잰다');
+      // 목표 75 2단계 ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge +1,370B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -216,6 +217,16 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     name: 'SectionHeader', kind: 'component', purpose: '카드 밖 페이지 섹션의 제목·보조 설명·섹션 동작을 한 줄로 두고 섹션을 그 제목 이름으로 묶는다.',
     import: "import { SectionHeader } from '@s2life/ui';",
   }, {
+    // 목표 75 2단계: 상단 바 새 부품 — 맥락 전환기(+ 묶음 부품)·알림 센터를 SectionHeader 다음에 더한다.
+    name: 'ContextSwitcher', kind: 'component', purpose: '상단 바에서 지금 제품·스토어 같은 맥락을 보이고 바꾼다.',
+    import: "import { ContextSwitcher } from '@s2life/ui';",
+  }, {
+    name: 'ContextSwitcherGroup', kind: 'component', purpose: 'header 왼쪽에 전환기 0~2개를 구분선으로 묶고 좁은 폭에서 한 트리거로 접는다.',
+    import: "import { ContextSwitcherGroup } from '@s2life/ui';", partOf: 'ContextSwitcher',
+  }, {
+    name: 'NotificationCenter', kind: 'component', purpose: '상단 바의 알림 벨과 알림 목록 패널(1024px 이상 팝오버, 미만 Sheet)을 제공한다.',
+    import: "import { NotificationCenter } from '@s2life/ui';",
+  }, {
     name: 'Carousel', kind: 'component', purpose: '배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.',
     import: "import { Carousel } from '@s2life/ui';",
   }, {
@@ -253,6 +264,10 @@ test('R28 지침을 반영한 기준선의 구조화 결과·text 직렬화와 �
     // 목표 57: 폼 하단 고정 액션 줄 FormActionBar 를 FormFlow 다음에 더한다.
     name: 'FormActionBar', kind: 'component', purpose: '등록·편집 폼의 취소·저장(과 편집의 삭제)을 화면 아래 한 줄로 고정한다.',
     import: "import { FormActionBar } from '@s2life/ui';",
+  }] : [entry]).flatMap(entry => entry.name === 'StatusChip' ? [entry, {
+    // 목표 75 2단계: 개수 표식 CountBadge 를 StatusChip 다음에 더한다.
+    name: 'CountBadge', kind: 'component', purpose: '벨·메뉴·탭 옆에 개수를 작은 알약으로 표시한다.',
+    import: "import { CountBadge } from '@s2life/ui';",
   }] : [entry]).flatMap(entry => entry.name === 'Field' ? [entry, {
     // 2026-11-22: 같은 줄 정렬 FormRow 를 Field 의 부품으로 더한다.
     name: 'FormRow', kind: 'component', purpose: '같은 줄 Field들의 레이블·설명·입력·오류 행을 맞춘다.',

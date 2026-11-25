@@ -1,0 +1,159 @@
+@layer components {
+  /* 맥락 전환기(상단 바 규격 2절 · Figma 223:483 · 223:740 · 223:1766 · 223:1923).
+     치수 상수(토큰 없음): 트리거 최대 폭 15rem(240) · 패널 폭 15rem~22.5rem(240~360) · 패널 최대 높이 25rem(400). */
+  .ds-context-switcher-group { display: flex; flex: 1 1 auto; align-items: center; min-width: 0; }
+  .ds-context-switcher-group-inner { display: flex; flex: none; align-items: center; gap: var(--space-8); }
+  /* 전환기 사이 구분: 세로 1px · 높이 20 · 좌우 8(묶음 간격) — 규격 1절. */
+  .ds-context-switcher-divider { flex: none; inline-size: var(--border-width); block-size: var(--space-20); background: var(--border-subtle); }
+
+  .ds-context-switcher-trigger, .ds-context-switcher-static {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: var(--space-8);
+    box-sizing: border-box;
+    block-size: var(--control-h-md);
+    min-inline-size: 0;
+    max-inline-size: 15rem;
+    padding-inline: var(--space-12);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .ds-context-switcher-trigger { border: 0; background: transparent; font-family: inherit; cursor: pointer; }
+  .ds-context-switcher-trigger:hover { background: var(--bg-hover); }
+  .ds-context-switcher-trigger[aria-busy="true"] { cursor: progress; }
+  /* 좁은 폭 둘째 전환기: 아이콘만 44×44, 화살표 없음 — 이름은 툴팁·낭독으로(Figma 223:1769). */
+  .ds-context-switcher-trigger[data-icon-only] { justify-content: center; inline-size: var(--control-h-md); padding: 0; }
+  .ds-context-switcher-kind { flex: none; color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: var(--text-caption-weight); letter-spacing: var(--text-caption-ls); }
+  .ds-context-switcher-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; }
+  .ds-context-switcher-icon > svg { inline-size: var(--space-20); block-size: var(--space-20); }
+  /* 진행 중에는 선택 아이콘 자리에 스피너 16(규격 2절 · Figma 223:522). */
+  .ds-context-switcher-icon > svg.ds-context-switcher-spinner { inline-size: var(--space-16); block-size: var(--space-16); animation: ds-context-switcher-spin 1s linear infinite; }
+  .ds-context-switcher-value { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
+  .ds-context-switcher-chevron { flex: none; inline-size: var(--space-16); block-size: var(--space-16); }
+
+  .ds-context-switcher-content {
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-inline-size: max(var(--radix-dropdown-menu-trigger-width), 15rem);
+    max-inline-size: min(22.5rem, var(--radix-dropdown-menu-content-available-width));
+    max-block-size: min(25rem, var(--radix-dropdown-menu-content-available-height));
+    overflow: hidden;
+    border: var(--border-width) solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-overlay);
+    outline: none;
+  }
+  /* 목록만 스크롤한다 — 검색 입력·안내 줄은 제자리(규격 2절 "넘치면 목록만 스크롤"). */
+  .ds-context-switcher-list { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .ds-context-switcher-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    box-sizing: border-box;
+    min-block-size: var(--control-h-md);
+    padding: var(--space-8) var(--space-12);
+    color: var(--text-primary);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+    font-weight: 400;
+    text-decoration: none;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+  }
+  .ds-context-switcher-item[data-highlighted] { background: var(--bg-hover); }
+  /* 지금 항목 = 선택 바탕 + 600 + 오른쪽 체크 16 — 색만으로 알리지 않는다(P5). */
+  .ds-context-switcher-item[data-selected] { background: var(--bg-selected); font-weight: 600; }
+  /* 키보드 초점은 바탕이 아니라 링으로 — 선택 바탕 위에서도 보이게 안쪽에 그린다(목록이 넘침을 자른다). */
+  .ds-context-switcher-item:focus-visible { outline: var(--focus-width) solid var(--border-focus); outline-offset: calc(-1 * var(--focus-width)); }
+  .ds-context-switcher-item[aria-disabled="true"] { color: var(--text-disabled); cursor: not-allowed; background: transparent; }
+  .ds-context-switcher-item-icon { display: inline-flex; flex: none; }
+  .ds-context-switcher-item-icon > svg { inline-size: var(--space-20); block-size: var(--space-20); }
+  .ds-context-switcher-item-label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ds-context-switcher-check { flex: none; inline-size: var(--space-16); block-size: var(--space-16); margin-inline-start: auto; }
+  /* "전체" 아래 구분선 1px(규격 2절) — 아래 4 띄운다(Figma '전체 구분 정렬'). */
+  .ds-context-switcher-separator { block-size: var(--border-width); margin-block-end: var(--space-4); background: var(--border-subtle); }
+
+  /* 검색(sm 32) — 감싼 label 이 누름 면적을 44 로 넓힌다(입력 32 + 위 8 + 아래 4). */
+  .ds-context-switcher-search { position: relative; display: flex; flex: none; align-items: center; padding: var(--space-8) var(--space-8) var(--space-4); }
+  .ds-context-switcher-search-icon { position: absolute; inset-inline-start: calc(var(--space-8) + var(--space-12)); inline-size: var(--space-16); block-size: var(--space-16); color: var(--text-secondary); pointer-events: none; }
+  .ds-context-switcher-search-input {
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: var(--control-h-sm);
+    padding-inline: calc(var(--space-12) + var(--space-16) + var(--space-8)) var(--space-12);
+    border: var(--border-width) solid var(--border-input);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+  }
+  .ds-context-switcher-search-input::placeholder { color: var(--text-tertiary); }
+  .ds-context-switcher-empty { padding: var(--space-8) var(--space-12) var(--space-12); color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: var(--text-caption-weight); letter-spacing: var(--text-caption-ls); }
+
+  /* 목록 로딩: 스켈레톤 3줄 — 줄 높이 38, 표식 12 + 문구 10(Figma 223:506). */
+  .ds-context-switcher-skeleton { display: flex; align-items: center; gap: var(--space-12); block-size: var(--control-h-md); padding-inline: var(--space-12); }
+
+  /* 안내 줄 — 맨 아래 위 구분선, caption secondary, 링크 하나까지(규격 2절). */
+  .ds-context-switcher-guide {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-8);
+    padding: var(--space-8) var(--space-12);
+    border-block-start: var(--border-width) solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--text-caption-weight);
+    letter-spacing: var(--text-caption-ls);
+  }
+  .ds-context-switcher-guide-link { color: var(--text-link); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-sm); outline: none; }
+  .ds-context-switcher-guide-link:focus-visible { outline: var(--focus-width) solid var(--border-focus); }
+
+  /* 접힌 "맥락" 목록의 종류 제목(Figma 223:1937). */
+  .ds-context-switcher-section + .ds-context-switcher-section { margin-block-start: var(--space-8); }
+  .ds-context-switcher-section-label { padding: var(--space-8) var(--space-12) var(--space-4); color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: var(--text-caption-weight); letter-spacing: var(--text-caption-ls); }
+
+  @media (width < 1024px) {
+    /* 1024 미만 누름 면적 44(P4 · Figma 223:1766). */
+    .ds-context-switcher-trigger, .ds-context-switcher-static { block-size: var(--tap-min); }
+    .ds-context-switcher-trigger[data-icon-only] { inline-size: var(--tap-min); }
+    .ds-context-switcher-item { min-block-size: var(--tap-min); }
+  }
+  @media (prefers-reduced-motion: reduce) { .ds-context-switcher-icon > svg.ds-context-switcher-spinner { animation: none; } }
+  @keyframes ds-context-switcher-spin { to { transform: rotate(360deg); } }
+}
+
+/* 목록 실패 = ErrorState 작게(규격 2절 · Figma 223:517): 아이콘 16 + 제목 한 줄, 그 아래 다시 시도(secondary md 38).
+   ErrorState 기본 크기는 표·차트 자리용(위험 바탕 · 최소 높이 192 · 버튼 sm 32)이라 메뉴 안에서만 줄인다.
+   버튼 높이는 Tailwind 유틸리티(@layer utilities)라 층 밖 규칙으로 덮는다. */
+.ds-context-switcher-error.ds-state {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  gap: var(--space-12);
+  min-block-size: 0;
+  block-size: auto;
+  padding: var(--space-12);
+  background: none;
+  color: var(--status-danger-fg);
+  text-align: start;
+}
+.ds-context-switcher-error [data-slot="state-graphic"] > svg { inline-size: var(--space-16); block-size: var(--space-16); }
+.ds-context-switcher-error [data-slot="state-title"] { color: var(--text-primary); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); font-weight: 600; }
+.ds-context-switcher-error [data-slot="button"] { grid-column: 1 / -1; height: var(--control-h-md); padding-inline: calc(var(--space-12) + var(--space-2)); font-size: var(--text-body-sm); }
+@media (width < 1024px) { .ds-context-switcher-error [data-slot="button"] { height: var(--tap-min); } }

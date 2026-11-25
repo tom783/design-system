@@ -107,6 +107,21 @@ const intents = [
       'section-header-actions','section-header-control','section-header-full','section-header-compact','section-header-link','section-header-button','section-header-more'],
     ['PageHeader','Card','SegmentedControl','DataTable','StatTile'],
     ['섹션 제목','섹션 머리','섹션 헤더','섹션 제목 줄','섹션 구분','소제목','섹션 동작','전체 보기','section header','section title','section heading']),
+  entry('ContextSwitcher','navigation','상단 바에서 지금 제품·스토어 같은 맥락을 보이고 바꾼다.',
+    ['AppShell header 왼쪽에 지금 맥락과 전환 목록을 둘 때'],
+    ['같은 전환기를 header와 SideNav에 동시에 두지 마라','조직 전환은 header가 아니라 사용자 메뉴의 하위 메뉴다'],'24.8',[
+      'items에 href가 있으면 링크 이동, 없으면 선택이다. onValueChange가 Promise면 진행 표시 뒤 실패 시 원래 값과 오류 토스트다.',
+      '고를 것이 하나면 정적 글자다. 항목 8개 이상이면 검색을 둔다. 이동 전 확인은 onBeforeSwitch 이벤트를 취소해 막는다.'
+    ],['kind','items','value','defaultValue','onValueChange','onBeforeSwitch','allItem','state'],['context-switcher','context-switcher-content','context-switcher-item'],
+    ['AppShell','NotificationCenter','DropdownMenu'],['맥락 전환','스토어 전환','제품 전환','상단 바','현재 스토어','context switcher']),
+  part('ContextSwitcherGroup','ContextSwitcher','header 왼쪽에 전환기 0~2개를 구분선으로 묶고 좁은 폭에서 한 트리거로 접는다.',['children'],['context-switcher-group']),
+  entry('NotificationCenter','overlay','상단 바의 알림 벨과 알림 목록 패널(1024px 이상 팝오버, 미만 Sheet)을 제공한다.',
+    ['AppShell headerEnd에서 사용자 메뉴 바로 앞에 알림 진입을 둘 때'],
+    ['권한 판단·폴링·알림 등급 규칙을 부품에 넣지 마라(앱이 데이터로 넘긴다)','다른 곳에서 생긴 알림을 바로 알릴 때는 toast.notify를 쓴다'],'24.10',[
+      'count는 안 읽음 수, items는 앱이 탭·필터를 적용한 목록이다. 탭은 tabs에 Tabs, 필터는 toolbar에 Select를 넣는다.',
+      'state는 loading·error, 끝 표시는 hasMore·loadingMore, 열린 채 새 알림은 pendingCount·onShowPending이다.'
+    ],['count','urgent','items','state','tabs','toolbar','onMarkAllRead','hasMore','pendingCount','onNavigate'],['notification-center','notification-bell','notification-row'],
+    ['AppShell','ContextSwitcher','CountBadge','Tabs'],['알림','알림 센터','벨','알림 목록','안 읽음','notification']),
   entry('Carousel','media',"배너·콘텐츠 슬라이드를 한 장씩 넘겨 보여준다.",['배너 슬라이드','콘텐츠를 한 장씩 가로로 넘길 때'],["Swiper·Embla 같은 캐러셀 라이브러리를 함께 쓰지 마라", "자동재생 정지 버튼을 숨기거나 사용자 조작 후 재개하지 마라"],'23',[
     rule("슬라이드는 CarouselSlide로 감싼다.", "23.1"),
     rule("양 끝에서는 멈춘다. 앱이 순환 이동을 덧붙이지 않는다.", "23.1"),
@@ -272,6 +287,11 @@ const intents = [
     rule("필수 표시와 별개로 컨트롤에도 required를 준다.", "17.5")
   ],['htmlFor','required'],['label','label-required'],['Field','Switch','Checkbox','RadioGroup'],['레이블','입력 이름','라벨','항목 이름']),
   entry('StatusChip','status','레코드의 상태를 라벨과 실루엣으로 표시한다.',['완료·경고·오류 상태를 표시할 때'],['같은 원형 점의 색만 바꾸지 마라'],'2.3','아이콘 모양과 텍스트로 상태를 구분한다.',['tone','icon','hideIcon'],['status-chip'],['DataTable'],['상태','완료','경고','칩','주문 상태','배송 상태','상태 표시']),
+  entry('CountBadge','status','벨·메뉴·탭 옆에 개수를 작은 알약으로 표시한다.',['안 읽음·처리할 일의 개수를 아이콘·메뉴·탭 옆에 붙일 때'],
+    ['0이나 불러오기 실패를 0으로 보이지 마라','급함을 색만으로 구분하지 마라'],'24.9',[
+      '0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 색과 점, dot은 접힌 레일의 점 8px다.',
+      'SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.'
+    ],['count','urgent','dot','unit'],['count-badge'],['NotificationCenter','SideNav','Tabs'],['개수','배지','안 읽음 수','뱃지','숫자 표시','badge']),
   ...[
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
     ['CardTitle',"카드 제목을 표시한다.",'card-title','Card'],['CardBody',"카드 본문을 담는다.",'card-body','Card'],['CardFooter',"카드 하단의 보조 정보를 담는다.",'card-footer','Card'],
