@@ -245,6 +245,9 @@ html { scroll-padding-block-start: calc(var(--space-64) + var(--space-16)); }
 .site-example-name { font-weight: 600; font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .site-example-canvas { background: var(--bg-canvas); color: var(--text-primary); padding: var(--space-24); overflow: auto; min-height: var(--space-64); }
 .site-example-canvas[data-full-bleed="true"] { padding: 0; }
+/* 표 하나가 예시의 전부면(DataTable 스토리 대부분) 표 자기 테두리가 틀이다 — 안쪽 여백을 12로 줄여 표가 칸 폭을 더 쓴다.
+   1440 에서 5열 주문 표(필요 728)가 칸 안쪽(24 여백이면 708)에서 가로로 밀리지 않게(통과 기준 4절 '미리보기 칸 안 가로 밀기 0'). */
+.site-example-canvas:has(> [data-slot="data-table"]:only-child) { padding: var(--space-12); }
 .site-example-canvas[data-frame="screen"] { height: 720px; padding: 0; }
 .site-example-error { color: var(--status-danger-fg); white-space: pre-wrap; }
 .site-example-picker { min-width: 200px; max-width: 100%; }

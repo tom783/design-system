@@ -178,3 +178,47 @@ test('사이트: 패턴 이름표는 있는 조립 화면 스토리를 가리킨
   assert.deepEqual(files.filter((file) => !screens.has(file)), [], '없는 조립 화면 스토리 — 파일 이름이 바뀌었으면 patterns.ts 도 고친다');
   assert.doesNotMatch(src.replace(/\/\*[\s\S]*?\*\//g, ''), /\bparts\s*:/, '쓰인 부품을 손으로 적지 않는다(vite-plugins/screens.ts)');
 });
+
+test('사이트: 부품 페이지 기본 미리보기는 대표 사용 예시다 — 시험용 스토리가 기본이 되지 않는다', async () => {
+  // 부품 페이지 '실제 미리보기'는 스토리를 그대로 그린다. 기본(처음 보이는 예시)은 사이트와 같은 코드로 고른다 —
+  // vite-plugins/story-notes.ts(소스 신호: 그리는 부품·시험용 표식) + src/stories/roles.ts(시험용 판정·대표 순위).
+  // 디자인 총괄 검수 r2: DataTable 기본이 하네스 재현 화면(선택자동해제)이었다. 시험용(개발 확인용)은 목록 맨 뒤로 가고
+  // 기본이 될 수 없다. 여기서 막는 것은 (1) 사용 예시가 하나도 없는 부품 페이지 (2) 소스 신호를 못 읽는 스토리 내보내기.
+  const { readStoryFile, manifestNames } = await import('../../apps/site/vite-plugins/story-notes.ts');
+  const { arrange, testReasons } = await import('../../apps/site/src/stories/roles.ts');
+  const storiesDir = join(root, 'packages/ui/src/stories');
+  const names = manifestNames(join(root, 'packages/mcp/manifest.json'));
+  const files = readdirSync(storiesDir).filter((f) => f.endsWith('.stories.tsx')).sort().map((file) => {
+    const source = read(join(storiesDir, file));
+    const parsed = readStoryFile(source, join(storiesDir, file), names);
+    // 사이트의 스토리 순서(vite.config.ts storyExportOrder)와 같은 정규식 — 내보내기마다 소스 신호가 있어야 한다.
+    const exported = [...source.matchAll(/^export const ([\p{L}\p{N}_$]+)\s*[:=]/gmu)].map((m) => m[1]).filter((n) => !n.startsWith('__'));
+    assert.deepEqual(parsed.stories.map((s) => s.exportName), exported, `${file}: 소스 신호를 못 읽은 내보내기`);
+    return { file, ...parsed };
+  });
+  const kindDefault = manifest.derived.kindDefault;
+  const byName = new Map(manifest.components.map((c) => [c.name, c]));
+  const pages = manifest.components.filter((c) => !c.partOf && (c.kind ?? kindDefault) === kindDefault);
+  assert.ok(pages.length > 0);
+  const problems = [];
+  for (const page of pages) {
+    const listed = new Set(byName.get(page.name)?.parts ?? []);
+    const parts = manifest.components.filter((c) => c.partOf === page.name || listed.has(c.name)).map((c) => c.name);
+    const pageNames = [page.name, ...parts];
+    const items = files.filter((f) => f.manifest.some((n) => pageNames.includes(n)))
+      .flatMap((f) => f.stories.filter((s) => !s.theme && !s.hidden).map((s) => ({ f, s })));
+    if (!items.length) continue; // 스토리 없는 부품은 '선언한 스토리가 없다' 안내 — 여기 대상 아님
+    const facts = ({ f, s }) => ({ exportName: s.exportName, name: s.name, description: s.description, tags: [...f.metaTags, ...s.tags], uses: s.uses, draws: s.draws, declared: f.manifest, marks: s.marks });
+    const { primary, ordered, test: testItems } = arrange(items, facts, { name: page.name, parts });
+    if (!primary) { problems.push(`${page.name}: 사용 예시가 없다(전부 시험용 ${items.length}개)`); continue; }
+    if (testReasons(facts(primary)).length) problems.push(`${page.name}: 기본 '${primary.s.name}' 이 시험용`);
+    if (ordered[0] !== primary) problems.push(`${page.name}: 기본이 목록 맨 앞이 아니다`);
+    const judged = items.filter((item) => testReasons(facts(item)).length > 0);
+    if (judged.length !== testItems.length || judged.some((item, i) => testItems[i] !== item)) {
+      problems.push(`${page.name}: 시험용 판정(${judged.length})과 개발 확인용 묶음(${testItems.length})이 다르다`);
+    }
+    const tail = ordered.slice(ordered.length - testItems.length);
+    if (testItems.some((item, i) => tail[i] !== item)) problems.push(`${page.name}: 개발 확인용이 목록 맨 뒤가 아니다`);
+  }
+  assert.deepEqual(problems, []);
+});
