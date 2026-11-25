@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router';
  * 목차("이 페이지에서") — 사이트 전용(디자인 시스템 부품 후보로 올리지 않는다 — 개발 총괄 결정).
  * - 항목은 페이지가 그리는 섹션 목록과 같은 데이터에서 만든다(목차만 따로 적지 않는다). id 는 SectionHeader 의 section id.
  * - 지금 읽는 섹션은 aria-current + 굵기 600 + 왼쪽 선 색으로 함께 표시한다(색만으로 알리지 않는다, DESIGN.md 6.1 현재 위치).
- * - 본문은 AppShell 의 main 이 스크롤하므로 그 스크롤을 본다.
+ * - 문서(창)가 스크롤한다(사이트 틀 A — 전에는 AppShell 본문 칸).
  * - 배치: 그릇이 넓을 때만 본문 오른쪽에 붙어 따라온다(site.css .site-doc). 좁으면 숨긴다 — 본문 섹션 제목이 그대로 있다.
  */
 export interface TocItem {
@@ -15,37 +15,32 @@ export interface TocItem {
   depth?: 2 | 3;
 }
 
-/** 이 높이(px)만큼 스크롤 영역 위에서 내려온 곳을 지난 마지막 섹션이 "지금 읽는 섹션"이다. */
-const READ_LINE = 96;
-
-function scroller() {
-  return document.querySelector<HTMLElement>('[data-slot="app-shell-main"]');
-}
+/** 화면 위에서 이 높이(px — 상단 바 64 + 96)까지 올라온 마지막 섹션이 "지금 읽는 섹션"이다. */
+const READ_LINE = 64 + 96;
 
 function useCurrentSection(ids: readonly string[]) {
   const [current, setCurrent] = React.useState<string | undefined>(ids[0]);
   const key = ids.join('\n');
   React.useEffect(() => {
-    const main = scroller();
-    if (!main || ids.length === 0) return;
+    if (ids.length === 0) return;
+    const root = document.documentElement;
     let frame = 0;
     const update = () => {
       frame = 0;
-      const top = main.getBoundingClientRect().top;
       const present = ids.filter((id) => document.getElementById(id));
       let next = present[0];
-      for (const id of present) if (document.getElementById(id)!.getBoundingClientRect().top - top <= READ_LINE) next = id;
+      for (const id of present) if (document.getElementById(id)!.getBoundingClientRect().top <= READ_LINE) next = id;
       // 끝까지 내렸으면 마지막 섹션(짧은 마지막 섹션은 읽는 선을 넘지 못한다).
-      if (main.scrollTop > 0 && main.scrollTop + main.clientHeight >= main.scrollHeight - 1) next = present.at(-1);
+      if (window.scrollY > 0 && window.scrollY + window.innerHeight >= root.scrollHeight - 1) next = present.at(-1);
       setCurrent(next);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     update();
-    main.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('scroll', schedule, { passive: true });
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
-    observer?.observe(main);
+    observer?.observe(document.body);
     return () => {
-      main.removeEventListener('scroll', schedule);
+      window.removeEventListener('scroll', schedule);
       observer?.disconnect();
       if (frame) cancelAnimationFrame(frame);
     };

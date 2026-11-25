@@ -83,8 +83,9 @@
   mask-image: var(--site-grid-mask);
 }
 
-/* 상단 바 — 문서를 내리면(맨 위 표식이 화면 밖) 반투명 표면 + 뒤 블러. 글자 대비는 표면 83% 위에서 잰다 */
-.site-home-bar[data-stuck="true"] { background: var(--site-bar-surface);
+/* 상단 바(사이트 공통 .site-bar) — 첫 화면에서만: 문서를 내리면(맨 위 표식이 화면 밖) 반투명 표면 + 뒤 블러. 글자 대비는 표면 83% 위에서 잰다.
+   다른 페이지의 상단 바는 평면(표면색) 그대로다. */
+.site-home-page .site-bar[data-stuck="true"] { background: var(--site-bar-surface);
   -webkit-backdrop-filter: blur(var(--site-bar-blur)); backdrop-filter: blur(var(--site-bar-blur)); }
 
 /* 순차 조립 — 페이지 뿌리에서 등록 변수 세 개를 0→1 로 한 번 움직이고, 표본과 AI 흐름 줄이 그 값을 읽는다.

@@ -1,16 +1,12 @@
 import * as React from 'react';
 import { Link } from 'react-router';
-import {
-  Button, Dialog, DialogHeader, DialogTitle, DialogTrigger, SectionHeader, SegmentedControl, SheetBody, SheetContent,
-} from '@s2life/ui';
-import { ArrowRight, Menu, Terminal } from '@s2life/ui/icons';
+import { Button, SectionHeader } from '@s2life/ui';
+import { ArrowRight, Terminal } from '@s2life/ui/icons';
 import meta from 'virtual:site-meta';
 import { componentCount } from '../../data/manifest';
 import { homeAiSteps, homeHero, homePrinciples } from '../../content/home';
-import { BRAND, MENU, THEME_OPTIONS } from '../../layout/SiteShell';
-import { useTheme, type ThemeChoice } from '../../layout/theme';
+import { SiteBar, SiteFooter, SkipLink } from '../../layout/SiteBar';
 import { OrderSample, componentName } from './OrderSample';
-import { useMediaQuery } from '../../blocks/useMediaQuery';
 import './home.css';
 import './effects.css';
 
@@ -42,68 +38,16 @@ function Scenery() {
   </div>;
 }
 
-/** 메뉴 단추 화면 — home.css 의 @media (max-width: 1023px) 와 같은 경계. 상단 바 메뉴를 Sheet 로 옮긴다. */
-const menuSheetQuery = '(max-width: 1023px)';
-
 /**
- * 첫 화면 전용 상단 바 — 메뉴 항목·경로는 다른 페이지의 사이드 메뉴(MENU)와 같다. 맨 위에선 투명, 내리면 반투명 표면 + 블러.
- * 1023px 이하는 브랜드 + '메뉴' 단추만 두고, 메뉴 7개와 테마 3상태를 오른쪽 Sheet 에 싣는다(가로로 밀어 글자가 잘리지 않게).
- * 1024px 이상은 메뉴 7개가 한 줄에 다 들어간다(디자인 총괄 결정, 실측).
- * 보이고 숨기는 것은 CSS 가, Sheet 를 열 수 있는지는 같은 경계의 useMediaQuery 가 정한다(AppShell 서랍과 같은 방식).
+ * 첫 화면 상단 바 — 사이트 공통 상단 바(layout/SiteBar)에 첫 화면 효과만 더한다: 맨 위에선 투명, 내리면 반투명 표면 + 블러(effects.css).
+ * 문서 맨 위 1px 표식이 화면 밖이면 stuck.
  */
 function HomeBar({ main }: { main: React.RefObject<HTMLElement | null> }) {
-  const [theme, setTheme] = useTheme();
   const top = React.useRef<HTMLDivElement>(null);
   const atTop = useInView(top);
-  const narrow = useMediaQuery(menuSheetQuery);
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  // 넓어지면 Sheet 를 닫는다 — 메뉴는 다시 상단 바에 있다.
-  React.useEffect(() => { if (!narrow) setMenuOpen(false); }, [narrow]);
-  const themeLabel = React.useId();
-  const menuList = React.useRef<HTMLUListElement>(null);
   return <>
     <div ref={top} className="site-home-top" aria-hidden="true" />
-    <header className="site-home-bar" data-stuck={!atTop}>
-      <div className="site-home-bar-inner">
-        <Link className="site-home-brand" to="/">{BRAND}</Link>
-        <nav className="site-home-nav" aria-label="사이트 메뉴">
-          {MENU.map((item) => <Link key={item.to} className="site-home-nav-link" to={item.to}
-            aria-current={item.to === '/' ? 'page' : undefined}>{item.label}</Link>)}
-        </nav>
-        <SegmentedControl className="site-home-bar-theme" aria-label="테마" size="sm" iconOnly options={THEME_OPTIONS} value={theme}
-          onValueChange={(next) => setTheme(next as ThemeChoice)} />
-        <div className="site-home-menu">
-          <Dialog open={narrow && menuOpen} onOpenChange={setMenuOpen}>
-            <DialogTrigger asChild><Button leadingIcon={<Menu aria-hidden="true" />}>메뉴</Button></DialogTrigger>
-            {/* 열면 현재 페이지 링크로 — Dialog 기본은 첫 포커스 후보에서 링크를 빼서 테마 단추로 간다(실측).
-                닫으면 '메뉴' 단추로 포커스가 돌아간다(Dialog 기본). 넓어져서 닫힐 때는 단추가 숨으므로 본문으로 보낸다. */}
-            <SheetContent size="sm" className="site-home-menu-sheet" aria-describedby={undefined}
-              onOpenAutoFocus={(event) => {
-                const current = menuList.current?.querySelector<HTMLElement>('[aria-current="page"]');
-                if (current) { event.preventDefault(); current.focus(); }
-              }}
-              onCloseAutoFocus={(event) => { if (!narrow) { event.preventDefault(); main.current?.focus(); } }}>
-              <DialogHeader><DialogTitle>메뉴</DialogTitle></DialogHeader>
-              <SheetBody>
-                <nav aria-label="사이트 메뉴">
-                  <ul ref={menuList} className="site-home-menu-list">
-                    {MENU.map((item) => <li key={item.to}>
-                      <Link className="site-home-menu-link" to={item.to} aria-current={item.to === '/' ? 'page' : undefined}
-                        onClick={() => setMenuOpen(false)}>{item.label}</Link>
-                    </li>)}
-                  </ul>
-                </nav>
-                <div className="site-home-menu-theme">
-                  <span id={themeLabel} className="site-home-menu-theme-label">테마</span>
-                  <SegmentedControl aria-labelledby={themeLabel} fullWidth options={THEME_OPTIONS} value={theme}
-                    onValueChange={(next) => setTheme(next as ThemeChoice)} />
-                </div>
-              </SheetBody>
-            </SheetContent>
-          </Dialog>
-        </div>
-      </div>
-    </header>
+    <SiteBar main={main} stuck={!atTop} />
   </>;
 }
 
@@ -138,10 +82,10 @@ export function HomePage() {
   }, [assembly]);
 
   return <div ref={page} className="site-home-page" data-assembly={assembly}>
-    {/* 다른 페이지(AppShell)와 같은 건너뛰기 — 상단 바의 메뉴 7개를 지나 본문으로 */}
-    <a className="site-home-skip" href="#home-main" onClick={(event) => { event.preventDefault(); main.current?.focus(); }}>본문으로 건너뛰기</a>
+    {/* 다른 페이지와 같은 건너뛰기 — 상단 바의 메뉴 7개·검색·테마를 지나 본문으로 */}
+    <SkipLink main={main} />
     <HomeBar main={main} />
-    <main ref={main} id="home-main" tabIndex={-1} className="site-home">
+    <main ref={main} id="site-main" tabIndex={-1} className="site-home">
       <section className="site-home-opening" aria-labelledby="home-title">
         <div className="site-home-copy">
           <p className="site-home-version tabular">
@@ -190,10 +134,6 @@ export function HomePage() {
         </dl>
       </SectionHeader>
     </main>
-    <footer className="site-home-footer">
-      <strong>{BRAND}</strong>
-      <span className="tabular">v{meta.version}{meta.sha ? ` · ${meta.sha}${meta.dirty ? ' (수정됨)' : ''}` : ''}</span>
-      {meta.repository && <a className="site-link" href={`${meta.repository}/blob/main/CHANGELOG.md`} target="_blank" rel="noreferrer">변경 이력</a>}
-    </footer>
+    <SiteFooter />
   </div>;
 }

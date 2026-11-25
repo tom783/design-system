@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { publishedStylesInput } from '../../scripts/ui-styles-source.mjs';
 import { numberedSections, parseMarkdown } from './vite-plugins/markdown';
 import { siteDocs } from './vite-plugins/site-docs';
+import { siteScreens } from './vite-plugins/screens';
 
 // 소개 사이트 — 로컬 구동 전용(배포하지 않는다, 2026-11-24 오너 결정).
 // 포트는 고정한다. 6006 은 Storybook, 6099 는 하네스가 쓴다. 차 있으면 다른 포트로 옮기지 않고 멈춘다 —
@@ -126,7 +127,7 @@ function siteMeta(): Plugin {
 
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
-  plugins: [uiStylesAsPublished(), storyExportOrder(), siteMeta(), siteDocs(repo), react(), tailwindcss()],
+  plugins: [uiStylesAsPublished(), storyExportOrder(), siteMeta(), siteDocs(repo), siteScreens(`${uiSrc}stories/`), react(), tailwindcss()],
   resolve: {
     alias: uiAliases,
     // 사이트와 packages/ui 가 같은 React 한 벌을 쓰게 한다(링크 경로가 달라도).

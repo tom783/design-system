@@ -9,13 +9,120 @@
 .site-stack-sm { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
 .site-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); min-width: 0; }
 
-/* 상단 바(AppShell header 64 한 줄): 왼쪽 검색 · 오른쪽 버전·변경 이력·테마.
-   버전 줄(한 줄 약 302px)은 검색 최소 240 과 함께 들어가는 768 이상에서만 보인다(실측: 768 에서 검색 420 · 넘침 0).
-   좁아져도 두 줄(20 + 4 + 20 = 44)까지는 64 안이다. 768 미만은 숨긴다 — 검색·테마가 먼저다. */
-.site-header-search { flex: 1 1 240px; max-width: 420px; min-width: 0; }
-.site-header-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--space-4) var(--space-12);
-  font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); }
-@media (width < 768px) { .site-header-meta { display: none; } }
+/* 사이트 틀 A(오너 결정 11/25) — 모든 페이지 공통 상단 바 + 본문 틀 + 바닥글. 문서(html)가 스크롤한다.
+   상단 바 높이 64 — 아래 선 1px 를 64 안에 넣는다(디자인 총괄 결정 11/25 · DS AppShell 상단 바와 같이 잰다, DESIGN.md §24.7).
+   600px 이하는 56 + 아래 선 1 = 머리 57(오너 결정). 해시로 오는 자리가 바에 가리지 않게 html 에 바 높이 + 16 을 둔다. */
+html { scroll-padding-block-start: calc(var(--space-64) + var(--space-16)); }
+.site-shell { display: flex; flex-direction: column; min-height: 100dvh; background: var(--bg-surface); color: var(--text-primary); }
+/* 건너뛰기 — 첫 Tab 에서만 보인다(AppShell 과 같은 모양) */
+.site-skip { position: absolute; z-index: 30; inset-block-start: var(--space-8); inset-inline-start: var(--space-8); transform: translateY(calc(-100% - var(--space-16)));
+  padding: var(--space-8) var(--space-16); background: var(--bg-surface); color: var(--text-link); text-decoration: underline;
+  border: var(--border-width) solid var(--border-input); border-radius: var(--radius-md); }
+.site-skip:focus { transform: none; }
+
+/* 상단 바 — 브랜드 · 메뉴 7개 · 검색 · 테마. 평면(표면색 + 아래 선). 첫 화면만 투명·블러(home.css · effects.css) */
+.site-bar { position: sticky; top: 0; z-index: 20; isolation: isolate; box-sizing: border-box; block-size: var(--space-64); background: var(--bg-surface);
+  border-bottom: var(--border-width) solid var(--border-default); }
+.site-bar-inner { display: flex; align-items: center; gap: var(--space-48); width: min(1280px, calc(100% - 96px)); height: 100%; margin-inline: auto; }
+.site-bar-brand { display: inline-flex; flex: none; align-items: center; color: inherit; text-decoration: none; white-space: nowrap;
+  font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: 700; letter-spacing: var(--text-title-sm-ls); }
+/* 1024px 이상에서 메뉴 7개가 한 줄에 다 들어간다(실측). 그래도 바 폭보다 길어지면(글자 확대 등) 메뉴 칸만 가로로 민다
+   (키보드 포커스가 가면 브라우저가 보이게 옮긴다). 1023px 이하는 '메뉴' Sheet. */
+.site-bar-nav { display: flex; flex: 1 1 auto; align-self: stretch; gap: var(--space-24); min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.site-bar-link { position: relative; display: flex; flex: none; align-items: center; color: var(--text-secondary); text-decoration: none;
+  font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 500; white-space: nowrap; }
+.site-bar-link:hover { color: var(--text-primary); }
+.site-bar-link:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+/* 현재 위치 = 아래 2px 선(시안). 선 색은 브랜드 액션 경계 */
+.site-bar-link[aria-current="page"] { color: var(--text-primary); font-weight: 600; }
+.site-bar-link[aria-current="page"]::after { content: ''; position: absolute; inset: auto 0 calc(-1 * var(--border-width)); height: var(--space-2);
+  background: var(--action-primary-border); }
+.site-bar-tools { display: flex; flex: none; align-items: center; gap: var(--space-8); margin-inline-start: auto; }
+.site-bar-menu { display: none; }
+/* 검색 창 — 입력칸 · 결과 수 · 결과 링크(이름 + 종류). 결과는 창 안에서 스크롤한다. */
+.site-search-body { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+.site-search-results { display: flex; flex-direction: column; max-height: min(360px, 50dvh); overflow-y: auto; margin: 0 calc(-1 * var(--space-8)); padding: 0;
+  list-style: none; }
+.site-search-result { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-12); min-height: var(--control-h-md);
+  padding: var(--space-8); border-radius: var(--radius-md); color: var(--text-primary); text-decoration: none; }
+.site-search-result:hover { background: var(--bg-hover); }
+.site-search-result:focus-visible { outline-offset: calc(-1 * var(--focus-width)); background: var(--bg-hover); }
+.site-search-name { min-width: 0; overflow-wrap: anywhere; font-weight: 500; }
+
+/* 좁은 화면 메뉴(1023px 이하) — 메뉴 7개와 테마 3상태는 오른쪽 Sheet(@s2life/ui) 안. Sheet 는 문서 끝(포털)에 그려진다. */
+.site-sheet-list { display: flex; flex-direction: column; margin: 0 calc(-1 * var(--space-12)); padding: 0; list-style: none; }
+.site-sheet-link { position: relative; display: flex; align-items: center; min-height: var(--control-h-lg); padding-inline: var(--space-12);
+  border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none;
+  font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); font-weight: 500; }
+.site-sheet-link:hover { color: var(--text-primary); background: var(--bg-hover); }
+.site-sheet-link:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+/* 현재 위치 = 상단 바와 같은 브랜드 액션 경계 2px 선(세로 목록이라 왼쪽) */
+.site-sheet-link[aria-current="page"] { color: var(--text-primary); font-weight: 600; }
+.site-sheet-link[aria-current="page"]::before { content: ''; position: absolute; inset: var(--space-8) auto var(--space-8) 0; width: var(--space-2);
+  background: var(--action-primary-border); }
+.site-sheet-theme { display: flex; flex-direction: column; gap: var(--space-8); margin-block-start: var(--space-16); padding-block-start: var(--space-16);
+  border-top: var(--border-width) solid var(--border-subtle); }
+.site-sheet-theme-label { color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: 600; }
+
+/* 본문 틀 — 상단 바와 같은 폭(1280). 섹션 목록이 있으면 왼쪽 열(사이드 메뉴 폭 토큰) + 40 + 본문. */
+.site-frame { display: grid; grid-template-columns: minmax(0, 1fr); width: min(1280px, calc(100% - 96px)); margin-inline: auto; flex: 1; }
+.site-frame[data-nav="true"] { grid-template-columns: var(--side-nav-w) minmax(0, 1fr); column-gap: var(--space-40); }
+.site-main { min-width: 0; padding-block: var(--space-40) var(--space-64); }
+.site-main:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+
+/* 섹션 안 목록(layout/SectionNav.tsx) — 확정 '부품 페이지 A'의 왼쪽 목록: 머리(아이콘 + 섹션 이름) · 분류 이름 · 항목. 사이드 메뉴와 같은 치수·현재 표시.
+   왼쪽 열 전체 높이에 오른쪽 선, 목록은 상단 바 아래에 붙어 따라오고 길면 그 안에서 스크롤한다. */
+.site-section-aside { min-width: 0; border-inline-end: var(--border-width) solid var(--border-subtle); }
+.site-section-nav { position: sticky; top: var(--space-64); max-height: calc(100dvh - var(--space-64)); overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--space-24) var(--space-8) var(--space-24) 0; }
+.site-section-head { display: flex; align-items: center; gap: var(--space-12); margin: 0 0 var(--space-8); padding: var(--space-8) var(--space-12);
+  font-weight: 600; color: var(--text-primary); }
+.site-section-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: var(--space-24); height: var(--space-24); }
+.site-section-icon > svg { width: var(--space-20); height: var(--space-20); }
+.site-section-groups { display: flex; flex-direction: column; gap: var(--space-20); }
+.site-section-group { display: flex; flex-direction: column; gap: var(--space-4); }
+.site-section-label { margin: 0; padding: var(--space-8) var(--space-12); color: var(--text-secondary);
+  font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: 600; }
+.site-section-items { display: flex; flex-direction: column; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.site-section-link { display: flex; align-items: center; min-width: 0; min-height: var(--tap-min); padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-md); color: var(--text-primary); text-decoration: none; overflow-wrap: anywhere;
+  font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
+.site-section-link:hover { background: var(--bg-hover); }
+.site-section-link:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+.site-section-link[aria-current="page"] { background: var(--bg-selected); font-weight: 600; }
+.site-section-button { display: none; }
+
+/* 바닥글 — 브랜드 · 버전 · npm · 변경 이력 */
+.site-footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-12); width: min(1280px, calc(100% - 96px));
+  margin-inline: auto; padding-block: var(--space-16) var(--space-24); border-top: var(--border-width) solid var(--border-default);
+  color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); }
+.site-footer > strong { color: var(--text-primary); font-weight: 600; }
+
+/* 1024~1279 — 메뉴 7개 + 검색 + 테마가 한 줄에 들도록 바 간격 48 → 32(실측) */
+@media (max-width: 1279px) {
+  .site-bar-inner { gap: var(--space-32); }
+}
+/* 1023px 이하 — 상단 메뉴·테마는 '메뉴' Sheet 로, 섹션 목록은 본문 맨 위 '<섹션> 목록' 단추의 왼쪽 Sheet 로(디자인 총괄 결정·확정안 390) */
+@media (max-width: 1023px) {
+  .site-bar-nav, .site-bar-theme { display: none; }
+  .site-bar-menu { display: block; }
+  .site-frame[data-nav="true"] { grid-template-columns: minmax(0, 1fr); }
+  .site-section-aside { display: none; }
+  .site-section-button { display: block; margin-block-start: var(--space-12); }
+}
+@media (max-width: 900px) {
+  .site-bar-inner { width: calc(100% - 40px); gap: var(--space-24); }
+  .site-frame, .site-footer { width: calc(100% - 40px); }
+}
+/* 600px 이하 — 머리 57(바 56 + 선 1, 오너 결정) · 본문 좌우 16 */
+@media (max-width: 600px) {
+  html { scroll-padding-block-start: calc(56px + var(--border-width) + var(--space-16)); }
+  .site-bar { block-size: calc(56px + var(--border-width)); }
+  .site-bar-inner { width: calc(100% - 32px); gap: var(--space-12); }
+  .site-bar-brand { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); }
+  .site-frame, .site-footer { width: calc(100% - 32px); }
+  .site-main { padding-block: var(--space-24) var(--space-48); }
+}
 
 .site-muted { color: var(--text-secondary); }
 .site-caption { font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); }
@@ -47,9 +154,10 @@
 .site-doc { container-type: inline-size; min-width: 0; }
 .site-doc-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-40); align-items: start; }
 .site-doc-toc { display: none; }
+/* 목차는 상단 바(64) 아래 본문 여백(40)만큼 내려온 자리에 붙어 따라온다. */
 @container (min-width: 880px) {
   .site-doc-grid { grid-template-columns: minmax(0, 1fr) 200px; }
-  .site-doc-toc { display: block; position: sticky; top: 0; max-height: 100%; }
+  .site-doc-toc { display: block; position: sticky; top: calc(var(--space-64) + var(--space-40)); max-height: calc(100dvh - var(--space-64) - var(--space-40)); overflow-y: auto; }
 }
 .site-toc { display: flex; flex-direction: column; gap: var(--space-8); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }
 .site-toc-title { font-weight: 600; color: var(--text-primary); }
@@ -70,7 +178,7 @@
 
 /* 부품 목록 분류 — 제목 = 한국어 이름(title-sm h2, SectionHeader 제목과 같은 크기) + 영어 category(caption·tertiary) + 개수(SectionHeader 개수와 같은 모양).
    머리 → 카드 12(SectionHeader 와 같다). */
-.site-category { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; scroll-margin-block-start: var(--space-16); }
+.site-category { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
 .site-category-title { margin: 0; color: var(--text-primary); font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh);
   letter-spacing: var(--text-title-sm-ls); font-weight: var(--text-title-sm-weight); overflow-wrap: anywhere; }
 .site-category-key { display: inline-block; color: var(--text-tertiary); font-size: var(--text-caption); line-height: var(--text-caption-lh);
@@ -96,6 +204,33 @@
   .site-component-tile > .site-card-title { font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); overflow-wrap: anywhere; }
   .site-component-purpose { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
     font-size: var(--text-caption); line-height: var(--text-caption-lh); }
+}
+
+/* 패턴 카드(pages/patterns) — 2열(화면 700px 이하는 1열). 카드 = 실제 렌더 축소(16:10) · 한국어 이름(카드 전체가 이 링크) · 쓰인 부품 칩.
+   선·모서리·바탕은 Card 와 같은 토큰. 그림 칸은 장식(inert·aria-hidden)이고, 링크의 ::after 가 카드 전체를 덮어 누르면 상세로 간다. */
+.site-pattern-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-24);
+  margin: 0; padding: 0; list-style: none; }
+.site-pattern-card { position: relative; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+  border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-surface); }
+.site-pattern-card:hover { background: var(--bg-hover); }
+.site-pattern-thumb { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--bg-canvas);
+  border-bottom: var(--border-width) solid var(--border-subtle); }
+.site-pattern-stage { position: absolute; inset-block-start: 0; inset-inline-start: 0; transform-origin: 0 0; pointer-events: none; user-select: none; }
+.site-pattern-body { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; padding: var(--space-12) var(--space-16) var(--space-16); }
+.site-pattern-name { margin: 0; font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); font-weight: 600; }
+.site-pattern-link { color: var(--text-primary); text-decoration: none; }
+.site-pattern-link::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: var(--radius-lg); }
+.site-pattern-link:focus-visible { outline: none; }
+.site-pattern-link:focus-visible::after { outline: var(--focus-width) solid var(--border-focus); outline-offset: calc(-1 * var(--focus-width)); }
+.site-pattern-card:hover .site-pattern-link { text-decoration: underline; text-underline-offset: 2px; }
+/* 쓰인 부품 칩 — 글자 칩(상태 칩이 아니다). 상세 페이지에서는 그 부품 페이지로 가는 링크 */
+.site-part-list { display: flex; flex-wrap: wrap; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.site-part { display: inline-flex; align-items: center; min-height: var(--space-24); padding-inline: var(--space-8); border-radius: var(--radius-full);
+  background: var(--bg-sunken); color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); }
+.site-part-link { color: var(--text-link); text-decoration: none; }
+.site-part-link:hover { text-decoration: underline; }
+@media (max-width: 700px) {
+  .site-pattern-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-16); }
 }
 
 /* 목록(쓰는 때·쓰지 말 것·규칙) */
@@ -125,7 +260,9 @@
 /* 토큰 표의 긴 글 칸(용도·견본) — 줄을 바꿔 표를 그릇 폭 안에 둔다(1440 넘침 0, 검수 r1). 최소 240px 은 칸이 너무 좁아지지 않게. */
 .site-cell-wrap { display: block; min-width: 240px; white-space: normal; overflow-wrap: anywhere; }
 
-/* 파운데이션 좁은 폭(600px 이하) — 표 대신 토큰마다 한 덩어리: 이름 줄 / 값·견본 줄 / 용도 줄(검수 r1). 표처럼 가로로 밀지 않는다. */
+/* 파운데이션 토큰 표(TokenTable) — 표가 본문 칸보다 넓으면(600px 이하는 늘) 표 대신 토큰마다 한 덩어리: 이름 줄 / 값·견본 줄 / 용도 줄(검수 r1).
+   표처럼 가로로 밀지 않는다(오너 결정 11/25 — 601~1279px 표 안 가로 밀기 없앰). */
+.site-token-table { min-width: 0; }
 .site-token-list { margin: 0; padding: 0; list-style: none; border-block-start: var(--border-width) solid var(--border-subtle); }
 .site-token { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; padding-block: var(--space-12);
   border-block-end: var(--border-width) solid var(--border-subtle); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); }

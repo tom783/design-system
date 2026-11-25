@@ -23,7 +23,8 @@ import { PatternsPage } from './pages/patterns/Patterns';
 // 첫 그림 전에 고른 테마를 건다 — 반대 테마로 한 번 번쩍이지 않게.
 applyTheme(readTheme());
 
-// 첫 화면은 자기 상단 바(시안 r4)를 쓴다 — 다른 페이지의 셸(사이드 메뉴 + 머리띠)은 그대로다.
+// 사이트 틀 A — 모든 페이지가 같은 상단 바(layout/SiteBar). 첫 화면은 그 바에 효과(블러·번짐)를 더한 자기 페이지 틀,
+// 나머지는 SiteShell(상단 바 + 섹션 목록 + 본문 + 바닥글).
 const router = createBrowserRouter([{ path: '/', element: <HomePage /> }, {
   element: <SiteShell />,
   children: [

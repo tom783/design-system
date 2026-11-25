@@ -72,7 +72,7 @@ export function storiesOf(file: StoryFile): StoryEntry[] {
   return entries;
 }
 
-class StoryBoundary extends React.Component<{ name: string; children: React.ReactNode }, { error: Error | null }> {
+export class StoryBoundary extends React.Component<{ name: string; children: React.ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null };
   static getDerivedStateFromError(error: Error) { return { error }; }
   render() {
@@ -86,7 +86,7 @@ class StoryBoundary extends React.Component<{ name: string; children: React.Reac
 }
 
 /** 화면에 가까워질 때 그린다 — 예시가 20개 넘는 부품(Input·DataTable)도 첫 화면이 가볍다. */
-function useNearViewport<T extends Element>(eager: boolean) {
+export function useNearViewport<T extends Element>(eager: boolean) {
   const ref = React.useRef<T>(null);
   const [near, setNear] = React.useState(eager);
   React.useEffect(() => {

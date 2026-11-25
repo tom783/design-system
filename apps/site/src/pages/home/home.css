@@ -2,51 +2,14 @@
    번짐·격자·블러·조립 움직임은 여기 두지 않는다 — 효과 층(effects.css)에만 있다.
    폭은 시안의 틀 값(본문 1248 · 상단 바 1280, 900·600 에서 좁힘)을 그대로 쓴다. */
 
-/* 문서가 스크롤한다(다른 페이지는 AppShell 본문이 스크롤). 효과 층이 옆으로 넘쳐도 가로 스크롤이 생기지 않게 자른다 —
+/* 문서가 스크롤한다(다른 페이지도 같다). 효과 층이 옆으로 넘쳐도 가로 스크롤이 생기지 않게 자른다 —
    clip 은 스크롤 영역을 만들지 않으므로 상단 바 sticky 가 그대로 문서에 붙는다. */
 .site-home-page { position: relative; display: flex; flex-direction: column; min-height: 100dvh; overflow-x: clip;
   background: var(--bg-surface); color: var(--text-primary); }
 .site-home-top { position: absolute; inset: 0 0 auto; height: 1px; pointer-events: none; }
-/* 건너뛰기 — 첫 Tab 에서만 보인다(AppShell 과 같은 모양) */
-.site-home-skip { position: absolute; z-index: 30; inset-block-start: var(--space-8); inset-inline-start: var(--space-8); transform: translateY(calc(-100% - var(--space-16)));
-  padding: var(--space-8) var(--space-16); background: var(--bg-surface); color: var(--text-link); text-decoration: underline;
-  border: var(--border-width) solid var(--border-input); border-radius: var(--radius-md); }
-.site-home-skip:focus { transform: none; }
+/* 상단 바·건너뛰기·메뉴 Sheet 는 사이트 공통(site.css .site-bar …). 첫 화면에서만 맨 위의 바를 투명으로 두고, 내리면 effects.css 가 표면 83% + 블러를 건다. */
+.site-home-page .site-bar { background: transparent; }
 .site-home:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
-
-/* 상단 바 — 브랜드 · 메뉴(사이드 메뉴와 같은 항목·경로) · 테마. 표면·블러는 effects.css */
-.site-home-bar { position: sticky; top: 0; z-index: 20; isolation: isolate; border-bottom: var(--border-width) solid var(--border-default); }
-.site-home-bar-inner { display: flex; align-items: center; gap: var(--space-48); width: min(1280px, calc(100% - 96px)); height: 68px; margin-inline: auto; }
-.site-home-brand { display: inline-flex; flex: none; align-items: center; color: inherit; text-decoration: none; white-space: nowrap;
-  font-size: var(--text-title-sm); line-height: var(--text-title-sm-lh); font-weight: 700; letter-spacing: var(--text-title-sm-ls); }
-/* 1024px 이상에서 메뉴 7개가 한 줄에 다 들어간다(실측). 그래도 바 폭보다 길어지면(글자 확대 등) 메뉴 칸만 가로로 민다
-   (키보드 포커스가 가면 브라우저가 보이게 옮긴다). 1023px 이하는 '메뉴' Sheet. */
-.site-home-nav { display: flex; flex: 1 1 auto; align-self: stretch; gap: var(--space-24); min-width: 0; overflow-x: auto; scrollbar-width: none; }
-.site-home-nav-link { position: relative; display: flex; flex: none; align-items: center; color: var(--text-secondary); text-decoration: none;
-  font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 500; white-space: nowrap; }
-.site-home-nav-link:hover { color: var(--text-primary); }
-.site-home-nav-link:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
-/* 현재 위치 = 아래 2px 선(시안). 선 색은 브랜드 액션 경계 */
-.site-home-nav-link[aria-current="page"] { color: var(--text-primary); font-weight: 600; }
-.site-home-nav-link[aria-current="page"]::after { content: ''; position: absolute; inset: auto 0 calc(-1 * var(--border-width)); height: var(--space-2);
-  background: var(--action-primary-border); }
-
-/* 좁은 화면 메뉴(1023px 이하) — 상단 바엔 브랜드 + '메뉴' 단추, 메뉴 7개와 테마 3상태는 오른쪽 Sheet(@s2life/ui) 안.
-   Sheet 는 문서 끝(포털)에 그려지므로 아래 규칙은 .site-home-page 밖에서도 맞게 site- 클래스만 쓴다. */
-.site-home-menu { display: none; }
-.site-home-menu-list { display: flex; flex-direction: column; margin: 0 calc(-1 * var(--space-12)); padding: 0; list-style: none; }
-.site-home-menu-link { position: relative; display: flex; align-items: center; min-height: var(--control-h-lg); padding-inline: var(--space-12);
-  border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none;
-  font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); font-weight: 500; }
-.site-home-menu-link:hover { color: var(--text-primary); background: var(--bg-hover); }
-.site-home-menu-link:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
-/* 현재 위치 = 상단 바와 같은 브랜드 액션 경계 2px 선(세로 목록이라 왼쪽) */
-.site-home-menu-link[aria-current="page"] { color: var(--text-primary); font-weight: 600; }
-.site-home-menu-link[aria-current="page"]::before { content: ''; position: absolute; inset: var(--space-8) auto var(--space-8) 0; width: var(--space-2);
-  background: var(--action-primary-border); }
-.site-home-menu-theme { display: flex; flex-direction: column; gap: var(--space-8); margin-block-start: var(--space-16); padding-block-start: var(--space-16);
-  border-top: var(--border-width) solid var(--border-subtle); }
-.site-home-menu-theme-label { color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: 600; }
 
 /* 본문 */
 .site-home { display: flex; flex-direction: column; width: min(1248px, calc(100% - 96px)); margin-inline: auto; flex: 1; }
@@ -59,7 +22,7 @@
 .site-home-lead { max-width: 530px; margin: var(--space-16) 0 var(--space-24); color: var(--text-secondary);
   font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); }
 .site-home-cta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); }
-.site-home-demo { position: relative; min-width: 0; scroll-margin-top: 84px; }
+.site-home-demo { position: relative; min-width: 0; }
 
 /* 실물 표본 틀 — 불투명 바탕(효과는 이 뒤에만). 안은 @s2life/ui 부품 그대로 */
 .site-home-sample { min-width: 0; overflow: hidden; background: var(--bg-surface); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); }
@@ -92,29 +55,19 @@
 .site-home-principle > dt { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); font-weight: 600; }
 .site-home-principle > dd { margin: 0; color: var(--text-secondary); }
 
-.site-home-footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-12); width: min(1248px, calc(100% - 96px));
-  margin-inline: auto; padding-block: var(--space-16) var(--space-24); border-top: var(--border-width) solid var(--border-default);
-  color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); }
-.site-home-footer > strong { color: var(--text-primary); font-weight: 600; }
+/* 바닥글은 사이트 공통(site.css .site-footer) — 첫 화면에서는 본문 폭(1248)에 맞춘다. */
+.site-home-page .site-footer { width: min(1248px, calc(100% - 96px)); }
 
-/* 메뉴 7개를 가로로 밀면 글자가 중간에 잘린다(검수 고침 2) — 1023px 이하는 상단 바에서 빼고 '메뉴' 단추의 Sheet 로(디자인 총괄 결정) */
-@media (max-width: 1023px) {
-  .site-home-nav, .site-home-bar-theme { display: none; }
-  .site-home-menu { display: block; margin-inline-start: auto; }
-}
 /* 두 단 배치는 960px 부터 — 959px 이하는 한 단(표본이 본문 폭 그대로). 960px 두 단에서도 표본 표 3열이 들어간다(디자인 총괄 결정) */
 @media (max-width: 959px) {
   .site-home-opening { grid-template-columns: minmax(0, 1fr); gap: var(--space-24); min-height: 0; }
 }
 @media (max-width: 900px) {
-  .site-home-bar-inner { width: calc(100% - 40px); gap: var(--space-24); }
-  .site-home, .site-home-footer { width: calc(100% - 40px); }
+  .site-home, .site-home-page .site-footer { width: calc(100% - 40px); }
   .site-home-principles { grid-template-columns: minmax(0, 1fr); gap: var(--space-16); }
 }
 @media (max-width: 600px) {
-  .site-home-bar-inner { width: calc(100% - 32px); height: 56px; gap: var(--space-12); }
-  .site-home-brand { font-size: var(--text-body-lg); line-height: var(--text-body-lg-lh); }
-  .site-home, .site-home-footer { width: calc(100% - 32px); }
+  .site-home, .site-home-page .site-footer { width: calc(100% - 32px); }
   .site-home-opening { padding-block: var(--space-32); }
   .site-home-version { margin-block-end: var(--space-16); }
   .site-home-title { font-size: var(--text-display); line-height: var(--text-display-lh); letter-spacing: var(--text-display-ls); }

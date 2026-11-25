@@ -1,108 +1,42 @@
 import * as React from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router';
-import { AppShell, Combobox, SegmentedControl, SideNav, SideNavGroup, SideNavItem, type ComboboxOption } from '@s2life/ui';
-import { Blocks, Bot, House, Layers, LayoutTemplate, Lightbulb, Monitor, Moon, Palette, Rocket, Sun } from '@s2life/ui/icons';
-import meta from 'virtual:site-meta';
-import { manifest, pageComponents, pageFor } from '../data/manifest';
-import { foundationSections } from '../pages/foundations/sections';
-import { useTheme, type ThemeChoice } from './theme';
+import { Outlet, useLocation } from 'react-router';
+import { SiteBar, SiteFooter, SkipLink } from './SiteBar';
+import { SectionNav, hasSectionNav } from './SectionNav';
 
-/** 사이트 브랜드 이름 — 사이드 메뉴·첫 화면 상단 바·바닥글이 같은 글자를 쓴다(문서 title 은 index.html, 디자인 총괄 검수 r1). */
-export const BRAND = 'S2Life 디자인 시스템';
-
-/** 메뉴 — 첫 화면과 여섯 갈래. 경로가 이 접두로 시작하면 현재 위치다. */
-export const MENU = [
-  { to: '/', label: '첫 화면', icon: <House /> },
-  { to: '/start', label: '시작하기', icon: <Rocket /> },
-  { to: '/concept', label: '디자인 컨셉', icon: <Lightbulb /> },
-  { to: '/foundations', label: '파운데이션', icon: <Palette /> },
-  { to: '/components', label: '부품', icon: <Blocks /> },
-  { to: '/patterns', label: '패턴', icon: <LayoutTemplate /> },
-  { to: '/ai', label: 'AI로 쓰기', icon: <Bot /> },
-] as const;
-
-function isCurrent(pathname: string, to: string) {
-  return to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
-}
-
-/** 매니페스트 토큰 이름이 어느 파운데이션 절에 있는지 — 토큰 분류(category)로 고른다. */
-function foundationFor(category: string) {
-  return foundationSections.find((section) => (section.tokenCategories as readonly string[]).includes(category))?.slug ?? 'color';
-}
-
-/** 검색 — 부품 이름과 토큰 이름. 데이터는 매니페스트에서, 고르면 그 페이지로 간다. */
-function SiteSearch() {
-  const navigate = useNavigate();
-  const options = React.useMemo<ComboboxOption[]>(() => [
-    ...pageComponents.map((component) => ({ value: `component:${component.name}`, label: component.name })),
-    ...manifest.components.filter((component) => component.partOf)
-      .map((component) => ({ value: `component:${component.name}`, label: `${component.name} (${component.partOf})` })),
-    ...manifest.tokens.map((token) => ({ value: `token:${token.category}:${token.name}`, label: token.cssVariable })),
-  ], []);
-  const [value, setValue] = React.useState('');
-  return <Combobox aria-label="부품·토큰 검색" className="site-header-search" options={options} value={value}
-    placeholder="부품·토큰 검색" searchPlaceholder="이름으로 찾기" emptyText="맞는 이름이 없다"
-    onValueChange={(next: string) => {
-      setValue('');
-      const [kind, ...rest] = next.split(':');
-      if (kind === 'component') {
-        const name = rest.join(':');
-        const page = pageFor(name);
-        if (page) navigate(page.name === name ? `/components/${page.name}` : `/components/${page.name}?tab=code#part-${name}`);
-      } else if (kind === 'token') {
-        const [category, name] = rest;
-        navigate(`/foundations/${foundationFor(category!)}#token-${name}`);
-      }
-    }} />;
-}
-
-export const THEME_OPTIONS = [
-  { value: 'system', label: '시스템', icon: <Monitor /> },
-  { value: 'light', label: '라이트', icon: <Sun /> },
-  { value: 'dark', label: '다크', icon: <Moon /> },
-];
-
-/** 상단 바 오른쪽 묶음 — 버전·변경 이력 · 테마. 상단 바는 64px 한 줄이라(AppShell) 좁으면 버전 줄은 숨는다(site.css). */
-function SiteHeaderEnd() {
-  const [theme, setTheme] = useTheme();
-  return <>
-    <div className="site-header-meta">
-      <span className="tabular" title="세 패키지(tokens·ui·mcp) 공통 버전 — 이 작업 폴더 기준">
-        v{meta.version}{meta.sha ? ` · ${meta.sha}${meta.dirty ? ' (수정됨)' : ''}` : ''}
-      </span>
-      <span className="tabular">{meta.published ? `npm 게시 ${meta.published.version}` : 'npm 게시판 없음'}</span>
-      {meta.repository && <a className="site-link" href={`${meta.repository}/blob/main/CHANGELOG.md`} target="_blank" rel="noreferrer">변경 이력</a>}
-    </div>
-    <SegmentedControl aria-label="테마" size="sm" iconOnly options={THEME_OPTIONS} value={theme}
-      onValueChange={(next) => setTheme(next as ThemeChoice)} />
-  </>;
-}
-
-/** 본문은 AppShell 의 main 이 스크롤한다 — 페이지를 옮기면 맨 위로, 해시가 있으면 그 자리로. */
+/**
+ * 문서가 스크롤한다(전에는 AppShell 의 본문 칸) — 페이지를 옮기면 맨 위로, 해시가 있으면 그 자리로.
+ * 상단 바에 가리지 않게 하는 여백은 site.css 의 html scroll-padding 이 맡는다.
+ */
 function useScrollOnNavigate() {
   const { pathname, hash } = useLocation();
   React.useEffect(() => {
-    const main = document.querySelector<HTMLElement>('[data-slot="app-shell-main"]');
     if (hash) {
       const target = document.getElementById(decodeURIComponent(hash.slice(1)));
       if (target) { target.scrollIntoView(); return; }
     }
-    main?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, [pathname, hash]);
 }
 
+/**
+ * 사이트 틀 A(오너 결정 11/25) — 첫 화면과 같은 상단 바를 모든 페이지에. 문서 페이지 왼쪽은 그 섹션 안 목록만(부품·파운데이션·패턴),
+ * 목록이 없는 섹션(시작하기·디자인 컨셉·AI로 쓰기)은 왼쪽 열 없이 본문 + 오른쪽 목차. 바닥글에 버전·변경 이력.
+ * 상단 바는 평면 — 블러·번짐 효과는 첫 화면에만 있다(home/effects.css).
+ */
 export function SiteShell() {
   const { pathname } = useLocation();
+  const main = React.useRef<HTMLElement>(null);
   useScrollOnNavigate();
-  return <AppShell narrowNavigation="drawer" contentMaxWidth={1120} header={<SiteSearch />} headerEnd={<SiteHeaderEnd />} sidebar={
-    <SideNav brand={BRAND} brandIcon={<Layers />}>
-      <SideNavGroup label="메뉴">
-        {MENU.map((item) => <SideNavItem key={item.to} asChild icon={item.icon} label={item.label} current={isCurrent(pathname, item.to)}>
-          <Link to={item.to} />
-        </SideNavItem>)}
-      </SideNavGroup>
-    </SideNav>
-  }>
-    <Outlet />
-  </AppShell>;
+  const nav = hasSectionNav(pathname);
+  return <div className="site-shell">
+    <SkipLink main={main} />
+    <SiteBar main={main} />
+    <div className="site-frame" data-nav={nav}>
+      {nav && <SectionNav />}
+      <main ref={main} id="site-main" tabIndex={-1} className="site-main">
+        <Outlet />
+      </main>
+    </div>
+    <SiteFooter />
+  </div>;
 }

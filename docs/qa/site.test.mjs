@@ -161,8 +161,20 @@ test('사이트: 부품 분류 이름표는 매니페스트 category 를 가리�
   assert.equal(new Set(keys).size, keys.length, '같은 category 가 두 번 있다');
   const used = new Set(manifest.components.map((c) => c.category).filter(Boolean));
   assert.deepEqual(keys.filter((key) => !used.has(key)), [], '매니페스트 부품에 없는 category — 이름이 바뀌었으면 categories.ts 도 고친다');
-  // 브랜드 이름: 문서 title(index.html)과 셸·첫 화면이 쓰는 BRAND 상수가 같은 글자(디자인 총괄 검수 r1 — 이름 하나로).
-  const brand = /export const BRAND = '([^']+)'/.exec(read(join(site, 'src/layout/SiteShell.tsx')))?.[1];
-  assert.ok(brand, 'SiteShell.tsx 의 BRAND 상수');
+  // 브랜드 이름: 문서 title(index.html)과 상단 바·바닥글이 쓰는 BRAND 상수가 같은 글자(디자인 총괄 검수 r1 — 이름 하나로).
+  const brand = /export const BRAND = '([^']+)'/.exec(read(join(site, 'src/layout/SiteBar.tsx')))?.[1];
+  assert.ok(brand, 'SiteBar.tsx 의 BRAND 상수');
   assert.equal(/<title>([^<]+)<\/title>/.exec(read(join(site, 'index.html')))?.[1], brand, 'index.html <title> 과 BRAND 가 다르다');
+});
+
+test('사이트: 패턴 이름표는 있는 조립 화면 스토리를 가리킨다', () => {
+  // 패턴 카드(content/patterns.ts)는 screens-*.stories.tsx 파일 이름에 한국어 이름만 붙인다. 쓰인 부품은 손으로 적지 않는다
+  // (vite-plugins/screens.ts 가 스토리 import 에서 읽는다). 이름표에 없는 새 화면은 파일 이름 그대로 보이므로 막지 않는다 —
+  // 막는 것은 없어진(이름이 바뀐) 파일을 가리키는 이름표다.
+  const src = read(join(site, 'src/content/patterns.ts'));
+  const files = [...src.matchAll(/\{ file: '([^']+)', name: '([^']+)' \}/g)].map((m) => m[1]);
+  assert.ok(files.length > 0, 'patterns.ts 에서 { file, name } 을 읽지 못했다');
+  const screens = new Set(readdirSync(join(root, 'packages/ui/src/stories')).filter((f) => /^screens-.+\.stories\.tsx$/.test(f)));
+  assert.deepEqual(files.filter((file) => !screens.has(file)), [], '없는 조립 화면 스토리 — 파일 이름이 바뀌었으면 patterns.ts 도 고친다');
+  assert.doesNotMatch(src.replace(/\/\*[\s\S]*?\*\//g, ''), /\bparts\s*:/, '쓰인 부품을 손으로 적지 않는다(vite-plugins/screens.ts)');
 });

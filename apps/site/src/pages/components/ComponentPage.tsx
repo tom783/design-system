@@ -9,6 +9,7 @@ import meta from 'virtual:site-meta';
 import { CodeBlock } from '../../blocks/CodeBlock';
 import { DesignLink } from '../../blocks/Text';
 import { DocLayout, type TocItem } from '../../blocks/Toc';
+import { SectionNavButton } from '../../layout/SectionNav';
 import { categoryName } from '../../content/categories';
 import { findComponent, importLine, manifest, pageFor, partsOf, type Component } from '../../data/manifest';
 import { storyFilesFor, type StoryFile } from '../../stories/load';
@@ -201,13 +202,14 @@ export function ComponentPage() {
     ...(tab === 'guide' ? guide : code).map((section) => ({ id: section.id, label: section.title })),
   ];
   return <DocLayout toc={toc}>
-    <PageHeader title={component.name} description={component.purpose} status={<NpmStatus name={component.name} />} breadcrumb={
+    <PageHeader title={component.name} description={component.purpose} status={<NpmStatus name={component.name} />} breadcrumb={<>
       <Breadcrumb><BreadcrumbList>
         <BreadcrumbItem><BreadcrumbLink asChild><Link to="/components">부품</Link></BreadcrumbLink></BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem><BreadcrumbPage>{component.category && categoryName(component.category)}</BreadcrumbPage></BreadcrumbItem>
       </BreadcrumbList></Breadcrumb>
-    } />
+      <SectionNavButton />
+    </>} />
     <Preview key={component.name} names={[component.name, ...parts.map((part) => part.name)]} />
     <Tabs value={tab} onValueChange={(next) => {
       const params = new URLSearchParams(search);
