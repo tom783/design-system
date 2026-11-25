@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { launchBrowser, storybook } from './browser.mjs';
+import { actions, launchBrowser, storybook } from './browser.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const OUT = resolve(process.argv[2] || '.qa-shots/input-consistency');
@@ -18,6 +18,7 @@ const results = [];
 const browser = await launchBrowser({ windowSize: '1200,900', outDir: OUT });
 const { ev, cdp, sleep } = browser;
 const { open } = storybook(browser);
+const act = actions(browser);
 const q = selector => `document.querySelector(${JSON.stringify(selector)})`;
 async function wait(expression) {
   for (let i = 0; i < 100; i++) { if (await ev(expression)) return; await sleep(40); }
@@ -160,6 +161,38 @@ try {
       await wait(`${q('[data-slot="combobox-chip"]')} !== null`);
       assert.equal(await ev(`(() => {const c=${q('[data-slot="combobox-multiple-control"]')}; return c.getBoundingClientRect().right-c.querySelector('.ds-select-chevron').getBoundingClientRect().right;})()`),13);
       await browser.shot(`triggers-${theme}`); return m;
+    });
+    // 0.7.1: Select 트리거만 shadcn 의 focus:outline-none + ring-1(1px 링)이었다. 네 트리거 모두 옆 Input 과 같은
+    // 전역 :focus-visible 2px outline 이어야 한다. 진짜 Tab 으로 옮긴다(프로그램 focus 는 :focus-visible 을 장담하지 못한다).
+    await check(`선택 트리거 4종 키보드 포커스 = Input 과 같은 2px outline·offset·--border-focus·그림자 없음 ${theme}`, async () => {
+      const ring = `(() => { ${colorHelpers}
+        const el=document.activeElement, host=el.closest('[data-slot="combobox-multiple-control"]') ?? el, s=getComputedStyle(host);
+        const probe=document.createElement('span'); probe.style.outlineColor='var(--border-focus)'; document.body.append(probe);
+        const token=rgb(getComputedStyle(probe).outlineColor); probe.remove();
+        return { slot:host.dataset.slot, visible:el.matches(':focus-visible'), style:s.outlineStyle, width:s.outlineWidth, offset:s.outlineOffset,
+          color:rgb(s.outlineColor), token, shadow:s.boxShadow.replace(/rgba\\(0, 0, 0, 0\\) 0px 0px 0px 0px(, )?/g,'').trim() || 'none',
+          widthToken:getComputedStyle(document.documentElement).getPropertyValue('--focus-width').trim(), offsetToken:getComputedStyle(document.documentElement).getPropertyValue('--focus-offset').trim() }; })()`;
+      const tabFromStart = async () => { await ev(`document.activeElement?.blur?.(), true`); await act.key('Tab'); };
+      await load('components-input--기본', theme);
+      await tabFromStart(); await wait(`document.activeElement?.dataset.slot === 'input'`);
+      const input = await ev(ring);
+      assert.ok(input.visible && input.style === 'solid' && input.width === input.widthToken && input.offset === input.offsetToken && input.shadow === 'none', `Input ${JSON.stringify(input)}`);
+      await load(`qa-inputconsistency--${theme==='light'?'라이트':'다크'}`,theme);
+      await tabFromStart();
+      const m = [];
+      for (const slot of ['select-trigger','combobox-trigger','combobox-multiple-control','multi-select-trigger']) {
+        if (m.length) await act.key('Tab');
+        await wait(`(document.activeElement?.closest('[data-slot="combobox-multiple-control"]') ?? document.activeElement)?.dataset.slot === '${slot}'`);
+        await sleep(200); // --dur-fast 전환 뒤
+        m.push(await ev(ring));
+        await browser.shot(`focus-${slot}-${theme}`);
+      }
+      for (const item of m) {
+        assert.equal(item.visible, true, item.slot);
+        for (const key of ['style','width','offset','shadow']) assert.equal(item[key], input[key], `${item.slot} ${key} ${JSON.stringify(item)}`);
+        assert.deepEqual(item.color, input.color, `${item.slot} 색`); assert.deepEqual(item.color, item.token, `${item.slot} --border-focus`);
+      }
+      return { input, triggers: m };
     });
   }
   for(const [name,path] of [['기본',`${root}/packages/ui/dist/styles.css`],['Tailwind',`${OUT}/tailwind-output.css`]]) {

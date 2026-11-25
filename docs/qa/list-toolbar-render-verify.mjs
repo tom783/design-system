@@ -236,7 +236,7 @@ try {
       // 링: 칩 해제·+N·초기화 모두 2px 실선 border/focus.
       const ring = async (selector, name) => {
         await ev(`${q(selector)}.focus()`);
-        const s = await ev(`(() => { ${helpers} const s = getComputedStyle(document.activeElement); return { style: s.outlineStyle, width: s.outlineWidth, color: rgb(s.outlineColor), focus: token('--border-focus'), visible: document.activeElement.matches(':focus-visible') }; })()`);
+        const s = await ev(`(() => { ${helpers} const s = getComputedStyle(document.activeElement); return { style: s.outlineStyle, width: s.outlineWidth, offset: s.outlineOffset, color: rgb(s.outlineColor), focus: token('--border-focus'), visible: document.activeElement.matches(':focus-visible'), shadow: s.boxShadow.replace(/rgba\\(0, 0, 0, 0\\) 0px 0px 0px 0px(, )?/g, '').trim() || 'none' }; })()`);
         assert.ok(s.visible && s.style === 'solid' && s.width === '2px' && s.color.every((v, i) => Math.abs(v - s.focus[i]) <= 1), `${name} 링 ${JSON.stringify(s)}`);
         await browser.shot(`${theme}-1440-focus-${name}`);
         return s;
@@ -245,6 +245,11 @@ try {
       await ring('[data-slot="filter-bar-chips"] > ul [data-slot="filter-bar-chip-remove"]', 'chip');
       await ring('[data-slot="filter-bar-more"]', 'more');
       await ring('[data-slot="filter-bar-reset"]', 'reset');
+      // 0.7.1: 보기 Select 와 바로 옆 검색 입력의 포커스 모양이 같다(전엔 Select 만 1px box-shadow 링 · outline none).
+      const view = await ring('[data-slot="filter-bar-view"] [data-slot="select-trigger"]', 'view-select');
+      const search = await ring('[data-slot="filter-bar-search"] input', 'search-input');
+      assert.deepEqual({ ...view, focus: null }, { ...search, focus: null }, `보기 Select ↔ 검색 입력 링 ${JSON.stringify({ view, search })}`);
+      assert.equal(view.shadow, 'none', `보기 Select 그림자 링 ${view.shadow}`);
       // 첫 칩을 Enter 로 해제 → 다음 칩(새 첫 칩) 해제 버튼으로.
       await ev(`${q('[data-slot="filter-bar-chips"] > ul [data-slot="filter-bar-chip-remove"]')}.focus()`);
       await act.enter();
