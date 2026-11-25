@@ -169,7 +169,9 @@ gh run list -R tom783/design-system --branch main --json headSha,status,conclusi
   둘 다 `npm-publish` 환경 필수 검토자(오너) 승인을 받고 진행했다. 인증은 신뢰 게시자(OIDC — `NODE_AUTH_TOKEN` 비어 있음, npm 게시자
   "GitHub Actions")이고 세 패키지 모두 sigstore provenance 가 붙었다. 세 패키지의 npm `gitHead` 는 `e345d51` 이다. 그 전 게시는 0.3.0
   (2026-11-21, run 44850936920)이고 0.4.0~0.6.0 은 따로 게시하지 않아 0.7.0 에 함께 실렸다.
-- **CHANGELOG 는 패키지 tarball 에 들어가지 않는다** — 앱 쪽 안내(올릴 때 할 일)는 저장소 CHANGELOG·루트 README 에 둔다.
+- **CHANGELOG 는 패키지 tarball 에 들어가지 않는다** — 게시하면 npm 화면에 보이는 것은 패키지 README 다. 그래서 앱 쪽 안내(올릴 때
+  할 일)는 저장소 CHANGELOG·루트 README 와 함께 **패키지 README 에도** 둔다(예: tokens·ui·mcp README 「0.3.0에서 올릴 때」, 0.7.1).
+  패키지 README 에는 그 패키지에 닿는 줄만 옮기고 코드가 깨지는 것을 맨 앞에 두며, 자세한 것은 CHANGELOG 절로 가는 절대 GitHub 링크로 잇는다.
   게시 뒤 `packages/*` 의 README·package.json·소스를 고치면 게시본과 어긋나므로 다음 판 일이다.
 
 ## 상시 규칙

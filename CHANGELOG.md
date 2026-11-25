@@ -68,6 +68,10 @@
   (390 에서 2열이면 칸 139 라 세로축 숫자가 차트 밖으로 나가고 불릿 이름·값이 말줄임됐다). 대시보드 '최근 주문'(5행)·상세 '주문 상품'(3행)
   표는 정렬을 끈다(§24.5). 소개 사이트 패턴 카드 '쓰인 부품'이 `docs/examples` 도우미까지 따라가 상단 바 부품(ContextSwitcher·
   NotificationCenter·Avatar·DropdownMenu 등)도 싣는다. 스토리·예시·사이트만 — 공개 API·토큰 변화 없음, 앱이 할 일 없음.
+- **DESIGN.md·AGENTS.md 를 0.7.1 고침에 맞춤** (0.7.1 D). DESIGN §4.2 일괄 작업 바 키보드 도달(바가 나타난 순간의 포커스 뒤에 Tab 순서로
+  한 번 끼움 · 'N건 선택' 낭독은 늘림·줄임마다 한 번 · 모두 해제는 빈 글자 그대로) · §11.7 FileUpload 목록 줄 좌우 `var(--space-12)`(삭제
+  버튼 상자 기준 · 구분선 전체 폭) · §18.3 떠 있는 목록(Combobox·MultiSelect) z-index 50 — Dialog·Sheet 의 창·패널 위. AGENTS.md
+  '버전·릴리스' — 올릴 때 할 일 안내를 패키지 README 에도 둔다(npm 화면에 보이는 곳). 문서만 — 앱이 할 일 없음.
 
 ---
 
