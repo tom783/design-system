@@ -2,6 +2,8 @@
 
 읽기 전용 stdio 서버다. 런타임은 Node 내장 모듈과 `manifest.json`만 사용하며 의존성·HTTP·쓰기 도구가 없다.
 
+**0.3.0에서 올리는 클라이언트:** 도구만 쓰는 AI 클라이언트는 할 일이 없다. `design://components` 리소스를 직접 읽었다면 모양이 바뀌었다 — 아래 「0.3.0에서 올릴 때」.
+
 npm 패키지로 연결하려면 다음 명령을 실행한다.
 
 ```sh
@@ -42,6 +44,25 @@ claude mcp add s2life -- npx -y @s2life/mcp
 이미 undefined를 포함해 검사기가 접미사를 생략한 타입 별칭 목록이며 실제 추출 결과에서 생성한다.
 `derived.description`에도 이 규칙이 있어 매니페스트만 읽어도 복원할 수 있다.
 이 저장 형태는 **어떤 응답으로도 그대로 나가지 않는다.** 서버가 `catalog.mjs`로 복원해서 보낸다.
+
+## 0.3.0에서 올릴 때
+
+npm에는 0.3.0 다음 판이 0.7.0이다. 0.4.0·0.5.0·0.6.0은 번호와 변경 기록만 확정하고 따로 게시하지 않아 그 변경이 모두 0.7.0에 함께 실렸다. 0.3.0에서 받는 변경 중 MCP 클라이언트에 닿는 것을 모았다 — 문장과 수치는 변경 기록 각 판의 항목 그대로이고, 괄호 안은 그 판(0.4~0.7)이다.
+변경 기록은 패키지에 들어가지 않는다. 판마다 자세한 것과 부품(`@s2life/ui`)·토큰 쪽 변경은 저장소의 [변경 기록 「0.3.0에서 0.7.0으로 올릴 때」](https://github.com/tom783/design-system/blob/main/CHANGELOG.md#030에서-070으로-올릴-때)와 [저장소 README](https://github.com/tom783/design-system#readme)에 있고, 0.7.0 뒤 판의 변경은 변경 기록의 그 판 절에 있다.
+
+### 코드가 깨지는 것 — `design://components`를 직접 읽는 클라이언트만
+
+- **`design://components`는 선택 색인이다** (0.5 · R49). 0.3.0의 저장 형태(`{ derived, components }` — 복원 규칙과 축약 항목)를 그대로 보내던 것을 복원 규칙 없이 읽는 목록으로 바꿨다. `derived`로 복원하던 클라이언트는 `get_component`로 상세를 받는다. 리소스 목록의 제목·설명도 바뀌었다.
+- **색인에 키 `patterns`가 늘었다** (0.7). 지금 모양은 `{ description, components, patterns }`다(아래 「`design://components` — 선택 색인」). 키를 `description`·`components` 둘로 고정해 두었다면 고친다.
+
+0.3.0 공개 이름이 빠져 코드가 깨지는 `@s2life/ui` 변경(내부 도우미 12개 · DatePicker `onChange`)은 MCP 응답에 실린 적이 없다 — MCP는 부품만 싣는다. 도구만 쓰는 AI 클라이언트는 할 일이 없다. 도구 6개의 이름·입력 인자, 리소스 3개(`design://tokens`·`design://components`·`design://principles`), 프로토콜 버전 3개, Node 22 이상, 실행 명령은 0.3.0과 같다.
+
+### 응답이 달라지는 것
+
+- **`which_component` 후보에 조립 항목이 섞인다** (0.7). `kind: "pattern"`(첫 항목 상단 바 `app-header`)이고 부품 후보의 응답 모양은 그대로(`kind` 없음)다. import 할 수 없는 이름이라 `list_components`에는 없고, `get_component("app-header")`가 상세를 준다(아래 「조립 항목 — `patterns`」).
+- **`get_component DatePicker`의 값 알림은 `onValueChange`** (0.5 더함 · 0.6 옛 이름 `onChange` 뺌). 부품 쪽 이름 바꿈과 같다.
+- **`get_component`의 상속 표기(`extends`)** (0.5): `React.*HTMLAttributes<…>`·`ComponentPropsWithoutRef<…>` → `React.ComponentProps<…>`(ref 포함).
+- **부품 102 → 125개**(0.4~0.7) — 새 부품 이름은 `@s2life/ui` README의 같은 절, 응답 크기는 아래 「응답 크기 예산」.
 
 ## `design://components` — 선택 색인 (R49)
 
