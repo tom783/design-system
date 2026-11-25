@@ -21,6 +21,8 @@
   README 뿐이다 — 0.7.0 「0.3.0에서 0.7.0으로 올릴 때」에서 패키지에 닿는 줄만 tokens·ui·mcp README 에 옮기고, 맨 앞에 코드가 깨지는 것을 뒀다
   (ui: 0.6 에서 뺀 내부 도우미 12개·타입 6개 대체 표와 DatePicker `onChange` · tokens: 빠지거나 바뀐 이름 없음 · mcp: `design://components`
   모양). 저장소 변경 기록 절·README 로 가는 절대 GitHub 링크를 붙였다. 앱이 할 일: 없음.
+- **AGENTS.md 소개 사이트 단락을 사이트 틀 A 로** (0.7.1 검수 후속 B). 옛 셸(첫 화면만 자기 상단 바 · 다른 페이지 사이드 메뉴)을 적던 문장을
+  지금 코드대로 고쳤다 — 모든 페이지 공통 `SiteBar`(64 · 메뉴 7개 · 검색 · 테마) · `SiteShell` · 섹션 안 목록 `SectionNav` · 오른쪽 목차 · 1023px 이하 Sheet.
 
 ---
 
