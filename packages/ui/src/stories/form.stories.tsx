@@ -4,6 +4,9 @@ import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
 import { Field, FormFlow, FormRow, useComposition } from '../components/form';
 import { Input } from '../components/input';
 import { Button } from '../components/button';
+import { Checkbox } from '../components/checkbox';
+import { Label } from '../components/label';
+import { Switch } from '../components/switch';
 
 const meta = {
   tags: ['autodocs'], title: 'Components/Form', parameters: { manifest: ['Field', 'FormRow', 'FormFlow', 'Label', 'Checkbox'], layout: 'padded' },
@@ -263,6 +266,74 @@ export const 제출오류와_네이티브동작: Story = {
     await userEvent.click(canvas.getByRole('button', { name: /^등록$/ }));
     await waitFor(() => expect(canvas.getByLabelText('수취인')).toHaveFocus());
     await expect(canvas.getByLabelText('수취인')).toHaveAttribute('aria-invalid', 'true');
+    done(root);
+  },
+};
+
+/** Field 밖 가로 배치 — 즉시 적용하는 설정 스위치 옆 이름(DESIGN §17.4·§17.5). htmlFor 로 컨트롤 id 를 이어 이름을 눌러도 켜고 끈다. */
+function NoticeSettings() {
+  const [notices, setNotices] = React.useState({ order: true, stock: false });
+  const rows = [
+    { id: 'notice-order', key: 'order', label: '새 주문 알림' },
+    { id: 'notice-stock', key: 'stock', label: '품절 임박 알림' },
+  ] as const;
+  return <div className="flex flex-col gap-3">
+    {rows.map(row => <div key={row.id} className="flex items-center gap-3">
+      <Switch id={row.id} checked={notices[row.key]} onCheckedChange={on => setNotices(prev => ({ ...prev, [row.key]: on }))} />
+      <Label htmlFor={row.id}>{row.label}</Label>
+    </div>)}
+  </div>;
+}
+export const 레이블_기본: Story = {
+  parameters: { docs: { description: { story: 'Field 를 쓰지 않는 Switch·Checkbox·Radio 옆의 입력 이름입니다. htmlFor 로 컨트롤 id 를 이어 이름을 눌러도 컨트롤이 바뀝니다.' } } },
+  render: () => <NoticeSettings />,
+  play: async ({ canvasElement: root }) => {
+    const canvas = within(root);
+    const stock = canvas.getByRole('switch', { name: '품절 임박 알림' });
+    await expect(stock).not.toBeChecked();
+    await userEvent.click(canvas.getByText('품절 임박 알림'));
+    await waitFor(() => expect(stock).toBeChecked());
+    done(root);
+  },
+};
+
+const CHANNELS = [
+  { id: 'channel-own', label: '자사몰' },
+  { id: 'channel-naver', label: '네이버 스마트스토어' },
+  { id: 'channel-coupang', label: '쿠팡' },
+] as const;
+/** 폼과 함께 제출하는 목록 선택(DESIGN §17.4) — 묶음 제목은 legend, 상위 '전체'는 일부만 고르면 혼합 상태(빼기 표시)다. */
+function ChannelChoice() {
+  const [picked, setPicked] = React.useState<string[]>(['channel-own', 'channel-naver']);
+  const all = picked.length === CHANNELS.length;
+  return <form className="flex flex-col gap-4" onSubmit={event => event.preventDefault()}>
+    <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
+      <legend className="mb-3 text-[length:var(--text-body-sm)] font-semibold">상품을 올릴 판매 채널</legend>
+      <div className="flex items-center gap-2">
+        <Checkbox id="channel-all" checked={all} indeterminate={picked.length > 0 && !all}
+          onChange={event => setPicked(event.target.checked ? CHANNELS.map(channel => channel.id) : [])} />
+        <Label htmlFor="channel-all">전체 채널</Label>
+      </div>
+      {CHANNELS.map(channel => <div key={channel.id} className="flex items-center gap-2 ps-6">
+        <Checkbox id={channel.id} name="channels" value={channel.id} checked={picked.includes(channel.id)}
+          onChange={event => setPicked(prev => event.target.checked ? [...prev, channel.id] : prev.filter(id => id !== channel.id))} />
+        <Label htmlFor={channel.id}>{channel.label}</Label>
+      </div>)}
+    </fieldset>
+    <div><Button type="submit" variant="primary">저장</Button></div>
+  </form>;
+}
+export const 체크박스_기본: Story = {
+  parameters: { docs: { description: { story: '저장할 때 함께 적용하는 목록 선택입니다. 하위를 일부만 고르면 상위 체크박스가 빼기 표시(혼합)이고, 누르면 전체를 고르거나 풉니다.' } } },
+  render: () => <ChannelChoice />,
+  play: async ({ canvasElement: root }) => {
+    const canvas = within(root);
+    const all = canvas.getByRole('checkbox', { name: '전체 채널' });
+    await expect(all).toHaveAttribute('aria-checked', 'mixed');
+    await userEvent.click(all);
+    for (const box of canvas.getAllByRole('checkbox')) await expect(box).toBeChecked();
+    await userEvent.click(canvas.getByText('쿠팡'));
+    await expect(all).toHaveAttribute('aria-checked', 'mixed');
     done(root);
   },
 };

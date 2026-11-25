@@ -3,7 +3,7 @@ import primarySource from '../../docs/examples/charts.tsx?raw';
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { BulletRow, CompositionArea, TrendBand, type BulletMetric } from '../components/chart';
+import { BulletRow, ChartFrame, CompositionArea, TrendBand, type BulletMetric } from '../components/chart';
 
 import { Button } from '../components/button';
 import { useDelayedLoading } from '../lib/use-delayed-loading';
@@ -187,6 +187,44 @@ export const 구성변화_엣지: Story = {
     const paths = canvasElement.querySelectorAll('[data-slot="composition-series"]');
     for (const path of [...paths].slice(4)) await expect((path.getAttribute('d')?.match(/M/g) ?? []).length).toBe(2);
   },
+};
+
+/**
+ * 묶음 세 차트에 없는 모양(요일별 막대)은 앱이 SVG 로 그려 ChartFrame 에 넣는다 — 제목·범례·네 상태 자리와 폭 재기는 틀이 맡고(§7.5.6),
+ * 그림은 차트 규율을 따른다(§7.5.3: 의미 토큰 색 · 막대는 0 기준 · 고정폭 숫자 · svg role="img" + 결론 한 문장).
+ */
+const weekdayShipments = [
+  { day: '월', count: 1180 }, { day: '화', count: 1236 }, { day: '수', count: 1104 }, { day: '목', count: 1288 },
+  { day: '금', count: 1402 }, { day: '토', count: 968 }, { day: '일', count: 412 },
+];
+const weekdaySummary = '금요일 출고가 1,402건으로 가장 많고 일요일이 412건으로 가장 적었습니다.';
+const numericText = { fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums' } as const;
+function WeekdayBars({ width, height }: { width: number; height: number }) {
+  // 위 24px 는 막대 위 값 글자, 아래 28px 는 요일 글자 자리다. 막대 폭은 칸의 60%·최대 40px.
+  const top = 24;
+  const bottom = height - 28;
+  const max = Math.max(...weekdayShipments.map((d) => d.count));
+  const band = width / weekdayShipments.length;
+  const bar = Math.min(40, band * 0.6);
+  const y = (count: number) => bottom - (count / max) * (bottom - top);
+  return <svg width={width} height={height} role="img" aria-label={weekdaySummary} style={{ display: 'block' }}>
+    <line x1={0} x2={width} y1={bottom} y2={bottom} stroke="var(--chart-axis)" />
+    {weekdayShipments.map((d, i) => {
+      const center = band * i + band / 2;
+      return <g key={d.day}>
+        <rect x={center - bar / 2} y={y(d.count)} width={bar} height={bottom - y(d.count)} fill="var(--chart-line)" />
+        <text x={center} y={y(d.count) - 6} textAnchor="middle" fontSize={13} fill="var(--text-primary)" style={numericText}>{d.count.toLocaleString('ko-KR')}</text>
+        <text x={center} y={bottom + 18} textAnchor="middle" fontSize={13} fill="var(--chart-axis)" style={numericText}>{d.day}</text>
+      </g>;
+    })}
+  </svg>;
+}
+export const 차트틀_기본: Story = {
+  parameters: { docs: { description: { story: '앱이 직접 그리는 차트의 틀입니다. 제목·범례와 로딩·빈 상태·오류 자리를 함께 주고, 잰 폭과 높이를 그림 함수에 넘깁니다.' } } },
+  render: () => <ChartFrame title="요일별 출고 건수" summary={weekdaySummary} legend={[{ label: '출고 건수', color: 'var(--chart-line)' }]}>
+    {(width, height) => <WeekdayBars width={width} height={height} />}
+  </ChartFrame>,
+  play: async ({ canvasElement }) => { await checkCharts(canvasElement, 1); },
 };
 
 export const 로딩_추이밴드: Story = {
