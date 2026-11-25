@@ -1,6 +1,8 @@
+import type * as React from 'react';
 import { DataTable, DescriptionList, PageHeader, SectionHeader, createDataTableColumnHelper } from '@s2life/ui';
 import { DocLayout, type TocItem } from '../../blocks/Toc';
 import { Rich, Sources } from '../../blocks/Text';
+import { useMediaQuery } from '../../blocks/useMediaQuery';
 import { boundary, character, conceptHead, decisions, principles, type BoundaryRow, type DecisionRow } from '../../content/concept';
 
 // 행이 몇 개 안 되는 표라 정렬을 달지 않는다(DataTable 쓰지 말 것: 5행 이하 표에 정렬).
@@ -26,6 +28,19 @@ const decisionColumns = decisionHelper.columns([
   decisionHelper.accessor('rejected', { header: decisions.headers.rejected, enableSorting: false, cell: (cell) => <Rich text={cell.getValue()} /> }),
 ]);
 
+/**
+ * 원칙의 한다/하지 않는다/왜. 넓으면 설명 목록(이름 칸 6rem 옆에 값), 600px 이하면 이름을 값 위 줄로(이름–값 4 · 쌍 사이 12, 검수 r1) —
+ * 390 에서 이름 칸이 옆에 있으면 값 칸이 약 220px 로 좁아진다. 설명 목록이 세로형으로 접히는 경계(자기 폭 326px)보다 넓은 폭이라 사이트가 고른다.
+ */
+const NARROW = '(max-width: 600px)';
+function PrincipleValues({ items }: { items: { label: string; value: React.ReactNode }[] }) {
+  const narrow = useMediaQuery(NARROW);
+  if (!narrow) return <DescriptionList labelWidth={6} items={items} />;
+  return <dl className="site-pairs">
+    {items.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}
+  </dl>;
+}
+
 const principleTitle = (index: number) => `${index + 1}. ${principles[index]!.name}`;
 
 const TOC: TocItem[] = [
@@ -50,7 +65,7 @@ export function ConceptPage() {
       <div className="site-page">
         {principles.map((principle, i) => <SectionHeader key={principle.id} id={`principle-${principle.id}`} as="h3" title={principleTitle(i)}>
           <div className="site-stack-sm">
-            <DescriptionList labelWidth={6} items={[
+            <PrincipleValues items={[
               { label: '한다', value: <Rich text={principle.do} /> },
               { label: '하지 않는다', value: <Rich text={principle.dont} /> },
               { label: '왜', value: <Rich text={principle.why} /> },

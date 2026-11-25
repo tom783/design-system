@@ -7,7 +7,7 @@ import {
 import { Package, Table2 } from '@s2life/ui/icons';
 import { findComponent } from '../../data/manifest';
 import { homeSample, type SampleOrder } from '../../content/home';
-import { useMediaQuery } from './useMediaQuery';
+import { useMediaQuery } from '../../blocks/useMediaQuery';
 
 /** 첫 화면이 부르는 부품 이름은 매니페스트에 있어야 한다 — 없으면 렌더가 멈춘다(지어낸 부품을 싣지 않는다). */
 export function componentName(name: string) {

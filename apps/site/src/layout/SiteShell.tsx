@@ -7,6 +7,9 @@ import { manifest, pageComponents, pageFor } from '../data/manifest';
 import { foundationSections } from '../pages/foundations/sections';
 import { useTheme, type ThemeChoice } from './theme';
 
+/** 사이트 브랜드 이름 — 사이드 메뉴·첫 화면 상단 바·바닥글이 같은 글자를 쓴다(문서 title 은 index.html, 디자인 총괄 검수 r1). */
+export const BRAND = 'S2Life 디자인 시스템';
+
 /** 메뉴 — 첫 화면과 여섯 갈래. 경로가 이 접두로 시작하면 현재 위치다. */
 export const MENU = [
   { to: '/', label: '첫 화면', icon: <House /> },
@@ -92,7 +95,7 @@ export function SiteShell() {
   const { pathname } = useLocation();
   useScrollOnNavigate();
   return <AppShell narrowNavigation="drawer" contentMaxWidth={1120} header={<SiteHeader />} sidebar={
-    <SideNav brand="@s2life 디자인 시스템" brandIcon={<Layers />}>
+    <SideNav brand={BRAND} brandIcon={<Layers />}>
       <SideNavGroup label="메뉴">
         {MENU.map((item) => <SideNavItem key={item.to} asChild icon={item.icon} label={item.label} current={isCurrent(pathname, item.to)}>
           <Link to={item.to} />

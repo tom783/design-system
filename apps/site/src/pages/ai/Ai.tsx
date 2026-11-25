@@ -3,7 +3,7 @@ import { Card, CardBody, CardHeader, CardTitle, DescriptionList, PageHeader, Sec
 import docs, { type McpCandidate, type McpResource, type McpTool, type McpToolParam } from 'virtual:site-docs';
 import meta from 'virtual:site-meta';
 import { CodeBlock } from '../../blocks/CodeBlock';
-import { Rich, ReadmeLink } from '../../blocks/Text';
+import { Rich, Sources } from '../../blocks/Text';
 import { DocLayout, type TocItem } from '../../blocks/Toc';
 import { pageFor } from '../../data/manifest';
 
@@ -85,7 +85,8 @@ const TOC: TocItem[] = [
 export function AiPage() {
   return <DocLayout toc={TOC}>
     <PageHeader title="AI로 쓰기" description={<Rich text={text.intro[0]!} base="packages/mcp/" />} />
-    <SectionHeader id="connect" title="연결 한 줄" description={<ReadmeLink file={MCP_README}>{MCP_README} 원문</ReadmeLink>}>
+    {/* 절마다 설명이 먼저, 원문 링크는 절 끝 '근거 ·' 줄(디자인 컨셉과 같은 모양, 검수 r1). */}
+    <SectionHeader id="connect" title="연결 한 줄">
       <div className="site-stack">
         <p><Rich text={text.connect[0]!} base="packages/mcp/" /></p>
         <CodeBlock label="sh" code={docs.mcpReadme.connect} />
@@ -94,6 +95,7 @@ export function AiPage() {
           npx 는 npm 게시판 {meta.published.version}({meta.published.date})을 받는다. 이 사이트는 작업 폴더 {meta.version} 기준이다 —
           게시판 뒤에 더한 부품은 게시 전까지 npx로 연결한 AI가 받지 못한다(부품 페이지의 npm 표시).
         </p>}
+        <Sources items={[{ file: MCP_README }]} />
       </div>
     </SectionHeader>
     <SectionHeader id="develop" title="저장소에서 개발할 때">
@@ -103,6 +105,7 @@ export function AiPage() {
         </ol>
         <CodeBlock label="json · MCP 클라이언트 서버 설정" code={docs.mcpReadme.devConfig} />
         <p><Rich text={text.cwd[0]!} base="packages/mcp/" /></p>
+        <Sources items={[{ file: MCP_README }]} />
       </div>
     </SectionHeader>
     <SectionHeader id="instructions" title="AI가 받는 안내" description="연결하면 서버가 initialize 응답의 instructions 로 처음 주는 글 — 빌드 때 서버에서 받았다">

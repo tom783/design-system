@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useLocation } from 'react-router';
-import { DataTable, SectionHeader, StatusChip, Tabs, TabsContent, TabsList, TabsTrigger, createDataTableColumnHelper } from '@s2life/ui';
+import { SectionHeader, StatusChip, Tabs, TabsContent, TabsList, TabsTrigger, createDataTableColumnHelper } from '@s2life/ui';
 import { tokens, type ContrastCheck } from '../../data/tokens';
 import { manifest } from '../../data/manifest';
 import { TokenName } from './TokenName';
+import { TokenTable, TokenValue } from './TokenTable';
 
 // 의미 토큰은 라이트·다크 두 열로 같은 이름을 나란히 둔다. 사이트 테마와 무관하게 두 테마 값을 함께 보여 준다.
 interface SemanticRow { name: string; light: { ref: string; hex: string }; dark: { ref: string; hex: string }; purpose: string }
@@ -26,8 +27,17 @@ const semanticColumns = semanticHelper.columns([
   semanticHelper.accessor('name', { header: '토큰', cell: (cell) => <TokenName name={cell.getValue()} /> }),
   semanticHelper.accessor('light', { header: '라이트', cell: (cell) => <Swatch hex={cell.getValue().hex} reference={cell.getValue().ref} /> }),
   semanticHelper.accessor('dark', { header: '다크', cell: (cell) => <Swatch hex={cell.getValue().hex} reference={cell.getValue().ref} /> }),
-  semanticHelper.accessor('purpose', { header: '용도' }),
+  // 용도는 줄을 바꿔 표를 본문 칸 안에 둔다(1440 에서 40px 넘쳐 용도 글이 잘리던 것, 검수 r1).
+  semanticHelper.accessor('purpose', { header: '용도', cell: (cell) => <span className="site-cell-wrap">{cell.getValue()}</span> }),
 ]);
+const semanticBlock = (row: SemanticRow) => ({
+  name: <TokenName name={row.name} />,
+  values: <>
+    <TokenValue label="라이트"><Swatch hex={row.light.hex} reference={row.light.ref} /></TokenValue>
+    <TokenValue label="다크"><Swatch hex={row.dark.hex} reference={row.dark.ref} /></TokenValue>
+  </>,
+  note: row.purpose,
+});
 
 function Primitives() {
   return <div className="site-stack">
@@ -63,6 +73,15 @@ const contrastColumns = contrastHelper.columns([
   }),
 ]);
 const contrastRows = tokens.verification.contrast.map((check, i) => ({ ...check, id: String(i) }));
+const contrastBlock = (row: (typeof contrastRows)[number]) => ({
+  name: <strong>{row.label}</strong>,
+  values: <>
+    <TokenValue label="종류">{row.kind}</TokenValue>
+    <TokenValue label="대비"><span className="tabular">{row.value}:1</span></TokenValue>
+    <TokenValue label="하한"><span className="tabular">{row.min}:1</span></TokenValue>
+    {row.pass ? <StatusChip tone="success">통과</StatusChip> : <StatusChip tone="danger">미달</StatusChip>}
+  </>,
+});
 
 export function ColorFoundation() {
   // 검색에서 원시 색 토큰으로 오면(#token-color-…) 원시 탭을 연다.
@@ -76,12 +95,12 @@ export function ColorFoundation() {
       <TabsTrigger value="contrast">대비 검증</TabsTrigger>
     </TabsList>
     <TabsContent value="semantic">
-      <DataTable data={semanticRows} columns={semanticColumns} getRowId={(row) => row.name}
+      <TokenTable data={semanticRows} columns={semanticColumns} getRowId={(row) => row.name} block={semanticBlock}
         caption="의미 토큰 — 라이트·다크 값과 참조 원시 색" />
     </TabsContent>
     <TabsContent value="primitive"><Primitives /></TabsContent>
     <TabsContent value="contrast">
-      <DataTable data={contrastRows} columns={contrastColumns} getRowId={(row) => row.id}
+      <TokenTable data={contrastRows} columns={contrastColumns} getRowId={(row) => row.id} block={contrastBlock}
         caption="생성기가 검사한 대비 조합과 판정" />
     </TabsContent>
   </Tabs>;

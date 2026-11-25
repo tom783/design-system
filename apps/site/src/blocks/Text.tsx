@@ -43,10 +43,14 @@ export function ReadmeLink({ file = 'README.md', heading, children }: { file?: '
   return <External href={blob(file, found?.slug)}>{children ?? (heading ? `${file} ${heading}` : file)}</External>;
 }
 
-/** 문안의 출처 괄호를 대신하는 근거 줄. DESIGN.md 절은 그 절로 가는 링크, 덧붙인 말(note)은 문안 그대로. */
+/**
+ * 문안의 출처 괄호를 대신하는 근거 줄 — 절 끝에 둔다(설명이 먼저, 원문 링크는 끝, 검수 r1).
+ * DESIGN.md 절은 그 절로 가는 링크, README 는 그 파일(제목이 있으면 그 제목)로 가는 링크, 덧붙인 말(note)은 문안 그대로.
+ */
 export type Source =
   | { design: string; note?: string }
-  | { readme: string; note?: string }
+  | { readme: string; file?: 'README.md' | 'packages/mcp/README.md'; note?: string }
+  | { file: 'README.md' | 'packages/mcp/README.md'; note?: string }
   | { text: string };
 
 export function Sources({ items }: { items: readonly Source[] }) {
@@ -55,8 +59,9 @@ export function Sources({ items }: { items: readonly Source[] }) {
     {items.map((item, i) => <React.Fragment key={i}>
       {i > 0 && ' · '}
       {'design' in item ? <><DesignLink section={item.design} />{item.note ? ` ${item.note}` : ''}</>
-        : 'readme' in item ? <><ReadmeLink heading={item.readme}>README.md</ReadmeLink>{item.note ? ` ${item.note}` : ''}</>
-          : item.text}
+        : 'readme' in item ? <><ReadmeLink file={item.file} heading={item.readme}>{item.file ?? 'README.md'}</ReadmeLink>{item.note ? ` ${item.note}` : ''}</>
+          : 'file' in item ? <><ReadmeLink file={item.file}>{item.file}</ReadmeLink>{item.note ? ` ${item.note}` : ''}</>
+            : item.text}
     </React.Fragment>)}
   </p>;
 }
