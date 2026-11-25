@@ -35,7 +35,7 @@ export interface BulkActionBarProps extends Omit<React.ComponentProps<'div'>, 'c
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
-export function BulkActionBar({ selectedCount, onClear, actions, dangerAction, children, className, ...props }: BulkActionBarProps) {
+export function BulkActionBar({ selectedCount, onClear, actions, dangerAction, children, className, ref, ...props }: BulkActionBarProps) {
   const count = Math.max(0, Math.trunc(Number.isFinite(selectedCount) ? selectedCount : 0));
   const active = count > 0;
   const replacedRef = React.useRef<HTMLDivElement>(null);
@@ -54,12 +54,56 @@ export function BulkActionBar({ selectedCount, onClear, actions, dangerAction, c
     replacedRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
   }, [active]);
 
+  // 키보드 도달(0.7.1). 바는 DOM 에서 표보다 앞이라(필터 바 자리를 덮는다) 표에서 행을 고른 사람이 Tab 으로 앞으로
+  // 가면 닿지 않았다 — Shift+Tab 으로 되돌아가야 했다. DOM·시각 위치·공개 API 는 그대로 두고, 바가 **나타난 순간**
+  // 포커스가 있던 요소(선택을 만든 체크박스 — 바 뒤, 같은 부모 안) 바로 뒤에 바를 Tab 순서로 한 번 끼운다:
+  //   그 요소에서 Tab → 바의 첫 단추 · 바의 마지막 단추에서 Tab → 그 요소 다음(원래 가던 곳) · 바의 첫 단추에서 Shift+Tab → 그 요소.
+  // 한 번뿐이다 — 포커스가 그 요소·바 밖으로 나가면 풀린다. 선택을 늘릴 때마다 끼우면 행마다 바를 지나야 해서 여러 행
+  // 고르기가 무거워진다. 마우스로 고른 경우(포커스가 체크박스에 없음)·앱이 코드로 고른 경우는 끼우지 않는다.
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const insertAfter = React.useRef<HTMLElement | null>(null);
+  const viaInsert = React.useRef(false);
+  React.useLayoutEffect(() => {
+    insertAfter.current = null; viaInsert.current = false;
+    const root = rootRef.current, current = document.activeElement;
+    if (!active || !root?.parentElement || !(current instanceof HTMLElement) || root.contains(current)) return;
+    if (root.parentElement.contains(current) && root.compareDocumentPosition(current) & Node.DOCUMENT_POSITION_FOLLOWING) insertAfter.current = current;
+  }, [active]);
+  React.useEffect(() => {
+    if (!active) return;
+    const stops = () => [...panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []];
+    const onKeyDown = (event: KeyboardEvent) => {
+      const point = insertAfter.current;
+      if (event.key !== 'Tab' || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || !point?.isConnected) return;
+      const list = stops(), current = document.activeElement;
+      if (!list.length) return;
+      if (!event.shiftKey && current === point) { event.preventDefault(); viaInsert.current = true; list[0]!.focus(); }
+      else if (viaInsert.current && event.shiftKey && current === list[0]) { event.preventDefault(); viaInsert.current = false; point.focus(); }
+      // 기본 Tab 을 막지 않는다 — 포커스를 그 요소로 옮겨 두면 브라우저가 그다음 요소로 보낸다(무엇이 다음인지 브라우저가 정한다).
+      else if (viaInsert.current && !event.shiftKey && current === list.at(-1)) { viaInsert.current = false; point.focus({ preventScroll: true }); }
+    };
+    const onFocusIn = (event: FocusEvent) => {
+      const target = event.target as Node | null;
+      if (target && target !== insertAfter.current && !panelRef.current?.contains(target)) { insertAfter.current = null; viaInsert.current = false; }
+    };
+    // 거품 단계 — 표 안 부품이 Tab 을 먼저 썼으면(defaultPrevented) 건드리지 않는다.
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('focusin', onFocusIn);
+    return () => { document.removeEventListener('keydown', onKeyDown); document.removeEventListener('focusin', onFocusIn); };
+  }, [active]);
+
   const label = `${count.toLocaleString('ko-KR')}건 선택`;
-  return <div {...props} data-slot="bulk-action-bar" data-active={active || undefined} className={cn('ds-bulk-action-bar', className)}>
+  const setRoot = React.useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    if (typeof ref === 'function') return ref(node);
+    if (ref) ref.current = node;
+  }, [ref]);
+  return <div {...props} ref={setRoot} data-slot="bulk-action-bar" data-active={active || undefined} className={cn('ds-bulk-action-bar', className)}>
     {children !== undefined && <div ref={replacedRef} data-slot="bulk-action-bar-replaced" className="ds-bulk-action-bar-replaced" inert={active}>
       {children}
     </div>}
-    <div data-slot="bulk-action-bar-panel" className="ds-bulk-action-bar-panel"
+    <div ref={panelRef} data-slot="bulk-action-bar-panel" className="ds-bulk-action-bar-panel"
       role={active ? 'group' : undefined} aria-label={active ? '선택한 항목 일괄 작업' : undefined}
       onFocus={() => { focusInside.current = true; }}
       onBlur={event => {

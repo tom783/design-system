@@ -293,6 +293,44 @@ try {
       await wait(`document.activeElement === ${q('[data-slot="filter-bar-view"] [data-slot="select-trigger"]')}`, '돌아온 필터 바의 첫 조작 요소로 포커스');
       return stick;
     });
+    // 0.7.1: 바는 DOM 에서 표 앞이라 행을 고른 뒤 Tab 으로는 닿지 않았다(Shift+Tab 9번). 바가 나타난 순간의 포커스(그 행
+    // 체크박스) 바로 뒤에 바를 Tab 순서로 한 번 끼운다. 진짜 키만 쓴다 — 낭독은 live region 글자 변화 횟수로 센다.
+    await check(`일괄 작업 키보드 ${theme}: 행 Space 뒤 Tab → 바 4단추 → 그 행 다음 · Shift+Tab 왕복 · 한 번뿐 · 'N건 선택' 낭독 한 번`, async () => {
+      await load('기본', theme, 1440);
+      await ev(`(() => { window.__live = []; document.querySelectorAll('[aria-live], [role="status"], [role="alert"]').forEach(n =>
+        new MutationObserver(() => window.__live.push((n.dataset.slot ?? n.getAttribute('role')) + ':' + n.textContent)).observe(n, { childList: true, subtree: true, characterData: true })); return true; })()`);
+      const live = () => ev('window.__live.splice(0)');
+      const row = (i, part) => `document.querySelectorAll('[data-slot="data-table-row"]')[${i}].querySelector(${JSON.stringify(part)})`;
+      const at = () => ev(`(() => { const el = document.activeElement; const r = el.closest('[data-slot="data-table-row"]');
+        return el.closest('[data-slot="bulk-action-bar-panel"]') ? '바:' + el.textContent : r ? '행' + ([...r.parentElement.children].indexOf(r) + 1) + ':' + el.tagName.toLowerCase() : el.dataset.slot ?? el.tagName; })()`);
+      // 표 머리에서 Tab 으로 첫 행 체크박스에 닿게 한다(키보드로 온 상태).
+      await ev(`[...document.querySelectorAll('thead button, thead input')].at(-1).focus()`);
+      await act.key('Tab'); assert.equal(await at(), '행1:input');
+      await act.key(' '); await wait(`${q('[data-slot="bulk-action-bar-count"]')}.textContent === '1건 선택'`, '1건 선택');
+      assert.deepEqual(await live(), ['bulk-action-bar-count:1건 선택'], '0→1 낭독 한 번');
+      const forward = [];
+      for (let i = 0; i < 6; i++) { await act.key('Tab'); forward.push(await at()); }
+      assert.deepEqual(forward, ['바:선택 해제', '바:송장 출력', '바:출고 처리', '바:주문 취소', '행1:a', '행2:input'], `선택 뒤 Tab ${JSON.stringify(forward)}`);
+      await browser.shot(`${theme}-1440-bulk-tab-return`);
+      // 한 번뿐: 돌아온 뒤 행1 체크박스로 되돌아가 Tab 해도 바로 가지 않는다.
+      await act.key('Tab', { shift: true }); await act.key('Tab', { shift: true }); assert.equal(await at(), '행1:input');
+      await act.key('Tab'); assert.equal(await at(), '행1:a', '한 번 지나간 뒤에는 원래 순서');
+      // 늘림·줄임: 둘째 행 Space 두 번 → 각각 한 번씩 읽힌다. 바는 이미 있어 끼우지 않는다.
+      await act.key('Tab'); assert.equal(await at(), '행2:input');
+      await act.key(' '); await wait(`${q('[data-slot="bulk-action-bar-count"]')}.textContent === '2건 선택'`, '2건 선택');
+      await act.key(' '); await wait(`${q('[data-slot="bulk-action-bar-count"]')}.textContent === '1건 선택'`, '다시 1건');
+      assert.deepEqual(await live(), ['bulk-action-bar-count:2건 선택', 'bulk-action-bar-count:1건 선택'], '늘림·줄임 낭독 각 한 번');
+      await act.key('Tab'); assert.equal(await at(), '행2:a', '바가 이미 있을 때 선택을 바꿔도 끼우지 않는다');
+      // 새로 나타날 때만 끼운다 — 모두 해제 뒤 셋째 행으로 다시 고르면 그 행 뒤에 끼운다. Shift+Tab 은 그 행으로 돌아온다.
+      await ev(`${row(0, 'input')}.focus()`); await act.key(' ');
+      await wait(`${q('[data-slot="bulk-action-bar-count"]')}.textContent === ''`, '모두 해제');
+      await ev(`${row(2, 'input')}.focus()`); await act.key(' ');
+      await wait(`${q('[data-slot="bulk-action-bar-count"]')}.textContent === '1건 선택'`, '셋째 행 1건');
+      await act.key('Tab'); assert.equal(await at(), '바:선택 해제');
+      await act.key('Tab', { shift: true }); assert.equal(await at(), '행3:input', 'Shift+Tab 은 바를 끼운 그 행으로');
+      assert.deepEqual(await live(), ['bulk-action-bar-count:', 'bulk-action-bar-count:1건 선택'], '모두 해제는 빈 글자(읽히지 않음)·다시 고르면 한 번');
+      return { forward };
+    });
     await check(`위험 액션 ${theme}: AlertDialog 기본 포커스 안전 쪽·확정 뒤 선택 비움·검색으로 포커스`, async () => {
       await load('선택됨', theme, 1440);
       await ev(`[...${q('[data-slot="bulk-action-bar-panel"]')}.querySelectorAll('button')].at(-1).click()`);
