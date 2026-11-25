@@ -3,7 +3,7 @@
 //   node docs/qa/which-component-golden.mjs            # 정확도와 틀린 문항 표
 //   node docs/qa/which-component-golden.mjs --check    # 하한 아래면 exit 1 (단위 테스트도 같은 판정)
 //
-// 서버와 같은 입력을 쓴다: 저장 형태의 manifest.components 를 matchComponents 에 그대로 넘긴다.
+// 서버와 같은 입력을 쓴다: 저장 형태의 manifest.components + 조립 항목(selectionEntries — 목표 75 3단계 app-header)을 matchComponents 에 넘긴다.
 // 순위는 전체 후보로 매긴다(서버 기본 limit 5 안의 top-3 와 같다). "후보 0개"는 서버 기본 limit 의 응답이
 // 비어 isError 가 되는 것이다.
 // 정답 세트·하한은 docs/qa/fixtures/which-component-golden.json 이다.
@@ -13,9 +13,10 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { matchComponents } from '../../packages/mcp/match.mjs';
+import { selectionEntries } from '../../packages/mcp/catalog.mjs';
 
 export const loadGolden = async () => JSON.parse(await readFile(new URL('./fixtures/which-component-golden.json', import.meta.url), 'utf8'));
-export const loadComponents = async () => JSON.parse(await readFile(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8')).components;
+export const loadComponents = async () => selectionEntries(JSON.parse(await readFile(new URL('../../packages/mcp/manifest.json', import.meta.url), 'utf8')));
 
 export const acceptedNames = expected => expected === null ? [] : [expected].flat();
 

@@ -58,6 +58,15 @@
     아이콘 20 · 현재 조직은 오른쪽 체크 16 + 굵게 + 선택 바탕 · 묶음 위·아래 구분선 없음(로그아웃 위만). 낭독은 `menuitemradio`·`aria-checked`·
     묶음 이름 '조직 전환' 그대로다. 640 이상 하위 메뉴 모양은 그대로다. 부품 변화 없음(예시 조합만).
 
+- **MCP 조립 항목 `app-header` — 상단 바 조립 지침** (목표 75 3단계 · 디자인 총괄 MCP 지침 초안 r1 · 규격 r1.2 10절 · DESIGN.md §24.7).
+  부품 export 가 아닌 "여러 부품을 엮는 항목"(`kind: pattern`)을 MCP 에 처음 둔다 — purpose·useWhen·dont·규칙(§24.7·§24.8) · 쓰는 이름
+  `uses`(AppShell·ContextSwitcherGroup·ContextSwitcher·NotificationCenter·CountBadge·DropdownMenu·Avatar·Button) · 조합 예시 `example`.
+  - 나가는 곳: `which_component` 후보(`kind: "pattern"` — 부품 후보 모양은 그대로) · `get_component("app-header")` 상세 ·
+    `design://components` 새 키 `patterns`(고르는 필드만). import 할 수 없어 `list_components` 에는 없다. 도구 설명 두 줄에 조립 항목을 적었다.
+  - 예시는 실제 공개 API 로만 쓴다: 초안의 `NotificationBell`·`UserMenu`·`Spacer`·`mode="link|select"`·`allItem`(불리언)은 공개 API 에 없어
+    `header`(ContextSwitcherGroup) · `headerEnd`(NotificationCenter → DropdownMenu + Avatar + Button 사용자 메뉴, 조직 전환은 DropdownMenuSub) ·
+    항목 `href` 유무(링크/선택) · `allItem={항목}` 으로 고쳤다. 원문은 타입 검사되는 `packages/ui/docs/examples/app-header-mcp.tsx` 표시 구간이다.
+  - MCP 를 읽는 도구가 `design://components` 의 키를 `description`·`components` 둘로 고정해 두었다면 `patterns` 가 늘었다.
 - **맥락 전환기 `ContextSwitcher` · 묶음 `ContextSwitcherGroup`** (목표 75 2단계 · 상단 바 규격 2절 · Figma 223:483 · 223:737 · 223:1766 ·
   223:1923 · DESIGN.md §24.8). 지금 제품·스토어 같은 맥락을 header 왼쪽에 보이고 바꾼다. 타입 `ContextSwitcherProps` ·
   `ContextSwitcherGroupProps` · `ContextSwitcherItem` · `ContextSwitchEvent`.
@@ -141,6 +150,14 @@
   `Components/ContextSwitcher` 좁은폭 검색 · `Components/CountBadge` 급함(Tabs·SideNav 포함).
 - MCP(최소 항목, 지침 본작업은 3단계): ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge 의도 항목 · 색인 26,926B → 28,296B /
   40KB · 목록 21,142B → 21,993B / 36KB. `server.test` 목록 기준선에 네 항목을 명시적으로 더했다.
+- MCP 지침 한 줄씩(목표 75 3단계 · 상단 바 규격 r1.2): AppShell(header·headerEnd 64px 한 줄 — 옛 문장 "header에 사용자 메뉴"를 바꿈) ·
+  Toaster 2줄(`toast.notify` 등급·묶음 키 / 한 번에 하나·고정 우선·폼 하단 줄 위 16) · EmptyState·ErrorState(`size="page"` 두 행동) ·
+  SideNav(brand 표시 전용·개수는 `count`) · Tabs(TabsTrigger `count`) · CountBadge(99개 이상 낭독·레일 급함 점 링). 추천 키워드: EmptyState
+  권한 없음·찾을 수 없음·404·access denied·not found, Toaster 알림 토스트·업무 알림·화면 구석. 색인 28,296B → 29,274B / 40KB(app-header 781B / 항목 800B) ·
+  목록 21,993B 그대로 · 상세 최대 DataTable 6,118B / 7KB 그대로(app-header 상세 3,120B).
+- `which_component` 정답 세트 198 → 214문항(`set: r075` 상단 바 16 — 한국어 11·영어 5): top-1 180 → 195 · top-3 196 → 212 · 후보 0개 0.
+  기존 198문항은 정답 순위가 바뀐 문항 0개, R38 1순위 기준선 439건 변화 0. 하한 176·194 → 191·210. 생성기 검증 9(조립 항목) ·
+  `server.test`·`build.test`·`mcp-client-verify` 상단 바 검사 · 응답 대조 도구가 조립 항목 이름도 보낸다.
 - MCP: AppShell `header` 설명과 `headerEnd` prop·슬롯 2개, EmptyState·ErrorState `size`·`secondaryAction`·`description` 타입이 매니페스트에
   생성으로 들어갔다. 지침 문장(purpose·useWhen·dont·rules)은 이번에 바꾸지 않았다(상단 바 3단계). State 행동 묶음은 `data-slot` 없이
   클래스(`ds-state-actions`)만 둔다 — 상태 화면을 품은 DataTable 의 슬롯 목록이 MCP 기준선(R28)으로 고정돼 있어서다.

@@ -13,7 +13,7 @@
 // 이전(R37~R43)에는 design://components 가 저장 형태 전체(88,863B / 90,000B)라 부품이 늘 때마다
 // props·규칙까지 같이 늘었다. 지금은 색인만 보내고 상세는 이름별로 조회하므로 한 항목이 커져도
 // 요약은 항목당 상한까지만 는다.
-import { listComponents, getComponent, componentIndex } from './catalog.mjs';
+import { listComponents, getComponent, componentIndex, getPattern } from './catalog.mjs';
 
 // 수치 근거(2026-11-23, 115항목 · 가족 55개 · 가장 큰 가족 DropdownMenu 15항목 실측):
 //   색인 23,191B · 항목 최대 553B(DropdownMenu, 부품 이름 14개) · 가장 큰 가족 2,047B
@@ -56,21 +56,24 @@ function families(manifest, entries) {
 export function measureResponses(manifest, { budgets = BUDGETS, reserve = RESERVE_FAMILIES } = {}) {
   const index = componentIndex(manifest);
   const list = listComponents(manifest);
-  const summary = (label, response, entries, budget) => {
+  // 조립 항목(목표 75 3단계)은 가족이 아니다 — 전체 바이트에는 응답 그대로 들어가고, 항목당 상한은 부품 항목과 같이 받는다.
+  const summary = (label, response, entries, budget, patternEntries = []) => {
     const groups = families(manifest, entries);
     const largest = groups.reduce((max, family) => family.bytes > max.bytes ? family : max, { name: '없음', count: 0, bytes: 0 });
-    const entrySizes = entries.map((entry, i) => [manifest.components[i].name, bytes(entry)]);
+    const entrySizes = [...entries.map((entry, i) => [manifest.components[i].name, bytes(entry)]),
+      ...patternEntries.map(entry => [entry.name, bytes(entry)])];
     const largestEntry = entrySizes.reduce((max, item) => item[1] > max[1] ? item : max, ['없음', 0]);
     const total = bytes(response);
     const mean = groups.length ? Math.round(groups.reduce((sum, family) => sum + family.bytes, 0) / groups.length) : 0;
     return { label, total, limit: budget.total, entryLimit: budget.entry, largestEntry, largestFamily: largest, meanFamily: mean,
       reserve, projected: total + reserve * largest.bytes };
   };
-  const details = manifest.components.map(entry => [entry.name, bytes(getComponent(manifest, entry))]);
+  const details = [...manifest.components.map(entry => [entry.name, bytes(getComponent(manifest, entry))]),
+    ...(manifest.patterns ?? []).map(pattern => [pattern.name, bytes(getPattern(manifest, pattern))])];
   const largestDetail = details.reduce((max, item) => item[1] > max[1] ? item : max, ['없음', 0]);
   return {
     summaries: [
-      summary('design://components 색인', index, index.components, budgets.index),
+      summary('design://components 색인', index, index.components, budgets.index, index.patterns),
       summary('list_components', list, list.components, budgets.list),
     ],
     fixed: [

@@ -3299,6 +3299,11 @@ header 를 쓰지 않는 셸은 그대로다(header 요소를 그리지 않는�
 체크를 오른쪽에 두려고 `DropdownMenuRadioItem`(왼쪽 점) 대신 일반 항목에 `role="menuitemradio"`·`aria-checked`·`data-state` 를 직접 주고,
 묶음은 `DropdownMenuGroup aria-labelledby` 로 제목에 잇는다 — 낭독은 라디오와 같다.
 
+MCP 는 이 조립을 부품 하나가 아니라 **조립 항목 `app-header`**(`kind: pattern`, 목표 75 3단계 · 디자인 총괄 MCP 지침 초안 r1)로 준다 —
+"상단 바"를 찾으면 `which_component` 후보로 나오고 `get_component('app-header')` 가 purpose·useWhen·dont·규칙·쓰는 이름(uses)·조합 예시를 준다.
+예시 원문은 타입 검사되는 `packages/ui/docs/examples/app-header-mcp.tsx` 의 표시 구간이다(실제 공개 이름·props 만 — 초안의 NotificationBell·
+UserMenu·Spacer·mode 는 공개 API 에 없다). import 할 수 없는 이름이라 `list_components` 에는 없다(packages/mcp/README.md '조립 항목').
+
 검증: `top-bar-render-verify`(라이트·다크 × 1440·1024·768·390 — header 64 · brand 아래선 차이 0 · 누름 면적 · 진짜 Tab/Esc · 가로 넘침 0) ·
 `app-shell/header.test.mjs`(같은 토큰 · 슬롯). 기준 화면 `Screens/AppHeader`, 문서 Components/AppShell `상단바`.
 

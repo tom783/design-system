@@ -4671,8 +4671,12 @@
       ],
       "rules": [
         {
-          "text": "sidebar에는 SideNav를 넣는다. header에는 앱의 전역 검색·사용자 메뉴를 구성할 수 있다.",
+          "text": "sidebar에는 SideNav를 넣는다.",
           "source": "24"
+        },
+        {
+          "text": "header(왼쪽 — 맥락 전환기·전역 검색)·headerEnd(오른쪽 — 사용자 메뉴가 맨 오른쪽)는 64px 고정 한 줄이다. 넘는 내용은 본문에 둔다.",
+          "source": "24.7"
         },
         {
           "text": "본문·건너뛰기 링크와 여백(24px, 좁으면 16px)은 내장이다. 페이지 루트에 padding을 다시 주지 않는다. 화면 요소 사이는 gap 24px.",
@@ -4793,6 +4797,10 @@
         {
           "text": "brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.",
           "source": "24"
+        },
+        {
+          "text": "brand는 지금 서비스 이름+아이콘 표시 전용이다(전환 메뉴를 넣지 않는다). 숫자 개수는 badge 대신 SideNavItem count·countUrgent다.",
+          "source": "24.9"
         }
       ],
       "related": [
@@ -6110,6 +6118,10 @@
         {
           "text": "넘치는 탭은 컴포넌트가 끌어온다. 줄바꿈하거나 스크롤바를 숨기지 않는다.",
           "source": "16.1"
+        },
+        {
+          "text": "탭별 개수는 TabsTrigger count·countUrgent다. 라벨 뒤 CountBadge 알약이고 탭 이름에 \"처리 필요 3개\"로 실린다.",
+          "source": "24.9"
         }
       ],
       "related": [
@@ -7068,6 +7080,14 @@
         {
           "text": "toast.error는 닫기 버튼이나 Escape로 닫을 때까지 남는다. duration을 줘도 바뀌지 않는다.",
           "source": "2.5"
+        },
+        {
+          "text": "다른 곳에서 생긴 업무 알림은 toast.notify다. level normal 8초·pinned 닫을 때까지, 같은 groupKey는 건수만 갱신한다.",
+          "source": "16.5.1"
+        },
+        {
+          "text": "알림 토스트는 한 번에 하나다. pinned가 떠 있으면 normal은 띄우지 않는다. 폼 하단 고정 줄이 있으면 그 위 16px다.",
+          "source": "16.5.1"
         }
       ],
       "related": [
@@ -7078,7 +7098,10 @@
         "저장 알림",
         "완료 알림",
         "성공 알림",
-        "알림 메시지"
+        "알림 메시지",
+        "알림 토스트",
+        "업무 알림",
+        "화면 구석"
       ],
       "source": "components/toast/toast.tsx",
       "extends": [
@@ -7637,6 +7660,10 @@
         },
         {
           "text": "SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.",
+          "source": "24.9"
+        },
+        {
+          "text": "99+는 \"99개 이상\"으로 읽는다. 접힌 레일의 급함 점은 바탕색 링 2px로 일반 점과 모양도 다르다.",
           "source": "24.9"
         }
       ],
@@ -9079,6 +9106,10 @@
         {
           "text": "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다.",
           "source": "7.5.6"
+        },
+        {
+          "text": "권한 없음(자물쇠)·찾을 수 없음(검색-없음) 화면은 size=\"page\"다. 셸 본문 자리, 제목 h1, action + secondaryAction 두 행동.",
+          "source": "14.6"
         }
       ],
       "related": [
@@ -9090,7 +9121,15 @@
         "데이터 없음",
         "필터 초기화",
         "결과 없음",
-        "비었을 때"
+        "비었을 때",
+        "권한 없음",
+        "권한 없는",
+        "접근 권한",
+        "찾을 수 없음",
+        "찾을 수 없는",
+        "404",
+        "access denied",
+        "not found"
       ],
       "source": "components/state/empty-state.tsx",
       "props": [
@@ -9150,6 +9189,10 @@
         {
           "text": "다시 요청할 수 있는 오류에는 onRetry를 연결한다.",
           "source": "7.5.6"
+        },
+        {
+          "text": "본문 전체를 대신하는 실패는 size=\"page\"다. 제목 h1, onRetry + secondaryAction 두 행동, role=alert 그대로다.",
+          "source": "14.6"
         }
       ],
       "related": [
@@ -10542,6 +10585,76 @@
         "peek-item",
         "peek-items"
       ]
+    }
+  ],
+  "patterns": [
+    {
+      "name": "app-header",
+      "category": "layout",
+      "purpose": "여러 앱이 같은 모양으로 쓰는 상단 바 조립 — 지금 맥락(제품·스토어) 표시와 전환, 알림 진입·알림 센터, 사용자 메뉴.",
+      "useWhen": [
+        "AppShell header에 맥락 전환기 0~2개, headerEnd에 알림 벨 → 사용자 메뉴를 둘 때"
+      ],
+      "dont": [
+        "같은 전환기를 header와 SideNav에 함께 두거나 3개 이상 두지 마라",
+        "조직 전환을 header에 두지 마라(사용자 메뉴의 하위 메뉴)",
+        "로그아웃에 destructive를 쓰지 마라",
+        "권한 판단·알림 등급·폴링을 부품에 넣지 마라",
+        "새 토큰·색을 만들지 마라"
+      ],
+      "rules": [
+        {
+          "text": "상단 바는 64px 한 줄이다. 64를 넘는 내용(두 줄 검색·안내 문구)은 상단 바가 아니라 본문 머리(PageHeader)에 둔다.",
+          "source": "DESIGN.md 24.7"
+        },
+        {
+          "text": "headerEnd 순서는 앱 항목 → NotificationCenter → 사용자 메뉴다. 알림 목록은 NotificationCenter(1024px 이상 팝오버, 미만 Sheet)다.",
+          "source": "DESIGN.md 24.7"
+        },
+        {
+          "text": "사용자 메뉴 트리거는 Avatar sm + 이름(1024px 미만 Avatar만 44px)이다. 조직 전환은 DropdownMenuSub, 640px 미만은 메뉴 안에 펼친다.",
+          "source": "DESIGN.md 24.7"
+        },
+        {
+          "text": "1024px 미만은 둘째 전환기부터 아이콘만 보이고, 그래도 넘치면 ContextSwitcherGroup이 \"맥락\" 한 트리거로 접는다.",
+          "source": "DESIGN.md 24.8"
+        }
+      ],
+      "uses": [
+        "AppShell",
+        "ContextSwitcherGroup",
+        "ContextSwitcher",
+        "NotificationCenter",
+        "CountBadge",
+        "DropdownMenu",
+        "Avatar",
+        "Button"
+      ],
+      "related": [
+        "SideNav",
+        "Toaster",
+        "EmptyState"
+      ],
+      "keywords": [
+        "상단 바",
+        "상단바",
+        "앱 헤더",
+        "헤더 바",
+        "글로벌 헤더",
+        "상단 메뉴",
+        "사용자 메뉴",
+        "계정 메뉴",
+        "프로필 메뉴",
+        "로그아웃 메뉴",
+        "조직 전환",
+        "top bar",
+        "topbar",
+        "header bar",
+        "navbar",
+        "user menu",
+        "account menu"
+      ],
+      "example": "<AppShell sidebar={nav}\n  header={<ContextSwitcherGroup>\n    <ContextSwitcher kind=\"제품\" items={products} value={product} />\n    <ContextSwitcher kind=\"스토어\" items={stores} allItem={allStores} value={store} onValueChange={switchStore} searchThreshold={8} />\n  </ContextSwitcherGroup>}\n  headerEnd={<>\n    <NotificationCenter count={unread.length} urgent={unread.some(item => item.urgent)} items={notifications}\n      onMarkAllRead={markAllRead} settingsHref=\"/settings/notifications\" />\n    <DropdownMenu>\n      <DropdownMenuTrigger asChild>\n        <Button variant=\"ghost\" aria-label={`${user}, 사용자 메뉴`}><Avatar name={user} size=\"sm\" decorative />{user}</Button>\n      </DropdownMenuTrigger>\n      <DropdownMenuContent align=\"end\">\n        <DropdownMenuItem>내 계정</DropdownMenuItem>\n        <DropdownMenuSub>\n          <DropdownMenuSubTrigger>조직 전환</DropdownMenuSubTrigger>\n          <DropdownMenuSubContent>{organizations}</DropdownMenuSubContent>\n        </DropdownMenuSub>\n        <DropdownMenuSeparator />\n        <DropdownMenuItem onSelect={signOut}>로그아웃</DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  </>}>\n  {page}\n</AppShell>"
     }
   ],
   "principles": [

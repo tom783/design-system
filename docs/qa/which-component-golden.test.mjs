@@ -18,10 +18,11 @@ const CASES = 100
   + 32 // 목표 64 도그푸딩 6 사전 점검 표(한국어 16·영어 16, 공백이던 품목 줄 2문항은 0.6.0 3a FieldList) — set logistics06
   + 26 // 목표 64 0.5.0 부품 질의(짧은 말 11 · 부품마다 영어 2개 이상 채운 문장 15) — set r050
   + 6 // 0.6.0 3a 반복 입력 줄 FieldList(한국어 4·영어 2) — set r060
-  + 6; // 0.6.0 3b 섹션 제목 줄 SectionHeader(한국어 4·영어 2) — set r060
+  + 6 // 0.6.0 3b 섹션 제목 줄 SectionHeader(한국어 4·영어 2) — set r060
+  + 16; // 목표 75 3단계 상단 바(전환기·알림 센터·개수 표식·알림 토스트·권한 없음/찾을 수 없음·조립 항목 app-header, 한국어 11·영어 5) — set r075
 const selectable = new Set(components.filter(c => c.kind !== 'constant' && (!c.partOf || c.keywords?.length)).map(c => c.name));
 
-test('정답 세트는 198문항·한국어 위주이며 정답은 선택 가능한 부품(또는 이유 있는 공백)이다', () => {
+test('정답 세트는 214문항·한국어 위주이며 정답은 선택 가능한 부품(또는 이유 있는 공백)이다', () => {
   assert.equal(golden.cases.length, CASES);
   assert.equal(new Set(golden.cases.map(item => item.query)).size, CASES, '같은 질의가 두 번 들어가면 정확도가 부풀려진다');
   const ko = golden.cases.filter(item => item.lang === 'ko').length, en = golden.cases.filter(item => item.lang === 'en').length;
@@ -33,7 +34,7 @@ test('정답 세트는 198문항·한국어 위주이며 정답은 선택 가능
     const names = acceptedNames(expected);
     assert.ok(names.length && names.every(name => typeof name === 'string'), query);
     assert.equal(new Set(names).size, names.length, `${query}: 허용 정답이 겹친다`);
-    // 서버가 후보로 내놓을 수 있는 것만 정답이 된다: 상수·검색어 없는 부품은 후보에서 빠진다(match.mjs).
+    // 서버가 후보로 내놓을 수 있는 것만 정답이 된다: 상수·검색어 없는 부품은 후보에서 빠진다(match.mjs). 조립 항목(app-header)은 후보다.
     for (const name of names) assert.ok(selectable.has(name), `${query}: ${name} 는 선택 후보가 될 수 없다`);
   }
 });

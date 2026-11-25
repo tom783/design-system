@@ -270,7 +270,9 @@ export function matchComponents(description, components, limit = 5) {
       const matches = [...new Set(sentenceWords.map(word => [word, ...koreanStems(word)].find(candidate => text.includes(candidate))).filter(Boolean))];
       if (matches.length) { score += matches.length * weight; reasons.push(`${field}: ${matches.join(', ')} (+${matches.length * weight})`); }
     }
-    return { name: component.name, score, reasons, purpose: component.purpose, useWhen: component.useWhen, dont: component.dont };
+    // 조립 항목(목표 75 3단계)은 import 할 수 없으니 kind 로 알린다. 부품 후보의 응답 모양은 그대로다.
+    return { name: component.name, ...(component.kind === 'pattern' ? { kind: 'pattern' } : {}), score, reasons,
+      purpose: component.purpose, useWhen: component.useWhen, dont: component.dont };
     // purpose 한 토큰(2점)만 맞은 것은 매칭 근거가 못 된다. 조사·일반어가 우연히 겹친다 —
     // "zzzz 아무 관련 없는 말" 이 AlertDialog 의 "되돌릴 수 없는" 과 '없는' 으로 붙었다.
   }).filter((c) => c.score > 2).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'en')).slice(0, limit);

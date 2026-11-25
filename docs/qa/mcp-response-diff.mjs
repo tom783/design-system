@@ -31,7 +31,8 @@ export async function requestPlan({ manifests, resourceUris = [] }) {
   const golden = existsSync(join(root, 'docs/qa/fixtures/which-component-golden.json'))
     ? (await readJson(join(root, 'docs/qa/fixtures/which-component-golden.json'))).cases.map(item => item.query) : [];
   const r38 = (await readJson(join(root, 'docs/qa/fixtures/r38-match-baseline.json'))).map(item => item.query);
-  const names = union(...manifests.map(m => m.components.map(c => c.name)));
+  // 조립 항목(목표 75 3단계 app-header)도 get_component·which_component 로 나가는 이름이다.
+  const names = union(...manifests.map(m => [...m.components.map(c => c.name), ...(m.patterns ?? []).map(p => p.name)]));
   const tokens = union(...manifests.map(m => m.tokens.map(t => t.name)));
   const categories = union(...manifests.map(m => m.tokens.map(t => t.category)));
   const topics = ['색', '타이포', '간격', '로딩', '폼', '안내', '차트', '표'];

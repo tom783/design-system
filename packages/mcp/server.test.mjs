@@ -5,7 +5,7 @@ import { createInterface } from 'node:readline';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { componentIndex } from './catalog.mjs';
+import { componentIndex, getPattern } from './catalog.mjs';
 import { BUDGETS } from './budget.mjs';
 
 const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
@@ -110,8 +110,8 @@ test('리소스 3개 읽기·없는 URI·메서드 오류', async (t) => {
       // 목표 49 FilterBar +362B · BulkActionBar +341B · DescriptionList +436B.
       // 목표 57 FormActionBar 553B · DataTable summary 313B · DescriptionList 금액 내역 69B.
       // 0.6.0 3a FieldList +669B · 목표 64(0.6.0 3b) SectionHeader +736B.
-      // 목표 75 2단계 ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge +1,370B.
-      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370, '색인 전송량을 잰다');
+      // 목표 75 2단계 ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge +1,370B · 3단계 조립 항목 app-header +978B.
+      assert.ok(Buffer.byteLength(result.text) <= 23_500 + 362 + 341 + 436 + 935 + 255 + 669 + 736 + 1_370 + 978, '색인 전송량을 잰다');
     } else if (result.mimeType === 'application/json') assert.ok(JSON.parse(result.text).length);
   }
   assert.equal((await c.request('resources/read', { uri: 'design://missing' })).error.code, -32002);
@@ -284,7 +284,10 @@ test('R49: design://components 는 복원 규칙 없이 읽는 선택 색인이�
   assert.equal(listed.mimeType, 'application/json');
   assert.match(listed.description, /get_component/);
   const index = JSON.parse((await c.request('resources/read', { uri: 'design://components' })).result.contents[0].text);
-  assert.deepEqual(Object.keys(index), ['description', 'components']);
+  // 목표 75 3단계: import 하지 않는 조립 항목은 components 와 섞지 않고 patterns 로 따로 둔다.
+  assert.deepEqual(Object.keys(index), ['description', 'components', 'patterns']);
+  assert.match(index.description, /patterns/);
+  for (const item of index.patterns) assert.deepEqual(Object.keys(item), ['name', 'category', 'purpose', 'useWhen', 'dont', 'uses'], item.name);
   assert.match(index.description, /get_component/);
   assert.match(index.description, /import \{ 이름 \} from '@s2life\/ui';/);
   assert.equal(index.components.length, manifest.components.length);
@@ -306,6 +309,43 @@ test('R49: design://components 는 복원 규칙 없이 읽는 선택 색인이�
   // 색인에 없는 상세는 같은 이름으로 get_component 에서 얻는다.
   const detail = (await call(c, 'get_component', { name: 'SelectTrigger' })).result.structuredContent;
   assert.ok(detail.props && detail.slots.includes('select-trigger') && detail.useWhen.length && detail.inheritedFrom === 'Select');
+});
+test('목표 75 3단계: 상단 바 조립 항목 app-header — 추천 후보·상세·실제 공개 이름만 쓰는 예시', async t => {
+  const c = await client(t);
+  // 조립 항목은 부품 후보와 같은 목록에 kind: pattern 으로 나온다. 부품 후보 응답 모양은 그대로다(kind 없음).
+  const top = (await call(c, 'which_component', { description: '상단 바에 알림 벨과 사용자 메뉴 배치' })).result.structuredContent.candidates;
+  assert.equal(top[0].name, 'app-header');
+  assert.equal(top[0].kind, 'pattern');
+  assert.deepEqual(Object.keys(top[0]), ['name', 'kind', 'score', 'reasons', 'purpose', 'useWhen', 'dont']);
+  assert.ok(top.slice(1).every(candidate => !('kind' in candidate)));
+  const store = (await call(c, 'which_component', { description: '스토어를 바꾸는 상단 바' })).result.structuredContent.candidates;
+  assert.deepEqual(store.slice(0, 2).map(candidate => candidate.name).sort(), ['ContextSwitcher', 'app-header']);
+  for (const [description, expected] of [['알림 목록 패널', 'NotificationCenter'], ['안 읽은 개수 표시', 'CountBadge'], ['권한 없는 화면', 'EmptyState']])
+    assert.equal((await call(c, 'which_component', { description })).result.structuredContent.candidates[0].name, expected, description);
+  // 상세는 get_component 같은 이름 — 이름은 대소문자·공백을 부품과 같이 너그럽게 받는다.
+  const response = (await call(c, 'get_component', { name: ' App-Header ' })).result;
+  const detail = response.structuredContent;
+  assert.equal(response.content[0].text, JSON.stringify(detail));
+  assert.deepEqual(detail, getPattern(manifest, manifest.patterns[0]));
+  assert.equal(detail.kind, 'pattern');
+  assert.ok(!('import' in detail) && !('props' in detail), 'import 할 수 없는 조립 항목이다');
+  assert.ok(Buffer.byteLength(response.content[0].text) <= BUDGETS.detail);
+  const listed = new Set((await call(c, 'list_components', {})).result.structuredContent.components.map(item => item.name));
+  assert.ok(!listed.has('app-header'), 'list_components 는 import 가능한 이름만');
+  for (const name of detail.uses) assert.ok(listed.has(name), `uses ${name} 는 공개 부품`);
+  for (const tag of new Set([...detail.example.matchAll(/<([A-Z][A-Za-z0-9]*)/g)].map(match => match[1]))) assert.ok(listed.has(tag), `예시 태그 ${tag}`);
+  assert.ok(['header=', 'headerEnd=', 'ContextSwitcherGroup', 'NotificationCenter', 'DropdownMenuSub'].every(text => detail.example.includes(text)));
+  assert.ok(detail.dont.some(text => text.includes('destructive')) && detail.rules.every(rule => /^DESIGN\.md 24\.[78]$/.test(rule.source)));
+  // 기존 항목 한 줄씩 — 상단 바 지침이 각 부품 상세에 실린다.
+  const rulesOf = async name => (await call(c, 'get_component', { name })).result.structuredContent.rules.map(rule => rule.text).join(' ');
+  assert.match(await rulesOf('AppShell'), /headerEnd.*64px/);
+  assert.match(await rulesOf('Toaster'), /toast\.notify.*groupKey/);
+  assert.match(await rulesOf('Toaster'), /한 번에 하나.*pinned/);
+  assert.match(await rulesOf('EmptyState'), /size="page".*secondaryAction/);
+  assert.match(await rulesOf('ErrorState'), /size="page".*onRetry/);
+  assert.match(await rulesOf('SideNav'), /표시 전용.*count/);
+  assert.match(await rulesOf('Tabs'), /TabsTrigger count/);
+  assert.match(await rulesOf('CountBadge'), /99개 이상.*링 2px/);
 });
 test('깨진 JSON 후 생존·이후 정상 처리·stdout 오염 없음', async (t) => {
   const c = await client(t);
