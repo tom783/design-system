@@ -16,7 +16,9 @@
 .ds-file-upload-dropzone[data-filled] > .ds-file-upload-summary { flex: 1 1 240px; }
 .ds-file-upload-hint { color: var(--text-secondary); font-size: var(--text-caption); }
 .ds-file-upload-list, .ds-file-upload-error ul { list-style: none; padding: 0; margin: 0; }
-.ds-file-upload-item { display: flex; align-items: start; gap: var(--space-12); padding-block: var(--space-12); border-bottom: 1px solid var(--border-subtle); min-width: 0; }
+/* 좌우 12 = 입력 안쪽 여백(0.7.1 · 디자인 총괄 규칙, Figma 245:1645). 썸네일·삭제 버튼 상자(32)·진행 막대·오류 문장이
+   모두 이 안에 들어 드롭존 테두리와 같은 세로선에 붙지 않는다. 구분선은 li 자신의 border-bottom 이라 여백과 무관하게 전체 폭이다. */
+.ds-file-upload-item { display: flex; align-items: start; gap: var(--space-12); padding: var(--space-12); border-bottom: 1px solid var(--border-subtle); min-width: 0; }
 .ds-file-upload-details { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); min-width: 0; }
 .ds-file-upload-name { display: block; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 고정 폭은 값이 아닌 미리보기 자리만 예약한다. 이름·오류 영역은 남은 폭을 쓴다. */
