@@ -54,3 +54,27 @@ test('ErrorState page: alert 유지·h1·다시 시도 primary + 보조', () => 
   assert.match(markup, /<h1 data-slot="state-title">/);
   assert.equal(text(markup), '화면을 불러오지 못했습니다 다시 시도 목록으로');
 });
+
+// 1024 미만 행동은 Button lg 수치 그대로(규격 8절 · 11-25 디자인 총괄 답 ⑦). State 는 크기 prop 을 폭에 따라 바꿀 수 없어 CSS 로 같은 값을 준다 —
+// 그 값이 Button lg 유틸리티와 어긋나지 않게 두 소스를 함께 읽어 대조한다(Button lg 를 바꾸면 여기서 먼저 깨진다). 픽셀은 top-bar-render-verify.
+test('page 행동: 1024 미만 = Button lg(높이 44 · 글자 15 · 여백 20 · 최소 폭 80), 1024 이상은 md 그대로', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const css = await readFile(new URL('./state.css', import.meta.url), 'utf8');
+  const button = await readFile(new URL('../button.tsx', import.meta.url), 'utf8');
+  const lg = button.match(/^\s*lg: '([^']*)',/m)?.[1] ?? '';
+  for (const utility of ['h-[var(--control-h-lg)]', 'min-w-20', 'px-5', 'text-[length:var(--text-body)]']) {
+    assert.ok(lg.split(' ').includes(utility), `Button lg 에 ${utility} 가 없다 — State 의 1024 미만 값도 함께 고친다: ${lg}`);
+  }
+  const narrow = css.match(/@media \(width < 1024px\) \{\s*\.ds-state-actions > \[data-slot="button"\] \{([^}]*)\}\s*\}/)?.[1] ?? '';
+  assert.match(narrow, /block-size: var\(--control-h-lg\);/);
+  assert.match(narrow, /min-inline-size: 5rem;/, 'min-w-20 = 4px × 20 = 80px = 5rem');
+  assert.match(narrow, /padding-inline: var\(--space-20\);/, 'px-5 = 20px');
+  assert.match(narrow, /font-size: var\(--text-body\);/);
+  assert.doesNotMatch(css, /\.ds-state-actions > \* \{ min-block-size: var\(--tap-min\); \}/, '높이만 올리던 1단계 규칙이 남지 않는다');
+  // 1024 이상은 md 그대로 — 페이지 크기 행동은 size="md" 로 그린다.
+  const markup = renderToStaticMarkup(h(EmptyState, { size: 'page', title: '찾을 수 없습니다', action: { label: '이전 화면으로', onClick() {} },
+    secondaryAction: { label: '목록으로', href: '/orders' } }));
+  const actions = markup.match(/<div class="ds-state-actions">(.*)<\/div>/)?.[1] ?? '';
+  assert.equal(actions.match(/h-\[var\(--control-h-md\)\]/g)?.length, 2, '주·보조 모두 md 로 그리고 data-slot="button" 이다');
+  assert.equal(actions.match(/data-slot="button"/g)?.length, 2);
+});

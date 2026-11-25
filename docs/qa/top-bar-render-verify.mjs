@@ -5,7 +5,10 @@
 //   - 헤더: 높이 64 · SideNav brand 행 아래끝과 차이 0 · 좌우 패딩 24/16 · 벨·사용자 메뉴 38(1024 미만 44) · 가로 넘침 0
 //   - 사용자 메뉴: 진짜 Tab 으로 트리거 → Enter 열림(aria-expanded) → 화살표 이동 → Esc 닫힘·트리거로 초점 복귀 · 폭 240~320 · 항목 38
 //   - 알림 토스트: status 낭독·aria-live polite · 폼 하단 고정 줄 위 16 · 같은 묶음 건수 갱신·하나 · 저장 결과와 겹치면 알림이 위
-//   - State page: 상단 바 아래선 → 아이콘 96 · 최대 폭 480 · 아이콘 40 · 제목 h1 17/24 600 · role=status · 행동 높이
+//   - 누름 면적(1b · 11-25 디자인 총괄 답 ①②): 닫기 버튼 모든 토스트(알림·행동 결과) 1024 이상 38 · 미만 44, 중심 = 첫 줄 글자 중심,
+//     본문 오른쪽 비움 8 + 버튼 + 8 · 알림 [이동] 1024 미만 44
+//   - State page: 상단 바 아래선 → 아이콘 96 · 최대 폭 480 · 아이콘 40 · 제목 h1 17/24 600 · role=status ·
+//     행동 1024 이상 Button md(38 · 14 · 여백 14) · 미만 Button lg 수치(44 · 15 · 여백 20 · 최소 폭 80, 답 ⑦)
 //   - 글자 대비 4.5:1(라이트·다크) — 새로 생긴 조합(고정 알림 위 이동 링크 등)을 실제 계산 색으로 잰다
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -23,7 +26,7 @@ const measures = [];
 const index = await (await fetch(`${await storybookBase()}/index.json`)).json();
 const ids = Object.fromEntries(Object.values(index.entries).filter(e => e.type === 'story' && e.title === 'Screens/AppHeader')
   .map(e => [e.name, e.id]));
-for (const name of ['헤더', '사용자메뉴', '사용자메뉴 긴이름', '알림토스트 일반', '알림토스트 고정', '알림토스트 묶음', '알림토스트 겹침', '권한없음', '찾을수없음']) {
+for (const name of ['헤더', '사용자메뉴', '사용자메뉴 긴이름', '알림토스트 일반', '알림토스트 고정', '알림토스트 묶음', '알림토스트 겹침', '행동결과토스트', '권한없음', '찾을수없음']) {
   assert.ok(ids[name], `Screens/AppHeader 스토리 '${name}' 가 없다 — ${Object.keys(ids).join(', ')}`);
 }
 
@@ -65,6 +68,18 @@ async function capture(file) {
   writeFileSync(`${OUT}/${file}.png`, Buffer.from(r.data, 'base64'));
 }
 
+/** 닫기 버튼(답 ①): 누름 tap×tap · 오른쪽 8 · 중심 = 첫 줄 중심(±1) · 본문 오른쪽 비움 8 + tap + 8 · 상자 안 · 아이콘 16. */
+function assertClose(c, tap) {
+  assert.deepEqual(c.size, [tap, tap], `닫기 누름 면적 ${c.size}`);
+  assert.equal(c.label, '알림 닫기');
+  assert.ok(Math.abs(c.right - 8) <= 0.5, `닫기 오른쪽 ${c.right}`);
+  assert.ok(Math.abs(c.center - c.firstLine) <= 1, `닫기 중심 ${c.center} = 첫 줄 중심 ${c.firstLine}`);
+  assert.ok(Math.abs(c.inset - (8 + tap + 8)) <= 0.5, `본문 오른쪽 비움 ${c.inset}`);
+  assert.ok(c.gap >= 7.5, `본문과 닫기 간격 ${c.gap}`);
+  assert.equal(c.inside, true, '닫기가 상자 안');
+  assert.deepEqual(c.icon, [16, 16]);
+}
+
 // 페이지 안 도우미 — 대비(계산 색을 캔버스로 sRGB 로 바꿔 WCAG 공식), 가로 넘침.
 const helpers = `(() => {
   const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
@@ -76,6 +91,14 @@ const helpers = `(() => {
     const v = rgba(c); if (v[3] === 255 && c !== 'rgba(0, 0, 0, 0)') return v; } return rgba(getComputedStyle(document.body).backgroundColor); };
   window.__contrast = el => { const a = lum(rgba(getComputedStyle(el).color)), b = lum(background(el));
     return Math.round(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) * 100) / 100; };
+  // 토스트 닫기 버튼 — 거리는 상자 바깥 경계에서 잰다. 첫 줄 중심 = 첫 글줄(출처 · 없으면 제목) 상자 위 + 행간 / 2.
+  window.__close = t => { const b = t.querySelector(':scope > [data-close-button]'), r = b.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    const first = t.querySelector('[data-slot="toast-source"], [data-slot="toast-title"], [data-title]'), content = t.querySelector('[data-content]').getBoundingClientRect();
+    const icon = b.querySelector('svg').getBoundingClientRect();
+    return { size: [r.width, r.height], right: +(tr.right - r.right).toFixed(2), top: +(r.top - tr.top).toFixed(2),
+      center: +(r.top + r.height / 2 - tr.top).toFixed(2), firstLine: +(first.getBoundingClientRect().top - tr.top + parseFloat(getComputedStyle(first).lineHeight) / 2).toFixed(2),
+      inset: +(tr.right - content.right).toFixed(2), gap: +(r.left - content.right).toFixed(2), icon: [icon.width, icon.height], inside: r.bottom <= tr.bottom && r.top >= tr.top,
+      label: b.getAttribute('aria-label'), height: tr.height }; };
   window.__overflow = () => { const main = document.querySelector('[data-slot="app-shell-main"]'), header = document.querySelector('[data-slot="app-shell-header"]');
     return Math.max(document.documentElement.scrollWidth - innerWidth, main ? main.scrollWidth - main.clientWidth : 0, header ? header.scrollWidth - header.clientWidth : 0); };
   return true; })()`;
@@ -213,7 +236,7 @@ try {
 
       // 폼 하단 고정 줄(63) 위 16 · 낭독. 좁은 화면(≤600, sonner 경계)은 폭이 화면 − 32 다(기존 그대로).
       const toastWidth = width <= 600 ? width - 32 : 356;
-      await check(`[${theme} ${width}] 알림 토스트 일반: status·polite · 줄 위 16 · 폭 ${toastWidth}`, async () => {
+      await check(`[${theme} ${width}] 알림 토스트 일반: status·polite · 줄 위 16 · 폭 ${toastWidth} · 닫기·이동 ${tap}`, async () => {
         await story('알림토스트 일반', theme); await ev(helpers); await settleToasts();
         const m = await ev(`(() => { const t = document.querySelector('.ds-toaster-notification [data-sonner-toast]'), bar = document.querySelector('.ds-form-action-bar');
           const r = t.getBoundingClientRect(), b = bar.getBoundingClientRect(), status = t.querySelector('[role="status"]');
@@ -221,32 +244,53 @@ try {
           return { gap: b.top - r.bottom, width: r.width, right: innerWidth - r.right, bar: b.height, live: t.closest('section').getAttribute('aria-live'),
             status: status.textContent, name: t.closest('section').getAttribute('aria-label'), link: [link.textContent, link.getAttribute('href'), Math.round(link.getBoundingClientRect().height)],
             source: __contrast(t.querySelector('[data-slot="toast-source"]')), title: __contrast(t.querySelector('[data-slot="toast-title"]')), linkContrast: __contrast(link),
-            close: t.querySelector('[data-close-button]')?.getAttribute('aria-label'), overflow: __overflow() }; })()`);
+            close: __close(t), height: r.height, overflow: __overflow() }; })()`);
         assert.equal(m.bar, 63);
         assert.ok(Math.abs(m.gap - 16) <= 0.5, `줄 위 간격 ${m.gap}`);
         assert.ok(Math.abs(m.width - toastWidth) <= 0.5, `폭 ${m.width}`);
         assert.equal(m.live, 'polite'); assert.equal(m.name, '업무 알림');
         assert.equal(m.status, '판매관리 · 스토어 A취소 요청 1건 · 스토어 A');
-        assert.deepEqual(m.link, ['이동', '#orders', 38]);
-        assert.equal(m.close, '알림 닫기');
+        assert.deepEqual(m.link, ['이동', '#orders', tap], '이동 링크 1024 미만 44(답 ②)');
+        assertClose(m.close, tap);
         assert.ok(m.source >= 4.5 && m.title >= 4.5 && m.linkContrast >= 4.5, `대비 ${m.source}·${m.title}·${m.linkContrast}`);
         assert.equal(m.overflow, 0);
         await capture(`toast-normal-${theme}-${width}`);
-        return { gap: m.gap, width: m.width, contrast: [m.source, m.title, m.linkContrast] };
+        return { gap: m.gap, width: m.width, height: m.height, link: m.link[2], close: m.close.size, closeTop: m.close.top, inset: m.close.inset,
+          contrast: [m.source, m.title, m.linkContrast] };
       });
-      await check(`[${theme} ${width}] 알림 토스트 고정: 위험 톤 · 닫기 · 대비`, async () => {
+      await check(`[${theme} ${width}] 알림 토스트 고정: 위험 톤 · 닫기·이동 ${tap} · 대비`, async () => {
         await story('알림토스트 고정', theme); await ev(helpers); await settleToasts();
         const m = await ev(`(() => { const t = document.querySelector('.ds-toaster-notification [data-sonner-toast]'), bar = document.querySelector('.ds-form-action-bar');
           const probe = document.createElement('span'); probe.style.background = 'var(--status-danger-bg)'; document.body.append(probe);
           const danger = getComputedStyle(probe).backgroundColor; probe.remove();
           return { pinned: t.classList.contains('ds-toast-pinned'), bg: getComputedStyle(t).backgroundColor === danger, gap: bar.getBoundingClientRect().top - t.getBoundingClientRect().bottom,
-            close: !!t.querySelector('[data-close-button]'), source: __contrast(t.querySelector('[data-slot="toast-source"]')),
-            title: __contrast(t.querySelector('[data-slot="toast-title"]')), link: __contrast(t.querySelector('a[data-slot="toast-link"]')) }; })()`);
+            close: !!t.querySelector('[data-close-button]'), geometry: __close(t), link: Math.round(t.querySelector('a[data-slot="toast-link"]').getBoundingClientRect().height),
+            height: t.getBoundingClientRect().height, source: __contrast(t.querySelector('[data-slot="toast-source"]')),
+            title: __contrast(t.querySelector('[data-slot="toast-title"]')), linkC: __contrast(t.querySelector('a[data-slot="toast-link"]')) }; })()`);
         assert.deepEqual([m.pinned, m.bg, m.close], [true, true, true]);
         assert.ok(Math.abs(m.gap - 16) <= 0.5, `줄 위 간격 ${m.gap}`);
-        assert.ok(m.source >= 4.5 && m.title >= 4.5 && m.link >= 4.5, `대비 ${m.source}·${m.title}·${m.link}`);
+        assertClose(m.geometry, tap);
+        assert.equal(m.link, tap, '이동 링크 1024 미만 44(답 ②)');
+        assert.ok(m.source >= 4.5 && m.title >= 4.5 && m.linkC >= 4.5, `대비 ${m.source}·${m.title}·${m.linkC}`);
         await capture(`toast-pinned-${theme}-${width}`);
-        return { contrast: [m.source, m.title, m.link] };
+        return { height: m.height, close: m.geometry.size, link: m.link, contrast: [m.source, m.title, m.linkC] };
+      });
+      await check(`[${theme} ${width}] 행동 결과 토스트: 닫기 ${tap} · 첫 줄 중심 · 본문 비움 ${8 + tap + 8} · 줄 위 16`, async () => {
+        await story('행동결과토스트', theme); await ev(helpers); await settleToasts();
+        const m = await ev(`(() => { const t = document.querySelector('[data-sonner-toaster]:not(.ds-toaster-notification) [data-sonner-toast]');
+          const bar = document.querySelector('.ds-form-action-bar').getBoundingClientRect(), r = t.getBoundingClientRect();
+          return { type: t.dataset.type, close: __close(t), gap: bar.top - r.bottom, width: r.width, text: t.querySelector('[data-slot="toast-message"]').textContent,
+            lines: new Set([...(() => { const range = document.createRange(); range.selectNodeContents(t.querySelector('[data-slot="toast-message"]')); return range.getClientRects(); })()]
+              .filter(x => x.width > 0).map(x => Math.round(x.top))).size, overflow: __overflow() }; })()`);
+        assert.equal(m.type, 'success'); assert.equal(m.text, '변경 사항을 저장했습니다');
+        assertClose(m.close, tap);
+        assert.equal(m.lines, 1, '한 줄 알림');
+        assert.ok(Math.abs(m.close.height - 53.5) <= 0.5, `한 줄 알림 높이는 그대로 53.5: ${m.close.height}`);
+        assert.ok(Math.abs(m.gap - 16) <= 0.5, `줄 위 간격 ${m.gap}`);
+        assert.ok(Math.abs(m.width - toastWidth) <= 0.5, `폭 ${m.width}`);
+        assert.equal(m.overflow, 0);
+        await capture(`toast-action-${theme}-${width}`);
+        return { close: m.close.size, top: m.close.top, center: m.close.center, firstLine: m.close.firstLine, inset: m.close.inset, height: m.close.height };
       });
       if (theme === 'light') await check(`[${width}] 알림 토스트 묶음: 1건 → 3건 · 하나`, async () => {
         await story('알림토스트 묶음', theme); await settleToasts();
@@ -272,7 +316,7 @@ try {
 
       for (const [name, file, icon, title] of [['권한없음', 'state-forbidden', 'lucide-lock-keyhole', '이 화면을 볼 권한이 없습니다'],
         ['찾을수없음', 'state-not-found', 'lucide-search-x', '찾을 수 없습니다']]) {
-        await check(`[${theme} ${width}] ${name}: 위 96 · 최대 480 · 아이콘 40 · h1 17/24 600 · status · 행동 ${tap}`, async () => {
+        await check(`[${theme} ${width}] ${name}: 위 96 · 최대 480 · 아이콘 40 · h1 17/24 600 · status · 행동 ${narrow ? 'Button lg 44·15·20' : 'Button md 38·14·14'}`, async () => {
           await story(name, theme); await ev(helpers);
           const m = await ev(`(() => { const header = ${q('[data-slot="app-shell-header"]')}.getBoundingClientRect(), s = ${q('[data-slot="empty-state"]')};
             const icon = s.querySelector('svg'), t = s.querySelector('[data-slot="state-title"]'), d = s.querySelector('[data-slot="state-description"]');
@@ -281,7 +325,8 @@ try {
             return { top: icon.getBoundingClientRect().top - header.bottom, width: r.width, center: Math.abs((r.left + r.right) / 2 - (main.left + main.right) / 2),
               icon: [icon.getBoundingClientRect().width, icon.getBoundingClientRect().height, icon.classList.contains(${JSON.stringify(icon)})],
               tag: t.tagName, font: [ts.fontSize, ts.lineHeight, ts.fontWeight], desc: getComputedStyle(d).fontSize, role: s.getAttribute('role'),
-              text: t.textContent, actions: actions.map(a => [a.tagName, Math.round(a.getBoundingClientRect().height)]),
+              text: t.textContent, actions: actions.map(a => { const as = getComputedStyle(a);
+                return [a.tagName, Math.round(a.getBoundingClientRect().height), as.fontSize, as.paddingLeft, as.paddingRight, as.minWidth, Math.round(a.getBoundingClientRect().width)]; }),
               titleC: __contrast(t), descC: __contrast(d), strongC: d.querySelector('strong') ? __contrast(d.querySelector('strong')) : null,
               h1s: ${CANVAS}.querySelectorAll('h1').length, overflow: __overflow() }; })()`);
           assert.ok(Math.abs(m.top - 96) <= 0.5, `상단 바 아래선 → 아이콘 ${m.top}`);
@@ -292,11 +337,13 @@ try {
           assert.equal(m.desc, '14px');
           assert.equal(m.role, 'status'); assert.equal(m.text, title);
           assert.deepEqual(m.actions.map(a => a[0]), ['BUTTON', 'A']);
-          assert.ok(m.actions.every(a => narrow ? a[1] >= 44 : a[1] === 38), `행동 높이 ${JSON.stringify(m.actions)}`);
+          // 1024 미만 = Button lg 수치(높이 44 · 글자 15 · 여백 20 · 최소 폭 80, 답 ⑦) · 이상 = Button md(38 · 14 · 14 · 64).
+          const size = narrow ? [44, '15px', '20px', '20px', '80px'] : [38, '14px', '14px', '14px', '64px'];
+          for (const action of m.actions) assert.deepEqual(action.slice(1, 6), size, `행동 크기 ${JSON.stringify(m.actions)}`);
           assert.ok(m.titleC >= 4.5 && m.descC >= 4.5 && (m.strongC ?? 99) >= 4.5, `대비 ${m.titleC}·${m.descC}·${m.strongC}`);
           assert.equal(m.overflow, 0);
           await capture(`${file}-${theme}-${width}`);
-          return { top: m.top, width: m.width, actions: m.actions.map(a => a[1]), contrast: [m.titleC, m.descC] };
+          return { top: m.top, width: m.width, actions: m.actions.map(a => a.slice(1)), contrast: [m.titleC, m.descC] };
         });
       }
     }

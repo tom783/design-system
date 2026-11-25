@@ -116,6 +116,16 @@ export const 알림토스트_묶음: Story = {
     root.dataset.playComplete = 'true';
   },
 };
+/** 행동 결과 토스트(저장됨 등) — 닫기 버튼 1024 이상 38 · 미만 44 는 알림 토스트와 같다(규격 6절 '버튼 크기' · 답 ①). */
+export const 행동결과토스트: Story = {
+  render: () => <ToastScreen bar />,
+  play: async ({ canvasElement: root }) => {
+    toast.dismiss();
+    toast.success('변경 사항을 저장했습니다', { duration: Infinity });
+    await shown('변경 사항을 저장했습니다');
+    root.dataset.playComplete = 'true';
+  },
+};
 /** 저장 결과와 업무 알림이 겹치면 알림이 위다(Figma 217:1836). 둘 다 폼 하단 고정 줄 위로 올라간다. */
 export const 알림토스트_겹침: Story = {
   render: () => <ToastScreen bar />,

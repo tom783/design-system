@@ -80,7 +80,8 @@ export const 다크: Story = { name: '토스트-다크', render: () => <Demo />,
 } };
 
 // 알림 토스트(toast.notify · 상단 바 규격 6절). 행동 결과 토스트와 다른 묶음(.ds-toaster-notification)이고 한 번에 하나다.
-// 같은 묶음 키는 건수만 갱신하고, 출처·제목은 status 영역으로 읽힌다. 셸 안 자리(폼 하단 고정 줄 위)는 Screens/AppHeader.
+// 같은 묶음 키는 건수만 갱신하고, 출처·제목은 status 영역으로 읽힌다. 고정이 떠 있으면 일반은 띄우지 않는다.
+// 셸 안 자리(폼 하단 고정 줄 위)는 Screens/AppHeader.
 function NotifyDemo() {
   return <><Toaster />
     <main aria-label="알림 토스트 검사">
@@ -104,6 +105,13 @@ export const 알림: Story = { name: '토스트-알림', render: () => <NotifyDe
   await userEvent.click(within(root).getByRole('button', { name: '환불 실패 알림' }));
   await waitFor(() => expect(notices()!.querySelector('[data-slot="toast-title"]')).toHaveTextContent('환불 실패 1건'));
   await expect(notices()!.querySelectorAll('[data-sonner-toast]')).toHaveLength(1);
+  await expect(notices()!.querySelector('[data-sonner-toast]')).toHaveClass('ds-toast-pinned');
+  // 고정이 떠 있으면 일반 알림은 띄우지 않는다(규격 6절 · 답 ⑩) — 고정이 그대로 남는다. 기록·벨 건수는 앱 몫이다.
+  // 버튼을 누르지 않고 직접 부른다 — 아래 Esc 초점 복귀 검사가 '환불 실패 알림' 버튼에 초점이 있어야 한다.
+  toast.notify({ source: '판매관리 · 스토어 A', title: '새 문의 1건', href: '#inquiries' });
+  await new Promise(resolve => setTimeout(resolve, 200));
+  await expect(notices()!.querySelectorAll('[data-sonner-toast]')).toHaveLength(1);
+  await expect(notices()!.querySelector('[data-slot="toast-title"]')).toHaveTextContent('환불 실패 1건');
   await expect(notices()!.querySelector('[data-sonner-toast]')).toHaveClass('ds-toast-pinned');
   // Esc 로 닫으면 알림에 들어오기 직전 요소로 돌아온다(기존 토스트와 같다).
   const opener = within(root).getByRole('button', { name: '환불 실패 알림' });
