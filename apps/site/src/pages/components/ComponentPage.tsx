@@ -2,7 +2,8 @@ import * as React from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
-  Combobox, DataTable, EmptyState, PageHeader, SectionHeader, Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Combobox, DataTable, EmptyState, PageHeader, SectionHeader, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator,
+  SelectTrigger, SelectValue,
   Skeleton, StatusChip, Tabs, TabsContent, TabsList, TabsTrigger, createDataTableColumnHelper,
 } from '@s2life/ui';
 import meta from 'virtual:site-meta';
@@ -13,7 +14,8 @@ import { SectionNavButton } from '../../layout/SectionNav';
 import { categoryName } from '../../content/categories';
 import { findComponent, importLine, manifest, pageFor, partsOf, type Component } from '../../data/manifest';
 import { storyFilesFor, type StoryFile } from '../../stories/load';
-import { StoryExample, storiesOf, type StoryEntry } from '../../stories/render';
+import { StoryExample, factsOf, storiesOf, type StoryEntry } from '../../stories/render';
+import { arrange } from '../../stories/roles';
 
 /**
  * 부품 페이지 — 정의 · 실제 미리보기(두 탭 공통) · 가이드/코드 탭 · 오른쪽 목차(오너 결정: A 가이드/코드 탭).
@@ -124,48 +126,74 @@ function useStoryFiles(names: readonly string[]) {
 
 /** 20개 넘으면 Combobox(Select 쓰지 말 것: 20개 초과) — 입력·표처럼 예시가 많은 부품. */
 const SELECT_MAX = 20;
+/** 시험용 스토리 묶음 이름 — 선택 목록 맨 뒤(roles.ts 의 판정). */
+const TEST_GROUP = '개발 확인용';
 
-function ExamplePicker({ entries, value, onChange, multiFile }: {
-  entries: { file: StoryFile; entry: StoryEntry }[]; value: string; onChange: (id: string) => void; multiFile: boolean;
+type Item = { file: StoryFile; entry: StoryEntry };
+
+function ExamplePicker({ usage, test, value, onChange, multiFile }: {
+  usage: Item[]; test: Item[]; value: string; onChange: (id: string) => void; multiFile: boolean;
 }) {
-  const label = (item: { file: StoryFile; entry: StoryEntry }) => multiFile ? `${item.file.file.replace(/\.stories\.tsx$/, '')} · ${item.entry.name}` : item.entry.name;
-  if (entries.length > SELECT_MAX) {
+  const label = (item: Item) => multiFile ? `${item.file.file.replace(/\.stories\.tsx$/, '')} · ${item.entry.name}` : item.entry.name;
+  if (usage.length + test.length > SELECT_MAX) {
+    // Combobox 는 묶음 머리가 없다 — 시험용은 맨 뒤에 두고 이름 앞에 묶음 이름을 붙인다(찾기 입력으로도 걸러진다).
+    const options = [
+      ...usage.map((item) => ({ value: item.entry.id, label: label(item) })),
+      ...test.map((item) => ({ value: item.entry.id, label: `${TEST_GROUP} · ${label(item)}` })),
+    ];
     return <Combobox aria-label="예시" className="site-example-picker" value={value} onValueChange={(next: string) => { if (next) onChange(next); }}
-      options={entries.map((item) => ({ value: item.entry.id, label: label(item) }))}
-      placeholder="예시 고르기" searchPlaceholder="예시 이름으로 찾기" emptyText="맞는 예시가 없다" />;
+      options={options} placeholder="예시 고르기" searchPlaceholder="예시 이름으로 찾기" emptyText="맞는 예시가 없다" />;
   }
+  const items = (list: Item[]) => list.map((item) => <SelectItem key={item.entry.id} value={item.entry.id}>{label(item)}</SelectItem>);
   return <Select value={value} onValueChange={onChange}>
     <SelectTrigger aria-label="예시" className="site-example-picker"><SelectValue /></SelectTrigger>
-    <SelectContent>{entries.map((item) => <SelectItem key={item.entry.id} value={item.entry.id}>{label(item)}</SelectItem>)}</SelectContent>
+    <SelectContent>
+      {test.length === 0 ? items(usage) : <>
+        {usage.length > 0 && <SelectGroup><SelectLabel>사용 예시</SelectLabel>{items(usage)}</SelectGroup>}
+        {usage.length > 0 && <SelectSeparator />}
+        <SelectGroup><SelectLabel>{TEST_GROUP}</SelectLabel>{items(test)}</SelectGroup>
+      </>}
+    </SelectContent>
   </Select>;
 }
 
 /**
  * 실제 미리보기 — 이 부품을 `parameters.manifest` 로 선언한 스토리를 하나씩 그대로 렌더한다(처음 상태만, play 는 돌리지 않는다).
+ * 기본은 대표 사용 예시다(roles.ts — '사용법' → '기본' → 이 부품을 그리는 첫 스토리). 시험용 스토리(하네스 단추·검수 매트릭스·
+ * 재현 화면 등)는 목록 맨 뒤 '개발 확인용' 묶음에 둔다.
  * 고른 예시는 주소(?example=)에 둔다 — 탭을 바꿔도 같은 미리보기가 남고, 링크로 그 예시를 연다.
  */
 function Preview({ names }: { names: readonly string[] }) {
   const state = useStoryFiles(names);
   const [search, setSearch] = useSearchParams();
-  const entries = React.useMemo(() => state?.files.flatMap((file) => storiesOf(file).map((entry) => ({ file, entry }))) ?? [], [state]);
+  const key = names.join(',');
+  const arranged = React.useMemo(() => {
+    const all = state?.files.flatMap((file) => storiesOf(file).map((entry) => ({ file, entry }))) ?? [];
+    return arrange(all, (item) => factsOf(item.entry), { name: names[0]!, parts: names.slice(1) });
+    // names 는 key(이름 목록)로 비교한다 — 배열 정체성은 렌더마다 바뀐다.
+  }, [state, key]);
+  const entries = arranged.ordered;
   const index = Math.max(0, entries.findIndex((item) => item.entry.id === search.get('example')));
   const current = entries[index];
+  const currentIsTest = current ? arranged.test.includes(current) : false;
   const choose = (id: string) => setSearch((prev) => {
     const next = new URLSearchParams(prev);
     if (id === entries[0]?.entry.id) next.delete('example'); else next.set('example', id);
     return next;
   }, { replace: true, preventScrollReset: true });
   return <SectionHeader id="preview" title="실제 미리보기"
-    description={current ? <span className="tabular">packages/ui/src/stories/{current.file.file} · 예시 {index + 1}/{entries.length}</span> : undefined}
+    description={current ? <span className="tabular">
+      packages/ui/src/stories/{current.file.file} · 예시 {index + 1}/{entries.length}{currentIsTest ? ` · ${TEST_GROUP}` : ''}
+    </span> : undefined}
     control={entries.length > 1 && current
-      ? <ExamplePicker entries={entries} value={current.entry.id} onChange={choose} multiFile={(state?.files.length ?? 0) > 1} />
+      ? <ExamplePicker usage={arranged.usage} test={arranged.test} value={current.entry.id} onChange={choose} multiFile={(state?.files.length ?? 0) > 1} />
       : undefined}>
     {!state ? <Skeleton variant="block" height="var(--space-64)" /> : <div className="site-stack">
       {state.failed.length > 0 && <p role="alert" className="site-example-error">
         스토리 파일을 불러오지 못했다: {state.failed.map((item) => `${item.file} (${item.error})`).join(', ')}
       </p>}
       {current
-        ? <StoryExample key={current.entry.id} entry={current.entry} eager />
+        ? <StoryExample key={current.entry.id} entry={current.entry} eager role={currentIsTest ? 'test' : 'usage'} />
         : <p className="site-muted">이 부품을 선언한 스토리가 없다(parameters.manifest).</p>}
     </div>}
   </SectionHeader>;
