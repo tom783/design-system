@@ -60,9 +60,12 @@ export function detailText(item: Pick<NotificationItem, 'count' | 'deadline'>): 
   return parts.length ? parts.join(' · ') : null;
 }
 
-/** 한 줄의 링크 이름 "<출처>, <제목>, <건수>, <기한>, <시각>, 안 읽음/읽음"(규격 5절 낭독). 없는 칸은 건너뛴다. */
+/**
+ * 한 줄의 링크 이름 "<출처>, 급함, <제목>, <건수>, <기한>, <시각>, 안 읽음/읽음"(규격 5절 r1.2 낭독). '급함'은 급할 때만 —
+ * 화면은 경고 아이콘 + 위험 색으로 보이는데 낭독에는 기한 글자로만 드러났다(2단계 규격 밖 ⑪). 없는 칸은 건너뛴다.
+ */
 export function notificationName(item: NotificationItem, now: Date | number = Date.now()): string {
-  return [item.source, item.title, item.count != null && item.count > 0 ? `${Math.floor(item.count)}건` : null, item.deadline?.text || null,
+  return [item.source, item.urgent ? '급함' : null, item.title, item.count != null && item.count > 0 ? `${Math.floor(item.count)}건` : null, item.deadline?.text || null,
     formatNotificationTime(item.time, now).text || null, item.read ? '읽음' : '안 읽음'].filter(Boolean).join(', ');
 }
 

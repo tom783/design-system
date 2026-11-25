@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Check, ChevronDown, Layers2, LoaderCircle, Search } from 'lucide-react';
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Layers2, LoaderCircle, Search } from 'lucide-react';
 import * as Menu from '../../internal/dropdown-menu';
 import { cn } from '../../lib/cn';
 import { layerCollisionPadding } from '../../lib/layer';
@@ -10,7 +10,7 @@ import { Skeleton } from '../loading/skeleton';
 import { ErrorState } from '../state/empty-state';
 import { toast } from '../toast/toast';
 import {
-  allowSwitch, emptyText, failureDescription, failureTitle, filterChoices, isStatic, needsSearch, runSwitch, searchLabel,
+  DRILL_START, allowSwitch, drillReducer, emptyText, failureDescription, failureTitle, filterChoices, isStatic, needsSearch, runSwitch, searchLabel,
   staticName, switchReducer, switcherChoices, triggerName, typeaheadIndex,
   type ContextSwitchEvent, type ContextSwitcherItem,
 } from './switcher';
@@ -182,13 +182,66 @@ function handleListKeys(event: React.KeyboardEvent<HTMLElement>, search: HTMLInp
   if (target.tagName === 'INPUT') return;
   const nodes = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-switcher-item]')];
   const index = nodes.indexOf(document.activeElement as HTMLElement);
-  if (event.key === 'ArrowUp' && search && index === 0) {
+  if (event.key === 'ArrowUp' && search?.isConnected && index === 0) {
+    event.preventDefault(); event.stopPropagation(); search.focus(); return;
+  }
+  // 접힌 "맥락" 둘째 단계: 뒤로 → 검색 → 목록 순서(메뉴 기본 화살표는 입력을 건너뛴다).
+  if (event.key === 'ArrowDown' && search?.isConnected && target.hasAttribute('data-switcher-back')) {
     event.preventDefault(); event.stopPropagation(); search.focus(); return;
   }
   if (event.ctrlKey || event.metaKey || event.altKey || [...event.key].length !== 1 || event.key === ' ') return;
   const next = typeaheadIndex(nodes.map(node => node.dataset.label ?? ''), index, event.key);
   event.preventDefault(); event.stopPropagation();
   if (next >= 0) nodes[next]!.focus();
+}
+
+/**
+ * 패널 안쪽(검색 · 목록 · 안내 줄) — 단독 전환기와 접힌 "맥락"의 둘째 단계가 같이 쓴다(규격 2절 "그 전환기 패널(검색 포함)").
+ * 검색이 있으면 그려지자마자 검색 입력으로 간다 — 메뉴가 내용·첫 항목에 초점을 준 뒤(같은 커밋의 효과)에 옮긴다.
+ */
+function SwitcherPanel({ props, slot, query, setQuery, searchRef }: {
+  props: ContextSwitcherProps; slot: SlotState; query: string; setQuery: (query: string) => void;
+  searchRef: React.RefObject<HTMLInputElement | null>;
+}) {
+  const { kind, items, searchThreshold, guide, state = 'idle' } = props;
+  const search = state === 'idle' && needsSearch(items, searchThreshold);
+  const searchCallback = React.useCallback((node: HTMLInputElement | null) => {
+    searchRef.current = node;
+    if (node) requestAnimationFrame(() => { if (node.isConnected) node.focus(); });
+  }, [searchRef]);
+  return <>
+    {search && <label className="ds-context-switcher-search">
+      <Search aria-hidden="true" className="ds-context-switcher-search-icon" />
+      <input ref={searchCallback} type="text" data-slot="context-switcher-search" className="ds-context-switcher-search-input"
+        placeholder={searchLabel(kind)} aria-label={searchLabel(kind)} value={query} autoComplete="off"
+        onChange={event => setQuery(event.currentTarget.value)}
+        onKeyDown={event => {
+          // 메뉴의 첫 글자 검색·Tab 가두기에 글자를 넘기지 않는다. Esc 는 메뉴가 닫는다. 조합 중에는 아무것도 가로채지 않는다.
+          if (event.key === 'Escape') return;
+          event.stopPropagation();
+          if (event.nativeEvent.isComposing) return;
+          const content = event.currentTarget.closest('[data-slot="context-switcher-content"]');
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            content?.querySelector<HTMLElement>('[data-switcher-item]')?.focus();
+          }
+          // 접힌 "맥락" 둘째 단계면 위로 뒤로 가기 항목이 있다.
+          if (event.key === 'ArrowUp' && content?.querySelector('[data-switcher-back]')) {
+            event.preventDefault();
+            content.querySelector<HTMLElement>('[data-switcher-back]')!.focus();
+          }
+        }} />
+    </label>}
+    <div data-slot="context-switcher-list" className="ds-context-switcher-list">
+      <SwitcherBody props={props} slot={slot} query={query} />
+    </div>
+    {guide && state === 'idle' && <div data-slot="context-switcher-guide" className="ds-context-switcher-guide">
+      <span>{guide.text}</span>
+      {guide.link && <Menu.Item asChild className="ds-context-switcher-guide-link" textValue={guide.link.label}>
+        <a href={guide.link.href}>{guide.link.label}</a>
+      </Menu.Item>}
+    </div>}
+  </>;
 }
 
 const CONTENT = 'ds-context-switcher-content data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 origin-[var(--radix-dropdown-menu-content-transform-origin)]';
@@ -199,8 +252,7 @@ const CONTENT = 'ds-context-switcher-content data-[state=open]:animate-in data-[
  * 고를 것이 하나면 버튼이 아니라 정적 글자다. 키보드: 화살표 이동 · Enter 선택 · Esc 닫고 트리거로 · 첫 글자 이동(한글 초성 포함).
  */
 export function ContextSwitcher(props: ContextSwitcherProps) {
-  const { kind, items, allItem, icon, showKind = false, searchThreshold, guide, state = 'idle', open, defaultOpen = false,
-    onOpenChange, className } = props;
+  const { kind, items, allItem, icon, showKind = false, state = 'idle', open, defaultOpen = false, onOpenChange, className } = props;
   const group = React.useContext(GroupContext);
   const index = React.useContext(SlotIndex);
   const slot = useSwitchState(props);
@@ -210,11 +262,6 @@ export function ContextSwitcher(props: ContextSwitcherProps) {
   const isOpen = open ?? innerOpen;
   const [query, setQuery] = React.useState('');
   const searchRef = React.useRef<HTMLInputElement | null>(null);
-  // 검색이 있으면 열자마자 검색 입력으로 간다 — 메뉴가 내용·첫 항목에 초점을 준 뒤(같은 커밋의 효과)에 옮긴다.
-  const searchCallback = React.useCallback((node: HTMLInputElement | null) => {
-    searchRef.current = node;
-    if (node) requestAnimationFrame(() => { if (node.isConnected) node.focus(); });
-  }, []);
   const valueRef = React.useRef<HTMLSpanElement>(null);
   const choices = switcherChoices(items, allItem);
   const current = choices.find(item => item.value === slot.value);
@@ -241,7 +288,6 @@ export function ContextSwitcher(props: ContextSwitcherProps) {
     </span>;
   }
 
-  const search = state === 'idle' && needsSearch(items, searchThreshold);
   const triggerIcon = slot.pending ? <LoaderCircle className="ds-context-switcher-spinner" /> : icon ?? shown?.icon;
   const name = triggerName(kind, label);
   return <Menu.Root open={isOpen} onOpenChange={setOpen}>
@@ -265,31 +311,7 @@ export function ContextSwitcher(props: ContextSwitcherProps) {
         collisionPadding={layerCollisionPadding} aria-label={kind}
         onCloseAutoFocus={() => setQuery('')}
         onKeyDownCapture={event => handleListKeys(event, searchRef.current)}>
-        {search && <label className="ds-context-switcher-search">
-          <Search aria-hidden="true" className="ds-context-switcher-search-icon" />
-          <input ref={searchCallback} type="text" data-slot="context-switcher-search" className="ds-context-switcher-search-input"
-            placeholder={searchLabel(kind)} aria-label={searchLabel(kind)} value={query} autoComplete="off"
-            onChange={event => setQuery(event.currentTarget.value)}
-            onKeyDown={event => {
-              // 메뉴의 첫 글자 검색·Tab 가두기에 글자를 넘기지 않는다. Esc 는 메뉴가 닫는다. 조합 중에는 아무것도 가로채지 않는다.
-              if (event.key === 'Escape') return;
-              event.stopPropagation();
-              if (event.nativeEvent.isComposing) return;
-              if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                event.currentTarget.closest('[data-slot="context-switcher-content"]')?.querySelector<HTMLElement>('[data-switcher-item]')?.focus();
-              }
-            }} />
-        </label>}
-        <div data-slot="context-switcher-list" className="ds-context-switcher-list">
-          <SwitcherBody props={props} slot={slot} query={query} />
-        </div>
-        {guide && state === 'idle' && <div data-slot="context-switcher-guide" className="ds-context-switcher-guide">
-          <span>{guide.text}</span>
-          {guide.link && <Menu.Item asChild className="ds-context-switcher-guide-link" textValue={guide.link.label}>
-            <a href={guide.link.href}>{guide.link.label}</a>
-          </Menu.Item>}
-        </div>}
+        <SwitcherPanel props={props} slot={slot} query={query} setQuery={setQuery} searchRef={searchRef} />
       </Menu.Content>
     </Menu.Portal>
   </Menu.Root>;
@@ -303,12 +325,19 @@ export interface ContextSwitcherGroupProps extends React.ComponentProps<'div'> {
 /**
  * 맥락 전환기 묶음 — header 왼쪽에 전환기를 0~2개 둔다(규격 1절 · Figma 223:740 · 223:1766 · 223:1923).
  * 전환기 사이 세로 구분선 1px 높이 20 · 좌우 8. 1024 미만은 둘째부터 이름을 숨기고 아이콘 + 툴팁, 그래도 넘치면 전체를 한 트리거
- * ("맥락")로 접어 종류별 하위 목록으로 보인다. 전환기가 묶음에 스스로 등록하므로 앱 컴포넌트로 감싸도 된다.
+ * ("맥락")로 접는다. 접힌 목록은 2단계다(규격 2절 r1.2) — 첫 단계는 종류별 한 줄("제품 · 마케팅관리 ›"), 종류를 고르면 그 전환기
+ * 패널(검색 · "전체" · 안내 줄 포함)로 들어간다. 위쪽 "‹ <종류>" 항목·← 로 첫 단계(온 줄에 초점)로 돌아가고, Esc 는 어느 단계에서든
+ * 닫고 "맥락" 트리거로 돌아간다. 전환기가 묶음에 스스로 등록하므로 앱 컴포넌트로 감싸도 된다.
  */
 export function ContextSwitcherGroup({ children, className, ref, ...props }: ContextSwitcherGroupProps) {
   const narrow = useAutomaticRail();
   const [collapsed, setCollapsed] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  // 접힌 목록의 단계(switcher.ts drillReducer) — step null = 종류 목록, 숫자 = 그 전환기 패널 · returnTo = 뒤로 온 종류 줄.
+  const [drill, dispatchDrill] = React.useReducer(drillReducer, DRILL_START);
+  const [query, setQuery] = React.useState('');
+  const searchRef = React.useRef<HTMLInputElement | null>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
   const [, setVersion] = React.useState(0);
   const entries = React.useRef(new Map<number, Registered>());
   const rootRef = React.useRef<HTMLDivElement | null>(null);
@@ -318,7 +347,8 @@ export function ContextSwitcherGroup({ children, className, ref, ...props }: Con
     const previous = entries.current.get(index);
     entries.current.set(index, entry);
     if (!previous || previous.value !== entry.value || previous.pending !== entry.pending || previous.label !== entry.label
-      || previous.props.kind !== entry.props.kind) setVersion(version => version + 1);
+      || previous.props.kind !== entry.props.kind || previous.props.items !== entry.props.items
+      || previous.props.state !== entry.props.state) setVersion(version => version + 1);
   }, []);
   const unregister = React.useCallback((index: number) => {
     if (entries.current.delete(index)) setVersion(version => version + 1);
@@ -343,6 +373,22 @@ export function ContextSwitcherGroup({ children, className, ref, ...props }: Con
   }, [collapsed, narrow]);
   React.useEffect(() => { if (!collapsed) setOpen(false); }, [collapsed]);
 
+  // 단계가 바뀐 뒤 초점: 둘째 단계는 검색(있으면 SwitcherPanel 이 옮긴다) 아니면 첫 항목, 뒤로 오면 온 종류 줄.
+  // 초점을 가진 줄이 사라지면 메뉴(초점 가두기)가 내용 자체로 초점을 옮긴다 — 그 뒤 한 프레임에 옮긴다.
+  React.useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => {
+      const content = contentRef.current;
+      if (!content) return;
+      if (drill.step === null) {
+        if (drill.returnTo !== null) content.querySelector<HTMLElement>(`[data-kind-index="${drill.returnTo}"]`)?.focus();
+      } else if (!searchRef.current?.isConnected) {
+        content.querySelector<HTMLElement>('[data-switcher-step] [data-switcher-item]')?.focus();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [drill, open]);
+
   const setRef = (node: HTMLDivElement | null) => {
     rootRef.current = node;
     if (typeof ref === 'function') ref(node); else if (ref) ref.current = node;
@@ -354,13 +400,22 @@ export function ContextSwitcherGroup({ children, className, ref, ...props }: Con
   </SlotIndex.Provider>);
   const list = [...entries.current.entries()].sort(([a], [b]) => a - b).map(([, entry]) => entry);
   const busy = list.some(entry => entry.pending);
+  const current = drill.step === null ? null : list[drill.step] ?? null;
+  const enter = (index: number) => { setQuery(''); dispatchDrill({ type: 'enter', index }); };
+  const back = () => { setQuery(''); dispatchDrill({ type: 'back' }); };
+  const setMenuOpen = (next: boolean) => {
+    if (next && busy) return;
+    // 열 때마다 첫 단계부터 — 닫을 때 바꾸면 닫히는 동안(사라지는 움직임) 내용이 첫 단계로 바뀌어 보인다.
+    if (next) { setQuery(''); dispatchDrill({ type: 'open' }); }
+    setOpen(next);
+  };
   return <GroupContext.Provider value={api}>
     <div {...props} ref={setRef} data-slot="context-switcher-group" data-collapsed={collapsed ? '' : undefined}
       className={cn('ds-context-switcher-group', className)}>
       {collapsed ? <>
         {/* 접힌 동안에도 전환기는 살아 있어(그리지 않을 뿐) 값·진행 상태를 묶음에 알린다. */}
         {slots}
-        {list.length > 0 && <Menu.Root open={open} onOpenChange={next => { if (!(next && busy)) setOpen(next); }}>
+        {list.length > 0 && <Menu.Root open={open} onOpenChange={setMenuOpen}>
           <Menu.Trigger asChild>
             <button type="button" data-slot="context-switcher" className="ds-context-switcher-trigger"
               aria-label={`맥락: ${list.map(entry => entry.label).filter(Boolean).join(', ')}`}
@@ -374,14 +429,39 @@ export function ContextSwitcherGroup({ children, className, ref, ...props }: Con
           </Menu.Trigger>
           <span className="sr-only" role="status">{busy ? '선택한 새 값으로 바꾸는 중' : ''}</span>
           <Menu.Portal>
-            <Menu.Content data-slot="context-switcher-content" className={CONTENT} align="start" sideOffset={4}
-              collisionPadding={layerCollisionPadding} aria-label="맥락" onKeyDownCapture={event => handleListKeys(event, null)}>
-              <div data-slot="context-switcher-list" className="ds-context-switcher-list">
-                {list.map((entry, index) => <Menu.Group key={index} className="ds-context-switcher-section" aria-label={entry.props.kind}>
-                  <Menu.Label className="ds-context-switcher-section-label" aria-hidden="true">{entry.props.kind}</Menu.Label>
-                  <SwitcherBody props={entry.props} slot={entry} query="" />
-                </Menu.Group>)}
-              </div>
+            <Menu.Content ref={contentRef} data-slot="context-switcher-content" data-step={current ? 'panel' : 'kinds'} className={CONTENT}
+              align="start" sideOffset={4} collisionPadding={layerCollisionPadding} aria-label="맥락"
+              onKeyDownCapture={event => {
+                const target = event.target as HTMLElement;
+                // ← 는 뒤로(하위 메뉴 규약), → 는 종류 줄에서 들어가기. 검색 입력의 커서 이동은 건드리지 않는다.
+                if (current && event.key === 'ArrowLeft' && target.tagName !== 'INPUT') {
+                  event.preventDefault(); event.stopPropagation(); back(); return;
+                }
+                if (!current && event.key === 'ArrowRight' && target.dataset.kindIndex) {
+                  event.preventDefault(); event.stopPropagation(); enter(Number(target.dataset.kindIndex)); return;
+                }
+                handleListKeys(event, current ? searchRef.current : null);
+              }}>
+              {current ? <>
+                {/* 둘째 단계 — 뒤로 가기 줄 + 그 전환기 패널. 묶음(group) 이름이 종류라 들어오면 "스토어, 묶음"으로 읽힌다. */}
+                <Menu.Item data-switcher-back="" className="ds-context-switcher-item ds-context-switcher-back" textValue={current.props.kind}
+                  aria-label={`${current.props.kind}, 뒤로`} onSelect={event => { event.preventDefault(); back(); }}>
+                  <ChevronLeft aria-hidden="true" className="ds-context-switcher-back-icon" />
+                  <span className="ds-context-switcher-item-label">{current.props.kind}</span>
+                </Menu.Item>
+                <Menu.Group data-switcher-step="" className="ds-context-switcher-step" aria-label={current.props.kind}>
+                  <SwitcherPanel props={current.props} slot={current} query={query} setQuery={setQuery} searchRef={searchRef} />
+                </Menu.Group>
+              </> : <div data-slot="context-switcher-list" className="ds-context-switcher-list">
+                {/* 첫 단계 — 종류별 한 줄: 종류 · 지금 값 · ›. 이름은 트리거와 같은 "<종류>: <현재 값>". */}
+                {list.map((entry, index) => <Menu.Item key={index} data-switcher-item="" data-kind-index={index} data-label={entry.props.kind}
+                  className="ds-context-switcher-item ds-context-switcher-kind-item" textValue={entry.props.kind}
+                  aria-label={triggerName(entry.props.kind, entry.label)} onSelect={event => { event.preventDefault(); enter(index); }}>
+                  <span className="ds-context-switcher-kind" aria-hidden="true">{entry.props.kind}</span>
+                  <span className="ds-context-switcher-item-label">{entry.label}</span>
+                  <ChevronRight aria-hidden="true" className="ds-context-switcher-next" />
+                </Menu.Item>)}
+              </div>}
             </Menu.Content>
           </Menu.Portal>
         </Menu.Root>}

@@ -289,7 +289,7 @@ const intents = [
   entry('StatusChip','status','레코드의 상태를 라벨과 실루엣으로 표시한다.',['완료·경고·오류 상태를 표시할 때'],['같은 원형 점의 색만 바꾸지 마라'],'2.3','아이콘 모양과 텍스트로 상태를 구분한다.',['tone','icon','hideIcon'],['status-chip'],['DataTable'],['상태','완료','경고','칩','주문 상태','배송 상태','상태 표시']),
   entry('CountBadge','status','벨·메뉴·탭 옆에 개수를 작은 알약으로 표시한다.',['안 읽음·처리할 일의 개수를 아이콘·메뉴·탭 옆에 붙일 때'],
     ['0이나 불러오기 실패를 0으로 보이지 마라','급함을 색만으로 구분하지 마라'],'24.9',[
-      '0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 색과 점, dot은 접힌 레일의 점 8px다.',
+      '0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 채움 알약과 왼쪽 점, dot은 접힌 레일의 점 8px다.',
       'SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.'
     ],['count','urgent','dot','unit'],['count-badge'],['NotificationCenter','SideNav','Tabs'],['개수','배지','안 읽음 수','뱃지','숫자 표시','badge']),
   ...[

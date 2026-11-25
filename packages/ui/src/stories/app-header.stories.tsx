@@ -61,9 +61,28 @@ export const 헤더_선택실패: Story = {
     toast.dismiss();
     const trigger = () => root.querySelector<HTMLElement>('[data-slot="context-switcher"][aria-label^="스토어"], [data-slot="context-switcher-group"][data-collapsed] [data-slot="context-switcher"]')!;
     await userEvent.click(trigger());
+    // 390 처럼 "맥락"으로 접혔으면 2단계 — 종류(스토어)를 고르면 그 전환기 패널로 들어간다(규격 2절 r1.2).
+    if (root.querySelector('[data-slot="context-switcher-group"][data-collapsed]'))
+      await userEvent.click(await within(document.body).findByRole('menuitem', { name: '스토어: 스토어 A' }));
     await userEvent.click(await within(document.body).findByRole('menuitemradio', { name: '스토어 B' }));
     await shown('스토어를 바꾸지 못했습니다');
     await waitFor(() => expect(trigger()).not.toHaveAttribute('aria-busy'));
+    root.dataset.playComplete = 'true';
+  },
+};
+
+/**
+ * 벨 99+ · 급함 — 넓은 표식(점 6 + 간격 2 + "99+" 알약)도 오른쪽 끝이 벨 오른쪽 −6 에 고정되고 왼쪽(벨 안쪽)으로 자라
+ * 사용자 메뉴와 겹치지 않는다(규격 3절 r1.2 · 2단계 규격 밖 ④). 낭독 "알림, 안 읽음 99개 이상, 급한 알림 있음".
+ */
+export const 헤더_벨상한급함: Story = {
+  render: () => <TopBarShell notifications={{ count: 128, urgent: true }}><CampaignEdit /></TopBarShell>,
+  play: async ({ canvasElement: root }) => {
+    const bell = root.querySelector<HTMLElement>('[data-slot="notification-bell"]')!;
+    await expect(bell).toHaveAccessibleName('알림, 안 읽음 99개 이상, 급한 알림 있음');
+    const badge = bell.querySelector<HTMLElement>('[data-slot="count-badge"]')!.getBoundingClientRect();
+    const user = root.querySelector<HTMLElement>('button[aria-label="김철수, 사용자 메뉴"]')!.getBoundingClientRect();
+    await expect(badge.right).toBeLessThanOrEqual(user.left);
     root.dataset.playComplete = 'true';
   },
 };

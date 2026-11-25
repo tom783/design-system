@@ -1,17 +1,21 @@
 @layer components {
-  /* 알림 진입(벨) 위 개수 표식 — 아이콘 오른쪽 위 모서리에서 표식 중심이 (+6, −6)(규격 3절 · Figma 223:751 · 223:1780).
-     아이콘 20 이 버튼 가운데에 있으니 모서리는 가운데에서 (+10, −10), 표식 중심은 (+16, −16) 이다 — 38·44 둘 다 같은 식. */
+  /* 알림 진입(벨) 위 개수 표식 — 표식 오른쪽 끝을 벨 버튼 오른쪽 −6 · 위 −6 에 고정하고, 넓어지면 왼쪽(벨 안쪽)으로 자란다
+     (규격 3절 r1.2 · Figma 223:751 right −6). 중심을 고정하던 때는 "99+"·급함 알약이 오른쪽으로 13.5~17.5px 나가 header 묶음 간격 8 을
+     넘어 사용자 메뉴와 겹칠 수 있었다(2단계 규격 밖 ④). 이제 오른쪽은 늘 벨 + 6 이라 간격 8 안에 2 가 남는다 — 38·44 같은 식.
+     absolute 기준은 버튼의 패딩 상자라 테두리 1px 를 더해야 버튼 바깥 경계에서 6 이다(실측 5 였다). */
   .ds-notification-bell-count {
     position: absolute;
-    inset-inline-start: calc(50% + var(--space-16));
-    inset-block-start: calc(50% - var(--space-16));
-    transform: translate(-50%, -50%);
+    inset-inline-end: calc(-1 * (var(--space-4) + var(--space-2) + var(--border-width)));
+    inset-block-start: calc(-1 * (var(--space-4) + var(--space-2) + var(--border-width)));
     pointer-events: none;
   }
 
   /* 패널 표면 — 팝오버(1024 이상)와 Sheet(미만) 공통. 머리는 제자리, 본문만 스크롤한다.
      치수 상수(토큰 없음): 팝오버 폭 25rem(400) · 최대 높이 40rem(640). */
   .ds-notification-center { display: flex; flex-direction: column; min-block-size: 0; color: var(--text-primary); }
+  /* 열면 초점은 패널 자체(대화상자 "알림", tabindex −1)다 — 링은 숨긴다. 첫 Tab 이 "모두 읽음"으로 간다(11-25 구현 검수 B).
+     제목에 초점을 두던 때는 키보드로 열면 제목 둘레에 링 상자가 떠 누를 것처럼 보였다. */
+  .ds-notification-center:focus, .ds-notification-center:focus-visible { outline: none; }
   .ds-notification-popover {
     z-index: 50;
     box-sizing: border-box;
@@ -29,9 +33,8 @@
 
   .ds-notification-center-header { flex: none; border-block-end: var(--border-width) solid var(--border-subtle); }
   .ds-notification-center-head { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-12) var(--space-4) var(--space-16); }
-  /* 제목 "알림" body 600 — 열면 초점이 여기로 온다(Figma 223:194 설명). */
-  /* 폭은 글자만큼 — 초점 링이 줄 전체로 늘지 않게 하고, 남는 폭은 오른쪽 여백(margin auto)이 갖는다. */
-  .ds-notification-center-title { flex: 0 1 auto; min-inline-size: 0; margin: 0 auto 0 0; font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 600; border-radius: var(--radius-sm); }
+  /* 제목 "알림" body 600 — 대화상자 이름이다(초점은 받지 않는다). 남는 폭은 오른쪽 여백(margin auto)이 갖는다. */
+  .ds-notification-center-title { flex: 0 1 auto; min-inline-size: 0; margin: 0 auto 0 0; font-size: var(--text-body); line-height: var(--text-body-lh); font-weight: 600; }
   .ds-notification-center-actions { display: flex; flex: none; align-items: center; gap: var(--space-4); }
   /* "모두 읽음"은 ghost sm(32)이 보이는 크기, 누름 면적은 위아래로 넓혀 38(1024 미만 44)이다(Figma '모두 읽음 · 누름 영역'). */
   .ds-notification-center-hit { position: relative; }

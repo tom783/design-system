@@ -32,15 +32,16 @@
 .ds-side-nav-group + .ds-side-nav-group { margin-block-start: var(--space-20); }
 .ds-side-nav-group-label { padding: var(--space-8) var(--space-12); font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); font-weight: 600; }
 .ds-side-nav-item, .ds-side-nav-toggle { display: flex; align-items: center; gap: var(--space-12); min-width: 0; min-height: var(--tap-min); padding: var(--space-8) var(--space-12); border-radius: var(--radius-md); font-size: var(--text-body-sm); line-height: var(--text-body-sm-lh); color: var(--text-primary); text-decoration: none; }
-.ds-side-nav-item:hover, .ds-side-nav-toggle:hover:enabled { background: var(--bg-hover); }
-.ds-side-nav-item[aria-current="page"] { background: var(--bg-selected); font-weight: 600; }
+.ds-side-nav-item:hover, .ds-side-nav-toggle:hover:enabled { background: var(--bg-hover); --count-badge-ring: var(--bg-hover); }
+.ds-side-nav-item[aria-current="page"] { background: var(--bg-selected); font-weight: 600; --count-badge-ring: var(--bg-selected); }
 .ds-side-nav-item[aria-disabled="true"] { color: var(--text-disabled); cursor: not-allowed; background: transparent; }
 .ds-side-nav-icon { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--space-24); height: var(--space-24); }
 .ds-side-nav-icon svg { width: var(--space-20); height: var(--space-20); }
 .ds-side-nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ds-side-nav-meta { flex: 0 1 auto; min-width: 0; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-caption); }
 .ds-side-nav-badge { padding-inline: var(--space-4); border-radius: var(--radius-sm); background: var(--bg-sunken); }
-/* 개수 표식(CountBadge) — 펼친 메뉴는 badge 자리의 알약, 접힌 레일은 아이콘 오른쪽 위 점 8(규격 3절). 둘 중 하나만 보인다. */
+/* 개수 표식(CountBadge) — 펼친 메뉴는 badge 자리의 알약, 접힌 레일은 아이콘 오른쪽 위 점 8(규격 3절). 둘 중 하나만 보인다.
+   급함 점의 바탕색 링(2px)은 항목 바탕을 따른다 — 기본 SideNav 표면, 호버·현재 항목은 위 규칙이 --count-badge-ring 을 바꾼다. */
 .ds-side-nav-count-dot { position: absolute; inset-block-start: 0; inset-inline-end: 0; display: none; }
 .ds-side-nav-toggle { flex: none; margin: var(--space-8); cursor: pointer; background: transparent; border: none; text-align: start; }
 .ds-side-nav-toggle > svg { flex: none; width: var(--space-24); height: var(--space-24); }

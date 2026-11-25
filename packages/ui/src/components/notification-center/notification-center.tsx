@@ -87,7 +87,6 @@ function NotificationRow({ item, now, onNavigate }: { item: NotificationItem; no
 }
 
 export interface NotificationPanelProps extends Omit<NotificationCenterProps, 'count' | 'urgent' | 'open' | 'defaultOpen' | 'onOpenChange' | 'className'> {
-  titleRef: React.Ref<HTMLHeadingElement>;
   titleId?: string;
   /** 1024 미만 Sheet — 닫기 버튼을 머리에 두고 제목은 대화상자 제목이다. */
   sheet: boolean;
@@ -97,11 +96,12 @@ export interface NotificationPanelProps extends Omit<NotificationCenterProps, 'c
 /** 패널 내용 — 팝오버(1024 이상)와 Sheet(미만)가 같이 쓴다. 시험이 바로 그리도록 내보낸다(공개 진입점에는 없다). */
 export function NotificationPanel({ items = [], state = 'idle', onRetry, emptyTitle = '알림이 없습니다', emptyDescription, tabs, toolbar,
   onMarkAllRead, settingsHref, hasMore = false, loadingMore = false, onLoadMore, pendingCount = 0, onShowPending, onNavigate, now,
-  titleRef, titleId, sheet, onClose }: NotificationPanelProps) {
+  titleId, sheet, onClose }: NotificationPanelProps) {
   const bodyRef = React.useRef<HTMLDivElement>(null);
   const base = now ?? Date.now();
   // Sheet 에서는 대화상자 제목(Radix Title)이 id 를 붙인다 — id 를 undefined 로라도 넘기면 그 id 를 덮어 이름이 사라진다.
-  const title = <h2 ref={titleRef} {...(titleId ? { id: titleId } : {})} tabIndex={-1} data-slot="notification-center-title" className="ds-notification-center-title">알림</h2>;
+  // 제목은 대화상자 이름일 뿐 초점을 받지 않는다 — 열면 초점은 패널 자체다(아래 NotificationCenter).
+  const title = <h2 {...(titleId ? { id: titleId } : {})} data-slot="notification-center-title" className="ds-notification-center-title">알림</h2>;
   const navigate = (item: NotificationItem, event: React.MouseEvent<HTMLAnchorElement>) => {
     onNavigate?.(item, event);
     // 새 탭·창(⌘/Ctrl·가운데)이 아니면 패널을 닫는다 — 이동한 화면을 가리지 않는다.
@@ -164,7 +164,7 @@ export function NotificationPanel({ items = [], state = 'idle', onRetry, emptyTi
 /**
  * 알림 센터 — 벨(알림 진입)과 패널(상단 바 규격 4·5절 · Figma 223:977 · 223:1139 · 223:1579 · 223:2044).
  * 1024 이상은 벨 아래 오른쪽 맞춤 팝오버(폭 400 · 최대 높이 min(640, 화면 − 96)), 미만은 오른쪽 Sheet(390 에서는 전체 폭).
- * 패널은 대화상자 "알림" — 열면 제목에 초점, Tab 으로 모두 읽음·설정·탭·필터·알림 링크, Esc 로 닫고 벨로 돌아간다.
+ * 패널은 대화상자 "알림" — 열면 패널 자체에 초점(링 없음), Tab 으로 모두 읽음·설정·탭·필터·알림 링크, Esc 로 닫고 벨로 돌아간다.
  * 권한·폴링·등급 규칙은 넣지 않는다 — 앱이 개수·목록·상태를 데이터로 넘긴다.
  */
 export function NotificationCenter({ count, urgent = false, open, defaultOpen = false, onOpenChange, className, ...panel }: NotificationCenterProps) {
@@ -172,7 +172,6 @@ export function NotificationCenter({ count, urgent = false, open, defaultOpen = 
   const [innerOpen, setInnerOpen] = React.useState(defaultOpen);
   const isOpen = open ?? innerOpen;
   const titleId = React.useId();
-  const titleRef = React.useRef<HTMLHeadingElement>(null);
   const setOpen = React.useCallback((next: boolean) => {
     if (open === undefined) setInnerOpen(next);
     onOpenChange?.(next);
@@ -183,19 +182,21 @@ export function NotificationCenter({ count, urgent = false, open, defaultOpen = 
     if (previous.current !== narrow && isOpen) setOpen(false);
     previous.current = narrow;
   }, [narrow, isOpen, setOpen]);
-  const focusTitle = (event: Event) => { event.preventDefault(); titleRef.current?.focus(); };
+  // 열면 초점은 패널 자체(대화상자 "알림", tabindex −1 — Radix 초점 범위가 붙인다)다. 첫 Tab 이 "모두 읽음"으로 간다(11-25 구현 검수 B).
+  // 기본(첫 누를 것에 초점)이면 "모두 읽음"을 실수로 누르기 쉽고, 제목에 두면 제목 둘레에 링 상자가 떴다. 이벤트는 패널에서 생긴다.
+  const focusPanel = (event: Event) => { event.preventDefault(); (event.target as HTMLElement | null)?.focus({ preventScroll: true }); };
   const bell = <NotificationBell count={count} urgent={urgent} className={className} />;
-  const content = <NotificationPanel {...panel} titleRef={titleRef} titleId={narrow ? undefined : titleId} sheet={narrow} onClose={() => setOpen(false)} />;
+  const content = <NotificationPanel {...panel} titleId={narrow ? undefined : titleId} sheet={narrow} onClose={() => setOpen(false)} />;
   if (narrow) return <Dialog open={isOpen} onOpenChange={setOpen}>
     <DialogTrigger asChild>{bell}</DialogTrigger>
     <SheetContent side="right" size="sm" showClose={false} data-slot="notification-center" className="ds-notification-center ds-notification-sheet"
-      aria-describedby={undefined} onOpenAutoFocus={focusTitle}>{content}</SheetContent>
+      aria-describedby={undefined} tabIndex={-1} onOpenAutoFocus={focusPanel}>{content}</SheetContent>
   </Dialog>;
   return <Popover.Root open={isOpen} onOpenChange={setOpen}>
     <Popover.Trigger asChild>{bell}</Popover.Trigger>
     <Popover.Portal>
       <Popover.Content data-slot="notification-center" className="ds-notification-center ds-notification-popover" align="end" sideOffset={4}
-        collisionPadding={layerCollisionPadding} aria-labelledby={titleId} onOpenAutoFocus={focusTitle}>{content}</Popover.Content>
+        collisionPadding={layerCollisionPadding} aria-labelledby={titleId} tabIndex={-1} onOpenAutoFocus={focusPanel}>{content}</Popover.Content>
     </Popover.Portal>
   </Popover.Root>;
 }

@@ -38,15 +38,17 @@ test('소수는 내림 · 단위는 앱이 바꾼다(레코드는 "건") · 급�
   assert.equal(countSpoken(0, true), null, '숨김이면 급함도 읽지 않는다');
 });
 
-test('CountBadge 렌더: 보이는 숫자는 낭독에서 숨기고 낭독 글자를 따로 · 급함 점 · 점 표식', () => {
+test('CountBadge 렌더: 보이는 숫자(알약)는 낭독에서 숨기고 낭독 글자를 따로 · 급함 = 알약 왼쪽 점 · 점 표식', () => {
   assert.equal(renderToStaticMarkup(h(CountBadge, { count: 0 })), '');
   assert.equal(renderToStaticMarkup(h(CountBadge, { count: null })), '');
   const normal = renderToStaticMarkup(h(CountBadge, { count: 37 }));
   assert.match(normal, /^<span data-slot="count-badge" data-variant="count" class="ds-count-badge">/);
-  assert.match(normal, /<span aria-hidden="true">37<\/span><span class="sr-only">37개<\/span>/);
+  assert.match(normal, /<span class="ds-count-badge-pill" aria-hidden="true">37<\/span><span class="sr-only">37개<\/span>/);
+  assert.doesNotMatch(normal, /ds-count-badge-dot/, '일반은 점 없음');
   const capped = renderToStaticMarkup(h(CountBadge, { count: 100, urgent: true }));
   assert.match(capped, /data-urgent=""/);
-  assert.match(capped, /<span class="ds-count-badge-dot" aria-hidden="true"><\/span><span aria-hidden="true">99\+<\/span><span class="sr-only">99개 이상, 급함<\/span>/);
+  assert.match(capped, /<span class="ds-count-badge-dot" aria-hidden="true"><\/span><span class="ds-count-badge-pill" aria-hidden="true">99\+<\/span><span class="sr-only">99개 이상, 급함<\/span>/,
+    '급함 = 점 6 이 알약 왼쪽(알약 밖) — 알약 크기는 일반과 같다');
   const dot = renderToStaticMarkup(h(CountBadge, { count: 12, dot: true }));
   assert.match(dot, /data-variant="dot"/);
   assert.doesNotMatch(dot, />12</, '점 표식은 숫자를 그리지 않는다');
@@ -75,4 +77,20 @@ test('TabsTrigger count: 라벨 뒤 알약 · 0·실패는 없음(지금 모양 
   assert.match(markup, /처리 필요<span data-slot="count-badge" data-variant="count" data-urgent="" class="ds-count-badge ds-tabs-count">/);
   assert.match(markup, />전체<\/button>/, '0 이면 탭 글자만');
   assert.match(markup, />완료<\/button>/, '실패면 탭 글자만');
+});
+
+test('급함 = 위험 채움 알약(위험 버튼 채움 · 브랜드 채움 위 글자) · 알약 크기 일반과 같음 · 레일 급함 점 바탕색 링 2px — 새 토큰 없음', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('./count-badge.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rule = selector => css.match(new RegExp(`${selector.replace(/[[\]().*+?^$|\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+  const urgentPill = rule('.ds-count-badge[data-urgent] .ds-count-badge-pill');
+  assert.match(urgentPill, /background: var\(--action-danger-bg\)/, 'Button danger 와 같은 채움');
+  assert.match(urgentPill, /color: var\(--text-on-brand\)/, 'Button danger 와 같은 글자색(fg-on-brand)');
+  assert.doesNotMatch(urgentPill, /block-size|padding|min-inline-size/, '크기는 일반 알약 규칙 그대로');
+  assert.doesNotMatch(css, /--status-danger-bg/, '연한 위험 바탕은 쓰지 않는다(11-25 구현 검수 A)');
+  assert.match(rule('.ds-count-badge-dot'), /background: var\(--status-danger-fg\)/, '알약 왼쪽 점 = 위험색');
+  const railUrgent = rule('.ds-count-badge[data-variant="dot"][data-urgent]');
+  assert.match(railUrgent, /box-shadow: 0 0 0 var\(--space-2\) var\(--count-badge-ring, var\(--bg-surface\)\)/, '레일 급함 점 = 바탕색 링 2px');
+  assert.doesNotMatch(rule('.ds-count-badge[data-variant="dot"]'), /box-shadow/, '일반 점은 링 없음 — 모양이 다르다(P5)');
+  assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|rgb\(|oklch\(/i, '직접 쓴 색 없음');
 });

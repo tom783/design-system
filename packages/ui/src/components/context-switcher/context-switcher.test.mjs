@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('../../../../../', import.meta.url));
 const server = await createServer({ root, configFile: false, logLevel: 'silent', server: { middlewareMode: true }, appType: 'custom' });
 // 순수 규칙도 Vite 로 불러온다 — Combobox 거르기를 확장자 없는 상대 경로로 가져와 node 직접 import 로는 풀리지 않는다.
 const {
-  SEARCH_THRESHOLD, allowSwitch, emptyText, failureDescription, failureTitle, filterChoices, isStatic, needsSearch,
+  DRILL_START, SEARCH_THRESHOLD, allowSwitch, drillReducer, emptyText, failureDescription, failureTitle, filterChoices, isStatic, needsSearch,
   objectParticle, runSwitch, searchLabel, staticName, subjectParticle, switchReducer, switcherChoices, triggerName, typeaheadIndex,
 } = await server.ssrLoadModule('/packages/ui/src/components/context-switcher/switcher.ts');
 const { ContextSwitcher, ContextSwitcherGroup } = await server.ssrLoadModule('/packages/ui/src/components/context-switcher/context-switcher.tsx');
@@ -137,4 +137,20 @@ test('묶음 — 전환기 사이 구분선(낭독 제외) · 서버 첫 그림�
     h(ContextSwitcher, { kind: '스토어', items: stores, defaultValue: 'b' })));
   assert.match(markup, /aria-label="제품: 마케팅관리".*<span class="ds-context-switcher-divider" aria-hidden="true"><\/span>.*aria-label="스토어: 스토어 B"/s);
   assert.doesNotMatch(markup, /data-collapsed/);
+});
+
+test('접힌 "맥락" 2단계 — 열면 종류 목록 · 종류 고르면 그 패널 · 뒤로 오면 온 종류 줄로 초점 · 다시 열면 처음부터(규격 2절 r1.2 · ⑦)', () => {
+  assert.deepEqual(DRILL_START, { step: null, returnTo: null }, '첫 단계 = 종류 목록');
+  const store = drillReducer(DRILL_START, { type: 'enter', index: 1 });
+  assert.deepEqual(store, { step: 1, returnTo: null }, '스토어(둘째)를 고르면 그 전환기 패널');
+  const back = drillReducer(store, { type: 'back' });
+  assert.deepEqual(back, { step: null, returnTo: 1 }, '뒤로 — 종류 목록, 초점은 온 줄(스토어)');
+  assert.equal(drillReducer(back, { type: 'back' }), back, '첫 단계에서 뒤로는 그대로(메뉴를 닫지 않는다 — Esc 가 닫는다)');
+  assert.deepEqual(drillReducer(drillReducer(back, { type: 'enter', index: 0 }), { type: 'open' }), DRILL_START, '다시 열면 처음부터');
+});
+
+test('선택 실패 토스트 문구 — 모든 폭 같은 제목 + 설명 "이전 <종류>를 유지합니다"(조사 자동 · Figma 223:527 · ⑨)', () => {
+  assert.equal(failureTitle('제품'), '제품을 바꾸지 못했습니다');
+  assert.equal(failureDescription('제품'), '이전 제품을 유지합니다');
+  assert.equal(failureDescription('스토어'), '이전 스토어를 유지합니다');
 });

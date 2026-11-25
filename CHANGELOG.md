@@ -64,24 +64,29 @@
   - 트리거 38(1024 미만 44) · [아이콘 20] + 현재 값 600 + 화살표 · 최대 240 말줄임 + 툴팁 · 낭독 "<종류>: <현재 값>"(`kind`).
     고를 것이 하나면 정적 글자("현재 <종류>: <값>"). `showKind` 로 앞말을 작게 보인다.
   - 항목 `href` 가 있으면 링크(⌘/Ctrl·가운데 클릭 새 탭), 없으면 선택 — `onValueChange` 가 Promise 면 스피너 16 + 새 값, 실패하면 원래 값 +
-    오류 토스트("<종류>를 바꾸지 못했습니다", 닫을 때까지). 둘 다 `onBeforeSwitch(event)` 에서 `event.preventDefault()` 로 막는다.
+    오류 토스트(제목 "<종류>를 바꾸지 못했습니다" + 설명 "이전 <종류>를 유지합니다", 모든 폭, 닫을 때까지). 둘 다 `onBeforeSwitch(event)` 에서
+    `event.preventDefault()` 로 막는다.
   - 패널 240~360 · 최대 높이 400(목록만 스크롤) · `allItem`("전체" 맨 위 + 구분선) · `guide`(안내 줄, 링크 하나) · 항목 8개 이상 검색
     (`searchThreshold`, 초성) · `state` loading(스켈레톤 3줄)·error(다시 시도 `onRetry`) · 비활성 항목 + 사유 툴팁(`disabledReason`).
   - 키보드: 화살표 · Enter · Esc 닫고 트리거로 · 첫 글자 이동(한글 초성 "ㅅ" → "스토어" — 메뉴 기본 첫 글자 검색은 초성을 몰랐다).
-  - 묶음: 사이 구분선 1×20 · 좌우 8 · 1024 미만은 둘째부터 아이콘 + 툴팁 · 그래도 넘치면 "맥락" 한 트리거로 접어 종류별 목록.
+  - 묶음: 사이 구분선 1×20 · 좌우 8 · 1024 미만은 둘째부터 아이콘 + 툴팁 · 그래도 넘치면 "맥락" 한 트리거로 접는다. 접힌 목록은 2단계 —
+    종류(제품·스토어)를 고르면 그 전환기 패널(검색 포함)로 들어가고, 맨 위 "‹ 종류"·← 로 돌아오며(온 줄에 초점) Esc 는 닫고 "맥락"으로.
     전환기가 묶음에 스스로 등록하므로 앱 컴포넌트로 감싸도 된다.
 - **알림 센터 `NotificationCenter`** (상단 바 규격 4·5절 · Figma 223:977 · 223:1139 · 223:1579 · 223:2044 · DESIGN.md §24.10). 벨(알림 진입)과
   패널을 한 부품으로 둔다. 타입 `NotificationCenterProps` · `NotificationItem`.
-  - 벨: Button ghost iconOnly 38(1024 미만 44) + CountBadge · 이름 "알림, 안 읽음 n개"(+ ", 급한 알림 있음", 0·실패 "알림") · 열림 = 선택 바탕.
-  - 패널: 1024 이상 팝오버 400 · 최대 높이 min(640, 화면 − 96), 미만 오른쪽 Sheet(390 은 전체 폭) · 대화상자 "알림" · 열면 제목에 초점 ·
+  - 벨: Button ghost iconOnly 38(1024 미만 44) + CountBadge(오른쪽 끝을 벨 +6 · 위 −6 에 고정, 넓어지면 왼쪽으로) · 이름 "알림, 안 읽음 n개"
+    (+ ", 급한 알림 있음", 0·실패 "알림") · 열림 = 선택 바탕.
+  - 패널: 1024 이상 팝오버 400 · 최대 높이 min(640, 화면 − 96), 미만 오른쪽 Sheet(390 은 전체 폭) · 대화상자 "알림" · 열면 패널 자체에 초점(링 없음,
+    첫 Tab "모두 읽음") ·
     Esc 로 벨에 복귀 · 머리 "모두 읽음"(`onMarkAllRead`)·설정(`settingsHref`)·탭 자리(`tabs`)·도구 줄(`toolbar`).
   - 알림 한 줄(`items`): 출처(20자)·시각(방금·n분 전·어제 HH:MM·MM.DD HH:MM·YYYY.MM.DD, 툴팁 전체 일시)·제목(2줄)·건수 · 기한(등급
-    normal·soon·overdue) · 안 읽음 = 중립 점 8 + 600 · 급함 = 경고 아이콘 16 + 위험 색 기한 · 낭독 "<출처>, <제목>, <건수>, <기한>, <시각>, 안 읽음".
+    normal·soon·overdue) · 안 읽음 = 중립 점 8 + 600 · 급함 = 경고 아이콘 16 + 위험 색 기한 · 낭독 "<출처>, 급함(급할 때만), <제목>, <건수>, <기한>, <시각>, 안 읽음".
   - 상태: `state` loading·error(`onRetry`) · 비어 있음(`emptyTitle`·`emptyDescription`) · `hasMore`·`loadingMore`·`onLoadMore` · 목록 끝 ·
     열린 채 새 알림 `pendingCount`·`onShowPending`("새 알림 n개 · 보기", 목록이 저절로 밀리지 않는다) · `onNavigate`.
   - 권한·폴링·등급 규칙은 넣지 않는다 — 앱이 데이터로 넘긴다.
 - **개수 표식 `CountBadge`** (상단 바 규격 3절 · Figma 223:912 · 223:955 · DESIGN.md §24.9). 높이 18 · 최소 폭 18 · 숫자 13 600 고정폭.
-  0·음수·null(불러오기 실패) 숨김 · 100 이상 "99+"(낭독 "99개 이상") · `urgent` 위험 색 + 점 6 · `dot` 점 8 · `unit` 낭독 단위(기본 "개").
+  0·음수·null(불러오기 실패) 숨김 · 100 이상 "99+"(낭독 "99개 이상") · `urgent` 위험 채움 알약(Button danger 와 같은 채움 · 흰 숫자, 대비 6.47:1) +
+  알약 왼쪽 위험색 점 6 · `dot` 점 8(급함이면 바탕색 링 2px) · `unit` 낭독 단위(기본 "개").
   타입 `CountBadgeProps`.
 - **SideNavItem `count`·`countUrgent` · TabsTrigger `count`·`countUrgent`** — 같은 CountBadge 를 쓴다. SideNav 는 `badge` 자리에 알약,
   접힌 레일에서는 아이콘 오른쪽 위 점 8 이고 이름이 "라벨, 12개"로 개수를 읽는다. 주지 않으면 지금 모양 그대로다(`badge` 도 그대로).
@@ -128,6 +133,12 @@
   한 줄 낭독 · 상태 8개). 하네스 `top-bar-render-verify` 에 전환기·벨·알림 센터·개수 표식 62건을 더했다(진짜 Tab/Esc 초점 복귀 ·
   CDP 접근성 트리로 role·이름·aria-live · 네 폭 넘침 0) — 147건. 예시 `docs/examples/app-header.tsx` 는 이제 전환기 2개 + 알림 센터 +
   사용자 메뉴 조합이다(`Screens/AppHeader` 헤더 · 헤더 선택실패).
+- 상단 바 2b 손질(11-25 디자인 총괄 조건부 통과 7건 · 규격 r1.2) 시험: 단위 — 급함 채움 알약·점·레일 링 CSS 토큰(`count.test`) ·
+  접힌 목록 2단계 전이(`drillReducer`)·실패 토스트 설명 문구(`context-switcher.test`) · 한 줄 낭독 "급함"·제목 초점 없음(`notification-center.test`).
+  하네스 `top-bar-render-verify` 147 → 171건: 벨 표식 오른쪽 끝 +6/−6 · 99+ 급함도 사용자 메뉴와 겹침 0(간격 2) · 급함 채움 + 점 6 · 숫자 대비 6.47
+  (벨·Tabs·SideNav) · 레일 급함 점 링 2px · 접힌 "맥락" 2단계(Tab→Enter→ㅅ→Enter→↑ 뒤로→온 줄 초점→→/←→ㅍ→Esc 복귀 · 둘째 단계 검색 ↑↓) ·
+  실패 토스트 설명(모든 폭) · 알림 패널 초기 초점 = 패널(링 없음) → 첫 Tab 모두 읽음. 스토리 `Screens/AppHeader` 헤더 벨상한급함 ·
+  `Components/ContextSwitcher` 좁은폭 검색 · `Components/CountBadge` 급함(Tabs·SideNav 포함).
 - MCP(최소 항목, 지침 본작업은 3단계): ContextSwitcher·ContextSwitcherGroup·NotificationCenter·CountBadge 의도 항목 · 색인 26,926B → 28,296B /
   40KB · 목록 21,142B → 21,993B / 36KB. `server.test` 목록 기준선에 네 항목을 명시적으로 더했다.
 - MCP: AppShell `header` 설명과 `headerEnd` prop·슬롯 2개, EmptyState·ErrorState `size`·`secondaryAction`·`description` 타입이 매니페스트에

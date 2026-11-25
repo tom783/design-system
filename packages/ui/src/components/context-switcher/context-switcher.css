@@ -123,9 +123,13 @@
   .ds-context-switcher-guide-link { color: var(--text-link); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-sm); outline: none; }
   .ds-context-switcher-guide-link:focus-visible { outline: var(--focus-width) solid var(--border-focus); }
 
-  /* 접힌 "맥락" 목록의 종류 제목(Figma 223:1937). */
-  .ds-context-switcher-section + .ds-context-switcher-section { margin-block-start: var(--space-8); }
-  .ds-context-switcher-section-label { padding: var(--space-8) var(--space-12) var(--space-4); color: var(--text-secondary); font-size: var(--text-caption); line-height: var(--text-caption-lh); font-weight: var(--text-caption-weight); letter-spacing: var(--text-caption-ls); }
+  /* 접힌 "맥락" 목록 2단계(규격 2절 r1.2 · 2단계 규격 밖 ⑦). 첫 단계 줄 = 종류(caption secondary) · 지금 값 · › 16 —
+     줄 높이·초점 링·첫 글자 이동은 목록 항목과 같다. 둘째 단계 = 맨 위 "‹ <종류>"(뒤로, 600 · 아래 구분선) + 그 전환기 패널. */
+  .ds-context-switcher-next { flex: none; inline-size: var(--space-16); block-size: var(--space-16); margin-inline-start: auto; color: var(--text-secondary); }
+  .ds-context-switcher-back { flex: none; font-weight: 600; border-block-end: var(--border-width) solid var(--border-subtle); }
+  .ds-context-switcher-back-icon { flex: none; inline-size: var(--space-16); block-size: var(--space-16); color: var(--text-secondary); }
+  /* 둘째 단계 묶음 — 패널과 같은 세로 흐름(검색 · 목록만 스크롤 · 안내 줄)을 잇는다. */
+  .ds-context-switcher-step { display: flex; flex: 1 1 auto; flex-direction: column; min-block-size: 0; }
 
   @media (width < 1024px) {
     /* 1024 미만 누름 면적 44(P4 · Figma 223:1766). */

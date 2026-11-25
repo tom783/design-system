@@ -5296,9 +5296,11 @@
         "context-switcher-content",
         "context-switcher-empty",
         "context-switcher-group",
+        "context-switcher-guide",
         "context-switcher-item",
         "context-switcher-list",
         "context-switcher-loading",
+        "context-switcher-search",
         "error-state",
         "guide-bubble",
         "guide-tooltip",
@@ -7630,7 +7632,7 @@
       ],
       "rules": [
         {
-          "text": "0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 색과 점, dot은 접힌 레일의 점 8px다.",
+          "text": "0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 채움 알약과 왼쪽 점, dot은 접힌 레일의 점 8px다.",
           "source": "24.9"
         },
         {
@@ -7662,7 +7664,7 @@
         {
           "name": "urgent",
           "type": "boolean",
-          "doc": "급함 — 위험 색 + 왼쪽 점 6px. 색만으로 구분하지 않고 낭독에도 \"급함\"을 더한다."
+          "doc": "급함 — 위험 채움 알약 + 알약 왼쪽 위험색 점 6px. 색만으로 구분하지 않고 낭독에도 \"급함\"을 더한다. 점 표식이면 바탕색 링 2px."
         },
         {
           "name": "dot",

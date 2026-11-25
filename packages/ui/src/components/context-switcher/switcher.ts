@@ -158,3 +158,17 @@ export async function runSwitch(options: {
     return 'failed';
   }
 }
+
+/**
+ * 접힌 "맥락" 목록의 2단계(규격 2절 r1.2 "종류를 고르면 그 전환기 패널(검색 포함)로 들어가는 2단계" · 2단계 규격 밖 ⑦).
+ * `step` null = 종류 목록, 숫자 = 그 순번 전환기의 패널. `returnTo` = 뒤로 왔을 때 초점을 돌려줄 종류 줄(없으면 null).
+ * 열 때마다 첫 단계부터다. Esc·항목 선택은 메뉴가 닫고 트리거로 초점을 돌려준다 — 여기서는 다루지 않는다.
+ */
+export interface DrillState { step: number | null; returnTo: number | null }
+export type DrillAction = { type: 'open' } | { type: 'enter'; index: number } | { type: 'back' };
+export const DRILL_START: DrillState = { step: null, returnTo: null };
+export function drillReducer(state: DrillState, action: DrillAction): DrillState {
+  if (action.type === 'open') return DRILL_START;
+  if (action.type === 'enter') return { step: action.index, returnTo: null };
+  return state.step === null ? state : { step: null, returnTo: state.step };
+}

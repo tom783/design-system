@@ -52,8 +52,10 @@ test('시간 표기 — 방금 · n분 전 · n시간 전 · 어제 HH:MM · MM.
   assert.equal(formatNotificationTime(at(2025, 11, 31, 23, 0), at(2026, 0, 1, 23, 30)).text, '어제 23:00');
 });
 
-test('한 줄 낭독 "<출처>, <제목>, <건수>, <기한>, <시각>, 안 읽음/읽음" · 3줄 글자 · 출처 20자', () => {
-  assert.equal(notificationName(urgent, NOW), '판매관리 · 스토어 A, 취소 요청 2건, 2건, 2시간 초과, 방금, 안 읽음');
+test('한 줄 낭독 "<출처>, 급함, <제목>, <건수>, <기한>, <시각>, 안 읽음/읽음"(급할 때만 급함) · 3줄 글자 · 출처 20자', () => {
+  assert.equal(notificationName(urgent, NOW), '판매관리 · 스토어 A, 급함, 취소 요청 2건, 2건, 2시간 초과, 방금, 안 읽음', '급함은 출처 바로 뒤(규격 5절 r1.2)');
+  assert.equal(notificationName({ ...urgent, read: true }, NOW), '판매관리 · 스토어 A, 급함, 취소 요청 2건, 2건, 2시간 초과, 방금, 읽음', '읽어도 급함은 남는다(미처리)');
+  assert.doesNotMatch(notificationName(fresh, NOW), /급함/, '급하지 않으면 말하지 않는다');
   assert.equal(notificationName({ ...fresh, read: true }, NOW), '판매관리 · 스토어 A, 신규 주문 37건, 37건, 4시간 남음, 12분 전, 읽음');
   assert.equal(notificationName({ id: 'x', source: '물류', title: '입고 완료', time: NOW, href: '#' }, NOW), '물류, 입고 완료, 방금, 안 읽음', '없는 칸은 건너뛴다');
   assert.equal(detailText(fresh), '37건 · 4시간 남음');
@@ -63,12 +65,15 @@ test('한 줄 낭독 "<출처>, <제목>, <건수>, <기한>, <시각>, 안 읽�
   assert.equal(truncateSource('가'.repeat(21)), `${'가'.repeat(20)}…`);
 });
 
-const panel = props => renderToStaticMarkup(h(NotificationPanel, { titleRef: () => {}, titleId: 't', sheet: false, onClose() {}, now: NOW,
+const panel = props => renderToStaticMarkup(h(NotificationPanel, { titleId: 't', sheet: false, onClose() {}, now: NOW,
   onMarkAllRead() {}, settingsHref: '#settings', ...props }));
 
-test('패널 머리 — 제목 "알림"(h2, 초점 받는 자리) · 모두 읽음 · 설정 링크 · 탭·도구 슬롯', () => {
+test('패널 머리 — 제목 "알림"(h2, 대화상자 이름 · 초점 받지 않음) · 모두 읽음 · 설정 링크 · 탭·도구 슬롯', () => {
   const markup = panel({ items: [fresh], tabs: h('div', { id: 'tabs' }), toolbar: h('div', { id: 'filter' }) });
-  assert.match(markup, /<h2 id="t" tabindex="-1" data-slot="notification-center-title" class="ds-notification-center-title">알림<\/h2>/);
+  assert.match(markup, /<h2 id="t" data-slot="notification-center-title" class="ds-notification-center-title">알림<\/h2>/,
+    '제목은 tabindex 가 없다 — 열면 초점은 패널 자체(11-25 구현 검수 B)');
+  assert.ok(markup.indexOf('모두 읽음') < markup.indexOf('aria-label="알림 설정"') && markup.indexOf('aria-label="알림 설정"') < markup.indexOf('id="tabs"'),
+    '패널 안 첫 누를 것이 모두 읽음 — 패널에서 Tab 한 번이면 모두 읽음');
   assert.match(markup, />모두 읽음</);
   assert.match(markup, /<a [^>]*href="#settings" aria-label="알림 설정"/);
   assert.match(markup, /data-slot="notification-center-tabs"[^>]*><div id="tabs">/);
@@ -80,7 +85,7 @@ test('알림 한 줄 — 안 읽음 점 + 600 · 급함 아이콘 · 기한 등�
   const markup = panel({ items: [urgent, { ...fresh, read: true }] });
   const rows = markup.match(/<a href="[^"]*" data-slot="notification-row".*?<\/a>/g);
   assert.equal(rows.length, 2);
-  assert.match(rows[0], /aria-label="판매관리 · 스토어 A, 취소 요청 2건, 2건, 2시간 초과, 방금, 안 읽음"/);
+  assert.match(rows[0], /aria-label="판매관리 · 스토어 A, 급함, 취소 요청 2건, 2건, 2시간 초과, 방금, 안 읽음"/);
   assert.match(rows[0], /data-urgent=""/);
   assert.match(rows[0], /ds-notification-row-dot/);
   assert.match(rows[0], /lucide-circle-alert/);

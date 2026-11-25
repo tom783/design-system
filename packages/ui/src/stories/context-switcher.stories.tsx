@@ -106,9 +106,17 @@ export const 긴이름: Story = {
     done(root);
   },
 };
-/** 좁은 자리 — 두 전환기가 들어가지 않으면 "맥락" 한 트리거로 접고 종류별 하위 목록(Figma 223:1923). 1024 미만은 둘째가 아이콘만. */
+/**
+ * 좁은 자리 — 두 전환기가 들어가지 않으면 "맥락" 한 트리거로 접는다(Figma 223:1923). 접힌 목록은 2단계다(규격 2절 r1.2):
+ * 첫 단계 종류별 한 줄("제품 · 마케팅관리 ›") → 종류를 고르면 그 전환기 패널(검색 · "전체" · 안내 줄 포함). 맨 위 "‹ <종류>"·← 로 뒤로,
+ * Esc 는 닫고 "맥락"으로. 1024 미만 펼친 묶음은 둘째가 아이콘만.
+ */
 export const 좁은폭: Story = { render: (_, context) => <div style={{ inlineSize: '12rem', minHeight: opened(context) ? '26rem' : undefined }}>
   <ContextSwitcherGroup><ProductSwitcher /><StoreSwitcher /></ContextSwitcherGroup>
+</div> };
+/** 좁은 자리 + 스토어가 많을 때 — 접힌 목록에서 스토어를 고르면 그 패널의 검색(8개부터)이 그대로 있다. */
+export const 좁은폭_검색: Story = { render: (_, context) => <div style={{ inlineSize: '12rem', minHeight: opened(context) ? '30rem' : undefined }}>
+  <ContextSwitcherGroup><ProductSwitcher /><StoreSwitcher items={many} /></ContextSwitcherGroup>
 </div> };
 export const 다크: Story = { globals: { theme: 'dark' }, render: (_, context) => <Frame open={opened(context)}>
   <StoreSwitcher defaultOpen={opened(context)} />

@@ -13,6 +13,10 @@
 //   - State page: 상단 바 아래선 → 아이콘 96 · 최대 폭 480 · 아이콘 40 · 제목 h1 17/24 600 · role=status ·
 //     행동 1024 이상 Button md(38 · 14 · 여백 14) · 미만 Button lg 수치(44 · 15 · 여백 20 · 최소 폭 80, 답 ⑦)
 //   - 글자 대비 4.5:1(라이트·다크) — 새로 생긴 조합(고정 알림 위 이동 링크 등)을 실제 계산 색으로 잰다
+// 2b(11-25 디자인 총괄 조건부 통과 7건): ④ 벨 표식 오른쪽 끝 고정(벨 +6 · −6) · 99+ 급함도 사용자 메뉴와 겹침 0 ·
+//   ⑤ 레일 급함 점 바탕색 링 2px · ⑦ 접힌 "맥락" 2단계(종류 → 그 패널 · 뒤로 · ←/→ · Esc · 초점 복귀 · 낭독) ·
+//   ⑨ 선택 실패 토스트 제목 + 설명(모든 폭) · ⑪ 한 줄 낭독 "<출처>, 급함, …" · A 급함 = 위험 채움 알약 + 점 6(숫자 대비) ·
+//   B 알림 패널을 열면 초점은 패널 자체(링 없음) → 첫 Tab "모두 읽음"
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchBrowser, storybook, storybookBase, actions, CANVAS } from './browser.mjs';
@@ -29,7 +33,7 @@ const measures = [];
 const index = await (await fetch(`${await storybookBase()}/index.json`)).json();
 const ids = Object.fromEntries(Object.values(index.entries).filter(e => e.type === 'story' && e.title === 'Screens/AppHeader')
   .map(e => [e.name, e.id]));
-for (const name of ['헤더', '헤더 선택실패', '사용자메뉴', '사용자메뉴 긴이름', '알림토스트 일반', '알림토스트 고정', '알림토스트 묶음', '알림토스트 겹침', '행동결과토스트', '권한없음', '찾을수없음']) {
+for (const name of ['헤더', '헤더 선택실패', '헤더 벨상한급함', '사용자메뉴', '사용자메뉴 긴이름', '알림토스트 일반', '알림토스트 고정', '알림토스트 묶음', '알림토스트 겹침', '행동결과토스트', '권한없음', '찾을수없음']) {
   assert.ok(ids[name], `Screens/AppHeader 스토리 '${name}' 가 없다 — ${Object.keys(ids).join(', ')}`);
 }
 const componentId = (title, name) => {
@@ -39,6 +43,8 @@ const componentId = (title, name) => {
 };
 const PENDING = componentId('Components/ContextSwitcher', '선택진행중');
 const RAIL = componentId('Components/CountBadge', '점 접힌레일');
+const URGENT = componentId('Components/CountBadge', '급함');
+const NARROW_SEARCH = componentId('Components/ContextSwitcher', '좁은폭 검색');
 
 const q = selector => `${CANVAS}.querySelector(${JSON.stringify(selector)})`;
 async function wait(expression, label = expression, timeout = 6000) {
@@ -142,6 +148,16 @@ const helpers = `(() => {
       center: +(r.top + r.height / 2 - tr.top).toFixed(2), firstLine: +(first.getBoundingClientRect().top - tr.top + parseFloat(getComputedStyle(first).lineHeight) / 2).toFixed(2),
       inset: +(tr.right - content.right).toFixed(2), gap: +(r.left - content.right).toFixed(2), icon: [icon.width, icon.height], inside: r.bottom <= tr.bottom && r.top >= tr.top,
       label: b.getAttribute('aria-label'), height: tr.height }; };
+  // 개수 표식(A): 알약 크기·색 · 왼쪽 점 6 · 점과 알약 간격. 색은 토큰을 탐침으로 풀어 계산 색끼리 견준다.
+  window.__token = (name, prop = 'background') => { const p = document.createElement('span'); p.style[prop] = 'var(' + name + ')';
+    document.body.append(p); const v = getComputedStyle(p)[prop === 'background' ? 'backgroundColor' : prop]; p.remove(); return v; };
+  window.__badge = b => { const pill = b.querySelector('.ds-count-badge-pill'), dot = b.querySelector('.ds-count-badge-dot');
+    const r = pill.getBoundingClientRect(), ps = getComputedStyle(pill), d = dot?.getBoundingClientRect();
+    return { pill: [r.height, r.width >= r.height, ps.paddingLeft, ps.paddingRight], bg: ps.backgroundColor, color: ps.color,
+      dangerFill: ps.backgroundColor === __token('--action-danger-bg') && ps.color === __token('--text-on-brand', 'color'),
+      neutral: ps.backgroundColor === __token('--text-primary', 'color') && ps.color === __token('--bg-surface'),
+      dot: d ? [d.width, d.height, +(r.left - d.right).toFixed(2), getComputedStyle(dot).backgroundColor === __token('--status-danger-fg', 'color'), d.right <= r.left] : null,
+      contrast: __contrast(pill), text: pill.textContent }; };
   window.__overflow = () => { const main = document.querySelector('[data-slot="app-shell-main"]'), header = document.querySelector('[data-slot="app-shell-header"]');
     return Math.max(document.documentElement.scrollWidth - innerWidth, main ? main.scrollWidth - main.clientWidth : 0, header ? header.scrollWidth - header.clientWidth : 0); };
   return true; })()`;
@@ -343,7 +359,7 @@ try {
         return { layout, sizes: m.sizes, gaps: m.gaps, contrast: m.contrast };
       });
 
-      await check(`[${theme} ${width}] 맥락 전환기: 진짜 Tab → Enter 열림 → 첫 글자(ㅍ)·화살표 → Esc 닫힘·트리거 복귀(:focus-visible)`, async () => {
+      if (layout !== 'collapsed') await check(`[${theme} ${width}] 맥락 전환기: 진짜 Tab → Enter 열림 → 첫 글자(ㅍ)·화살표 → Esc 닫힘·트리거 복귀(:focus-visible)`, async () => {
         await story('헤더', theme); await ev(helpers);
         const trigger = q(`${START} [data-slot="context-switcher"]`);
         await tabInto(trigger, '전환기');
@@ -356,7 +372,6 @@ try {
           return { role: menu.getAttribute('role'), expanded: ${trigger}.getAttribute('aria-expanded'), width: Math.round(r.width), top: r.top - t.bottom, left: r.left - t.left,
             items: items.map(i => [i.dataset.label, Math.round(i.getBoundingClientRect().height), i.getAttribute('role'), i.getAttribute('aria-current') ?? i.getAttribute('aria-checked')]),
             current: current.map(i => [i.dataset.label, getComputedStyle(i).fontWeight, !!i.querySelector('.ds-context-switcher-check'), getComputedStyle(i).backgroundColor !== getComputedStyle(other).backgroundColor]),
-            sections: [...menu.querySelectorAll('.ds-context-switcher-section-label')].map(l => l.textContent),
             radius: getComputedStyle(menu).borderRadius, inside: r.left >= 0 && r.right <= innerWidth,
             contrast: items.map(i => i.querySelector('.ds-context-switcher-item-label')).map(__contrast) }; })()`);
         assert.equal(m.role, 'menu'); assert.equal(m.expanded, 'true');
@@ -367,7 +382,6 @@ try {
         const products = m.items.filter(i => ['마케팅관리', '판매관리', '물류관리'].includes(i[0]));
         assert.deepEqual(products.map(i => [i[0], i[2], i[3]]), [['마케팅관리', 'menuitem', 'true'], ['판매관리', 'menuitem', null], ['물류관리', 'menuitem', null]], '제품은 링크 항목 · 지금 항목 aria-current');
         assert.ok(m.current.every(([, weight, check, bg]) => weight === '600' && check && bg), `지금 항목 = 600 + 체크 + 선택 바탕(P5) ${JSON.stringify(m.current)}`);
-        if (layout === 'collapsed') assert.deepEqual(m.sections, ['제품', '스토어'], '접힌 목록은 종류별');
         assert.ok(m.contrast.every(c => c >= 4.5), `항목 대비 ${m.contrast}`);
         await capture(`switcher-open-${theme}-${width}`);
         assert.equal(await activeLabel(), '마케팅관리', '키보드로 열면 첫 항목');
@@ -382,6 +396,112 @@ try {
         assert.equal(await ev(`${trigger}.getAttribute('aria-expanded')`), 'false');
         assert.equal(await ev(`${trigger}.matches(':focus-visible')`), true, '돌아온 초점의 링(P7)');
         return { width: m.width, items: m.items.length, current: m.current.map(c => c[0]) };
+      });
+
+      // ⑦ 접힌 "맥락" 2단계(규격 2절 r1.2): 종류 목록 → 종류를 고르면 그 전환기 패널 · "‹ <종류>"·← 뒤로(온 줄에 초점) · → 들어가기 ·
+      // Esc 는 어느 단계든 닫고 "맥락"으로 · 다시 열면 처음부터 · 낭독(메뉴 "맥락" · 종류 줄 "<종류>: <값>" · 둘째 단계 묶음 "<종류>" · 뒤로 "<종류>, 뒤로").
+      const MENU = 'document.querySelector(\'[data-slot="context-switcher-content"]\')';
+      const stepOf = () => ev(`${MENU}?.dataset.step ?? null`);
+      const focusInfo = () => ev(`(() => { const a = document.activeElement; return { label: a?.dataset?.label ?? null, back: a?.hasAttribute('data-switcher-back') ?? false,
+        kind: a?.dataset?.kindIndex ?? null, input: a?.tagName === 'INPUT', name: a?.getAttribute('aria-label') ?? null, visible: a?.matches(':focus-visible') ?? false }; })()`);
+      if (layout === 'collapsed') await check(`[${theme} ${width}] 접힌 "맥락" 2단계: Tab → Enter 종류 목록 → ㅅ·Enter 스토어 패널 → ↑ 뒤로 → Enter(온 줄 초점) → →/← → 제품 ㅍ·↓ → Esc 복귀 · 낭독`, async () => {
+        await story('헤더', theme); await ev(helpers);
+        const trigger = q(`${START} [data-slot="context-switcher"]`);
+        await tabInto(trigger, '맥락');
+        await act.enter();
+        await wait(`${MENU}?.contains(document.activeElement) && ${MENU}.dataset.step === 'kinds'`, '첫 단계(종류 목록) 열림·초점 안');
+        await settled('[data-slot="context-switcher-content"]');
+        const kinds = await ev(`(() => { const menu = ${MENU}, rows = [...menu.querySelectorAll('[data-kind-index]')];
+          return { rows: rows.map(r => [r.getAttribute('role'), r.getAttribute('aria-label'), Math.round(r.getBoundingClientRect().height), !!r.querySelector('.ds-context-switcher-next')]),
+            texts: rows.map(r => r.textContent), contrast: rows.flatMap(r => [__contrast(r.querySelector('.ds-context-switcher-kind')), __contrast(r.querySelector('.ds-context-switcher-item-label'))]),
+            inside: menu.getBoundingClientRect().left >= 0 && menu.getBoundingClientRect().right <= innerWidth, width: Math.round(menu.getBoundingClientRect().width) }; })()`);
+        assert.deepEqual(kinds.rows, [['menuitem', '제품: 마케팅관리', tap, true], ['menuitem', '스토어: 스토어 A', tap, true]], `종류 줄 ${JSON.stringify(kinds.rows)}`);
+        assert.deepEqual(kinds.texts, ['제품마케팅관리', '스토어스토어 A']);
+        assert.ok(kinds.contrast.every(c => c >= 4.5), `종류 줄 대비 ${kinds.contrast}`);
+        assert.ok(kinds.inside && kinds.width >= 240, `패널 화면 안 · 폭 ${kinds.width}`);
+        // 메뉴 이름은 트리거가 준다(Radix aria-labelledby — 단독 전환기도 "스토어: 스토어 A").
+        assert.equal((await ax('[data-slot="context-switcher-content"]')).name, '맥락: 마케팅관리, 스토어 A', '메뉴 이름 = 트리거 이름');
+        await capture(`switcher-collapsed-kinds-${theme}-${width}`);
+        assert.equal((await focusInfo()).name, '제품: 마케팅관리', '키보드로 열면 첫 종류 줄');
+        await act.key('ㅅ', { text: 'ㅅ', code: 'KeyT', keyCode: 84 });
+        await wait(`document.activeElement?.dataset?.kindIndex === '1'`, '첫 글자(ㅅ) → 스토어 줄');
+        await act.enter();
+        await wait(`${MENU}?.dataset.step === 'panel' && document.activeElement?.dataset?.label === '전체 스토어'`, '스토어 패널로 · 첫 항목 초점');
+        await settled('[data-slot="context-switcher-content"]');
+        const panel = await ev(`(() => { const menu = ${MENU}, back = menu.querySelector('[data-switcher-back]');
+          const items = [...menu.querySelectorAll('[data-switcher-step] [data-slot="context-switcher-item"]')];
+          return { back: [back.getAttribute('role'), back.textContent, Math.round(back.getBoundingClientRect().height), getComputedStyle(back).fontWeight, getComputedStyle(back).borderBottomWidth],
+            items: items.map(i => [i.dataset.label, i.getAttribute('role'), i.getAttribute('aria-checked'), Math.round(i.getBoundingClientRect().height)]),
+            sep: menu.querySelector('.ds-context-switcher-separator')?.previousElementSibling?.dataset.label, guide: menu.querySelector('[data-slot="context-switcher-guide"]')?.textContent,
+            backContrast: __contrast(back.querySelector('.ds-context-switcher-item-label')), contrast: items.map(i => __contrast(i.querySelector('.ds-context-switcher-item-label'))) }; })()`);
+        assert.deepEqual(panel.back, ['menuitem', '스토어', tap, '600', '1px'], `뒤로 줄 ${panel.back}`);
+        assert.deepEqual(panel.items.map(i => i.slice(0, 3)), [['전체 스토어', 'menuitemradio', 'false'], ['스토어 A', 'menuitemradio', 'true'], ['스토어 B', 'menuitemradio', 'false'], ['스토어 C', 'menuitemradio', 'false']], '그 전환기 패널 그대로');
+        assert.ok(panel.items.every(i => i[3] === tap), `항목 높이 ${JSON.stringify(panel.items)}`);
+        assert.equal(panel.sep, '전체 스토어'); assert.equal(panel.guide, '다른 스토어가 필요하면 관리자에게');
+        assert.ok(panel.backContrast >= 4.5 && panel.contrast.every(c => c >= 4.5), `대비 ${panel.backContrast} · ${panel.contrast}`);
+        const group = await ax('[data-switcher-step]');
+        assert.deepEqual([group.role, group.name], ['group', '스토어'], '둘째 단계 묶음 이름 = 종류');
+        assert.deepEqual([(await ax('[data-switcher-back]')).role, (await ax('[data-switcher-back]')).name], ['menuitem', '스토어, 뒤로'], '뒤로 줄 낭독');
+        await capture(`switcher-collapsed-panel-${theme}-${width}`);
+        await act.key('ArrowUp', { raw: true });
+        await wait(`document.activeElement?.hasAttribute('data-switcher-back')`, '↑ → 뒤로 줄');
+        await act.enter();
+        await wait(`${MENU}?.dataset.step === 'kinds' && document.activeElement?.dataset?.kindIndex === '1'`, '뒤로 → 종류 목록 · 온 줄(스토어)에 초점');
+        assert.equal((await focusInfo()).visible, true, '돌아온 줄의 초점 링');
+        await act.key('ArrowRight', { raw: true });
+        await wait(`${MENU}?.dataset.step === 'panel' && document.activeElement?.dataset?.label === '전체 스토어'`, '→ 들어가기');
+        await act.key('ArrowLeft', { raw: true });
+        await wait(`${MENU}?.dataset.step === 'kinds' && document.activeElement?.dataset?.kindIndex === '1'`, '← 뒤로 · 온 줄 초점');
+        await act.key('ArrowUp', { raw: true });
+        await wait(`document.activeElement?.dataset?.kindIndex === '0'`, '↑ 제품 줄');
+        await act.enter();
+        await wait(`${MENU}?.dataset.step === 'panel' && document.activeElement?.dataset?.label === '마케팅관리'`, '제품 패널 · 첫 항목');
+        assert.equal((await ax('[data-switcher-step]')).name, '제품');
+        await act.key('ㅍ', { text: 'ㅍ', code: 'KeyV', keyCode: 86 });
+        await wait(`document.activeElement?.dataset?.label === '판매관리'`, '둘째 단계 첫 글자(ㅍ) → 판매관리');
+        await act.key('ArrowDown', { raw: true });
+        await wait(`document.activeElement?.dataset?.label === '물류관리'`, '화살표 이동');
+        await act.key('Escape', { raw: true });
+        await wait(`!${MENU}`, 'Esc 는 둘째 단계에서도 닫는다');
+        await wait(`document.activeElement === ${trigger}`, 'Esc 뒤 "맥락" 트리거로 초점 복귀');
+        assert.equal(await ev(`${trigger}.matches(':focus-visible')`), true, '돌아온 초점의 링(P7)');
+        await act.enter();
+        await wait(`${MENU}?.dataset.step === 'kinds' && ${MENU}.contains(document.activeElement)`, '다시 열면 첫 단계부터');
+        await act.key('Escape', { raw: true });
+        await wait(`!${MENU} && document.activeElement === ${trigger}`, '닫힘·복귀');
+        return { kinds: kinds.rows.map(r => r[1]), back: panel.back, width: kinds.width };
+      });
+
+      // ⑦ 접힌 목록 둘째 단계의 검색 — 스토어가 기준(8) 이상이면 그 패널 검색이 그대로 · 검색 ↔ 뒤로 ↔ 목록 화살표 · 결과 없음 · Esc 복귀.
+      await check(`[${theme} ${width}] 접힌 "맥락" 둘째 단계 검색: 스토어 고르면 검색에 초점 · ↑ 뒤로 · ↓ 검색 · ↓ 목록 · 결과 없음 · Esc 복귀`, async () => {
+        await openStory(NARROW_SEARCH, theme); await ev(helpers);
+        const trigger = `document.querySelector('[data-slot="context-switcher-group"][data-collapsed] [data-slot="context-switcher"]')`;
+        await wait(`!!${trigger}`, '좁은 자리 → "맥락" 접힘');
+        await ev(`${trigger}.focus()`); await act.enter();
+        await wait(`${MENU}?.dataset.step === 'kinds' && ${MENU}.contains(document.activeElement)`, '종류 목록');
+        await act.key('ArrowDown', { raw: true });
+        await wait(`document.activeElement?.dataset?.kindIndex === '1'`, '스토어 줄');
+        await act.enter();
+        await wait(`${MENU}?.dataset.step === 'panel' && document.activeElement?.dataset?.slot === 'context-switcher-search'`, '스토어 패널 · 검색에 초점');
+        await settled('[data-slot="context-switcher-content"]');
+        const m = await ev(`(() => { const menu = ${MENU}, input = menu.querySelector('[data-slot="context-switcher-search"]'), list = menu.querySelector('[data-switcher-step] [data-slot="context-switcher-list"]');
+          return { searchName: input.getAttribute('aria-label'), input: input.getBoundingClientRect().height, items: list.querySelectorAll('[data-slot="context-switcher-item"]').length,
+            height: Math.round(menu.getBoundingClientRect().height), scroll: list.scrollHeight > list.clientHeight, inside: menu.getBoundingClientRect().bottom <= innerHeight }; })()`);
+        assert.equal(m.searchName, '스토어 검색'); assert.equal(m.input, 32, '검색 sm 32');
+        assert.equal(m.items, 13, '"전체" + 12'); assert.ok(m.height <= 400 && m.scroll, `최대 400 · 목록만 스크롤 ${m.height}`);
+        await capture(`switcher-collapsed-search-${theme}-${width}`);
+        await act.key('ArrowUp', { raw: true });
+        await wait(`document.activeElement?.hasAttribute('data-switcher-back')`, '검색 ↑ → 뒤로 줄');
+        await act.key('ArrowDown', { raw: true });
+        await wait(`document.activeElement?.dataset?.slot === 'context-switcher-search'`, '뒤로 ↓ → 검색');
+        await act.key('ArrowDown', { raw: true });
+        await wait(`document.activeElement?.dataset?.label === '전체 스토어'`, '검색 ↓ → 첫 항목');
+        await ev(`${MENU}.querySelector('[data-slot="context-switcher-search"]').focus()`);
+        await act.key('Z', { text: 'Z', code: 'KeyZ', keyCode: 90 });
+        await wait(`${MENU}?.querySelector('[data-slot="context-switcher-empty"]')?.textContent === '일치하는 스토어가 없습니다'`, '결과 없음 문구');
+        await act.key('Escape', { raw: true });
+        await wait(`!${MENU} && document.activeElement === ${trigger}`, 'Esc 닫힘 · "맥락" 복귀');
+        return m;
       });
 
       if (layout !== 'collapsed') await check(`[${theme} ${width}] 스토어 전환기: Tab → Enter → "전체" 맨 위·구분선·지금 항목·안내 줄 · 첫 글자(ㅅ) → Esc 복귀${layout === 'icon' ? ' · 아이콘만 툴팁' : ''}`, async () => {
@@ -436,14 +556,20 @@ try {
         return m;
       });
 
-      await check(`[${theme} ${width}] 전환기 선택 실패: 원래 값(스토어 A) 복귀 · 오류 토스트(alert, 닫을 때까지) · 넘침 0`, async () => {
+      await check(`[${theme} ${width}] 전환기 선택 실패: 원래 값(스토어 A) 복귀 · 오류 토스트(alert, 닫을 때까지) 제목 + 설명 "이전 스토어를 유지합니다"(⑨) · 넘침 0`, async () => {
         await story('헤더 선택실패', theme); await ev(helpers); await settleToasts();
         const m = await ev(`(() => { const toast = [...document.querySelectorAll('[data-sonner-toast]')].find(t => t.textContent.includes('스토어를 바꾸지 못했습니다'));
           const alert = toast?.querySelector('[role="alert"]'); const bar = document.querySelector('.ds-form-action-bar');
+          const title = toast?.querySelector('[data-title]'), desc = toast?.querySelector('[data-description]'), dr = desc?.getBoundingClientRect(), tr = toast.getBoundingClientRect();
           return { alert: alert?.textContent, text: toast?.textContent, close: !!toast?.querySelector('[data-close-button]'),
-            gap: bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom, contrast: __contrast(alert), overflow: __overflow() }; })()`);
-        assert.equal(m.alert, '스토어를 바꾸지 못했습니다');
-        assert.match(m.text, /이전 스토어를 유지합니다/);
+            title: title?.textContent, desc: desc?.textContent, descShown: !!dr && dr.height > 0 && getComputedStyle(desc).display !== 'none' && dr.bottom <= tr.bottom && dr.top >= tr.top,
+            descBelow: !!dr && dr.top >= title.getBoundingClientRect().bottom - 0.5,
+            gap: bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom, contrast: __contrast(alert), descContrast: desc ? __contrast(desc) : 0, overflow: __overflow() }; })()`);
+        assert.equal(m.title, '스토어를 바꾸지 못했습니다', '제목');
+        assert.equal(m.desc, '이전 스토어를 유지합니다', '설명 — 모든 폭(⑨)');
+        assert.ok(m.descShown && m.descBelow, '설명이 보이고 제목 아래, 토스트 안');
+        assert.ok(m.descContrast >= 4.5, `설명 대비 ${m.descContrast}`);
+        assert.match(m.alert, /스토어를 바꾸지 못했습니다/);
         assert.equal(m.close, true, '닫을 때까지(닫기 버튼)');
         assert.ok(Math.abs(m.gap - 16) <= 0.5, `폼 하단 줄 위 16 ${m.gap}`);
         assert.ok(m.contrast >= 4.5, `대비 ${m.contrast}`);
@@ -452,29 +578,52 @@ try {
         assert.notEqual(name.busy, true);
         assert.equal(m.overflow, 0);
         await capture(`switcher-failed-${theme}-${width}`);
-        return { contrast: m.contrast, gap: m.gap };
+        return { contrast: m.contrast, descContrast: m.descContrast, gap: m.gap };
       });
 
       // ── 2단계: 알림 센터 · 벨 · 개수 표식 ────────────────────────────────────────────────────
-      await check(`[${theme} ${width}] 벨: 이름 "알림, 안 읽음 2개, 급한 알림 있음" · ${tap}×${tap} · 표식 18 · 중심 = 아이콘 모서리 (+6, −6)`, async () => {
+      // ④ 표식 오른쪽 끝 = 벨 오른쪽 +6 · 위 −6 고정, 넓어지면 왼쪽으로(규격 3절 r1.2) · A 급함 = 위험 채움 알약 + 왼쪽 점 6.
+      const bellBadge = `(() => { const bell = ${q('[data-slot="notification-bell"]')}, badge = bell.querySelector('[data-slot="count-badge"]');
+        const b = badge.getBoundingClientRect(), r = bell.getBoundingClientRect(), icon = bell.querySelector('svg.lucide-bell').getBoundingClientRect();
+        const user = ${q('button[aria-label="김철수, 사용자 메뉴"]')}.getBoundingClientRect(), header = ${q('[data-slot="app-shell-header"]')}.getBoundingClientRect();
+        return { size: [r.width, r.height], icon: [icon.width, icon.height], right: +(b.right - r.right).toFixed(2), top: +(b.top - r.top).toFixed(2),
+          width: +b.width.toFixed(2), left: +(b.left - r.left).toFixed(2), userGap: +(user.left - b.right).toFixed(2), overlap: b.right > user.left && b.left < user.right,
+          inHeader: b.top >= header.top, hidden: badge.getAttribute('aria-hidden'), badge: __badge(badge), overflow: __overflow() }; })()`;
+      await check(`[${theme} ${width}] 벨: 이름 "알림, 안 읽음 2개, 급한 알림 있음" · ${tap}×${tap} · 표식 오른쪽 끝 = 벨 +6 · 위 −6 · 급함 위험 채움 알약 + 점 6 · 사용자 메뉴와 겹침 0`, async () => {
         await story('헤더', theme); await ev(helpers);
-        const m = await ev(`(() => { const bell = ${q('[data-slot="notification-bell"]')}, icon = bell.querySelector('svg.lucide-bell').getBoundingClientRect();
-          const badge = bell.querySelector('[data-slot="count-badge"]'), b = badge.getBoundingClientRect(), r = bell.getBoundingClientRect();
-          return { size: [r.width, r.height], icon: [icon.width, icon.height], badge: [b.height, b.width >= b.height], dot: !!badge.querySelector('.ds-count-badge-dot'),
-            center: [b.left + b.width / 2 - icon.right, b.top + b.height / 2 - icon.top], hidden: badge.getAttribute('aria-hidden'),
-            contrast: __contrast(badge.querySelector('span:not(.ds-count-badge-dot)')) }; })()`);
+        const m = await ev(bellBadge);
         const name = await ax('[data-slot="notification-bell"]');
         assert.deepEqual([name.role, name.name, name.expanded], ['button', '알림, 안 읽음 2개, 급한 알림 있음', false]);
         assert.deepEqual(m.size, [tap, tap]); assert.deepEqual(m.icon, [20, 20]);
-        assert.deepEqual(m.badge, [18, true], '표식 높이 18 · 최소 폭 18');
-        assert.equal(m.dot, true, '급함 = 점(모양) + 위험 색');
-        assert.ok(Math.abs(m.center[0] - 6) <= 0.5 && Math.abs(m.center[1] + 6) <= 0.5, `표식 중심 ${m.center}`);
+        assert.ok(Math.abs(m.right - 6) <= 0.5 && Math.abs(m.top + 6) <= 0.5, `표식 오른쪽 끝 +6 · 위 −6: ${m.right}, ${m.top}`);
+        assert.deepEqual(m.badge.pill, [18, true, '4px', '4px'], '알약 18 · 최소 폭 18 · 좌우 4 — 일반과 같은 크기');
+        assert.equal(m.badge.dangerFill, true, `급함 = 위험 채움(action-danger-bg) + 숫자 text-on-brand: ${m.badge.bg} / ${m.badge.color}`);
+        assert.deepEqual(m.badge.dot?.slice(0, 2), [6, 6], '알약 왼쪽 점 6');
+        assert.ok(Math.abs(m.badge.dot[2] - 2) <= 0.5 && m.badge.dot[3] && m.badge.dot[4], `점 = 위험색 · 알약 밖 왼쪽 2: ${m.badge.dot}`);
         assert.equal(m.hidden, 'true', '표식 글자는 벨 이름이 대신 읽는다');
-        assert.ok(m.contrast >= 4.5, `표식 대비 ${m.contrast}`);
-        return { center: m.center, contrast: m.contrast };
+        assert.ok(m.badge.contrast >= 4.5, `표식 숫자 대비 ${m.badge.contrast}`);
+        assert.equal(m.overlap, false, `사용자 메뉴와 겹침 ${m.userGap}`);
+        assert.ok(m.userGap >= 0 && m.inHeader, `표식 ↔ 사용자 메뉴 ${m.userGap} · header 안`);
+        await capture(`bell-urgent-${theme}-${width}`);
+        return { right: m.right, top: m.top, width: m.width, userGap: m.userGap, contrast: m.badge.contrast, fill: [m.badge.bg, m.badge.color] };
+      });
+      await check(`[${theme} ${width}] 벨 99+ 급함: 오른쪽 끝 고정 · 왼쪽으로 자람 · 사용자 메뉴와 겹침 0(④) · 낭독 "99개 이상" · 넘침 0`, async () => {
+        await story('헤더 벨상한급함', theme); await ev(helpers);
+        const m = await ev(bellBadge);
+        assert.equal((await ax('[data-slot="notification-bell"]')).name, '알림, 안 읽음 99개 이상, 급한 알림 있음');
+        assert.equal(m.badge.text, '99+');
+        assert.ok(Math.abs(m.right - 6) <= 0.5 && Math.abs(m.top + 6) <= 0.5, `오른쪽 끝 +6 · 위 −6 고정: ${m.right}, ${m.top}`);
+        assert.ok(m.width > 18 + 8 && m.left < tap - 12, `넓은 표식은 왼쪽(벨 안쪽)으로 자란다: 폭 ${m.width} · 왼끝 ${m.left}`);
+        assert.equal(m.badge.dangerFill, true); assert.deepEqual(m.badge.pill.slice(0, 1), [18]);
+        assert.equal(m.overlap, false, `사용자 메뉴와 겹침 ${m.userGap}`);
+        assert.ok(m.userGap >= 0, `표식 ↔ 사용자 메뉴 ${m.userGap}`);
+        assert.ok(m.badge.contrast >= 4.5, `대비 ${m.badge.contrast}`);
+        assert.equal(m.overflow, 0, '가로 넘침');
+        await capture(`bell-capped-99plus-${theme}-${width}`);
+        return { right: m.right, top: m.top, width: m.width, left: m.left, userGap: m.userGap, contrast: m.badge.contrast };
       });
 
-      await check(`[${theme} ${width}] 알림 센터: 진짜 Tab → 벨 · Enter → 대화상자 "알림"(${narrow ? 'Sheet' : '팝오버 400'}) · 제목 초점 · Tab 순서 · 한 줄 낭독 · Esc → 벨 복귀`, async () => {
+      await check(`[${theme} ${width}] 알림 센터: 진짜 Tab → 벨 · Enter → 대화상자 "알림"(${narrow ? 'Sheet' : '팝오버 400'}) · 초점 = 패널 자체(링 없음, B) · 첫 Tab 모두 읽음 · 한 줄 낭독(급함) · Esc → 벨 복귀`, async () => {
         await story('헤더', theme); await ev(helpers);
         const bell = q('[data-slot="notification-bell"]');
         await tabInto(bell, '벨');
@@ -483,9 +632,16 @@ try {
         // 팝오버·Sheet 공통 클래스로 찾는다(Sheet 는 자기 data-slot="sheet-content" 를 갖는다). 벨 바탕 전환(140ms)도 끝난 뒤 잰다.
         await settled('.ds-notification-center');
         await wait(`${bell}.getAnimations().every(a => a.playState === 'finished')`, '벨 바탕 전환');
-        await wait(`document.activeElement?.dataset?.slot === 'notification-center-title'`, '열면 제목에 초점');
+        await wait(`document.activeElement === document.querySelector('.ds-notification-center[role="dialog"]')`, '열면 패널 자체에 초점(B)');
         const dialog = await ax('.ds-notification-center[role="dialog"]');
         assert.deepEqual([dialog.role, dialog.name], ['dialog', '알림'], '대화상자 "알림"');
+        // 초점 링 숨김 — 패널은 링이 없고, 제목은 초점을 받지 않아 링 상자가 없다(캡처 center-open·bell-open).
+        const ring = await ev(`(() => { const panel = document.activeElement, title = panel.querySelector('[data-slot="notification-center-title"]'), ps = getComputedStyle(panel), ts = getComputedStyle(title);
+          return { tabIndex: panel.getAttribute('tabindex'), panelRing: ps.outlineStyle !== 'none' && parseFloat(ps.outlineWidth) > 0, focusVisible: panel.matches(':focus-visible'),
+            titleTab: title.getAttribute('tabindex'), titleRing: ts.outlineStyle !== 'none' && parseFloat(ts.outlineWidth) > 0, titleFocused: title === document.activeElement }; })()`);
+        assert.equal(ring.tabIndex, '-1', '패널 tabindex −1');
+        assert.equal(ring.panelRing, false, `패널 초점 링 숨김 (focus-visible ${ring.focusVisible})`);
+        assert.deepEqual([ring.titleTab, ring.titleRing, ring.titleFocused], [null, false, false], '제목은 초점·링 없음');
         const m = await ev(`(() => { const panel = document.querySelector('.ds-notification-center'), p = panel.getBoundingClientRect(), b = ${bell}.getBoundingClientRect();
           const probe = document.createElement('span'); probe.style.background = 'var(--bg-selected)'; document.body.append(probe);
           const selected = getComputedStyle(probe).backgroundColor; probe.remove();
@@ -520,10 +676,10 @@ try {
         const names = [];
         for (const id of ['cancel-a', 'order-a', 'return-b']) names.push((await ax(`[data-slot="notification-row"][href*="${{ 'cancel-a': 'cancel', 'order-a': 'status=new', 'return-b': 'returns' }[id]}"]`)));
         assert.deepEqual(names.map(n => [n.role, n.name]), [
-          ['link', '판매관리 · 스토어 A, 취소 요청 2건, 2건, 2시간 초과, 방금, 안 읽음'],
+          ['link', '판매관리 · 스토어 A, 급함, 취소 요청 2건, 2건, 2시간 초과, 방금, 안 읽음'],
           ['link', '판매관리 · 스토어 A, 신규 주문 37건, 37건, 4시간 남음, 12분 전, 안 읽음'],
-          ['link', '물류관리 · 스토어 B, 반품 입고 확인 5건, 5건, 1영업일 이내, 3시간 전, 읽음']], '한 줄 = 링크 "<출처>, <제목>, <건수>, <기한>, <시각>, 안 읽음/읽음"');
-        await capture(`center-open-${theme}-${width}`);
+          ['link', '물류관리 · 스토어 B, 반품 입고 확인 5건, 5건, 1영업일 이내, 3시간 전, 읽음']], '한 줄 = 링크 "<출처>, 급함(급할 때만), <제목>, <건수>, <기한>, <시각>, 안 읽음/읽음"(⑪)');
+        await capture(`bell-open-${theme}-${width}`);
         const order = [];
         for (let step = 0; step < (narrow ? 4 : 3); step += 1) {
           await act.key('Tab');
@@ -536,7 +692,7 @@ try {
         assert.equal(await ev(`${bell}.getAttribute('aria-expanded')`), 'false');
         assert.equal(await ev(`${bell}.matches(':focus-visible')`), true, '돌아온 초점의 링(P7)');
         assert.equal(m.overflow, 0);
-        return { rect: m.rect, rows: m.rows, hit: m.hit, contrast: m.contrast };
+        return { rect: m.rect, rows: m.rows, hit: m.hit, firstTab: order[0], contrast: m.contrast };
       });
 
       await check(`[${theme} ${width}] 개수 표식: SideNav ${narrow ? '레일 점 8 · 이름 "라벨, 3개"' : '알약 · 이름 "라벨 3개"'} · 접힌 레일 이야기(급함 점 · 이름)`, async () => {
@@ -559,12 +715,47 @@ try {
         await openStory(RAIL, theme, { waitPlay: false });
         const rail = await ax('[data-slot="side-nav-item"][href="#alerts"]');
         assert.equal(rail.name, '확인할 알림, 2개, 급함', '접힌 레일 — 급함도 말로');
-        const urgentDot = await ev(`(() => { const d = document.querySelector('[href="#alerts"] .ds-side-nav-count-dot'); const p = document.createElement('span');
-          p.style.background = 'var(--status-danger-fg)'; document.body.append(p); const danger = getComputedStyle(p).backgroundColor; p.remove();
-          return [d.getBoundingClientRect().width, getComputedStyle(d).backgroundColor === danger]; })()`);
-        assert.deepEqual(urgentDot, [8, true], '급함 점 = 위험 글자색');
-        await capture(`countbadge-rail-${theme}-${width}`);
-        return { pill: m.pill, dot: m.dot, name: name.name };
+        // ⑤ 급함 점 = 위험 글자색 + 바탕색 링 2px(항목 바탕), 일반 점은 링 없음 — 모양으로도 다르다(P5).
+        const dots = await ev(`(() => { const shadow = d => getComputedStyle(d).boxShadow;
+          const bgOf = el => { for (let n = el; n; n = n.parentElement) { const c = getComputedStyle(n).backgroundColor; if (c !== 'rgba(0, 0, 0, 0)') return c; } };
+          const u = document.querySelector('[href="#alerts"] .ds-side-nav-count-dot'), n = document.querySelector('[href="#review"] .ds-side-nav-count-dot');
+          const danger = (() => { const p = document.createElement('span'); p.style.color = 'var(--status-danger-fg)'; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; })();
+          return { urgent: [u.getBoundingClientRect().width, getComputedStyle(u).backgroundColor === danger], urgentShadow: shadow(u), ringColor: bgOf(u.closest('[data-slot="side-nav-item"]')),
+            normal: [n.getBoundingClientRect().width, shadow(n)], normalRing: bgOf(n.closest('[data-slot="side-nav-item"]')),
+            normalCurrent: n.closest('[data-slot="side-nav-item"]').getAttribute('aria-current') }; })()`);
+        assert.deepEqual(dots.urgent, [8, true], '급함 점 8 = 위험 글자색');
+        assert.ok(dots.urgentShadow.startsWith(dots.ringColor) && / 0px 0px 0px 2px$/.test(dots.urgentShadow), `급함 점 바탕색 링 2px: ${dots.urgentShadow} (항목 바탕 ${dots.ringColor})`);
+        assert.deepEqual(dots.normal, [8, 'none'], '일반 점은 링 없음');
+        await capture(`countbadge-rail-dot-${theme}-${width}`);
+        return { pill: m.pill, dot: m.dot, name: name.name, ring: dots.urgentShadow };
+      });
+
+      // A 급함 = 위험 채움 알약(위험 버튼 채움 · text-on-brand) + 알약 왼쪽 점 6 — 단독 · Tabs · SideNav 모두 · 알약 크기 일반과 같음 · 숫자 대비.
+      await check(`[${theme} ${width}] 개수 표식 급함: 위험 채움 알약 + 점 6 · 일반과 같은 크기 · Tabs·SideNav 같음 · 숫자 대비 ≥ 4.5`, async () => {
+        await openStory(URGENT, theme, { waitPlay: false }); await ev(helpers);
+        const m = await ev(`(() => { const all = [...document.querySelectorAll('[data-slot="count-badge"]')];
+          const tab = document.querySelector('[data-slot="tabs-trigger"] [data-slot="count-badge"][data-urgent]');
+          const side = document.querySelector('[data-slot="side-nav-item"] .ds-side-nav-count[data-urgent]');
+          const normal = all.find(b => !b.hasAttribute('data-urgent') && !b.closest('[data-slot="tabs-trigger"], [data-slot="side-nav-item"]'));
+          // 1024 미만은 SideNav 가 자동 레일이라 알약 대신 점(⑤ 링)이다.
+          const sideDot = document.querySelector('[data-slot="side-nav-item"] .ds-side-nav-count-dot[data-urgent]');
+          return { standalone: all.filter(b => b.hasAttribute('data-urgent') && !b.closest('[data-slot="tabs-trigger"], [data-slot="side-nav-item"]')).map(__badge),
+            tab: __badge(tab), side: getComputedStyle(side).display === 'none' ? null : __badge(side),
+            sideDot: getComputedStyle(sideDot).display === 'none' ? null : getComputedStyle(sideDot).boxShadow,
+            normal: __badge(normal), overflow: document.documentElement.scrollWidth - innerWidth }; })()`);
+        assert.equal(m.side === null, narrow, '1024 이상 SideNav 알약 · 미만 레일 점');
+        if (narrow) assert.match(m.sideDot, / 0px 0px 0px 2px$/, `레일 급함 점 링 ${m.sideDot}`);
+        for (const b of [...m.standalone, m.tab, ...(m.side ? [m.side] : [])]) {
+          assert.equal(b.dangerFill, true, `위험 채움 + text-on-brand ${b.text}: ${b.bg} / ${b.color}`);
+          assert.deepEqual(b.pill, m.normal.pill, `알약 크기 = 일반 ${JSON.stringify(b.pill)}`);
+          assert.ok(b.dot && b.dot[0] === 6 && b.dot[1] === 6 && Math.abs(b.dot[2] - 2) <= 0.5 && b.dot[3] && b.dot[4], `왼쪽 점 6 · 간격 2 · 위험색 ${b.dot}`);
+          assert.ok(b.contrast >= 4.5, `숫자 대비 ${b.text} ${b.contrast}`);
+        }
+        assert.equal(m.normal.neutral, true, '일반 = 중립 반전 그대로'); assert.equal(m.normal.dot, null);
+        assert.deepEqual(m.standalone.map(b => b.text), ['2', '37', '99+']);
+        assert.equal(m.overflow, 0);
+        await capture(`countbadge-urgent-${theme}-${width}`);
+        return { contrast: m.standalone[0].contrast, normalContrast: m.normal.contrast, fill: [m.standalone[0].bg, m.standalone[0].color], tab: m.tab.contrast, side: m.side?.contrast ?? m.sideDot };
       });
 
       // 폼 하단 고정 줄(63) 위 16 · 낭독. 좁은 화면(≤600, sonner 경계)은 폭이 화면 − 32 다(기존 그대로).

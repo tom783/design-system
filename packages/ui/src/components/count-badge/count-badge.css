@@ -1,17 +1,26 @@
 @layer components {
-  /* 개수 표식(상단 바 규격 3절 · Figma 223:912 · 223:955). 높이·최소 폭 18 은 토큰이 없어 16 + 2 로 쓴다.
-     글자 13/20 이 상자 18 보다 2 높다 — 세로 가운데에서 위아래 1px 씩 넘치지만 상자가 잘라 보이지 않는다(Figma 도 leading 20 · 높이 18).
-     숫자는 고정폭이라 같은 자릿수는 같은 폭이다("11" 과 "88" 이 같은 폭 — Figma 223:956). */
+  /* 개수 표식(상단 바 규격 3절 · Figma 223:912 · 223:955). 바깥 span 은 줄 세우기만 하고 모양은 알약(.ds-count-badge-pill)이 갖는다 —
+     급함이면 알약 왼쪽에 점 6 이 붙어야 해서다(규격 3절 r1.2 "위험 채움 알약 + 알약 왼쪽 위험색 점 6"). */
   .ds-count-badge {
     display: inline-flex;
     flex: none;
     align-items: center;
-    justify-content: center;
     gap: var(--space-2);
+    vertical-align: middle;
+  }
+  /* 알약 — 높이·최소 폭 18 은 토큰이 없어 16 + 2 로 쓴다. 일반·급함 크기가 같다(좌우 4).
+     글자 13/20 이 상자 18 보다 2 높다 — 세로 가운데에서 위아래 1px 씩 넘치지만 상자가 잘라 보이지 않는다(Figma 도 leading 20 · 높이 18).
+     숫자는 고정폭이라 같은 자릿수는 같은 폭이다("11" 과 "88" 이 같은 폭 — Figma 223:956). */
+  .ds-count-badge-pill {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
     block-size: calc(var(--space-16) + var(--space-2));
     min-inline-size: calc(var(--space-16) + var(--space-2));
     padding-inline: var(--space-4);
+    overflow: hidden;
     border-radius: var(--radius-full);
     /* 일반 = 중립 반전. 브랜드·위험 색을 쓰지 않는다 — 급함만 위험 색이다(색 하나에 뜻 하나). */
     background: var(--text-primary);
@@ -22,23 +31,29 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
     white-space: nowrap;
-    vertical-align: middle;
   }
-  .ds-count-badge[data-urgent] { background: var(--status-danger-bg); color: var(--status-danger-fg); }
-  /* 급함 점 6 — 색만으로 급함을 알리지 않게 모양을 더한다(P5). 점과 숫자 사이 2(Figma '급함 점과 간격' 8 = 6 + 2). */
+  /* 급함 = 위험 채움 알약: 위험 버튼(Button danger)과 같은 채움 · 같은 글자색이라 대비 검증을 같이 받는다(새 토큰 없음).
+     라이트에서 연한 위험 바탕(--status-danger-bg)은 진한 중립 알약보다 약해 보여 급함이 덜 급해 보였다(11-25 구현 검수 A). */
+  .ds-count-badge[data-urgent] .ds-count-badge-pill { background: var(--action-danger-bg); color: var(--text-on-brand); }
+  /* 급함 점 6 — 알약 왼쪽, 위험 글자·아이콘 색. 색만으로 급함을 알리지 않게 모양을 더한다(P5). 점과 알약 사이 2(Figma '급함 점과 간격'). */
   .ds-count-badge-dot {
     flex: none;
     inline-size: calc(var(--space-4) + var(--space-2));
     block-size: calc(var(--space-4) + var(--space-2));
     border-radius: var(--radius-full);
-    background: currentColor;
+    background: var(--status-danger-fg);
   }
-  /* 점 표식 — 접힌 레일의 8px(규격 3절). 급함 점은 위험 글자색이다. */
+  /* 점 표식 — 접힌 레일의 8px(규격 3절). 일반 = 중립(글자색). */
   .ds-count-badge[data-variant="dot"] {
     inline-size: var(--space-8);
     block-size: var(--space-8);
-    min-inline-size: 0;
-    padding: 0;
+    border-radius: var(--radius-full);
+    background: var(--text-primary);
   }
-  .ds-count-badge[data-variant="dot"][data-urgent] { background: var(--status-danger-fg); }
+  /* 급함 점 = 위험 글자색 + 바탕색 링 2px — 8px 점에는 모양을 더할 자리가 없어 둘레를 바탕색으로 끊어 일반 점과 모양으로도 다르게
+     한다(규격 3절 r1.2 · P5). 링 색은 놓인 자리의 바탕이다 — 앱 셸 SideNav 는 항목 바탕(호버·현재)을 --count-badge-ring 으로 넘긴다. */
+  .ds-count-badge[data-variant="dot"][data-urgent] {
+    background: var(--status-danger-fg);
+    box-shadow: 0 0 0 var(--space-2) var(--count-badge-ring, var(--bg-surface));
+  }
 }
