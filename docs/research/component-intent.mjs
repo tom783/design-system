@@ -81,7 +81,7 @@ const intents = [
     '펼침은 240px, 접힘은 64px다. 1024px 미만에서는 자동으로 접히고 넓어지면 사용자의 선택으로 돌아온다.',
     '접힌 항목은 호버·포커스에서 라벨을 보여준다. disabled는 출시 예정 표시와 함께 이동·Tab 탐색을 막는다.',
     'brand는 제품명, brandIcon은 접힌 상태에서도 남는 브랜드 표식이다. badge로 개수 등을 표시한다.',
-    rule('brand는 지금 서비스 이름+아이콘 표시 전용이다(전환 메뉴를 넣지 않는다). 숫자 개수는 badge 대신 SideNavItem count·countUrgent다.', '24.9')
+    rule('brand는 지금 서비스 이름+아이콘 표시 전용이다(전환 메뉴를 넣지 않는다). 숫자 개수는 badge 대신 SideNavItem count, 접힌 레일은 점 8px다.', '24.9')
   ],['brand','brandIcon','collapsed','onCollapsedChange','defaultCollapsed'],['side-nav','side-nav-menu','side-nav-toggle'],['AppShell','PageHeader'],['사이드바','메뉴','내비게이션','사이드 메뉴','브랜드','왼쪽 메뉴']),
   part('SideNavGroup','SideNav','사이드 메뉴 항목을 제목으로 묶는다.',['label','children'],['side-nav-group','side-nav-group-label']),
   part('SideNavItem','SideNav','아이콘·라벨·개수와 현재 위치 또는 출시 예정 상태를 표시한다.',['icon','label','badge','count','countUrgent','current','disabled','asChild','href'],['side-nav-item','side-nav-item-label','side-nav-badge']),
@@ -296,7 +296,7 @@ const intents = [
     ['0이나 불러오기 실패를 0으로 보이지 마라','급함을 색만으로 구분하지 마라'],'24.9',[
       '0·음수·null(실패)은 숨기고 100 이상은 99+다. urgent는 위험 채움 알약과 왼쪽 점, dot은 접힌 레일의 점 8px다.',
       'SideNavItem·TabsTrigger는 count·countUrgent로 넘긴다. 낭독 단위는 unit(기본 개, 레코드는 건)이다.',
-      '99+는 "99개 이상"으로 읽는다. 접힌 레일의 급함 점은 바탕색 링 2px로 일반 점과 모양도 다르다.'
+      '99+는 "99개 이상"으로 읽는다. 급함 점은 6px다. 접힌 레일의 급함 점은 바탕색 링 2px로 일반 점과 모양도 다르다.'
     ],['count','urgent','dot','unit'],['count-badge'],['NotificationCenter','SideNav','Tabs'],['개수','배지','안 읽음 수','뱃지','숫자 표시','badge']),
   ...[
     ['Card',"관련 정보를 평면 카드로 묶는다.",'card',null],['CardHeader',"카드 제목과 보조 동작을 배치한다.",'card-header','Card'],
@@ -381,7 +381,7 @@ const intents = [
   ],['data','x','series','summary'],['composition-area'],['ChartFrame'],['구성비','구성 비율','비중','누적','면적','점유율','비율 변화','시간별 구성']),
   entry('EmptyState','state','표시할 데이터가 없음을 알리고 선택적 액션을 제공한다.',['필터 결과가 비었을 때'],['실패를 빈 상태로 표시하지 마라'],'7.5.6',[
     "title에 빈 이유를 쓰고 action에 다음 행동을 제공한다.",
-    rule('권한 없음(자물쇠)·찾을 수 없음(검색-없음) 화면은 size="page"다. 셸 본문 자리, 제목 h1, action + secondaryAction 두 행동.', '14.6')
+    rule('권한 없음(자물쇠)·찾을 수 없음(검색-없음) 화면은 size="page"다. 셸 본문 자리, 제목 h1, action + secondaryAction 두 행동, role=status.', '14.6')
   ],['title','description','graphic','action','secondaryAction','size'],['empty-state'],['ErrorState','DataTable'],['빈 상태','데이터 없음','필터 초기화','결과 없음','비었을 때','권한 없음','권한 없는','접근 권한','찾을 수 없음','찾을 수 없는','404','access denied','not found']),
   entry('ErrorState','state','불러오기 실패와 재시도 경로를 제공한다.',['데이터 요청이 실패했을 때'],['빈 상태와 합치지 마라'],'7.5.6',[
     "다시 요청할 수 있는 오류에는 onRetry를 연결한다.",
