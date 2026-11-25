@@ -50,6 +50,8 @@ declare module 'virtual:site-docs' {
       headings: DocHeading[];
       text: Record<'intro' | 'peer' | 'entryCss' | 'font' | 'standalone' | 'appWide' | 'utilities' | 'tailwindIntro' | 'tailwindEntry' | 'mcpCli', string[]>;
       install: string;
+      /** peer 단락의 설치 명령(인라인 코드) — React·React DOM 까지 함께 설치 */
+      peerInstall: string;
       entry: string;
       tailwind: string;
       mcp: string;
