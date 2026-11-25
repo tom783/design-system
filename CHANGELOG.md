@@ -22,6 +22,12 @@
   세로선에 있었다. 이제 썸네일 왼쪽 12 · 삭제 상자 오른쪽 12(휴지통 아이콘 끝 20) · 진행 막대·퍼센트·오류 문장도 그 12 안이다(완료·업로드 중·
   실패·전송 대기 네 상태 × 두 테마 × 1440·390 실측 같음). 줄 구분선은 그대로 전체 폭이다. 이름·진행 막대 폭은 24px 줄어든다.
   `file-upload-render-verify` 에 실측 검사 1건(main 판에서 실패 확인).
+- **Select 트리거 키보드 포커스가 옆 입력과 달랐던 것** (`select.tsx` — shadcn 원본의 `focus:outline-none focus:ring-1 focus:ring-ring` 제거 ·
+  새 토큰·새 모양 0). 0.4.0 부터 Select 만 outline 없이 경계에 붙은 1px box-shadow 링이었고, 필터 바 '저장된 보기' 옆 검색 입력은 전역
+  `:focus-visible`(2px `--border-focus` · offset 2px)이었다(0.7.0 게시 전 검수 관찰 ①). 이제 Select 도 전역 규칙 그대로다 — 실측 라이트·다크
+  모두 Input·Select·Combobox·MultiSelect 트리거가 outline solid 2px · offset 2px · `--border-focus` · box-shadow 없음. Combobox·MultiSelect 는
+  이미 같았다(바뀌지 않음). 마우스로 눌러 연 Select 는 링이 없다(버튼은 마우스 포커스에 `:focus-visible` 이 아님 — 다른 트리거와 같다).
+  하네스 `input-consistency`(트리거 4종 × 두 테마 = Input 과 같은 링) · `list-toolbar`(보기 Select ↔ 검색 입력) 검사 추가 — 고치기 전 판에서 4건 실패 확인.
 
 ---
 

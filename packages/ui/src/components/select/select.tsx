@@ -37,8 +37,11 @@ function SelectTrigger({ className, children, ref, ...props }: React.ComponentPr
     <SelectPrimitive.Trigger data-slot="select-trigger"
       ref={ref}
       {...React.useContext(SelectWiring)}
+      // 키보드 포커스는 전역 :focus-visible(2px --border-focus · offset 2px, styles.css)을 그대로 쓴다 — 옆 Input·Combobox·
+      // MultiSelect 트리거와 같은 모양이다(0.7.1). shadcn 원본의 focus:outline-none + ring-1 은 경계에 붙은 1px 링이라
+      // 필터 바 한 줄에 포커스 모양이 둘이었다(0.7.0 게시 전 검수 관찰 ①).
       className={cn(
-        "flex h-[var(--control-h-md)] min-w-[var(--field-min-w)] w-full items-center justify-between gap-2 whitespace-nowrap rounded-[var(--radius-md)] border border-field bg-surface px-3 py-2 text-sm text-fg ring-offset-background data-[placeholder]:text-fg-subtle focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        "flex h-[var(--control-h-md)] min-w-[var(--field-min-w)] w-full items-center justify-between gap-2 whitespace-nowrap rounded-[var(--radius-md)] border border-field bg-surface px-3 py-2 text-sm text-fg data-[placeholder]:text-fg-subtle disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
         className
       )}
       {...props}
