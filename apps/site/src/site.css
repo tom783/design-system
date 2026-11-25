@@ -9,11 +9,13 @@
 .site-stack-sm { display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
 .site-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); min-width: 0; }
 
-/* 머리띠: 검색 · 버전 · 변경 이력 · 테마 */
-.site-header { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-12) var(--space-16); }
+/* 상단 바(AppShell header 64 한 줄): 왼쪽 검색 · 오른쪽 버전·변경 이력·테마.
+   버전 줄(한 줄 약 302px)은 검색 최소 240 과 함께 들어가는 768 이상에서만 보인다(실측: 768 에서 검색 420 · 넘침 0).
+   좁아져도 두 줄(20 + 4 + 20 = 44)까지는 64 안이다. 768 미만은 숨긴다 — 검색·테마가 먼저다. */
 .site-header-search { flex: 1 1 240px; max-width: 420px; min-width: 0; }
-.site-header-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-12); margin-inline-start: auto;
+.site-header-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--space-4) var(--space-12);
   font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); }
+@media (width < 768px) { .site-header-meta { display: none; } }
 
 .site-muted { color: var(--text-secondary); }
 .site-caption { font-size: var(--text-caption); line-height: var(--text-caption-lh); color: var(--text-secondary); }

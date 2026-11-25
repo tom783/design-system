@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Button } from '../components/button';
 import { DataTable, dataTableFeatures } from '../components/data-table';
 import { createColumnHelper } from '@tanstack/react-table';
+import { UserMenuExample } from '../../docs/examples/user-menu';
 const meta = {
   parameters: { manifest: ['DropdownMenu', 'DropdownMenuTrigger', 'DropdownMenuContent', 'DropdownMenuItem', 'DropdownMenuCheckboxItem', 'DropdownMenuRadioItem', 'DropdownMenuLabel', 'DropdownMenuSeparator', 'DropdownMenuShortcut', 'DropdownMenuGroup', 'DropdownMenuPortal', 'DropdownMenuSub', 'DropdownMenuSubContent', 'DropdownMenuSubTrigger', 'DropdownMenuRadioGroup'], },
   tags: ['autodocs'], title: 'Components/DropdownMenu' } satisfies Meta;
@@ -37,5 +38,24 @@ export const 가상화_언마운트: Story = { name: '메뉴-가상화-언마운
   await waitFor(() => expect(document.querySelector('[role="menu"]')).toBeNull());
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   root.dataset.focusAfterUnmount = document.activeElement?.getAttribute('data-slot') ?? document.activeElement?.tagName;
+  root.dataset.playComplete = 'true';
+} };
+
+// 사용자 메뉴 — DropdownMenu + Avatar 조합(상단 바 규격 7절 · docs/examples/user-menu.tsx). 로그아웃은 중립 글자(위험 표시 없음),
+// Esc 로 닫으면 트리거로 초점이 돌아온다. 셸 안 모습은 Screens/AppHeader.
+export const 사용자메뉴: Story = { name: '메뉴-사용자메뉴', render: () => <div className="flex justify-end">
+  <UserMenuExample name="김철수" organization="운영 조직" organizations={['운영 조직', '물류 조직']} />
+</div>, play: async ({ canvasElement: root }) => {
+  const trigger = within(root).getByRole('button', { name: '김철수, 사용자 메뉴' });
+  trigger.focus(); await userEvent.keyboard('{Enter}');
+  const menu = await within(document.body).findByRole('menu');
+  const logout = within(menu).getByRole('menuitem', { name: '로그아웃' });
+  await expect(logout.querySelector('[data-slot="dropdown-menu-destructive-icon"]')).toBeNull();
+  await expect(logout.className).not.toMatch(/danger/);
+  await expect(menu.getBoundingClientRect().width).toBeGreaterThanOrEqual(240);
+  await expect(menu.getBoundingClientRect().width).toBeLessThanOrEqual(320);
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(document.querySelector('[role="menu"]')).toBeNull());
+  await waitFor(() => expect(trigger).toHaveFocus());
   root.dataset.playComplete = 'true';
 } };

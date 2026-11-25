@@ -14,12 +14,74 @@
 
 ## 미출시
 
+### 앱이 할 일 (요약 — 자세한 것은 각 항목)
+
+- **상단 바(AppShell `header`)가 64px 한 줄로 고정됐다.** 64 를 넘는 내용(두 줄로 접히는 검색·안내 문구·필터 줄)을 header 에 넣었다면
+  본문(PageHeader·FilterBar)으로 옮기거나 한 줄에 들어가게 줄인다. 한 덩어리 div 로 header 를 채웠다면 그 div 는 이제 내용 폭이다 —
+  가득 채우려면 `flex: 1` 을 주거나, 오른쪽에 둘 것은 새 `headerEnd` 로 옮긴다(아래 바뀐 동작). header 를 쓰지 않는 앱은 할 일이 없다.
+- **폼 하단 고정 액션 줄(FormActionBar)이 있는 화면의 토스트는 줄 위 16 에 선다.** 토스트 위치(바닥에서 24)를 단정하던 시험은
+  줄 높이 63 + 16 = 79 로 바꾼다. 줄이 없는 화면은 그대로다.
+- 선택: 업무 알림은 `toast.notify`, 권한 없음·찾을 수 없음 화면은 `EmptyState size="page"`, 사용자 메뉴는 DropdownMenu + Avatar 조합
+  예시(`docs/examples/user-menu.tsx`)를 쓴다. 지금 직접 만든 것이 있으면 옮길 수 있다.
+
+### 추가
+
+- **AppShell `headerEnd` — 상단 바 오른쪽 묶음** (목표 75 1단계 · 상단 바 규격 1절 · DESIGN.md §24.7). 상단 바를 왼쪽 묶음(`header` —
+  맥락 전환기·검색) · 가운데 빈 공간 · 오른쪽 묶음(`headerEnd` — 앱 항목 → 알림 → 사용자 메뉴, 사용자 메뉴가 맨 오른쪽)으로 둔다.
+  묶음 안 간격 8, 묶음 사이 최소 16. 둘 다 없으면 header 를 그리지 않는다(지금처럼). 새 슬롯 `app-shell-header-start`·`app-shell-header-end`.
+  - 왜 prop 인가: "사용자 메뉴는 늘 맨 오른쪽"을 앱마다 `margin-inline-start: auto` 로 맞추게 두면 AI 가 만든 화면에서 어긋난다
+    (도그푸딩 6 의 셸 재작성과 같은 문제). 오른쪽 자리를 부품이 갖는다.
+- **알림 토스트 `toast.notify(options)` · 타입 `NotificationToastOptions`** (상단 바 규격 6절 · Figma 211:10253 · DESIGN.md §16.5.1).
+  다른 곳에서 생긴 업무 알림(취소 요청·환불 실패 등)을 알린다. 저장 결과 같은 행동 결과 토스트는 기존 메서드 그대로다.
+  - 모양: 기존 토스트(폭 356 그대로) + 출처 줄(caption) + 제목(body-sm 600) + [이동] 링크(ghost md 38). 누르면 닫힌다.
+  - 등급 `level`: `'normal'`(기본 8초, `duration` 으로 앱이 정함) · `'pinned'`(닫을 때까지 — 오류 토스트와 같은 방식, 위험 톤).
+  - 묶음 `groupKey`: 같은 키의 알림이 떠 있으면 새 토스트 대신 건수만 더한다(`count`, 기본 1). `title` 을 함수로 주면 건수로 다시 그린다.
+  - 한 번에 하나: 알림 토스트끼리는 늘 한 자리를 바꾼다. 행동 결과 토스트와는 따로 쌓여 둘이 겹치면 알림이 위다.
+  - 낭독: 출처·제목이 `role=status`(polite) 영역, 알림 묶음은 `aria-label="업무 알림"` 의 sonner 영역. Esc·닫기·포커스 복귀는 기존 토스트와 같다.
+  - 앱 라우터: `href` 를 주고 `onNavigate(event)` 에서 `event.preventDefault()` 뒤 라우터로 옮긴다. 저장하지 않은 입력 확인도 여기서 한다.
+- **EmptyState·ErrorState `size="page"` · `secondaryAction` · 타입 `StateAction`** (상단 바 규격 8절 · Figma 211:10255 · DESIGN.md §14.6).
+  권한 없음(자물쇠 `LockKeyhole`)·찾을 수 없음(검색-없음 `SearchX`)처럼 본문 전체를 대신하는 화면이다. 상단 바 아래선에서 아이콘까지
+  96 · 최대 폭 480 · 아이콘 40 · 제목 h1(body-lg 17/24 600) · 설명 body-sm · 주 행동 primary md + 보조 행동 ghost md(`href` 면 링크).
+  역할은 EmptyState `status`(alert 아님) · ErrorState `alert` 그대로다. 1024 미만은 행동 높이를 44(`--tap-min`)로 올린다.
+  `description` 은 이제 `ReactNode` 다(대상 이름을 `<strong>` 으로). 기본 크기의 모양·`action` 타입은 그대로다(DataTable `emptyAction` 이 쓴다).
+- **사용자 메뉴 조합 예시** `docs/examples/user-menu.tsx` (상단 바 규격 7절 · Figma 211:10254). 새 부품이 아니다 — DropdownMenu + Avatar +
+  Tooltip. 트리거 1024 이상 Avatar sm + 이름(최대 160 말줄임) + 화살표 · 높이 38, 1024 미만 Avatar 만 44×44. 머리(Avatar md + 이름 + 조직),
+  항목 38, 조직 전환 하위 메뉴(현재 조직 = 표시 + 굵게 + 선택 바탕), 로그아웃은 맨 아래 위 구분선 · 중립 글자(`destructive` 쓰지 않음).
+  기준 화면 `Screens/AppHeader`, 문서 Components/AppShell `상단바` · Components/DropdownMenu `메뉴-사용자메뉴`.
+
+### 바뀐 동작 (마이그레이션)
+
+- **AppShell header 높이 64px 고정** (2026-11-25 오너 결정 · 상단 바 규격 1절 · DESIGN.md §24.7). 지금까지 header 는 세로 패딩 16 +
+  내용 높이 + 경계 1 이었다(버튼 38 이면 71, 글자 한 줄 24 면 57). SideNav brand 행은 최소 64 라 두 아래선이 7px 어긋났고, 내용에 따라
+  높이가 바뀌어 본문 시작점이 화면마다 달랐다. 이제 `block-size: var(--space-64)`(경계 1px 포함) · 세로 가운데 · 좌우 24(1024 미만 16) · 세로 패딩 0 이다.
+  네 폭(1440·1024·768·390)에서 header 64 · brand 행 아래끝 − header 아래끝 = 0(하네스 `top-bar-render-verify`). 바탕·경계는 그대로다.
+  - header 는 이제 가로 한 줄(flex, 세로 가운데)이다. 예전에는 블록이라 header 안 한 덩어리 div 가 전체 폭을 차지했는데, 이제는
+    왼쪽 묶음 안에서 내용 폭이다 — 가득 채우려면 그 div 에 `flex: 1` 을 주거나 오른쪽에 둘 것을 `headerEnd` 로 옮긴다.
+  - **64 를 넘는 내용을 header 에 넣던 앱:** 넘친 부분은 잘리지 않고 본문 위로 겹쳐 보인다(일부러 숨기지 않는다 — 조용히 사라지는 것이
+    더 나쁘다). 두 줄로 접히던 검색·필터는 한 줄에 들어가게 줄이거나(좁은 폭에서는 덜 중요한 항목을 숨긴다) 본문 머리(PageHeader·FilterBar)로
+    옮긴다. 저장소의 소개 사이트(`apps/site`)가 그 예다 — 검색·버전·테마 한 덩어리가 390 에서 세 줄이었는데, 검색은 `header`, 버전·테마는
+    `headerEnd` 로 나누고 버전 줄은 768 미만에서 숨겼다(네 폭 64 · 넘침 0 실측).
+  - 화면이 바뀌는 곳: header 를 쓰는 화면은 본문 시작점이 64 로 같아진다 — 버튼 38 을 넣은 header 는 7px 위로(71 → 64), 글자 한 줄
+    header 는 7px 아래로(57 → 64, QA/AppShell `긴메뉴와본문` 실측). header 없는 셸(Screens/* · `AppShellExample`)은 변화 없다.
+- **폼 하단 고정 줄이 있으면 토스트가 그 위 16 에 선다** (상단 바 규격 6절 · Figma 217:1774 · DESIGN.md §16.5.1). sonner 기본 자리는
+  바닥에서 24(600 이하 16)라 높이 63 인 FormActionBar 의 저장 버튼을 덮었다. 이제 화면에 `.ds-form-action-bar` 가 있으면 두 토스트 묶음
+  모두 바닥에서 63 + 16 = 79 다(CSS `:has`, 줄 높이 식은 FormActionBar 의 scroll-padding 과 같다). 줄이 없으면 그대로다.
+  - 앱이 할 일: 없다. 토스트 위치를 단정하던 시험만 79 로 바꾼다.
+
 ### 내부
 
 - 검사 스크립트가 파일 URL 을 `.pathname` 으로 경로로 바꾸던 5곳(`server.test`·`run-all` 2·`run-plan.test`·`tokens-build`)을 `fileURLToPath` 로
   고쳤다(목표 75 0단계). 작업 폴더 경로에 한글·공백이 있으면 `server.test` 가 멈춰 pre-commit·verify·push 가 막혔고, `run-all` 은 `spawn ENOENT`,
   `tokens-build` 는 생성 파일을 퍼센트 인코딩된 다른 폴더에 썼다. `server.test` 는 서버가 시작하다 죽어도 멈추지 않고 그 stderr 로 실패한다.
   재발은 `docs/qa/traps.test.mjs` 함정 린트가 막는다. 패키지·화면 변화 없음.
+- 하네스 `top-bar-render-verify`(77건: 라이트·다크 × 1440·1024·768·390 × 헤더 64·아래선 0·누름 38/44 · 사용자 메뉴 진짜 Tab→Enter→
+  화살표→Esc 초점 복귀·항목 38/44·조직 전환·긴 이름 툴팁 · 알림 토스트 줄 위 16·status·polite·묶음·겹침 순서 · State page 96·480·40·h1·
+  행동 높이 · 글자 대비 4.5 · 가로 넘침 0).
+- 단위 시험: `toast/notification.test.mjs`(등급·묶음 키·한 번에 하나·`toast.notify` 배선·기존 API 유지) · `state/state-page.test.mjs`
+  (status·h1·행동·낭독 문구) · `app-shell/header.test.mjs`(64 토큰·슬롯·header 없음).
+- MCP: AppShell `header` 설명과 `headerEnd` prop·슬롯 2개, EmptyState·ErrorState `size`·`secondaryAction`·`description` 타입이 매니페스트에
+  생성으로 들어갔다. 지침 문장(purpose·useWhen·dont·rules)은 이번에 바꾸지 않았다(상단 바 3단계). State 행동 묶음은 `data-slot` 없이
+  클래스(`ds-state-actions`)만 둔다 — 상태 화면을 품은 DataTable 의 슬롯 목록이 MCP 기준선(R28)으로 고정돼 있어서다.
 
 ---
 

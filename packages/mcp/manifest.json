@@ -4714,7 +4714,12 @@
         {
           "name": "header",
           "type": "ReactNode",
-          "doc": "전역 검색·사용자 메뉴 등 앱이 구성하는 선택 상단 영역."
+          "doc": "상단 바 왼쪽 묶음(맥락 전환기·전역 검색 등). 상단 바는 64px 한 줄이다 — 넘는 내용은 본문에 둔다."
+        },
+        {
+          "name": "headerEnd",
+          "type": "ReactNode",
+          "doc": "상단 바 오른쪽 묶음. 앱 항목 → 알림 → 사용자 메뉴 순으로 두고 사용자 메뉴가 맨 오른쪽이다."
         },
         {
           "name": "children",
@@ -4740,6 +4745,8 @@
         "app-shell-body",
         "app-shell-content",
         "app-shell-header",
+        "app-shell-header-end",
+        "app-shell-header-start",
         "app-shell-main",
         "app-shell-sidebar",
         "app-shell-skip",
@@ -8656,7 +8663,8 @@
         },
         {
           "name": "description",
-          "type": "string"
+          "type": "ReactNode",
+          "doc": "설명. 대상 이름처럼 굵게 둘 말은 `<strong>` 으로 넘긴다."
         },
         {
           "name": "graphic",
@@ -8664,7 +8672,18 @@
         },
         {
           "name": "action",
-          "type": "{ label: string; onClick: () => void; }"
+          "type": "{ label: string; onClick: () => void; }",
+          "doc": "주 행동. 타입은 그대로다 — DataTable `emptyAction` 이 이 타입을 쓴다(MCP 기준선 고정 · DESIGN.md §13)."
+        },
+        {
+          "name": "secondaryAction",
+          "type": "StateAction",
+          "doc": "보조 행동(ghost). `size=\"page\"` 에서 주 행동 옆에 둔다."
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"page\"",
+          "doc": "`page` 는 본문 전체를 대신하는 화면(권한 없음·찾을 수 없음)이다 — 위 96 · 최대 폭 480 · 아이콘 40 · 제목 h1(body-lg 600) ·\n주 행동 primary. 기본은 표·차트·목록 자리를 채운다(DESIGN.md §14.6)."
         },
         {
           "name": "className",
@@ -8714,7 +8733,7 @@
         },
         {
           "name": "description",
-          "type": "string"
+          "type": "ReactNode"
         },
         {
           "name": "graphic",
@@ -8723,6 +8742,16 @@
         {
           "name": "onRetry",
           "type": "(() => void)"
+        },
+        {
+          "name": "secondaryAction",
+          "type": "StateAction",
+          "doc": "보조 행동(ghost). `size=\"page\"` 에서 다시 시도 옆에 둔다."
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"page\"",
+          "doc": "`page` 는 본문 전체를 대신하는 화면이다(EmptyState 와 같은 치수)."
         },
         {
           "name": "className",

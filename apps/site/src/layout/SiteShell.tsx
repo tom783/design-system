@@ -59,10 +59,10 @@ export const THEME_OPTIONS = [
   { value: 'dark', label: '다크', icon: <Moon /> },
 ];
 
-function SiteHeader() {
+/** 상단 바 오른쪽 묶음 — 버전·변경 이력 · 테마. 상단 바는 64px 한 줄이라(AppShell) 좁으면 버전 줄은 숨는다(site.css). */
+function SiteHeaderEnd() {
   const [theme, setTheme] = useTheme();
-  return <div className="site-header">
-    <SiteSearch />
+  return <>
     <div className="site-header-meta">
       <span className="tabular" title="세 패키지(tokens·ui·mcp) 공통 버전 — 이 작업 폴더 기준">
         v{meta.version}{meta.sha ? ` · ${meta.sha}${meta.dirty ? ' (수정됨)' : ''}` : ''}
@@ -72,7 +72,7 @@ function SiteHeader() {
     </div>
     <SegmentedControl aria-label="테마" size="sm" iconOnly options={THEME_OPTIONS} value={theme}
       onValueChange={(next) => setTheme(next as ThemeChoice)} />
-  </div>;
+  </>;
 }
 
 /** 본문은 AppShell 의 main 이 스크롤한다 — 페이지를 옮기면 맨 위로, 해시가 있으면 그 자리로. */
@@ -91,7 +91,7 @@ function useScrollOnNavigate() {
 export function SiteShell() {
   const { pathname } = useLocation();
   useScrollOnNavigate();
-  return <AppShell narrowNavigation="drawer" contentMaxWidth={1120} header={<SiteHeader />} sidebar={
+  return <AppShell narrowNavigation="drawer" contentMaxWidth={1120} header={<SiteSearch />} headerEnd={<SiteHeaderEnd />} sidebar={
     <SideNav brand="@s2life 디자인 시스템" brandIcon={<Layers />}>
       <SideNavGroup label="메뉴">
         {MENU.map((item) => <SideNavItem key={item.to} asChild icon={item.icon} label={item.label} current={isCurrent(pathname, item.to)}>

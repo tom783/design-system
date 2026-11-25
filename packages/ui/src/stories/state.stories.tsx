@@ -4,6 +4,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { EmptyState, ErrorState } from '../components/state';
 import { DataTable } from '../components/data-table';
 import { TrendBand, BulletRow, CompositionArea } from '../components/chart';
+import { LockKeyhole, SearchX } from '../icons';
 
 const meta = {
   parameters: { manifest: ['EmptyState', 'ErrorState'], },
@@ -36,6 +37,35 @@ export const 오류_재시도: Story = {
     await expect(within(canvasElement).getByRole('alert')).toHaveTextContent('주문을 불러오지 못했습니다');
     await userEvent.click(within(canvasElement).getByRole('button', { name: '다시 시도' }));
     await expect(retry).toHaveBeenCalledTimes(1);
+    canvasElement.dataset.playComplete = 'true';
+  },
+};
+// 페이지 크기(상단 바 규격 8절 · Figma 211:10255) — 셸 안 본문 자리를 대신한다. 셸과 함께 본 모습은 Screens/AppHeader.
+// 두 상태는 아이콘(자물쇠 · 검색-없음)과 제목이 다르다. 역할은 둘 다 status(alert 아님), 제목은 h1.
+const back = fn();
+export const 페이지_권한없음: Story = {
+  render: () => <EmptyState size="page" graphic={<LockKeyhole />} title="이 화면을 볼 권한이 없습니다"
+    description={<><strong>스토어 B</strong>에 접근할 권한이 없습니다.</>}
+    action={{ label: '이전 화면으로', onClick: back }} secondaryAction={{ label: '조직 관리자에게 요청 방법', href: '#help-permission' }} />,
+  play: async ({ canvasElement }) => {
+    back.mockClear();
+    const status = within(canvasElement).getByRole('status');
+    await expect(within(canvasElement).queryByRole('alert')).toBeNull();
+    await expect(within(status).getByRole('heading', { level: 1 })).toHaveTextContent('이 화면을 볼 권한이 없습니다');
+    await expect(status.querySelector('strong')).toHaveTextContent('스토어 B');
+    await expect(within(status).getByRole('link', { name: '조직 관리자에게 요청 방법' })).toHaveAttribute('href', '#help-permission');
+    await userEvent.click(within(status).getByRole('button', { name: '이전 화면으로' }));
+    await expect(back).toHaveBeenCalledTimes(1);
+    canvasElement.dataset.playComplete = 'true';
+  },
+};
+export const 페이지_찾을수없음: Story = {
+  render: () => <EmptyState size="page" graphic={<SearchX />} title="찾을 수 없습니다" description="대상이 삭제되었거나 주소가 변경되었습니다."
+    action={{ label: '이전 화면으로', onClick: back }} secondaryAction={{ label: '목록으로', href: '#orders' }} />,
+  play: async ({ canvasElement }) => {
+    const status = within(canvasElement).getByRole('status');
+    await expect(within(status).getByRole('heading', { level: 1 })).toHaveTextContent('찾을 수 없습니다');
+    await expect(within(status).getByRole('link', { name: '목록으로' })).toHaveAttribute('href', '#orders');
     canvasElement.dataset.playComplete = 'true';
   },
 };

@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { CircleCheck, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
+import { Bell, CircleCheck, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
 import { Toaster as Sonner, toast as sonnerToast, type ExternalToast } from 'sonner';
+import { buttonVariants } from '../button';
+import { nextNotification, notificationDuration, type NotificationSlot } from './notification';
 
 /** 명시적 테마가 우선이며, 미지정이면 OS 설정을 따른다. 두 입력의 변경도 구독한다. */
 function useTheme() {
@@ -22,8 +24,75 @@ type Message = Parameters<typeof sonnerToast>[0];
 function announcement(message: Message, error = false) {
   return <span data-slot="toast-message" role={error ? 'alert' : 'status'}>{typeof message === 'function' ? message() : message}</span>;
 }
+/** 알림 토스트(업무 알림 — 다른 곳에서 생긴 일을 알린다)의 입력. 행동 결과 토스트(저장됨 등)는 기존 메서드를 쓴다. */
+export interface NotificationToastOptions {
+  /** 출처 줄 — 제품·스토어처럼 어디서 생긴 일인지(`--text-caption`). 예: '판매관리 · 스토어 A'. */
+  source?: string;
+  /** 제목. 함수(건수 → 글자)로 주면 같은 묶음이 합쳐질 때마다 건수로 다시 그린다 — 예: 3 → '취소 요청 3건 · 스토어 A'. */
+  title: string | ((count: number) => string);
+  /** 대상 화면 주소. 주면 [이동] 링크를 그린다. 누르면 알림 토스트는 닫힌다. */
+  href?: string;
+  /** 이동 링크 글자. 기본 '이동'. */
+  linkLabel?: string;
+  /** 이동 직전에 불린다. 앱 라우터로 옮기거나 저장하지 않은 입력을 확인할 때 `event.preventDefault()` 한다. */
+  onNavigate?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  /** `normal`: duration 뒤 사라짐(기본 8초) · `pinned`: 닫을 때까지 남는다(오류 토스트와 같은 방식 · 위험 톤). */
+  level?: 'normal' | 'pinned';
+  /** 묶음 키. 같은 키의 알림 토스트가 떠 있으면 새 토스트 대신 건수만 더한다. */
+  groupKey?: string;
+  /** 이번 알림이 더하는 건수. 기본 1. */
+  count?: number;
+  /** `normal` 의 표시 시간(ms). 기본 8000. */
+  duration?: number;
+}
+
+/** 알림 토스트 전용 Toaster — 행동 결과 토스트와 따로 쌓아 둘이 겹치면 알림이 위에 선다(규격 6절). */
+const NOTIFICATION_TOASTER = 'ds-notification';
+let notificationSequence = 0;
+/** 지금 떠 있는 알림 토스트 하나(한 번에 하나). 사라졌는지는 sonner 의 활성 목록으로 확인한다 — 닫기·자동 닫힘 모두 즉시 빠진다. */
+let currentNotification: NotificationSlot | null = null;
+
+function NotificationBody({ source, title, href, linkLabel, onNavigate, id }:
+  Pick<NotificationToastOptions, 'source' | 'href' | 'onNavigate'> & { title: string; linkLabel: string; id: string }) {
+  const titleId = `${id}-title`;
+  return <div data-slot="toast-notification" className="ds-toast-notification">
+    {/* 출처·제목이 낭독 영역이다. 같은 묶음이 합쳐지면 이 글자만 바뀌어 polite 로 다시 읽힌다. */}
+    <span data-slot="toast-message" role="status" className="ds-toast-notification-text">
+      {source && <span data-slot="toast-source" className="ds-toast-notification-source">{source}</span>}
+      <span data-slot="toast-title" id={titleId} className="ds-toast-notification-title">{title}</span>
+    </span>
+    {href && <a data-slot="toast-link" href={href} aria-describedby={titleId}
+      className={buttonVariants({ variant: 'ghost', size: 'md', className: 'ds-toast-notification-link' })}
+      onClick={event => { onNavigate?.(event); sonnerToast.dismiss(id); }}>{linkLabel}</a>}
+  </div>;
+}
+
+/**
+ * 알림 토스트를 띄운다. 한 번에 하나다 — 떠 있는 알림이 있으면 새로 쌓지 않고 그 자리를 바꾼다(같은 묶음 키면 건수만 더한다).
+ * 돌려주는 id 로 `toast.dismiss(id)` 할 수 있다.
+ */
+function notify(options: NotificationToastOptions) {
+  const previous = currentNotification;
+  const active = previous !== null && sonnerToast.getToasts().some(item => item.id === previous.id);
+  const slot = nextNotification(previous, active, options, () => `ds-notification-${++notificationSequence}`);
+  currentNotification = slot;
+  const { id, count } = slot;
+  const pinned = options.level === 'pinned';
+  const title = typeof options.title === 'function' ? options.title(count) : options.title;
+  // 같은 id 로 다시 부르면 sonner 가 그 토스트를 제자리에서 바꾸고 타이머를 처음부터 다시 잰다.
+  // 모양(className·아이콘·시간)은 매번 모두 넘긴다 — 고정 → 일반으로 바뀌어도 앞 값이 남지 않게.
+  sonnerToast(<NotificationBody id={id} source={options.source} title={title} href={options.href}
+    linkLabel={options.linkLabel ?? '이동'} onNavigate={options.onNavigate} />, {
+    id, toasterId: NOTIFICATION_TOASTER, closeButton: true,
+    duration: notificationDuration(options.level, options.duration),
+    icon: pinned ? <CircleAlert aria-hidden="true" /> : <Bell aria-hidden="true" />,
+    className: pinned ? 'ds-toast-notice ds-toast-pinned' : 'ds-toast-notice',
+  });
+  return id;
+}
+
 /** 오류는 운영자가 읽고 닫을 때까지 남긴다. 원본 객체를 변형하지 않고 공개 메서드를 감싼다. */
-export const toast: typeof sonnerToast = Object.assign((message: Message, options?: ExternalToast) => sonnerToast(announcement(message), options), sonnerToast, {
+export const toast: typeof sonnerToast & { notify: typeof notify } = Object.assign((message: Message, options?: ExternalToast) => sonnerToast(announcement(message), options), sonnerToast, {
   success: (message: Message, options?: ExternalToast) => sonnerToast.success(announcement(message), options),
   info: (message: Message, options?: ExternalToast) => sonnerToast.info(announcement(message), options),
   warning: (message: Message, options?: ExternalToast) => sonnerToast.warning(announcement(message), options),
@@ -39,6 +108,7 @@ export const toast: typeof sonnerToast = Object.assign((message: Message, option
       }
       return { message: announcement(result as React.ReactNode, true), duration: Infinity, closeButton: true };
     } } : undefined),
+  notify,
 });
 /**
  * sonner 2.0.8의 Escape는 펼친 알림 묶음을 접기만 하고 닫지 않는다(setExpanded(false)).
@@ -101,12 +171,62 @@ export function Toaster(props: React.ComponentProps<typeof Sonner>) {
     returnTo.current = null;
     restoreFocus(previous);
   };
-  return <div data-slot="toaster" onKeyDown={closeOnEscape} onFocus={remember} onClick={restoreAfterClose}><Sonner {...props} theme={theme} className="ds-toaster toaster group" closeButton
-    containerAriaLabel="알림"
-    icons={{ success: <CircleCheck aria-hidden="true" />, error: <CircleAlert aria-hidden="true" />,
-      info: <Info aria-hidden="true" />, warning: <TriangleAlert aria-hidden="true" />, close: <X aria-hidden="true" /> }}
-    toastOptions={{ ...props.toastOptions, closeButtonAriaLabel: '알림 닫기', classNames: {
+  const host = React.useRef<HTMLDivElement>(null);
+  useNotificationLift(host);
+  const shared = {
+    ...props, theme, closeButton: true,
+    icons: { success: <CircleCheck aria-hidden="true" />, error: <CircleAlert aria-hidden="true" />,
+      info: <Info aria-hidden="true" />, warning: <TriangleAlert aria-hidden="true" />, close: <X aria-hidden="true" /> },
+    toastOptions: { ...props.toastOptions, closeButtonAriaLabel: '알림 닫기', classNames: {
       toast: 'bg-background text-foreground border-border', description: 'text-muted-foreground',
       ...props.toastOptions?.classNames,
-    } }} /></div>;
+    } },
+  };
+  return <div ref={host} data-slot="toaster" onKeyDown={closeOnEscape} onFocus={remember} onClick={restoreAfterClose}>
+    <Sonner {...shared} className="ds-toaster toaster group" containerAriaLabel="알림" />
+    {/* 알림 토스트(toast.notify) 묶음. 단축키는 위 묶음(alt+T)만 쓴다 — 둘 다 걸면 서로 포커스를 빼앗는다. */}
+    <Sonner {...shared} id={NOTIFICATION_TOASTER} hotkey={[]} customAriaLabel="업무 알림"
+      className="ds-toaster ds-toaster-notification toaster group" />
+  </div>;
+}
+
+const px = (element: HTMLElement, name: string) => Number.parseFloat(element.style.getPropertyValue(name)) || 0;
+/**
+ * 행동 결과 토스트 묶음이 차지한 높이(+ 간격). 알림 토스트 묶음을 그만큼 올려 둘이 겹치면 알림이 위에 선다(규격 6절 ·
+ * Figma 217:1836). sonner 는 토스트를 절대 위치 + transform 으로 쌓아 목록 상자 높이가 0 이라 상자를 잴 수 없다 —
+ * sonner 가 토스트에 적어 두는 값(--offset·--initial-height·목록의 --front-toast-height·--gap)으로 계산한다.
+ * 펼침(마우스를 올림)이면 토스트마다 offset + 높이의 최대, 접힘이면 앞 토스트 높이 + 뒤로 비치는 토스트마다 gap 이다.
+ */
+function stackExtent(list: HTMLElement | null) {
+  if (!list) return 0;
+  const toasts = Array.from(list.querySelectorAll<HTMLElement>(':scope > [data-sonner-toast]'))
+    .filter(item => item.dataset.removed !== 'true' && item.dataset.visible !== 'false');
+  if (!toasts.length) return 0;
+  const gap = px(list, '--gap');
+  const extent = toasts.some(item => item.dataset.expanded === 'true')
+    ? Math.max(...toasts.map(item => px(item, '--offset') + (px(item, '--initial-height') || item.offsetHeight)))
+    : (px(list, '--front-toast-height') || toasts[0]!.offsetHeight) + (toasts.length - 1) * gap;
+  return Math.ceil(extent + gap);
+}
+function useNotificationLift(host: React.RefObject<HTMLDivElement | null>) {
+  React.useEffect(() => {
+    const element = host.current;
+    if (!element) return;
+    let frame = 0;
+    let last = '';
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const next = `${stackExtent(element.querySelector<HTMLElement>('[data-sonner-toaster]:not(.ds-toaster-notification)'))}px`;
+        if (next === last) return; // 같은 값을 다시 쓰면 관찰이 또 불린다
+        last = next;
+        element.style.setProperty('--ds-toast-stack', next);
+      });
+    };
+    const observer = new MutationObserver(measure);
+    observer.observe(element, { subtree: true, childList: true, attributes: true,
+      attributeFilter: ['style', 'data-expanded', 'data-removed', 'data-visible', 'data-front'] });
+    measure();
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
+  }, [host]);
 }

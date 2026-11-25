@@ -34,7 +34,7 @@ export { Peek, type PeekProps, type PeekItem } from './components/peek';
 // ReturnRecord 는 useReturnContext 의 capture·consume 이 주고받는 값이라 공개 타입으로 남긴다.
 export { useReturnContext, type ReturnContextOptions, type ReturnStorage, type ReturnRecord } from './components/peek';
 
-export { EmptyState, ErrorState, type EmptyStateProps, type ErrorStateProps } from './components/state';
+export { EmptyState, ErrorState, type EmptyStateProps, type ErrorStateProps, type StateAction } from './components/state';
 export { Avatar, type AvatarProps } from './components/avatar';
 export { Thumbnail, type ThumbnailProps } from './components/thumbnail';
 
@@ -47,7 +47,7 @@ export {
   DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup,
   DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup,
 } from './components/dropdown-menu';
-export { toast, Toaster } from './components/toast';
+export { toast, Toaster, type NotificationToastOptions } from './components/toast';
 export { DatePicker, type DatePickerProps, type DateRange } from './components/date-picker';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/tabs';
 export {

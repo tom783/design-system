@@ -24,8 +24,10 @@ export const ShellDrawerContext = React.createContext<(() => void) | null>(null)
 
 export interface AppShellProps extends React.ComponentProps<'div'> {
   sidebar: React.ReactNode;
-  /** 전역 검색·사용자 메뉴 등 앱이 구성하는 선택 상단 영역. */
+  /** 상단 바 왼쪽 묶음(맥락 전환기·전역 검색 등). 상단 바는 64px 한 줄이다 — 넘는 내용은 본문에 둔다. */
   header?: React.ReactNode;
+  /** 상단 바 오른쪽 묶음. 앱 항목 → 알림 → 사용자 메뉴 순으로 두고 사용자 메뉴가 맨 오른쪽이다. */
+  headerEnd?: React.ReactNode;
   children: React.ReactNode;
   /** 1024px 미만 메뉴: 기본 rail, drawer는 왼쪽 모달 Sheet. */
   narrowNavigation?: 'rail' | 'drawer';
@@ -33,7 +35,7 @@ export interface AppShellProps extends React.ComponentProps<'div'> {
   contentMaxWidth?: React.CSSProperties['maxWidth'];
 }
 
-export function AppShell({ sidebar, header, children, contentMaxWidth, narrowNavigation = 'rail', className, ...props }: AppShellProps) {
+export function AppShell({ sidebar, header, headerEnd, children, contentMaxWidth, narrowNavigation = 'rail', className, ...props }: AppShellProps) {
   const mainId = React.useId();
   const main = React.useRef<HTMLElement>(null);
   const narrow = useAutomaticRail();
@@ -58,7 +60,11 @@ export function AppShell({ sidebar, header, children, contentMaxWidth, narrowNav
             </SheetContent>
           </Dialog>
         </div>}
-        {header != null && <header data-slot="app-shell-header" className="ds-app-shell-header">{header}</header>}
+        {/* 상단 바: 왼쪽 묶음 · 가운데 빈 공간 · 오른쪽 묶음(DESIGN.md §24.7). 둘 다 없으면 지금처럼 그리지 않는다. */}
+        {(header != null || headerEnd != null) && <header data-slot="app-shell-header" className="ds-app-shell-header">
+          <div data-slot="app-shell-header-start" className="ds-app-shell-header-start">{header}</div>
+          {headerEnd != null && <div data-slot="app-shell-header-end" className="ds-app-shell-header-end">{headerEnd}</div>}
+        </header>}
         <main ref={main} id={mainId} tabIndex={-1} data-slot="app-shell-main" className="ds-app-shell-main">
           <div data-slot="app-shell-content" className="ds-app-shell-content" style={{ maxWidth: contentMaxWidth }}>{children}</div>
         </main>

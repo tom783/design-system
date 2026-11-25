@@ -11,7 +11,13 @@
 }
 .ds-app-shell-sidebar { min-height: 0; background: var(--bg-surface); }
 .ds-app-shell-body { isolation: isolate; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.ds-app-shell-header { flex: none; padding: var(--space-16) var(--space-24); border-bottom: var(--border-width) solid var(--border-subtle); background: var(--bg-surface); }
+/* 상단 바는 높이 64 고정이다(2026-11-25 오너 결정 · DESIGN.md §24.7). 내용 맞춤(패딩 16 + 내용 38 ≈ 71)이던 때는 SideNav
+   brand 행(최소 64)과 아래선이 7px 어긋났다. 64 = --space-64 = brand 행 최소 높이라 두 아래선이 같은 y 에 선다.
+   경계 1px 는 64 안에 든다(preflight border-box). 세로는 가운데, 좌우 24(1024 미만 16). 바탕·경계는 그대로다. */
+.ds-app-shell-header { flex: none; display: flex; align-items: center; gap: var(--space-16); box-sizing: border-box; block-size: var(--space-64); min-width: 0; padding: 0 var(--space-24); border-bottom: var(--border-width) solid var(--border-subtle); background: var(--bg-surface); }
+/* 왼쪽 묶음이 남는 폭을 가져 가운데 빈 공간이 되고, 오른쪽 묶음은 늘 오른끝이다. 묶음 안 간격 8(규격 1절). */
+.ds-app-shell-header-start { display: flex; flex: 1 1 auto; align-items: center; gap: var(--space-8); min-width: 0; }
+.ds-app-shell-header-end { display: flex; flex: none; align-items: center; gap: var(--space-8); margin-inline-start: auto; }
 /* 본문 여백을 변수로도 둔다 — 같은 스크롤 영역에 sticky 로 붙는 부품(BulkActionBar)이 여백만큼 올라가 윗변에 딱 붙는다. */
 .ds-app-shell-main { --app-shell-gutter: var(--space-24); flex: 1; min-height: 0; min-width: 0; overflow: auto; padding: var(--app-shell-gutter); outline-offset: calc(-1 * var(--focus-width)); }
 .ds-app-shell-content { width: 100%; min-width: 0; margin-inline: auto; }
@@ -53,7 +59,8 @@
   .ds-side-nav .ds-side-nav-toggle { display: none; }
   .ds-side-nav .ds-side-nav-item, .ds-side-nav .ds-side-nav-toggle { justify-content: center; padding-inline: var(--space-8); }
   .ds-side-nav .ds-side-nav-label, .ds-side-nav .ds-side-nav-meta, .ds-side-nav .ds-side-nav-brand-label, .ds-side-nav .ds-side-nav-group-label { display: none; }
-  .ds-app-shell-main, .ds-app-shell-header { padding: var(--space-16); }
+  .ds-app-shell-main { padding: var(--space-16); }
+  .ds-app-shell-header { padding-inline: var(--space-16); }
   .ds-app-shell-main { --app-shell-gutter: var(--space-16); }
 }
 /* 바깥 간격은 페이지의 gap이 맡아 소비자 여백과 이중으로 합쳐지지 않게 한다. */

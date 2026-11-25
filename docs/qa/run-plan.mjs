@@ -37,6 +37,7 @@ export const HARNESSES = [
   ['pagination-render-verify.mjs', '페이지 이동·크기·포커스·표 조립'],
   ['sheet-render-verify.mjs', '옆 패널·닫기 보호·서랍'],
   ['app-shell-render-verify.mjs', '앱 셸·사이드 메뉴·페이지 머리'],
+  ['top-bar-render-verify.mjs', '상단 바 64·사용자 메뉴·알림 토스트·권한 없음 매트릭스'],
   ['input-consistency-render-verify.mjs', '검색 아이콘·카드·선택 트리거·공개 유틸리티'],
   ['input-render-verify.mjs', '입력 타입·Textarea·Radio·Switch'],
   ['input-unit-render-verify.mjs', '입력 단위 접미사·자리·낭독·복사·폭·같은 줄'],
