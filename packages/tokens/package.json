@@ -1,6 +1,6 @@
 {
   "name": "@s2life/tokens",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "S2Life 디자인 시스템 토큰 — OKLCH 기반 색·타이포·간격. 의존성 없음",
   "exports": {
     "./tokens.css": "./tokens.css",

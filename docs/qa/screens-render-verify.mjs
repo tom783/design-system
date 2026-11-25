@@ -2,6 +2,7 @@
 // 2026-11-22 디자인 검토 확정안: 제목 display 34/40·700(T34), 상세 파괴적 액션 D2, 대시보드 타일 줄.
 // 0.7.1: 대표 화면 넷의 상단 바 64(Screens/AppHeader 와 같은 묶음)·섹션 제목 줄(SectionHeader).
 // 0.7.1 C2(디자인 총괄 손질): 사이드 brand = 지금 제품 이름 · 5행 이하 표 정렬 없음 · 대시보드 추이 차트 좁은 폭 1열.
+// 0.7.1 묶음 검수: 사이드 brand 아이콘과 같은 아이콘을 쓰는 메뉴 항목이 없다(출고 등록 Truck 두 번 → '출고 관리' PackageCheck).
 // 실행: pnpm qa --only screens-render-verify (서버·출처 확인은 run-all 이 한다).
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -216,7 +217,7 @@ try {
       }
     });
 
-    await check(`대표 화면 넷: 상단 바 64·brand 아래선·사용자 메뉴 맨 오른쪽·가로 넘침 0·섹션 제목 줄 (1440·768·390) ${theme}`, async () => {
+    await check(`대표 화면 넷: 상단 바 64·brand 아래선·brand 아이콘 ≠ 메뉴 아이콘·사용자 메뉴 맨 오른쪽·가로 넘침 0·섹션 제목 줄 (1440·768·390) ${theme}`, async () => {
       // 0.7.1(목표 0.7.1 C): 대표 화면도 Screens/AppHeader 와 같은 상단 바(docs/examples/app-header.tsx appHeader)를 쓰고, 카드 밖 섹션
       // 머리는 손 조립 h2 가 아니라 SectionHeader 다. AI 는 기준 화면을 따라 하므로 빠지면 여기서 막는다.
       // [스토리, 섹션 제목 줄, 사이드 brand(= 전환기 지금 제품), 정렬 버튼 수(null = 보지 않음)]. brand 는 따로 지은 이름이 아니라 지금 제품
@@ -235,6 +236,9 @@ try {
             await frames2();
             const m = await ev(`(() => { const header=${q('[data-slot="app-shell-header"]')}, main=${q('[data-slot="app-shell-main"]')};
               const brand=${q('[data-slot="side-nav-brand"]')}, h=header.getBoundingClientRect();
+              // 아이콘 이름 = lucide 가 svg 에 붙이는 lucide-<이름> 클래스(별칭이 있으면 그 클래스도 — 같은 아이콘이면 같은 묶음이다).
+              const lucide=el => [...el.querySelectorAll('svg')].flatMap(s => [...s.classList].filter(c => c.startsWith('lucide-')));
+              const items=brand ? [...brand.closest('[data-slot="side-nav"]').querySelectorAll('[data-slot="side-nav-item"]')] : [];
               const ends=[...header.querySelectorAll('[data-slot="app-shell-header-end"] button')];
               const right=ends.reduce((a, b) => b.getBoundingClientRect().right > a.getBoundingClientRect().right ? b : a);
               return { header:h.height, headerTop:h.top, brandGap:brand && brand.getBoundingClientRect().height ? brand.getBoundingClientRect().bottom - h.bottom : null,
@@ -242,11 +246,20 @@ try {
                 pageOverflow:document.documentElement.scrollWidth - innerWidth, mainOverflow:main.scrollWidth - main.clientWidth,
                 sections:[...main.querySelectorAll('[data-slot="section-header-title"]')].map(el => el.firstChild.textContent),
                 looseH2:[...main.querySelectorAll('h2')].filter(el => !el.closest('[data-slot="section-header"]')).length,
-                brand:brand?.textContent ?? null, product:header.querySelector('[data-slot="context-switcher"][aria-label^="제품: "]')?.getAttribute('aria-label') ?? null,
+                brand:brand?.textContent ?? null, brandIcons:brand ? lucide(brand) : null,
+                itemIcons:items.map(el => [el.querySelector('[data-slot="side-nav-item-label"]')?.textContent ?? null, lucide(el)]), product:header.querySelector('[data-slot="context-switcher"][aria-label^="제품: "]')?.getAttribute('aria-label') ?? null,
                 sorts:main.querySelectorAll('[data-slot="data-table-sort"]').length }; })()`);
             rows.push({ id, width, ...m });
             // 390 서랍 셸(출고 등록)은 메뉴가 닫혀 brand 가 DOM 에 없다 · 접힌 '맥락' 트리거에는 제품 전환기가 따로 없다.
             if (m.brand !== null) assert.equal(m.brand, product, `${id} ${width} 사이드 brand = 지금 제품`);
+            if (m.brandIcons !== null) {
+              // 0.7.1 묶음 검수: 출고 등록 brand '물류관리'와 메뉴 '출고 관리'가 둘 다 Truck 이라 한 사이드 메뉴에 같은 아이콘이 두 번
+              // 보였다. 메뉴 항목은 brand 아이콘을 쓰지 않는다. 아이콘을 못 찾아 빈 목록끼리 비교해 통과하는 일이 없게 먼저 센다.
+              assert.ok(m.brandIcons.length > 0 && m.itemIcons.some(([, icons]) => icons.length > 0),
+                `${id} ${width} 사이드 아이콘을 찾지 못함 ${JSON.stringify({ brand: m.brandIcons, items: m.itemIcons })}`);
+              const clash = m.itemIcons.filter(([, icons]) => icons.some(c => m.brandIcons.includes(c))).map(([label]) => label);
+              assert.deepEqual(clash, [], `${id} ${width} 사이드 brand 아이콘(${m.brandIcons})과 같은 메뉴 항목`);
+            }
             if (m.product !== null) assert.equal(m.product, `제품: ${product}`, `${id} ${width} 전환기 지금 제품`);
             if (sorts !== null) assert.equal(m.sorts, sorts, `${id} ${width} 5행 이하 표 정렬 버튼`);
             assert.equal(m.header, 64, `${id} ${width} header 64`);
