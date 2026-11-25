@@ -17,7 +17,19 @@
    링은 "대상을 가리키는" 신호로만 남겨둔다 — 10.3.1. */
 [data-slot="guide-bubble"]:focus,
 [data-slot="guide-bubble"]:focus-visible { outline: none; }
-[data-slot="guide-bubble"]:popover-open { opacity: 1; translate: 0 0; }
+[data-slot="guide-bubble"]:popover-open {
+  opacity: 1;
+  translate: 0 0;
+  /* 열 때는 display·overlay 를 전환하지 않는다(닫힘 모션은 위 목록 그대로).
+     닫힘 전환(--dur-fast)이 끝나는 프레임 무렵에 다시 열면 Chrome 이 display·overlay 전환을
+     p=0(none)에서 새로 시작해, 그 태스크 동안 말풍선에 상자가 없다(getClientRects 0).
+     useAnchored 는 showPopover() 바로 뒤에 focus() 하므로 포커스가 조용히 무시되어
+     트리거에 남았다 — 2026-11-25 CI 의 Tour '포커스가 말풍선으로 이동한다' 간헐 실패 원인.
+     실측(로컬 Chromium 1255, 닫은 뒤 120~170ms 에 1ms 간격으로 다시 열기 204회):
+     이 줄 없이 5회 실패(상자 0 · display 전환 currentTime 0), 있으면 0회.
+     평소 열기에는 이미 display 전환이 생기지 않으므로(@starting-style) 화면은 같다. */
+  transition-property: opacity, translate;
+}
 @starting-style {
   [data-slot="guide-bubble"]:popover-open { opacity: 0; translate: 0 2px; }
 }

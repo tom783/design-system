@@ -110,10 +110,17 @@ const t=await ev(`(async()=>{
   const ring = ringEl ? (()=>{const c=getComputedStyle(ringEl);
     return {w:c.outlineWidth, s:c.outlineStyle, c:c.outlineColor, off:c.outlineOffset, el:ringEl.id};})() : null;
   const 단계 = bub.innerText.match(/(\\d+)\\s*\\/\\s*(\\d+)/)?.[0] ?? null;
-  // 포커스는 레이아웃 이펙트에서 옮겨진다. 열린 직후에는 아직 안 와 있을 수 있다
-  // (CI 에서 peek 쪽이 실제로 거짓 실패했다). 조건을 기다린다.
+  const 열림전환 = getComputedStyle(bub).transitionProperty;
+  // 포커스는 showPopover() 와 같은 레이아웃 이펙트에서 동기로 옮겨진다 — 열렸으면 이미 와 있어야 한다.
+  // 2026-11-25 CI 간헐 실패는 기다림이 짧아서가 아니라 부품 쪽이었다: 닫힘 전환이 끝나는 프레임 무렵에
+  // 다시 열면 display 전환이 p=0(none)에서 시작해 말풍선에 상자가 없고 focus() 가 무시됐다(guide.css 주석).
+  // 이 기다림은 안전 여유로만 남긴다. 실패하면 그때의 포커스·상자·전환을 상세에 남긴다.
+  const 열림시점 = {포커스: document.activeElement===bub, 상자: bub.getClientRects().length,
+    전환: bub.getAnimations().map(a=>a.transitionProperty+'@'+Math.round(a.currentTime??-1)).join(' ')};
   for(let i=0;i<40 && document.activeElement!==bub; i++) await w(50);
   const 포커스가_말풍선 = document.activeElement===bub;
+  const 포커스위치 = 포커스가_말풍선 ? null : (()=>{ const a=document.activeElement;
+    return {활성: a ? a.tagName+(a.id?'#'+a.id:'')+' "'+(a.textContent||'').trim().slice(0,12)+'"' : null, ...열림시점}; })();
   // 링이 레이아웃을 미는가 — 다른 형제 좌표 비교
   const sib=document.querySelector('#guide-step-2');
   const s1=sib?Math.round(sib.getBoundingClientRect().left):null;
@@ -129,7 +136,8 @@ const t=await ev(`(async()=>{
   // Escape
   document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   await w(350);
-  return {열림:true, 단계, place:bub.dataset.place, 포커스가_말풍선, ring,
+  const 닫힘전환 = getComputedStyle(bub).transitionProperty;
+  return {열림:true, 단계, place:bub.dataset.place, 포커스가_말풍선, 포커스위치, 열림전환, 닫힘전환, ring,
     링이_레이아웃안밂:s1===s2, 형제:[s1,s2], 전체오버레이:overlay,
     배경히트: hit?hit.tagName+'#'+hit.id:null,
     Escape후열림: !!openBub(), Escape후링: document.querySelectorAll('[data-guide-target="active"]').length,
@@ -137,7 +145,13 @@ const t=await ev(`(async()=>{
 })()`);
 await shot('c-tour');
 check('트리거 클릭으로 열린다', t.열림===true, `${t.단계} place=${t.place}`);
-check('포커스가 말풍선으로 이동한다', t.포커스가_말풍선===true);
+check('포커스가 말풍선으로 이동한다', t.포커스가_말풍선===true, t.포커스위치 ? JSON.stringify(t.포커스위치) : '');
+// 위 포커스의 간헐 실패를 막는 계약. 다시 여는 시점이 좁은 창(닫힌 뒤 ~140ms)에 걸려야만 드러나서
+// 포커스 단정만으로는 회귀를 확률로만 잡는다 — 원인이 되는 전환 목록을 직접 본다.
+check('열린 말풍선은 display·overlay 를 전환하지 않는다 (다시 열 때 상자 없음 → 포커스 무시 방지)',
+  !!t.열림전환&&!/\b(display|overlay|all)\b/.test(t.열림전환), t.열림전환);
+check('닫힘 모션은 그대로다 (display·overlay allow-discrete 유지)',
+  /\boverlay\b/.test(t.닫힘전환??'')&&/\bdisplay\b/.test(t.닫힘전환??''), t.닫힘전환);
 check('링이 그려진다 (outline-style solid)', t.ring?.s==='solid', `${t.ring?.w} ${t.ring?.s} ${t.ring?.c} offset ${t.ring?.off} on #${t.ring?.el}`);
 check('링 색이 --hint-ring 으로 해소됐다', t.ring?.c==='rgb(211, 62, 88)', t.ring?.c);
 check('링이 레이아웃을 밀지 않는다', t.링이_레이아웃안밂===true, `형제 left ${JSON.stringify(t.형제)}`);

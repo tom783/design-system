@@ -298,6 +298,12 @@ GUI 앱 번들 경로는 **거부**한다. 없으면 `npx playwright install chr
 억제한다. CDP 의 `Emulation.setFocusEmulationEnabled: true` 를 빠뜨리면
 포커스 관련 기능이 전부 "깨진 것처럼" 보인다. `docs/qa/browser.mjs` 의 `launchBrowser()` 가 이미 켜고 있으니 그것을 쓴다.
 
+**`display` 를 `allow-discrete` 로 전환하는 popover 는 열림 상태에서 그 전환을 빼라.** 닫힘 전환이 끝나는 프레임
+무렵에 다시 열면 Chrome 이 `display`·`overlay` 전환을 p=0(none)에서 새로 시작해 그 태스크 동안 상자가 없다 —
+`showPopover()` 바로 뒤의 `focus()` 가 조용히 무시된다(실측: 닫은 뒤 120~170ms 에 다시 열기 204회 중 5회, CI Tour
+포커스 단정 약 2%). `guide.css` 의 `:popover-open` 이 `transition-property: opacity, translate` 로 막고 하네스가 계약으로 본다.
+포커스 단정이 흔들리면 기다림을 늘리기 전에 그 순간의 `getClientRects()`·`getAnimations()` 를 찍어라.
+
 **테마 토큰을 `@media`나 `[data-theme]` 블록 안에서만 정의하지 마라.**
 테마 미지정 상태(사용자 대부분)에서 해소되지 않아 한쪽 테마 글자가 반대 테마 바탕에 얹힌다.
 모든 토큰은 `:root`에 기본값을 갖는다. 생성기가 이것을 검사한다.
