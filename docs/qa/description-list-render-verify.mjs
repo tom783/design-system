@@ -239,7 +239,7 @@ try {
       await story('기본', theme, { prefix: 'screens-orderdetail', waitPlay: true });
       const m = await inPage(`const lists = [...document.querySelectorAll(${JSON.stringify(LIST)})];
         return { cards: lists.slice(0, 3).map(list => { const card = rect(list.closest('[data-slot="card"]')); return { card, rows: geometry(list) }; }),
-          totals: geometry(lists[3]), section: rect(document.querySelector('section[aria-labelledby="order-items"]')) };`);
+          totals: geometry(lists[3]), section: rect(document.querySelector('[data-screen="order-items"]')) };`);
       assert.equal(m.cards.length, 3);
       for (const { card, rows } of m.cards) {
         near(rows[0].list.w, card.w - 34, '카드 본문 폭'); assert.ok(rows[0].list.w >= 326, `세로형으로 접히지 않는다 ${rows[0].list.w}`);

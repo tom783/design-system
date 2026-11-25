@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import {
-  BulletRow, Button, DataTable, PageHeader, StatTile, StatusChip, TrendBand,
+  BulletRow, Button, DataTable, PageHeader, SectionHeader, StatTile, StatusChip, TrendBand,
   createDataTableColumnHelper, type BulletMetric,
 } from '../index';
 import { Download } from '../icons';
@@ -11,7 +11,8 @@ import { STATUS, StoreShell, dateTime, orders, won, type Order } from './screens
  * 대시보드 — StatTile 4개 → 차트 카드 2개(TrendBand·BulletRow) → 최근 주문 5행.
  * 타일 줄은 DESIGN §7.5.7 그리드(auto-fit minmax(min(100%, 200px), 1fr) · gap 16)를 그대로 쓴다.
  * 반품률·출고 대기는 goodDirection="down" 이다. 증감 화살표는 실제 방향을 따른다.
- * "최근 주문" 섹션 머리 부품은 없어 h2 + ghost 링크 버튼으로 조립했다.
+ * "최근 주문" 섹션 머리는 SectionHeader(DESIGN §24.6)다 — 제목 h2 + 머리 오른끝 링크형 '전체 보기 ›'(접근성 이름 '최근 주문 전체 보기'),
+ * 앞 섹션 끝 → 제목 32 · 머리 → 표 12 는 부품이 갖는다. 셸은 상단 바 64(Screens/AppHeader 와 같은 묶음)다.
  */
 const meta = { title: 'Screens/Dashboard', parameters: { fullBleed: true } } satisfies Meta;
 export default meta;
@@ -56,14 +57,10 @@ function DashboardScreen() {
         <BulletRow metrics={metrics} title="11월 목표 대비"
           summary="신규 고객은 목표를 넘었고 매출·출고 SLA는 목표에 못 미쳤으며 반품률은 목표 안입니다." />
       </section>
-      <section aria-labelledby="recent-orders" className="flex min-w-0 flex-col gap-3">
-        <div className="flex items-center justify-between gap-4">
-          <h2 id="recent-orders" className="text-[length:var(--text-title-sm)] leading-[var(--text-title-sm-lh)] font-semibold">최근 주문</h2>
-          <Button asChild variant="ghost" size="sm"><a href="#orders">전체 보기</a></Button>
-        </div>
+      <SectionHeader title="최근 주문" data-screen="recent-orders" actions={[{ kind: 'link', label: '전체 보기', href: '#orders' }]}>
         <DataTable data={orders.slice(0, 5)} columns={columns} getRowId={order => order.id} align={{ amount: 'end' }}
           caption="최근 주문 5건" />
-      </section>
+      </SectionHeader>
     </div>
   </StoreShell>;
 }
@@ -74,6 +71,8 @@ export const 기본: Story = {
     const c = within(root);
     await expect(c.getByRole('heading', { level: 1, name: '대시보드' })).toBeInTheDocument();
     await expect(c.getByText('3,842만원')).toBeInTheDocument();
+    await expect(c.getByRole('region', { name: '최근 주문' })).toBeInTheDocument();
+    await expect(c.getByRole('link', { name: '최근 주문 전체 보기' })).toHaveAttribute('href', '#orders');
     root.dataset.playComplete = 'true';
   },
 };

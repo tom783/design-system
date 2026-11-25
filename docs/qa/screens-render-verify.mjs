@@ -1,5 +1,6 @@
-// 정식 Screens 스토리(주문 목록·주문 상세 D2·대시보드) 검증. 1440×900, 라이트·다크.
+// 정식 Screens 스토리(주문 목록·주문 상세 D2·대시보드 · 출고 등록 셸) 검증. 1440×900(셸은 768·390 도), 라이트·다크.
 // 2026-11-22 디자인 검토 확정안: 제목 display 34/40·700(T34), 상세 파괴적 액션 D2, 대시보드 타일 줄.
+// 0.7.1: 대표 화면 넷의 상단 바 64(Screens/AppHeader 와 같은 묶음)·섹션 제목 줄(SectionHeader).
 // 실행: pnpm qa --only screens-render-verify (서버·출처 확인은 run-all 이 한다).
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -212,6 +213,43 @@ try {
       } finally {
         await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
       }
+    });
+
+    await check(`대표 화면 넷: 상단 바 64·brand 아래선·사용자 메뉴 맨 오른쪽·가로 넘침 0·섹션 제목 줄 (1440·768·390) ${theme}`, async () => {
+      // 0.7.1(목표 0.7.1 C): 대표 화면도 Screens/AppHeader 와 같은 상단 바(docs/examples/app-header.tsx appHeader)를 쓰고, 카드 밖 섹션
+      // 머리는 손 조립 h2 가 아니라 SectionHeader 다. AI 는 기준 화면을 따라 하므로 빠지면 여기서 막는다.
+      const SCREENS = [
+        ['screens-orderlist--기본', []], ['screens-orderdetail--기본', ['주문 상품']],
+        ['screens-shipmentcreate--기본', []], ['screens-dashboard--기본', ['최근 주문']],
+      ];
+      const rows = [];
+      try {
+        for (const [width, height] of [[1440, 900], [768, 1024], [390, 844]]) {
+          await cdp('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+          for (const [id, sections] of SCREENS) {
+            await load(id, theme);
+            await frames2();
+            const m = await ev(`(() => { const header=${q('[data-slot="app-shell-header"]')}, main=${q('[data-slot="app-shell-main"]')};
+              const brand=${q('[data-slot="side-nav-brand"]')}, h=header.getBoundingClientRect();
+              const ends=[...header.querySelectorAll('[data-slot="app-shell-header-end"] button')];
+              const right=ends.reduce((a, b) => b.getBoundingClientRect().right > a.getBoundingClientRect().right ? b : a);
+              return { header:h.height, headerTop:h.top, brandGap:brand && brand.getBoundingClientRect().height ? brand.getBoundingClientRect().bottom - h.bottom : null,
+                rightmost:right.getAttribute('aria-label'), switchers:header.querySelectorAll('[data-slot="context-switcher-group"]').length,
+                pageOverflow:document.documentElement.scrollWidth - innerWidth, mainOverflow:main.scrollWidth - main.clientWidth,
+                sections:[...main.querySelectorAll('[data-slot="section-header-title"]')].map(el => el.firstChild.textContent),
+                looseH2:[...main.querySelectorAll('h2')].filter(el => !el.closest('[data-slot="section-header"]')).length }; })()`);
+            rows.push({ id, width, ...m });
+            assert.equal(m.header, 64, `${id} ${width} header 64`);
+            if (m.brandGap !== null) assert.equal(m.brandGap, 0, `${id} ${width} brand 아래선`);
+            assert.equal(m.rightmost, '김철수, 사용자 메뉴'); assert.equal(m.switchers, 1);
+            assert.ok(m.pageOverflow <= 0 && m.mainOverflow <= 0, `${id} ${width} 가로 넘침 ${JSON.stringify(m)}`);
+            assert.deepEqual(m.sections, sections, `${id} 섹션 제목 줄`); assert.equal(m.looseH2, 0, `${id} 손 조립 h2`);
+          }
+        }
+      } finally {
+        await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+      }
+      return rows;
     });
 
     await check(`Screens 실행 중 콘솔 오류 없음 ${theme}`, () => {
